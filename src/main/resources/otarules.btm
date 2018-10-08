@@ -1,0 +1,12 @@
+RULE ClassLoader Hack
+
+CLASS ^java.lang.ClassLoader
+
+METHOD findClass
+BIND
+  cls = io.opentracing.contrib.uberjar.OpenTracingInjector.findClass($this, $1);
+IF cls != null
+DO
+  traceln(">>>>>>>>>>> defineClass: " + $1);
+  RETURN $this.defineClass($1, cls, 0, cls.length, null);
+ENDRULE

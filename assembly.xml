@@ -12,8 +12,11 @@
       <unpack>true</unpack>
       <includes>
         <include>io.opentracing.contrib:opentracing-uberjar</include>
-        <include>io.opentracing.contrib:opentracing-agent-api</include>
-        <include>org.apache.xbean:xbean-classloader</include>
+        <!--include>io.opentracing.contrib:opentracing-agent-api</include>
+        <include>io.opentracing:opentracing-api</include>
+        <include>io.opentracing:opentracing-util</include>
+        <include>io.opentracing:opentracing-noop</include-->
+        <include>org.jboss.byteman:byteman</include>
       </includes>
     </dependencySet>
     <dependencySet>

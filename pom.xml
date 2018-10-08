@@ -22,17 +22,26 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-agent-api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-api</artifactId>
+      <version>0.31.0</version>
+    </dependency>    
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-okhttp3-agent</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-util</artifactId>
+      <version>0.31.0</version>
+    </dependency>    
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-noop</artifactId>
+      <version>0.31.0</version>
+    </dependency>    
+    <dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman</artifactId>
+      <version>4.0.4</version>
     </dependency>
-    
+
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-hazelcast -->
       <groupId>io.opentracing.contrib</groupId>
@@ -49,7 +58,7 @@
       <!-- https://github.com/opentracing-contrib/java-okhttp -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.1-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <groupId>com.squareup.okhttp3</groupId>
@@ -536,7 +545,14 @@
           <finalName>${project.artifactId}</finalName>
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>TODO</mainClass>
+              <manifestEntries>
+                <Main-Class>io.opentracing.contrib.uberjar.OpenTracingAgent2</Main-Class>
+                <Agent-Class>io.opentracing.contrib.uberjar.OpenTracingAgent2</Agent-Class>
+                <Premain-Class>io.opentracing.contrib.uberjar.OpenTracingAgent2</Premain-Class>
+                <Can-Redefine-Classes>true</Can-Redefine-Classes>
+                <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                <Boot-Class-Path>/Users/seva/Work/opentracing/src/opentracing-uberjar/target/opentracing-uberjar.jar</Boot-Class-Path>
+              </manifestEntries>
             </transformer>
           </transformers>
         </configuration>
@@ -552,9 +568,14 @@
             <descriptor>assembly.xml</descriptor>
           </descriptors>
           <archive>
-            <manifest>
-              <mainClass>io.opentracing.uberjar.Main</mainClass>
-            </manifest>
+            <manifestEntries>
+              <Main-Class>io.opentracing.contrib.uberjar.OpenTracingAgent</Main-Class>
+              <Agent-Class>io.opentracing.contrib.uberjar.OpenTracingAgent</Agent-Class>
+              <Premain-Class>io.opentracing.contrib.uberjar.OpenTracingAgent</Premain-Class>
+              <Can-Redefine-Classes>true</Can-Redefine-Classes>
+              <Can-Retransform-Classes>true</Can-Retransform-Classes>
+              <Boot-Class-Path>/Users/seva/Work/opentracing/src/opentracing-uberjar/target/opentracing-uberjar.jar</Boot-Class-Path>
+            </manifestEntries>
           </archive>
         </configuration>
         <executions>
