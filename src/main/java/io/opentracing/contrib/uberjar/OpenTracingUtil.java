@@ -34,6 +34,13 @@ import java.util.jar.JarFile;
 public final class OpenTracingUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
+  /**
+   * Returns the array of bytes read from an {@code InputStream}.
+   *
+   * @param in The {@code InputStream}.
+   * @return The array of bytes read from an {@code InputStream}.
+   * @throws IOException If an I/O error has occurred.
+   */
   public static byte[] readBytes(final InputStream in) throws IOException {
     final ByteArrayOutputStream buffer = new ByteArrayOutputStream(DEFAULT_SOCKET_BUFFER_SIZE);
     final byte[] data = new byte[DEFAULT_SOCKET_BUFFER_SIZE];
@@ -41,7 +48,26 @@ public final class OpenTracingUtil {
     return buffer.toByteArray();
   }
 
-  public static List<URL> findJarPath(final String path) throws IOException {
+  /**
+   * Returns the hexadecimal representation of an object's identity hash code.
+   *
+   * @param obj The object.
+   * @return The hexadecimal representation of an object's identity hash code.
+   */
+  public static String getIdentityCode(final Object obj) {
+    return obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16);
+  }
+
+  /**
+   * Returns a {@code List} of {@code URL} objects having a prefix path that
+   * matches {@code path}.
+   *
+   * @param path The prefix path to match when finding resources.
+   * @return A {@code List} of {@code URL} objects having a prefix path that
+   *         matches {@code path}.
+   * @throws IOException If an I/O error has occurred.
+   */
+  public static List<URL> findResources(final String path) throws IOException {
     final URL url = ClassLoader.getSystemClassLoader().getResource(path);
     if (url == null)
       return null;

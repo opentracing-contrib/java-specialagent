@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -60,8 +61,10 @@ public class OpenTracingManager {
     transformer = trans;
 
     try {
-      final List<URL> pluginJarUrls = OpenTracingUtil.findJarPath("META-INF/opentracing/");
-      System.out.println("Found " + pluginJarUrls.size() + " plugin JARs");
+      final List<URL> pluginJarUrls = OpenTracingUtil.findResources("META-INF/opentracing/");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("Loading " + pluginJarUrls.size() + " plugin JARs");
+
       // Override parent ClassLoader methods to avoid delegation of resource resolution to BootLoader
       allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader() {
         @Override
@@ -106,14 +109,13 @@ public class OpenTracingManager {
 
     try {
       // Prepare the ClassLoader rule
-      loadRules(ClassLoader.getSystemClassLoader().getResource(AGENT_RULES), null, scriptNames, scripts);
+      loadRules(ClassLoader.getSystemClassLoader().getResource(AGENT_RULES), null, scripts, scriptNames);
 
       // Create map from plugin jar URL to its index in allPluginsClassLoader.getURLs()
       final Map<String,Integer> pluginJarToIndex = new HashMap<>();
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      System.out.println(pluginJarToIndex);
       // Prepare the Plugin rules
       final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(AGENT_RULES);
       while (enumeration.hasMoreElements()) {
@@ -128,22 +130,41 @@ public class OpenTracingManager {
         transformer.installScript(scripts, scriptNames, pw);
       }
       catch (final Exception e) {
-        System.err.println("Failed to install scripts");
-        e.printStackTrace();
+        logger.log(Level.SEVERE, "Failed to install scripts", e);
       }
 
-      System.out.println(sw.toString());
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(sw.toString());
     }
     catch (final IOException e) {
-      System.err.println("Failed to load OpenTracing agent rules");
-      e.printStackTrace();
+      logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
     }
 
-    System.out.println("OpenTracing Agent rules loaded");
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("OpenTracing Agent rules loaded");
   }
 
-  private static void loadRules(final URL url, final Integer index, final List<String> scriptNames, final List<String> scripts) throws IOException {
-    System.out.println("Load rules for index " + index + " from URL = " + url);
+  /**
+   * This method digests the Byteman rule script at {@code url}, and adds the
+   * script to the {@code scripts} and {@code scriptNames} lists. If
+   * {@code index} is not null, this method calls
+   * {@link #createLoadClasses(String,int)} to create a "load classes" script
+   * that is triggered in the same manner as the script at {@code url}, and is
+   * used to load API and instrumentation classes into the calling object's
+   * {@code ClassLoader}.
+   *
+   * @param url The {@code URL} to the script resource.
+   * @param index The index of the OpenTracing instrumentation JAR in
+   *          {@code allPluginsClassLoader.getURLs()} which corresponds to
+   *          {@code script}.
+   * @param scripts The list of scripts.
+   * @param scriptNames The list of script names.
+   * @throws IOException If an I/O error has occurred.
+   */
+  private static void loadRules(final URL url, final Integer index, final List<String> scripts, final List<String> scriptNames) throws IOException {
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Load rules for index " + index + " from URL = " + url);
+
     final StringBuilder builder = new StringBuilder();
     try (final InputStream in = url.openStream()) {
       final byte[] bytes = new byte[1024];
@@ -236,12 +257,17 @@ public class OpenTracingManager {
       try (final ZipInputStream zip = new ZipInputStream(jarUrl.openStream())) {
         for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
           if (entry.getName().endsWith(".class")) {
-            Class.forName(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.'), false, classLoader);
+            try {
+              Class.forName(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.'), false, classLoader);
+            }
+            catch (final ClassNotFoundException e) {
+              logger.log(Level.SEVERE, "Failed to load class", e);
+            }
           }
         }
       }
-      catch (final ClassNotFoundException | IOException e) {
-        e.printStackTrace();
+      catch (final IOException e) {
+        logger.log(Level.SEVERE, "Failed to read from JAR: " + jarUrl, e);
       }
     }
   }
@@ -259,7 +285,7 @@ public class OpenTracingManager {
    * @param classLoader The {@code ClassLoader} to match to a plugin
    *          {@code ClassLoader} that contains OpenTracing instrumentation
    *          classes intended to be loaded into {@code classLoader}.
-   * @param name The name of the {@code Class}
+   * @param name The name of the {@code Class}.
    * @return The bytecode of the {@code Class} by the name of {@code name}, or
    *         {@code null} if this method has already been called for
    *         {@code classLoader} and {@code name}.
@@ -267,7 +293,6 @@ public class OpenTracingManager {
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     // Check if the classLoader matches a pluginClassLoader
     final URLClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
-    System.out.println("Checking if ClassLoader matches target: " + (pluginClassLoader != null));
     if (pluginClassLoader == null)
       return null;
 
@@ -281,13 +306,15 @@ public class OpenTracingManager {
       return null;
 
     classNames.add(resourceName);
+    if (logger.isLoggable(Level.FINEST))
+      logger.finer(">>>>>>>> findClass(" + OpenTracingUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Return the resource's bytes, or null if the resource does not exist in pluginClassLoader
     try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
       return in == null ? null : OpenTracingUtil.readBytes(in);
     }
     catch (final IOException e) {
-      e.printStackTrace();
+      logger.log(Level.SEVERE, "Failed to read bytes for " + resourceName, e);
       return null;
     }
   }

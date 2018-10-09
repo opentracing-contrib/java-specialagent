@@ -23,8 +23,8 @@ import org.jboss.byteman.agent.Main;
 import com.sun.tools.attach.VirtualMachine;
 
 /**
- * This class provides a wrapper around the ByteMan agent, to establish required system
- * properties and the manager class.
+ * This class provides a wrapper around the ByteMan agent, to establish required
+ * system properties and the manager class.
  */
 public class OpenTracingAgent {
   public static void main(final String[] args) throws Exception {
