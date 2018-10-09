@@ -1,8 +1,10 @@
 # OpenTracing-UberJar
 
+> Automatically perform OpenTracing instrumentation for 3rd-party libraries in Java applications.
+
 ## Overview
 
-**OpenTracing-UberJar** is a package that intends to allow automatic instrumentation of 3rd-party libraries used in java applications. This document contains the operational instructions for the use of opentracing-uberjar.
+**OpenTracing-UberJar** is a package that intends to allow automatic instrumentation for 3rd-party libraries in java applications. This document contains the operational instructions for the use of opentracing-uberjar.
 
 ## Goals
 
