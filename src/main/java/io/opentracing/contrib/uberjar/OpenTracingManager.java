@@ -39,7 +39,6 @@ import org.jboss.byteman.agent.Retransformer;
 
 /**
  * This class provides the ByteMan manager implementation for OpenTracing.
- *
  */
 public class OpenTracingManager {
   private static final Logger logger = Logger.getLogger(OpenTracingManager.class.getName());
@@ -51,7 +50,6 @@ public class OpenTracingManager {
   protected static Retransformer transformer;
   private static URLClassLoader allPluginsClassLoader;
   private static URL[] apiJars;
-
 
   /**
    * This method initializes the manager.
@@ -217,11 +215,8 @@ public class OpenTracingManager {
    * @param caller The caller object passed as $this by Byteman.
    * @param index The index of the plugin jar URL in
    *          allPluginsClassLoader.getURLs()
-   * @throws ClassNotFoundException If the class cannot be located by the
-   *           specified class loader.
-   * @throws IOException If an I/O error has occurred.
    */
-  public static void triggerLoadClasses(final Object caller, final int index) throws ClassNotFoundException, IOException {
+  public static void triggerLoadClasses(final Object caller, final int index) {
     // Get the ClassLoader of the caller class
     final ClassLoader classLoader = caller.getClass().getClassLoader();
 
@@ -245,6 +240,9 @@ public class OpenTracingManager {
           }
         }
       }
+      catch (final ClassNotFoundException | IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -265,9 +263,8 @@ public class OpenTracingManager {
    * @return The bytecode of the {@code Class} by the name of {@code name}, or
    *         {@code null} if this method has already been called for
    *         {@code classLoader} and {@code name}.
-   * @throws IOException If an I/O error has occurred.
    */
-  public static byte[] findClass(final ClassLoader classLoader, final String name) throws IOException {
+  public static byte[] findClass(final ClassLoader classLoader, final String name) {
     // Check if the classLoader matches a pluginClassLoader
     final URLClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
     System.out.println("Checking if ClassLoader matches target: " + (pluginClassLoader != null));
@@ -286,7 +283,12 @@ public class OpenTracingManager {
     classNames.add(resourceName);
 
     // Return the resource's bytes, or null if the resource does not exist in pluginClassLoader
-    final InputStream in = pluginClassLoader.getResourceAsStream(resourceName);
-    return in == null ? null : OpenTracingUtil.readBytes(in);
+    try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
+      return in == null ? null : OpenTracingUtil.readBytes(in);
+    }
+    catch (final IOException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }
