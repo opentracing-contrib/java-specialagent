@@ -65,7 +65,8 @@ public class OpenTracingManager {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("Loading " + pluginJarUrls.size() + " plugin JARs");
 
-      // Override parent ClassLoader methods to avoid delegation of resource resolution to BootLoader
+      // Override parent ClassLoader methods to avoid delegation of resource
+      // resolution to BootLoader
       allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader() {
         @Override
         public Enumeration<URL> getResources(final String name) throws IOException {
@@ -111,7 +112,8 @@ public class OpenTracingManager {
       // Prepare the ClassLoader rule
       loadRules(ClassLoader.getSystemClassLoader().getResource(AGENT_RULES), null, scripts, scriptNames);
 
-      // Create map from plugin jar URL to its index in allPluginsClassLoader.getURLs()
+      // Create map from plugin jar URL to its index in
+      // allPluginsClassLoader.getURLs()
       final Map<String,Integer> pluginJarToIndex = new HashMap<>();
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
@@ -200,11 +202,11 @@ public class OpenTracingManager {
   private static String createLoadClasses(final String script, final int index) {
     final StringBuilder builder = new StringBuilder();
     final StringTokenizer tokenizer = new StringTokenizer(script, "\n\r");
-    boolean method = false;
+    boolean methodSeen = false;
     while (tokenizer.hasMoreTokens()) {
       final String line = tokenizer.nextToken().trim();
       final String lineUC = line.toUpperCase();
-      if (method) {
+      if (methodSeen) {
         builder.append("IF TRUE\n");
         builder.append("DO ").append(OpenTracingManager.class.getName()).append(".triggerLoadClasses($this, ").append(index).append(")\n");
         builder.append("ENDRULE\n");
@@ -217,7 +219,7 @@ public class OpenTracingManager {
         builder.append(line).append('\n');
       }
       else if (lineUC.startsWith("METHOD ")) {
-        method = true;
+        methodSeen = true;
         builder.append(line).append('\n');
       }
     }
@@ -241,18 +243,21 @@ public class OpenTracingManager {
     // Get the ClassLoader of the caller class
     final ClassLoader classLoader = caller.getClass().getClassLoader();
 
-    // Collect the API JARs + the Plugin JAR (identified by index passed to this method)
+    // Collect the API JARs + the Plugin JAR (identified by index passed to this
+    // method)
     final URL[] pluginJarUrls = new URL[apiJars.length + 1];
     System.arraycopy(apiJars, 0, pluginJarUrls, 0, apiJars.length);
     pluginJarUrls[apiJars.length] = allPluginsClassLoader.getURLs()[index];
 
-    // Create an isolated (no parent ClassLoader) URLClassLoader with the pluginJarUrls
+    // Create an isolated (no parent ClassLoader) URLClassLoader with the
+    // pluginJarUrls
     final URLClassLoader pluginClassLoader = new URLClassLoader(pluginJarUrls, classLoader);
 
     // Associate the pluginClassLoader with the caller's classLoader
     classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 
-    // Call Class.forName(...) for each class in pluginClassLoader to load in the caller's classLoader
+    // Call Class.forName(...) for each class in pluginClassLoader to load in
+    // the caller's classLoader
     for (final URL jarUrl : pluginClassLoader.getURLs()) {
       try (final ZipInputStream zip = new ZipInputStream(jarUrl.openStream())) {
         for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
@@ -285,7 +290,7 @@ public class OpenTracingManager {
    * @param classLoader The {@code ClassLoader} to match to a plugin
    *          {@code ClassLoader} that contains OpenTracing instrumentation
    *          classes intended to be loaded into {@code classLoader}.
-   * @param name The name of the {@code Class}.
+   * @param name The name of the {@code Class} to be found.
    * @return The bytecode of the {@code Class} by the name of {@code name}, or
    *         {@code null} if this method has already been called for
    *         {@code classLoader} and {@code name}.
@@ -296,8 +301,9 @@ public class OpenTracingManager {
     if (pluginClassLoader == null)
       return null;
 
-    // Check that the resourceName has not already been retrieved by this method (this may
-    // be a moot point, because the JVM won't call findClass() twice for the same class
+    // Check that the resourceName has not already been retrieved by this method
+    // (this may be a moot point, because the JVM won't call findClass() twice
+    // for the same class)
     final String resourceName = name.replace('.', '/').concat(".class");
     Set<String> classNames = classLoaderToClassName.get(classLoader);
     if (classNames == null)
@@ -307,9 +313,10 @@ public class OpenTracingManager {
 
     classNames.add(resourceName);
     if (logger.isLoggable(Level.FINEST))
-      logger.finer(">>>>>>>> findClass(" + OpenTracingUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findClass(" + OpenTracingUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-    // Return the resource's bytes, or null if the resource does not exist in pluginClassLoader
+    // Return the resource's bytes, or null if the resource does not exist in
+    // pluginClassLoader
     try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
       return in == null ? null : OpenTracingUtil.readBytes(in);
     }

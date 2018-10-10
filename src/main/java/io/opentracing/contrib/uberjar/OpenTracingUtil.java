@@ -60,7 +60,8 @@ public final class OpenTracingUtil {
 
   /**
    * Returns a {@code List} of {@code URL} objects having a prefix path that
-   * matches {@code path}.
+   * matches {@code path}. This method will add a shutdown hook to delete any
+   * temporary directory and file resources it created.
    *
    * @param path The prefix path to match when finding resources.
    * @return A {@code List} of {@code URL} objects having a prefix path that
@@ -68,16 +69,16 @@ public final class OpenTracingUtil {
    * @throws IOException If an I/O error has occurred.
    */
   public static List<URL> findResources(final String path) throws IOException {
-    final URL url = ClassLoader.getSystemClassLoader().getResource(path);
-    if (url == null)
+    final URL resource = ClassLoader.getSystemClassLoader().getResource(path);
+    if (resource == null)
       return null;
 
-    final JarURLConnection jarURLConnection = (JarURLConnection)url.openConnection();
+    final JarURLConnection jarURLConnection = (JarURLConnection)resource.openConnection();
     jarURLConnection.setUseCaches(false);
     final JarFile jarFile = jarURLConnection.getJarFile();
 
-    final Path destDir = Files.createTempDirectory("opentracing");
-    destDir.toFile().deleteOnExit();
+    final Path destPath = Files.createTempDirectory("opentracing");
+    final File destDir = destPath.toFile();
 
     final List<URL> resources = new ArrayList<>();
     final Enumeration<JarEntry> enumeration = jarFile.entries();
@@ -85,18 +86,39 @@ public final class OpenTracingUtil {
       final String entry = enumeration.nextElement().getName();
       if (entry.length() > path.length() && entry.startsWith(path)) {
         final int slash = entry.lastIndexOf('/');
-        final File dir = new File(destDir.toFile(), entry.substring(0, slash));
-        dir.mkdirs();
-        dir.deleteOnExit();
-        final File file = new File(dir, entry.substring(slash + 1));
-        file.deleteOnExit();
-        final URL u = new URL(url, entry.substring(path.length()));
-        Files.copy(u.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        final File subDir = new File(destDir, entry.substring(0, slash));
+        subDir.mkdirs();
+        final File file = new File(subDir, entry.substring(slash + 1));
+        final URL url = new URL(resource, entry.substring(path.length()));
+        Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         resources.add(file.toURI().toURL());
       }
     }
 
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        deleteDir(destDir);
+      }
+    });
+
     return resources;
+  }
+
+  /**
+   * Recursively delete a directory and its contents.
+   *
+   * @param dir The directory to delete.
+   * @return {@code true} if {@code dir} was successfully deleted, {@code false}
+   *         otherwise.
+   */
+  private static boolean deleteDir(final File dir) {
+    final File[] files = dir.listFiles();
+    if (files != null)
+      for (final File file : files)
+        deleteDir(file);
+
+    return dir.delete();
   }
 
   private OpenTracingUtil() {
