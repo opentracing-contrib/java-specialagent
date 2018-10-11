@@ -65,9 +65,10 @@ public class OpenTracingManager {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("Loading " + pluginJarUrls.size() + " plugin JARs");
 
+      System.out.println(pluginJarUrls.toString().replace(',', '\n'));
       // Override parent ClassLoader methods to avoid delegation of resource
       // resolution to BootLoader
-      allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader() {
+      allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader(null) {
         @Override
         public Enumeration<URL> getResources(final String name) throws IOException {
           return null;
@@ -75,17 +76,17 @@ public class OpenTracingManager {
       });
 
       apiJars = new URL[] {
-        // Add org.opentracing:opentracing-api
-        allPluginsClassLoader.loadClass("io.opentracing.Span").getProtectionDomain().getCodeSource().getLocation(),
+//        // Add org.opentracing:opentracing-api
+//        allPluginsClassLoader.loadClass("io.opentracing.Tracer").getProtectionDomain().getCodeSource().getLocation(),
         // Add org.opentracing.contrib:opentracing-util
-        allPluginsClassLoader.loadClass("io.opentracing.util.GlobalTracer").getProtectionDomain().getCodeSource().getLocation(),
-        // Add org.opentracing.contrib:opentracing-noop
-        allPluginsClassLoader.loadClass("io.opentracing.noop.NoopTracerFactory").getProtectionDomain().getCodeSource().getLocation()
+//        allPluginsClassLoader.loadClass("io.opentracing.util.GlobalTracer").getProtectionDomain().getCodeSource().getLocation(),
+//        // Add org.opentracing.contrib:opentracing-noop
+//        allPluginsClassLoader.loadClass("io.opentracing.noop.NoopTracerFactory").getProtectionDomain().getCodeSource().getLocation()
       };
 
       loadRules();
     }
-    catch (final ClassNotFoundException | IOException e) {
+    catch (final IOException e) {
       throw new IllegalStateException(e);
     }
   }
@@ -124,7 +125,7 @@ public class OpenTracingManager {
         final URL scriptUrl = enumeration.nextElement();
         final String pluginJar = scriptUrl.toString().substring(4, scriptUrl.toString().indexOf('!'));
         final int index = pluginJarToIndex.get(pluginJar);
-        loadRules(scriptUrl, index, scriptNames, scripts);
+        loadRules(scriptUrl, index, scripts, scriptNames);
       }
 
       final StringWriter sw = new StringWriter();
@@ -176,7 +177,9 @@ public class OpenTracingManager {
 
     final String script = builder.toString();
     if (index != null) {
-      scripts.add(createLoadClasses(script, index));
+      final String m = createLoadClasses(script, index);
+      System.out.println(m);
+      scripts.add(m);
       scriptNames.add(url.toString() + "-discovery");
     }
 

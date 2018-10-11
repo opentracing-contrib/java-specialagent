@@ -21,10 +21,10 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class RegressionTest {
+public class RegressionIntegrationTest {
   @Test
   public void test() throws Exception {
-    final ProcessBuilder builder = new ProcessBuilder("java", "-cp", System.getProperty("java.class.path"), "-javaagent:target/opentracing-uberjar.jar", RegressionTest.class.getName());
+    final ProcessBuilder builder = new ProcessBuilder("java", "-cp", System.getProperty("java.class.path"), "-javaagent:target/opentracing-uberjar.jar", RegressionIntegrationTest.class.getName());
     builder.inheritIO();
     final Process process = builder.start();
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -50,7 +50,7 @@ public class RegressionTest {
       libs[i] = new File(classpath[i]).toURI().toURL();
 
     try (final URLClassLoader classLoader = new URLClassLoader(libs, null)) {
-      final Class<?> runClass = Class.forName(RegressionTest.class.getName(), false, classLoader);
+      final Class<?> runClass = Class.forName(RegressionIntegrationTest.class.getName(), false, classLoader);
       final Method method = runClass.getMethod("runInURLClassLoader");
       method.invoke(null);
     }
@@ -79,7 +79,7 @@ public class RegressionTest {
   }
 
   public static void runInURLClassLoader() throws InterruptedException, IOException {
-    assertEquals(URLClassLoader.class, RegressionTest.class.getClassLoader().getClass());
+    assertEquals(URLClassLoader.class, RegressionIntegrationTest.class.getClassLoader().getClass());
     while (true) {
       // issue the GET request
       final String getResponse = doGetRequest("http://www.vogella.com");
