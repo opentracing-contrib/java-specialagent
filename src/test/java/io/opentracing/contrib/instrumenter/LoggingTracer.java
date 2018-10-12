@@ -1,4 +1,4 @@
-package io.opentracing.contrib.uberjar;
+package io.opentracing.contrib.instrumenter;
 
 import java.util.HashSet;
 import java.util.Set;

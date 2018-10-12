@@ -11,7 +11,7 @@
     <dependencySet>
       <unpack>true</unpack>
       <includes>
-        <include>io.opentracing.contrib:opentracing-uberjar</include>
+        <include>io.opentracing.contrib:opentracing-instrumenter</include>
         <include>io.opentracing.contrib:opentracing-tracerresolver</include>
         <include>io.opentracing:opentracing-api</include>
         <include>io.opentracing:opentracing-util</include>

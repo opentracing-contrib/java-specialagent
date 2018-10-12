@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.uberjar;
+package io.opentracing.contrib.instrumenter;
 
 import java.net.HttpURLConnection;
 import java.util.Collections;
@@ -95,8 +95,8 @@ public class OpenTracingHelper extends Helper {
             try {
               GlobalTracer.register(resolved);
             }
-            catch (final RuntimeException re) {
-              logger.log(Level.WARNING, "Failed to register tracer '" + resolved + "'", re);
+            catch (final RuntimeException e) {
+              logger.log(Level.WARNING, "Failed to register tracer '" + resolved + "'", e);
             }
           }
         }
@@ -107,7 +107,7 @@ public class OpenTracingHelper extends Helper {
 
       // Initialize the tracer even if one has not been registered
       // (i.e. it will use a NoopTracer under the covers)
-      return tracer = new AgentTracer(GlobalTracer.get());
+      return tracer = new InstrumenterTracer(GlobalTracer.get());
     }
   }
 
@@ -207,10 +207,11 @@ public class OpenTracingHelper extends Helper {
    * the spec (and Tracer implementations) are updated to indicate a null should
    * be ignored, then this proxy can be removed.
    */
-  public static class AgentTracer implements Tracer {
+  public static class InstrumenterTracer implements Tracer {
     private final Tracer tracer;
 
-    public AgentTracer(final Tracer tracer) {
+    public InstrumenterTracer(final Tracer tracer) {
+      System.err.println("new InstrumenterTracer(" + tracer + ")");
       this.tracer = Objects.requireNonNull(tracer);
     }
 
