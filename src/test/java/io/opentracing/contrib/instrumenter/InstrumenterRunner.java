@@ -163,10 +163,9 @@ public class InstrumenterRunner extends Runner {
         }
       }
       else {
-        invoke(testClass, notifier, isInFork);
+        // Validate the methods in the test class to ensure they have correct parameters
+        invoke(testClass, notifier, false);
       }
-
-      // Validate the methods in the test class to ensure they have correct parameters
 
       // Fork the test with -javaagent
       if (!isInFork)
@@ -182,7 +181,9 @@ public class InstrumenterRunner extends Runner {
     final Object testObject = invoke ? testClass.getConstructor().newInstance() : null;
     for (final Method method : testClass.getMethods()) {
       if (method.isAnnotationPresent(Test.class)) {
-Z        notifier.fireTestStarted(Description.createTestDescription(testClass, method.getName()));
+        if (invoke)
+          notifier.fireTestStarted(Description.createTestDescription(testClass, method.getName()));
+
         if (method.getParameterTypes().length != 1 || MockTracer.class != method.getParameterTypes()[0])
           throw new IllegalStateException("Methods annotated with @Test must specify one parameter of type: " + MockTracer.class.getName());
 
