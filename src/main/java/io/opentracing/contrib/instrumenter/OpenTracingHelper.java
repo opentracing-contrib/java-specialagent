@@ -50,7 +50,7 @@ public class OpenTracingHelper extends Helper {
   private static final Object tracerMutex = new Object();
   private static Tracer tracer;
 
-  public OpenTracingHelper(Rule rule) {
+  public OpenTracingHelper(final Rule rule) {
     super(rule);
   }
 
@@ -212,6 +212,7 @@ public class OpenTracingHelper extends Helper {
 
     public InstrumenterTracer(final Tracer tracer) {
       System.err.println("new InstrumenterTracer(" + tracer + ")");
+      System.err.println("  ClassLoader: " + tracer.getClass().getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
       this.tracer = Objects.requireNonNull(tracer);
     }
 

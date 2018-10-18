@@ -6,7 +6,7 @@
   <groupId>io.opentracing.contrib</groupId>
   <artifactId>opentracing-instrumenter</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>OpenTracing Uber Jar</name>
+  <name>OpenTracing Instrumenter</name>
   <description>Instrumenter Agent of instrumentation plugins for OpenTracing</description>
   <licenses>
     <license>
@@ -27,12 +27,12 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
-    <!--dependency>
+    <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-mock</artifactId>
       <version>0.31.0</version>
       <scope>test</scope>
-    </dependency-->
+    </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-audit</artifactId>
@@ -40,36 +40,45 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Use <scope>provided</scope> instead of <scope>provided</scope>
+      for OT libs so they make it into both the main and test JARs. -->
+    
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-api</artifactId>
       <version>0.31.0</version>
-    </dependency>    
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-util</artifactId>
       <version>0.31.0</version>
-    </dependency>    
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-noop</artifactId>
       <version>0.31.0</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-tracerresolver</artifactId>
       <version>0.1.5</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.jboss.byteman</groupId>
       <artifactId>byteman</artifactId>
       <version>4.0.4</version>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-instrumenter-okhttp</artifactId>
       <version>0.0.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -77,6 +86,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-hazelcast</artifactId>
       <version>0.0.1</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.hazelcast</groupId>
@@ -89,17 +99,20 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-messaging-starter</artifactId>
       <version>0.0.5</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-messaging</artifactId>
       <version>0.0.5</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jdbi -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>jdbi-opentracing</artifactId>
       <version>0.4.1</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.jdbi</groupId>
@@ -112,6 +125,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-vertx-web</artifactId>
       <version>0.1.0</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.vertx</groupId>
@@ -132,12 +146,14 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cdi</artifactId>
       <version>0.1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-apache-httpclient -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-apache-httpclient</artifactId>
       <version>0.1.0</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>
@@ -150,6 +166,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-hprose</artifactId>
       <version>1.0.0</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -162,6 +179,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-thrift</artifactId>
       <version>0.0.7</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.thrift</groupId>
@@ -174,6 +192,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-interceptors</artifactId>
       <version>0.0.4</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.eclipse.microprofile.opentracing</groupId>
@@ -190,6 +209,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-p6spy</artifactId>
       <version>0.2.1</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>p6spy</groupId>
@@ -202,6 +222,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-cloud-starter</artifactId>
       <version>0.1.13</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -222,6 +243,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-jedis</artifactId>
       <version>0.0.7</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>redis.clients</groupId>
@@ -234,11 +256,13 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-rabbitmq-starter</artifactId>
       <version>0.1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-rabbitmq</artifactId>
       <version>0.1.0</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -251,6 +275,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jaxrs2</artifactId>
       <version>0.1.7</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.osgi</groupId>
@@ -267,12 +292,14 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-concurrent</artifactId>
       <version>0.2.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-kafka-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-client</artifactId>
       <version>0.0.15</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.kafka</groupId>
@@ -284,6 +311,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-streams</artifactId>
       <version>0.0.15</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.kafka</groupId>
@@ -295,6 +323,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-spring</artifactId>
       <version>0.0.15</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.kafka</groupId>
@@ -307,12 +336,14 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-web-servlet-filter</artifactId>
       <version>0.2.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-solr-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-solr-client</artifactId>
       <version>0.0.2</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.solr</groupId>
@@ -325,6 +356,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rxjava-1</artifactId>
       <version>0.0.9</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.reactivex</groupId>
@@ -336,6 +368,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rxjava-2</artifactId>
       <version>0.0.9</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.reactivex.rxjava2</groupId>
@@ -348,6 +381,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-neo4j-driver</artifactId>
       <version>0.0.2</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.neo4j.driver</groupId>
@@ -360,6 +394,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spymemcached</artifactId>
       <version>0.0.3</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>net.spy</groupId>
@@ -372,6 +407,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-mongo-driver</artifactId>
       <version>0.0.6</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.mongodb</groupId>
@@ -388,6 +424,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-tracer-configuration-starter</artifactId>
       <version>0.1.0</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -404,6 +441,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-aws-sdk</artifactId>
       <version>0.0.5</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.amazonaws</groupId>
@@ -416,6 +454,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-elasticsearch5-client</artifactId>
       <version>0.0.6</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.elasticsearch.client</groupId>
@@ -427,6 +466,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-elasticsearch6-client</artifactId>
       <version>0.0.6</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.elasticsearch.client</groupId>
@@ -439,6 +479,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
       <version>0.0.6</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.rabbitmq</groupId>
@@ -450,6 +491,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cassandra-driver</artifactId>
       <version>0.0.8</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.datastax.cassandra</groupId>
@@ -462,6 +504,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-1</artifactId>
       <version>0.0.10</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
@@ -473,6 +516,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-2</artifactId>
       <version>0.0.10</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
@@ -485,6 +529,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-web-starter</artifactId>
       <version>0.3.3</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -497,12 +542,14 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jdbc</artifactId>
       <version>0.0.8</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-grpc -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grpc</artifactId>
       <version>0.0.8</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.grpc</groupId>
@@ -515,6 +562,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-zipkin-web-starter</artifactId>
       <version>0.2.0</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.zipkin.brave</groupId>
@@ -530,12 +578,14 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-zipkin-cloud-starter</artifactId>
       <version>0.2.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-akka -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-akka</artifactId>
       <version>0.0.2</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.typesafe.akka</groupId>
@@ -546,7 +596,41 @@
   </dependencies>
 
   <build>
+    <resources>
+      <!-- Includes the output of the maven-dependency-plugin (ids: copy-dependencies and
+        unpack-dependencies) -->
+      <resource>
+        <directory>${project.build.directory}/dependencies</directory>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <!-- Includes the output of the maven-dependency-plugin (id: unpack-test-dependencies) -->
+      <testResource>
+        <directory>${project.build.directory}/test-dependencies</directory>
+      </testResource>
+      <testResource>
+        <!-- Include the main build output path to include the main classes and
+          resources of this module -->
+        <directory>${project.build.directory}/classes</directory>
+        <!-- Have to exclude all JARs, because all dependencies are copied to the
+          ${project.build.directory}/dependencies/META-INF/opentracing-instrumenter
+          path via maven-dependency-plugin (id: copy-dependencies), and the
+          ${project.build.directory}/dependencies path is listed as a <resource> right
+          above here, which makes the maven-resources-plugin copy them to
+          ${project.build.directory}/classes. -->
+        <excludes>
+          <exclude>**/*.jar</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+    </testResources>
     <plugins>
+      <!-- maven-shade-plugin cannot be used to build a JAR that requires test dependencies -->
       <!--plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -577,14 +661,63 @@
       </plugin-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
+        <executions>
+          <execution>
+            <id>unpack-dependencies</id>
+            <!-- Phase must be generate-resources for the maven-resources-plugin to acknowledge the
+              <outputDirectory> of this execution, which is defined as a <resource> above. Specifying a
+              different phase results in a JAR that does not include the dependencies generated in the
+              <outputDirectory>. -->
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-dependencies</id>
+            <!-- Phase must be generate-resources for the maven-resources-plugin to acknowledge the
+              <outputDirectory> of this execution, which is defined as a <resource> above. Specifying a
+              different phase results in a JAR that does not include the dependencies generated in the
+              <outputDirectory>. -->
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/dependencies/META-INF/opentracing-instrumenter</outputDirectory>
+              <includeScope>provided</includeScope>
+              <excludeScope>test</excludeScope>
+            </configuration>
+          </execution>
+          <execution>
+            <id>unpack-test-dependencies</id>
+            <!-- Phase must be generate-test-resources for the maven-resources-plugin to acknowledge the
+              <outputDirectory> of this execution, which is defined as a <testResource> above. Specifying a
+              different phase results in a JAR that does not include the dependencies generated in the
+              <outputDirectory>. -->
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/test-dependencies</outputDirectory>
+              <!--includeScope>test</includeScope--> <!-- No idea why this needs to be commented out for this to work?! -->
+              <excludeScope>provided</excludeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <finalName>${project.artifactId}</finalName>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>assembly.xml</descriptor>
-          </descriptors>
           <archive>
             <manifestEntries>
               <Main-Class>io.opentracing.contrib.instrumenter.OpenTracingAgent</Main-Class>
@@ -592,9 +725,40 @@
               <Premain-Class>io.opentracing.contrib.instrumenter.OpenTracingAgent</Premain-Class>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
-              <Boot-Class-Path>/Users/seva/Work/opentracing/src/opentracing-instrumenter/target/opentracing-instrumenter.jar</Boot-Class-Path>
+              <!--Boot-Class-Path>/Users/seva/Work/opentracing/src/opentracing-instrumenter/target/opentracing-instrumenter.jar</Boot-Class-Path-->
             </manifestEntries>
           </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- maven-assembly-plugin cannot be used because its <scope>test</scope> spec does
+        not exclude other scopes. It basically means: <scope>test (and runtime)</scope> -->
+      <!--plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+          <attach>false</attach>
+          <archive>
+            <manifestEntries>
+              <Main-Class>io.opentracing.contrib.instrumenter.OpenTracingAgent</Main-Class>
+              <Agent-Class>io.opentracing.contrib.instrumenter.OpenTracingAgent</Agent-Class>
+              <Premain-Class>io.opentracing.contrib.instrumenter.OpenTracingAgent</Premain-Class>
+              <Can-Redefine-Classes>true</Can-Redefine-Classes>
+              <Can-Retransform-Classes>true</Can-Retransform-Classes>
+              <!-Boot-Class-Path>/Users/seva/Work/opentracing/src/opentracing-instrumenter/target/opentracing-instrumenter.jar</Boot-Class-Path->
+            </manifestEntries>
+          </archive>
+          <descriptors>
+            <descriptor>test-assembly.xml</descriptor>
+          </descriptors>
         </configuration>
         <executions>
           <execution>
@@ -605,28 +769,45 @@
           </execution>
         </executions>
       </plugin>
+      <!- Used to move the main assembly to be the main jar of this module. This is due to a bug in
+        maven-assembly-plugin where if even if one <appendAssemblyId> of a assembly execution is false,
+        the assembly content of one assembly ends up inside the other also. ->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.0</version>
+        <groupId>com.coderplus.maven.plugins</groupId>
+        <artifactId>copy-rename-maven-plugin</artifactId>
+        <version>1.0.1</version>
         <executions>
           <execution>
             <goals>
-              <goal>test-jar</goal>
+              <goal>rename</goal>
             </goals>
+            <phase>verify</phase>
+            <configuration>
+              <sourceFile>${project.build.directory}/${project.artifactId}-${project.version}-assembly.jar</sourceFile>
+              <destinationFile>${project.build.directory}/${project.artifactId}-${project.version}.jar</destinationFile>
+            </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.0</version>
         <configuration>
+          <!-- Have to explicitly define the path of the tests, because when the maven-dependency-plugin
+            unpacks JUnit dependencies in the generate-test-resources phase, they end up being picked up
+            by maven-surefire-plugin in the test phase. -->
+          <includes>
+            <include>io/opentracing/contrib/instrumenter/**/Test*.java</include>
+            <include>io/opentracing/contrib/instrumenter/**/*Test.java</include>
+            <include>io/opentracing/contrib/instrumenter/**/*Tests.java</include>
+            <include>io/opentracing/contrib/instrumenter/**/*TestCase.java</include>
+          </includes>
           <excludes>
-            <exclude>**/IntegrationTest*.java</exclude>
-            <exclude>**/*IntegrationTest.java</exclude>
-            <exclude>**/*IntegrationTests.java</exclude>
-            <exclude>**/*IntegrationTestCase.java</exclude>
+            <exclude>io/opentracing/contrib/instrumenter/**/IntegrationTest*.java</exclude>
+            <exclude>io/opentracing/contrib/instrumenter/**/*IntegrationTest.java</exclude>
+            <exclude>io/opentracing/contrib/instrumenter/**/*IntegrationTests.java</exclude>
+            <exclude>io/opentracing/contrib/instrumenter/**/*IntegrationTestCase.java</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -644,10 +825,10 @@
             <configuration>
               <trimStackTrace>false</trimStackTrace>
               <includes>
-                <include>**/IntegrationTest*.java</include>
-                <include>**/*IntegrationTest.java</include>
-                <include>**/*IntegrationTests.java</include>
-                <include>**/*IntegrationTestCase.java</include>
+                <include>io/opentracing/contrib/instrumenter/**/IntegrationTest*.java</include>
+                <include>io/opentracing/contrib/instrumenter/**/*IntegrationTest.java</include>
+                <include>io/opentracing/contrib/instrumenter/**/*IntegrationTests.java</include>
+                <include>io/opentracing/contrib/instrumenter/**/*IntegrationTestCase.java</include>
               </includes>
             </configuration>
           </execution>

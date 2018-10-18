@@ -16,10 +16,12 @@
  */
 package io.opentracing.contrib.instrumenter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -52,6 +54,15 @@ public class OpenTracingManager {
   private static URLClassLoader allPluginsClassLoader;
   private static URL[] apiJars;
 
+  private static List<URL> getJavaClassPath() throws MalformedURLException {
+    final String[] paths = System.getProperty("java.class.path").split(":");
+    final List<URL> libs = new ArrayList<>();
+    for (int i = 0; i < paths.length; ++i)
+      libs.add(new File(paths[i]).toURI().toURL());
+
+    return libs;
+  }
+
   /**
    * This method initializes the manager.
    *
@@ -61,14 +72,17 @@ public class OpenTracingManager {
     transformer = trans;
 
     try {
-      final List<URL> pluginJarUrls = OpenTracingUtil.findResources("META-INF/opentracing/");
+      final List<URL> classpath = getJavaClassPath();
+      final List<URL> pluginJarUrls = OpenTracingUtil.findResources("META-INF/opentracing-instrumenter/");
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("Loading " + pluginJarUrls.size() + " plugin JARs");
+        logger.finest("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
 
-      System.out.println(pluginJarUrls.toString().replace(',', '\n'));
+      System.out.println(classpath.toString().replace(',', '\n'));
+
       // Override parent ClassLoader methods to avoid delegation of resource
       // resolution to BootLoader
-      allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader(null) {
+      allPluginsClassLoader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]), new ClassLoader(null) {
+        // This is overridden to ensure resources are not discovered in BootClassLoader
         @Override
         public Enumeration<URL> getResources(final String name) throws IOException {
           return null;
@@ -111,7 +125,7 @@ public class OpenTracingManager {
 
     try {
       // Prepare the ClassLoader rule
-      loadRules(ClassLoader.getSystemClassLoader().getResource(AGENT_RULES), null, scripts, scriptNames);
+      loadRules(ClassLoader.getSystemClassLoader().getResource("classloader.btm"), null, scripts, scriptNames);
 
       // Create map from plugin jar URL to its index in
       // allPluginsClassLoader.getURLs()
@@ -123,7 +137,17 @@ public class OpenTracingManager {
       final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(AGENT_RULES);
       while (enumeration.hasMoreElements()) {
         final URL scriptUrl = enumeration.nextElement();
-        final String pluginJar = scriptUrl.toString().substring(4, scriptUrl.toString().indexOf('!'));
+        final int bang = scriptUrl.toString().indexOf('!');
+        final String pluginJar;
+        if (bang != -1) {
+          pluginJar = scriptUrl.toString().substring(4, bang);
+        }
+        else {
+          final int slash = scriptUrl.toString().lastIndexOf('/');
+          pluginJar = scriptUrl.toString().substring(0, slash + 1);
+        }
+
+        System.out.println(bang + " " + pluginJar);
         final int index = pluginJarToIndex.get(pluginJar);
         loadRules(scriptUrl, index, scripts, scriptNames);
       }
@@ -183,6 +207,7 @@ public class OpenTracingManager {
       scriptNames.add(url.toString() + "-discovery");
     }
 
+    System.out.println(script);
     scripts.add(script);
     scriptNames.add(url.toString());
   }
@@ -243,6 +268,7 @@ public class OpenTracingManager {
    *          allPluginsClassLoader.getURLs()
    */
   public static void triggerLoadClasses(final Object caller, final int index) {
+    System.err.println("triggerLoadClasses(" + caller + ", " + index + ")");
     // Get the ClassLoader of the caller class
     final ClassLoader classLoader = caller.getClass().getClassLoader();
 
@@ -251,6 +277,7 @@ public class OpenTracingManager {
     final URL[] pluginJarUrls = new URL[apiJars.length + 1];
     System.arraycopy(apiJars, 0, pluginJarUrls, 0, apiJars.length);
     pluginJarUrls[apiJars.length] = allPluginsClassLoader.getURLs()[index];
+    System.err.println("..." + pluginJarUrls[apiJars.length]);
 
     // Create an isolated (no parent ClassLoader) URLClassLoader with the
     // pluginJarUrls
@@ -265,12 +292,12 @@ public class OpenTracingManager {
       try (final ZipInputStream zip = new ZipInputStream(jarUrl.openStream())) {
         for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
           if (entry.getName().endsWith(".class")) {
-            try {
-              Class.forName(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.'), false, classLoader);
-            }
-            catch (final ClassNotFoundException e) {
-              logger.log(Level.SEVERE, "Failed to load class", e);
-            }
+//            try {
+//              Class.forName(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.'), false, classLoader);
+//            }
+//            catch (final ClassNotFoundException e) {
+//              logger.log(Level.SEVERE, "Failed to load class", e);
+//            }
           }
         }
       }
