@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -69,40 +69,52 @@ public final class OpenTracingUtil {
    * @throws IOException If an I/O error has occurred.
    */
   public static List<URL> findResources(final String path) throws IOException {
-    final URL resource = ClassLoader.getSystemClassLoader().getResource(path);
-    if (resource == null)
+    final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
+    if (!resources.hasMoreElements())
       return null;
 
-    final JarURLConnection jarURLConnection = (JarURLConnection)resource.openConnection();
-    jarURLConnection.setUseCaches(false);
-    final JarFile jarFile = jarURLConnection.getJarFile();
+    final List<URL> urls = new ArrayList<>();
+    File destDir = null;
+    do {
+      final URL resource = resources.nextElement();
+      final URLConnection connection = resource.openConnection();
+      // Only consider resources that are inside JARs
+      if (!(connection instanceof JarURLConnection))
+        continue;
 
-    final Path destPath = Files.createTempDirectory("opentracing");
-    final File destDir = destPath.toFile();
+      if (destDir == null)
+        destDir = Files.createTempDirectory("opentracing-instrumenter").toFile();
 
-    final List<URL> resources = new ArrayList<>();
-    final Enumeration<JarEntry> enumeration = jarFile.entries();
-    while (enumeration.hasMoreElements()) {
-      final String entry = enumeration.nextElement().getName();
-      if (entry.length() > path.length() && entry.startsWith(path)) {
-        final int slash = entry.lastIndexOf('/');
-        final File subDir = new File(destDir, entry.substring(0, slash));
-        subDir.mkdirs();
-        final File file = new File(subDir, entry.substring(slash + 1));
-        final URL url = new URL(resource, entry.substring(path.length()));
-        Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        resources.add(file.toURI().toURL());
+      final JarURLConnection jarURLConnection = (JarURLConnection)connection;
+      jarURLConnection.setUseCaches(false);
+      final JarFile jarFile = jarURLConnection.getJarFile();
+      final Enumeration<JarEntry> entries = jarFile.entries();
+      while (entries.hasMoreElements()) {
+        final String entry = entries.nextElement().getName();
+        if (entry.length() > path.length() && entry.startsWith(path)) {
+          final int slash = entry.lastIndexOf('/');
+          final File subDir = new File(destDir, entry.substring(0, slash));
+          subDir.mkdirs();
+          final File file = new File(subDir, entry.substring(slash + 1));
+          final URL url = new URL(resource, entry.substring(path.length()));
+          Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          urls.add(file.toURI().toURL());
+        }
       }
     }
+    while (resources.hasMoreElements());
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        deleteDir(destDir);
-      }
-    });
+    if (destDir != null) {
+      final File targetDir = destDir;
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override
+        public void run() {
+          deleteDir(targetDir);
+        }
+      });
+    }
 
-    return resources;
+    return urls;
   }
 
   /**
