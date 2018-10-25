@@ -21,8 +21,8 @@ public class SocketTest {
           try (final Socket socket = new Socket("127.0.0.1", port)) {
             final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            for (Request request; (request = (Request)in.readObject()) != null;)
-              out.writeObject(new Response(request.getMethodName(), null, false, null));
+            for (TestResult request; (request = (TestResult)in.readObject()) != null;)
+              out.writeObject(new TestResult(request.getMethodName(), null));
           }
           catch (final ClassNotFoundException | IOException e) {
             throw new IllegalStateException(e);
@@ -36,8 +36,8 @@ public class SocketTest {
       final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
       for (final String string : new String[] {"foo", "bar", "test1", "test2", "test3", "test4"}) {
-        out.writeObject(new Request(string));
-        final Response response = (Response)in.readObject();
+        out.writeObject(new TestResult(string, null));
+        final TestResult response = (TestResult)in.readObject();
         assertEquals(string, response.getMethodName());
       }
 

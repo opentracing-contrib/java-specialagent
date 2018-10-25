@@ -74,10 +74,11 @@ public class OpenTracingManager {
     try {
       final List<URL> classpath = getJavaClassPath();
       final List<URL> pluginJarUrls = OpenTracingUtil.findResources("META-INF/opentracing-instrumenter/");
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
 
-      System.out.println(classpath.toString().replace(',', '\n'));
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("Process classpath: " + classpath.toString().replace(",", "\n  ").replace("[", "[\n  ").replace("]", "\n]"));
 
       // Override parent ClassLoader methods to avoid delegation of resource
       // resolution to BootLoader
@@ -139,15 +140,14 @@ public class OpenTracingManager {
         final URL scriptUrl = enumeration.nextElement();
         final int bang = scriptUrl.toString().indexOf('!');
         final String pluginJar;
-        if (bang != -1) {
+        if (bang != -1)
           pluginJar = scriptUrl.toString().substring(4, bang);
-        }
-        else {
-          final int slash = scriptUrl.toString().lastIndexOf('/');
-          pluginJar = scriptUrl.toString().substring(0, slash + 1);
-        }
+        else
+          pluginJar = scriptUrl.toString().substring(0, scriptUrl.toString().lastIndexOf('/') + 1);
 
-        System.out.println(bang + " " + pluginJar);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("Dereferencing index for " + pluginJar);
+
         final int index = pluginJarToIndex.get(pluginJar);
         loadRules(scriptUrl, index, scripts, scriptNames);
       }
@@ -201,13 +201,17 @@ public class OpenTracingManager {
 
     final String script = builder.toString();
     if (index != null) {
-      final String m = createLoadClasses(script, index);
-      System.out.println(m);
-      scripts.add(m);
+      final String discovery = createLoadClasses(script, index);
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(discovery);
+
+      scripts.add(discovery);
       scriptNames.add(url.toString() + "-discovery");
     }
 
-    System.out.println(script);
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(script);
+
     scripts.add(script);
     scriptNames.add(url.toString());
   }
@@ -268,7 +272,9 @@ public class OpenTracingManager {
    *          allPluginsClassLoader.getURLs()
    */
   public static void triggerLoadClasses(final Object caller, final int index) {
-    System.err.println("triggerLoadClasses(" + caller + ", " + index + ")");
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("triggerLoadClasses(" + caller + ", " + index + ")");
+
     // Get the ClassLoader of the caller class
     final ClassLoader classLoader = caller.getClass().getClassLoader();
 
@@ -277,7 +283,8 @@ public class OpenTracingManager {
     final URL[] pluginJarUrls = new URL[apiJars.length + 1];
     System.arraycopy(apiJars, 0, pluginJarUrls, 0, apiJars.length);
     pluginJarUrls[apiJars.length] = allPluginsClassLoader.getURLs()[index];
-    System.err.println("..." + pluginJarUrls[apiJars.length]);
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("  Plugin JAR: " + pluginJarUrls[apiJars.length]);
 
     // Create an isolated (no parent ClassLoader) URLClassLoader with the
     // pluginJarUrls

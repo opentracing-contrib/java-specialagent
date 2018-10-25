@@ -2,13 +2,12 @@ package io.opentracing.contrib.instrumenter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -26,23 +25,18 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Rule;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.internal.runners.model.ReflectiveCallable;
-import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import io.opentracing.Tracer;
@@ -52,11 +46,14 @@ import io.opentracing.noop.NoopTracer;
 import io.opentracing.util.GlobalTracer;
 
 public class InstrumenterRunner extends BlockJUnit4ClassRunner {
+  private static final Logger logger = Logger.getLogger(InstrumenterRunner.class.getName());
+
   private static final String PORT_ARG = "io.opentracing.contrib.instrumenter.port";
 
   static {
     final String classpath = System.getProperty("java.class.path");
-    System.out.println("java.class.path in InstrumenterRunner\n" + classpath.replace(':', '\n'));
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("java.class.path in InstrumenterRunner:\n  " + classpath.replace(":", "\n  "));
   }
 
   private static Set<String> getLocations(final Class<?> ... classes) throws IOException {
@@ -103,15 +100,20 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return libs;
   }
 
-  private static MockTracer init() {
+  private static MockTracer initTracer() {
     final RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
     final List<String> arguments = runtimeMxBean.getInputArguments();
     for (final String argument : arguments) {
       if (argument.startsWith("-javaagent")) {
         final MockTracer tracer = new MockTracer();
-        System.err.println("Registering tracer in forked InstrumentRunner: " + tracer);
-        System.err.println("  ClassLoader: " + tracer.getClass().getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
-        System.err.println("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
+        if (logger.isLoggable(Level.FINEST)) {
+          logger.finest("Registering tracer in forked InstrumentRunner: " + tracer);
+          logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
+          logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+          logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
+          logger.finest("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
+        }
+
         GlobalTracer.register(tracer);
         return tracer;
       }
@@ -120,7 +122,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return null;
   }
 
-  private static final MockTracer tracer = init();
+  private static final MockTracer tracer = initTracer();
   private static final boolean isInFork = tracer != null;
 
   private static Class<?> getTargetClass(final Class<?> cls) throws InitializationError {
@@ -129,7 +131,9 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
 
     try {
       final String classpath = System.getProperty("java.class.path");
-      System.err.println("ClassPath of URLClassLoader:\n" + classpath.replace(':', '\n'));
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(":", "\n  "));
+
       final URL[] libs = buildClassPath(classpath);
       final URLClassLoader classLoader = new URLClassLoader(libs, new ClassLoader() {
         @Override
@@ -151,21 +155,51 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
 
   private final ObjectInputStream in;
   private final ObjectOutputStream out;
-  private Throwable nextThrowable;
 
   public InstrumenterRunner(final Class<?> cls) throws InitializationError {
     super(getTargetClass(cls));
+    Thread shutdownHook = null;
     try {
       if (isInFork) {
         final int port = Integer.parseInt(System.getProperty(PORT_ARG));
         final Socket socket = new Socket("127.0.0.1", port);
+        shutdownHook = new Thread() {
+          @Override
+          public void run() {
+            try {
+              socket.close();
+            }
+            catch (final IOException e) {
+            }
+          }
+        };
+
         this.out = new ObjectOutputStream(socket.getOutputStream());
-        this.in = new ObjectInputStream(socket.getInputStream());
+        this.in = null;
       }
       else {
         final ServerSocket serverSocket = new ServerSocket(0);
         final int port = serverSocket.getLocalPort();
         final Process process = fork(cls, port);
+        shutdownHook = new Thread() {
+          @Override
+          public void run() {
+            try {
+              serverSocket.close();
+            }
+            catch (final IOException e) {
+            }
+
+            if (!process.isAlive())
+              return;
+
+            if (logger.isLoggable(Level.FINEST))
+              logger.finest("Destroying forked process...");
+
+            process.destroy();
+          }
+        };
+
         final AtomicBoolean initialized = new AtomicBoolean(false);
         new Thread() {
           @Override
@@ -188,7 +222,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
         }.start();
 
         final Socket socket = serverSocket.accept();
-        this.out = new ObjectOutputStream(socket.getOutputStream());
+        this.out = null;
         this.in = new ObjectInputStream(socket.getInputStream());
         initialized.set(true);
       }
@@ -196,72 +230,15 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     catch (final IOException e) {
       throw new InitializationError(e);
     }
-  }
-
-  private static FrameworkMethod getMethod(final TestClass testClass, final Request request) {
-    for (final FrameworkMethod method : testClass.getAnnotatedMethods())
-      if (request.getMethodName().equals(method.getName()) && Arrays.equals(request.getParameterTypes(), method.getMethod().getParameterTypes()))
-        return method;
-
-    return null;
+    finally {
+      if (shutdownHook != null)
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+    }
   }
 
   @Override
   protected Object createTest() throws Exception {
     return isInFork ? getTestClass().getOnlyConstructor().newInstance() : super.createTest();
-  }
-
-  private FrameworkMethod tweakMethod(final FrameworkMethod method) {
-    return new FrameworkMethod(method.getMethod()) {
-      @Override
-      public void validatePublicVoidNoArg(boolean isStatic, List<Throwable> errors) {
-        validatePublicVoid(isStatic, errors);
-        if (method.getMethod().getParameterTypes().length != 1) {
-          errors.add(new Exception("Method " + method.getName() + " must declare one parameter of type " + MockTracer.class.getName()));
-        }
-      }
-
-      @Override
-      public Object invokeExplosively(final Object target, final Object ... params) throws Throwable {
-        log("invokeExplosively [" + getName() + ", " + isStatic() + "](" + target + ")");
-        if (isInFork) {
-          final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
-          Assert.assertNotNull("Method getName() should not be executed in BootClassLoader", classLoader);
-          Assert.assertEquals("Method getName() should be executed in URLClassLoader", URLClassLoader.class, classLoader.getClass());
-          try {
-            final Object obj = super.invokeExplosively(target, tracer);
-            if (getAnnotation(AfterClass.class) != null)
-              write(new Response(getName(), null, true, null));
-
-            return obj;
-          }
-          catch (final Throwable t) {
-            if (getAnnotation(AfterClass.class) == null)
-              throw t;
-
-            log("t: " + t.getClass().getName());
-            write(new Response(getName(), null, true, t));
-          }
-        }
-
-        if (!isStatic())
-          throw new IllegalStateException("Should not get here");
-
-        if (getAnnotation(AfterClass.class) != null) {
-          write(new Request(getMethod().getName(), method.getMethod().getParameterTypes()));
-          final Response response = (Response)read();
-          if (response != null && response.getTargetException() != null)
-            throw response.getTargetException();
-        }
-
-        return new ReflectiveCallable() {
-          @Override
-          protected Object runReflectiveCall() throws Throwable {
-            return null;
-          }
-        }.run();
-      }
-    };
   }
 
   @Override
@@ -288,124 +265,47 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private static void log(final String message) {
-    log(message);
-  }
-
-  @Override
-  public void run(final RunNotifier notifier) {
-    log("run(" + notifier + ")");
-    if (!isInFork) {
-      notifier.addListener(new RunListener() {
-        private Class<?> testClass;
-
-        @Override
-        public void testFinished(final Description description) throws Exception {
-          this.testClass = description.getTestClass();
-        }
-
-        @Override
-        public void testRunFinished(final Result result) throws Exception {
-          if (testClass != null)
-            write(null);
-        }
-      });
-    }
-
-    super.run(notifier);
-  }
-
-  @Override
-  protected void runChild(FrameworkMethod method, final RunNotifier notifier) {
-    log("runChild(" + method + ", " + notifier + ")");
-    if (isInFork) {
-      for (Request request; (request = (Request)read()) != null;) {
-        method = getMethod(getTestClass(), request);
-        if (!isIgnored(method)) {
-          final ForkTestNotifier eachNotifier = new ForkTestNotifier(notifier, describeChild(method), out);
-          if (method.isStatic()) {
-            try {
-              method.invokeExplosively(null, tracer);
-            }
-            catch (final Throwable t) {
-              eachNotifier.addFailure(t);
-            }
-          }
-          else if (!isIgnored(method)) {
-            eachNotifier.fireTestStarted();
-            try {
-              methodBlock(method).evaluate();
-            }
-            catch (final AssumptionViolatedException e) {
-              eachNotifier.addFailedAssumption(e);
-            }
-            catch (final Throwable e) {
-              eachNotifier.addFailure(e);
-            }
-            finally {
-              eachNotifier.fireTestFinished();
-            }
-          }
-        }
-      }
-    }
-    else if (isIgnored(method)) {
-      notifier.fireTestIgnored(describeChild(method));
-    }
-    else if (nextThrowable == null) {
-      final EachTestNotifier eachNotifier = new EachTestNotifier(notifier, describeChild(method));
-      write(new Request(method.getMethod().getName(), method.getMethod().getParameterTypes()));
-      try {
-        for (Response response; (response = (Response)read()) != null;) {
-          for (final Method m : EachTestNotifier.class.getMethods()) {
-            if (response.getNotifierMethod() == null) {
-              nextThrowable = response.getTargetException();
-            }
-            else if (m.getName().equals(response.getNotifierMethod())) {
-              if (m.getParameterTypes().length == 1) {
-                m.invoke(eachNotifier, response.getTargetException());
-              }
-              else {
-                m.invoke(eachNotifier);
-              }
-
-              break;
-            }
-          }
-
-          if (response.isTerminal())
-            break;
-        }
-      }
-      catch (final IllegalAccessException | InvocationTargetException e) {
-        throw new UnsupportedOperationException(e);
-      }
-    }
-  }
-
-  @Override
-  protected Statement childrenInvoker(final RunNotifier notifier) {
-    return new Statement() {
+  private FrameworkMethod tweakMethod(final FrameworkMethod method) {
+    return new FrameworkMethod(method.getMethod()) {
       @Override
-      public void evaluate() throws Throwable {
-        InstrumenterRunner.super.childrenInvoker(notifier).evaluate();
-        if (nextThrowable != null)
-          throw nextThrowable;
+      public void validatePublicVoidNoArg(boolean isStatic, List<Throwable> errors) {
+        validatePublicVoid(isStatic, errors);
+        if (method.getMethod().getParameterTypes().length != 1)
+          errors.add(new Exception("Method " + method.getName() + " must declare one parameter of type: " + MockTracer.class.getName()));
       }
-    };
-  }
 
-  @Override
-  protected Statement methodInvoker(final FrameworkMethod method, final Object test) {
-    log("methodInvoker(" + method + ", " + test + ")");
-    return new Statement() {
       @Override
-      public void evaluate() throws Throwable {
-        log("evaluate: " + method + ", " + test);
-        if (isIgnored(method))
-          return;
+      public Object invokeExplosively(final Object target, final Object ... params) throws Throwable {
+        log("invokeExplosively [" + getName() + ", " + isStatic() + "](" + target + ")");
+        if (isInFork) {
+          final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
+          Assert.assertNotNull("Method getName() should not be executed in BootClassLoader", classLoader);
+          Assert.assertEquals("Method getName() should be executed in URLClassLoader", URLClassLoader.class, classLoader.getClass());
+          try {
+            final Object result = super.invokeExplosively(target, tracer);
+            write(new TestResult(getName(), null));
+            return result;
+          }
+          catch (final Throwable t) {
+            log("Throwing: " + t.getClass().getName());
+            write(new TestResult(getName(), t));
+            throw t;
+          }
+        }
 
-        method.invokeExplosively(test);
+        final TestResult testResult = read();
+        // Test execution order is guaranteed to be deterministic
+        // https://github.com/junit-team/junit4/wiki/test-execution-order#test-execution-order
+        Assert.assertEquals(getName(), testResult.getMethodName());
+        if (testResult.getTargetException() != null)
+          throw testResult.getTargetException();
+
+        return new ReflectiveCallable() {
+          @Override
+          protected Object runReflectiveCall() throws Throwable {
+            return null;
+          }
+        }.run();
       }
     };
   }
@@ -421,8 +321,8 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
     final String classpath = buildClassPath(getJavaClassPath(), null);
-
-    System.out.println("ClassPath of forked process:\n" + classpath.replace(':', '\n'));
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("ClassPath of forked process:\n  " + classpath.replace(":", "\n  "));
 
     // It is necessary to add the classpath locations of Tracer, NoopTracer,
     // GlobalTracer, TracerResolver, OpenTracingAgent and InstrumenterTest
@@ -437,44 +337,37 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     //    will load InstrumenterTest$MockTracer in URLClassLoader.
     final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, OpenTracingAgent.class, InstrumenterRunner.class), null);
 
-    // The agent jar
-    System.out.println(getLocations(OpenTracingAgent.class));
-
     final String[] args = {"java", "-Xbootclasspath/a:" + bootClassPath, "-cp", classpath, "-javaagent:" + getInstrumenterPath(), "-D" + PORT_ARG + "=" + port, JUnitCore.class.getName(), mainClass.getName()};
-    System.out.println(Arrays.toString(args).replace(", ", " "));
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("Forking process:\n  " + Arrays.toString(args).replace(", ", " "));
+
     final ProcessBuilder builder = new ProcessBuilder(args);
     builder.inheritIO();
-
-    final Process process = builder.start();
-
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        process.destroyForcibly();
-      }
-    });
-
-    return process;
+    return builder.start();
   }
 
-  private Object read() {
+  private TestResult read() {
     try {
-      final Object obj = in.readObject();
-      log("Read: " + obj);
-      return obj;
+      final TestResult result = (TestResult)in.readObject();
+      log("Read: " + result);
+      return result;
     }
     catch (final ClassNotFoundException | IOException e) {
       throw new IllegalStateException(e);
     }
   }
 
-  private void write(final Object obj) {
+  private void write(final TestResult result) {
     try {
-      log("Write: " + obj);
-      out.writeObject(obj);
+      log("Write: " + result);
+      out.writeObject(result);
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static void log(final String message) {
+    logger.fine(message);
   }
 }

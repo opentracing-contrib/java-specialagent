@@ -794,7 +794,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.0</version>
         <configuration>
-          <skip>true</skip>
           <!-- Have to explicitly define the path of the tests, because when the maven-dependency-plugin
             unpacks JUnit dependencies in the generate-test-resources phase, they end up being picked up
             by maven-surefire-plugin in the test phase. -->

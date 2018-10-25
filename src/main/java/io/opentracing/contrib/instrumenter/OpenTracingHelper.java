@@ -17,6 +17,7 @@
 package io.opentracing.contrib.instrumenter;
 
 import java.net.HttpURLConnection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -211,8 +212,12 @@ public class OpenTracingHelper extends Helper {
     private final Tracer tracer;
 
     public InstrumenterTracer(final Tracer tracer) {
-      System.err.println("new InstrumenterTracer(" + tracer + ")");
-      System.err.println("  ClassLoader: " + tracer.getClass().getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+      if (logger.isLoggable(Level.FINEST)) {
+        logger.finest("new InstrumenterTracer(" + tracer + ")");
+        logger.finest("  ClassLoader: " + tracer.getClass().getClassLoader());
+        logger.finest("  Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+      }
+
       this.tracer = Objects.requireNonNull(tracer);
     }
 
