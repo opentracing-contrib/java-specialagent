@@ -124,9 +124,6 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return null;
   }
 
-  private static final MockTracer tracer = initTracer();
-  private static final boolean isInFork = tracer != null;
-
   private static Class<?> getTargetClass(final Class<?> cls) throws InitializationError {
     if (!isInFork)
       return cls;
@@ -137,6 +134,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
         logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(":", "\n  "));
 
       final URL[] libs = buildClassPath(classpath);
+      // Special case for InstrumenterRunnerITest, because it belongs to the same classpath path as the InstrumenterRunner
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != InstrumenterRunnerITest.class ? null : new ClassLoader() {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
@@ -154,6 +152,9 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       throw new InitializationError(e);
     }
   }
+
+  private static final MockTracer tracer = initTracer();
+  private static final boolean isInFork = tracer != null;
 
   private final ObjectInputStream in;
   private final ObjectOutputStream out;
@@ -262,7 +263,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       public List<FrameworkMethod> getAnnotatedMethods(final Class<? extends Annotation> annotationClass) {
         final List<FrameworkMethod> augmented = new ArrayList<>();
         for (final FrameworkMethod method : super.getAnnotatedMethods(annotationClass))
-          augmented.add(tweakMethod(method));
+          augmented.add(alterMethod(method));
 
         return Collections.unmodifiableList(augmented);
       }
@@ -273,13 +274,13 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
         for (final List<FrameworkMethod> methods : methodsForAnnotations.values()) {
           final ListIterator<FrameworkMethod> iterator = methods.listIterator();
           while (iterator.hasNext())
-            iterator.set(tweakMethod(iterator.next()));
+            iterator.set(alterMethod(iterator.next()));
         }
       }
     };
   }
 
-  private FrameworkMethod tweakMethod(final FrameworkMethod method) {
+  private FrameworkMethod alterMethod(final FrameworkMethod method) {
     return new FrameworkMethod(method.getMethod()) {
       @Override
       public void validatePublicVoidNoArg(boolean isStatic, List<Throwable> errors) {
@@ -291,11 +292,11 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       @Override
       public Object invokeExplosively(final Object target, final Object ... params) throws Throwable {
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("invokeExplosively [" + getName() + ", " + isStatic() + "](" + target + ")");
+          logger.finest("invokeExplosively [" + getName() + "](" + target + ")");
+
         if (isInFork) {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
-          Assert.assertNotNull("Method getName() should not be executed in BootClassLoader", classLoader);
-          Assert.assertEquals("Method getName() should be executed in URLClassLoader", URLClassLoader.class, classLoader.getClass());
+          Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
           try {
             final Object result = super.invokeExplosively(target, tracer);
             write(new TestResult(getName(), null));
@@ -304,6 +305,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
           catch (final Throwable t) {
             if (logger.isLoggable(Level.FINEST))
               logger.finest("Throwing: " + t.getClass().getName());
+
             write(new TestResult(getName(), t));
             throw t;
           }
