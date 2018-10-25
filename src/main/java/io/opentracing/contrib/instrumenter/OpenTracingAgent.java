@@ -16,7 +16,10 @@
  */
 package io.opentracing.contrib.instrumenter;
 
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.net.URL;
+import java.util.logging.LogManager;
 
 import org.jboss.byteman.agent.Main;
 
@@ -27,6 +30,18 @@ import com.sun.tools.attach.VirtualMachine;
  * system properties and the manager class.
  */
 public class OpenTracingAgent {
+  static {
+    final String loggingConfig = System.getProperty("java.util.logging.config.file");
+    if (loggingConfig != null) {
+      try {
+        LogManager.getLogManager().readConfiguration((loggingConfig.contains("file:/") ? new URL(loggingConfig) : new URL("file", "", loggingConfig)).openStream());
+      }
+      catch (final IOException e) {
+        throw new ExceptionInInitializerError(e);
+      }
+    }
+  }
+
   public static void main(final String[] args) throws Exception {
     if (args.length != 1) {
       System.err.println("Usage: <PID>");

@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(TestRunner.class)
+@InstrumenterRunner.Debug(true)
 public class InstrumenterRunnerTest {
   private static final Logger logger = Logger.getLogger(InstrumenterRunnerTest.class.getName());
 

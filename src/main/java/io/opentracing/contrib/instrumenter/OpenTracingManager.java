@@ -78,7 +78,7 @@ public class OpenTracingManager {
         logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
 
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("Process classpath: " + classpath.toString().replace(",", "\n  ").replace("[", "[\n  ").replace("]", "\n]"));
+        logger.finest("Process classpath: " + classpath.toString().replace(", ", "\n  ").replace("[", "[\n  ").replace("]", "\n]"));
 
       // Override parent ClassLoader methods to avoid delegation of resource
       // resolution to BootLoader

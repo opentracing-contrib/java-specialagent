@@ -2,10 +2,13 @@ package io.opentracing.contrib.instrumenter;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.MalformedURLException;
@@ -47,13 +50,12 @@ import io.opentracing.util.GlobalTracer;
 
 public class InstrumenterRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(InstrumenterRunner.class.getName());
-
   private static final String PORT_ARG = "io.opentracing.contrib.instrumenter.port";
 
-  static {
-    final String classpath = System.getProperty("java.class.path");
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("java.class.path in InstrumenterRunner:\n  " + classpath.replace(":", "\n  "));
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  public static @interface Debug {
+    boolean value();
   }
 
   private static Set<String> getLocations(final Class<?> ... classes) throws IOException {
@@ -135,7 +137,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
         logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(":", "\n  "));
 
       final URL[] libs = buildClassPath(classpath);
-      final URLClassLoader classLoader = new URLClassLoader(libs, new ClassLoader() {
+      final URLClassLoader classLoader = new URLClassLoader(libs, cls != InstrumenterRunnerTest.class ? null : new ClassLoader() {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           return name.equals(cls.getName()) ? null : super.loadClass(name, resolve);
@@ -155,9 +157,21 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
 
   private final ObjectInputStream in;
   private final ObjectOutputStream out;
+  private final URL loggingProperties;
 
   public InstrumenterRunner(final Class<?> cls) throws InitializationError {
     super(getTargetClass(cls));
+    final Debug debug = cls.getAnnotation(Debug.class);
+    this.loggingProperties = debug != null && debug.value() ? getClass().getResource("/logging.properties") : null;
+    if (loggingProperties != null) {
+      try {
+        LogManager.getLogManager().readConfiguration(loggingProperties.openStream());
+      }
+      catch (final IOException e) {
+        throw new ExceptionInInitializerError(e);
+      }
+    }
+
     Thread shutdownHook = null;
     try {
       if (isInFork) {
@@ -322,7 +336,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     // on the classpath may be used in the implementation of the test method.
     final String classpath = buildClassPath(getJavaClassPath(), null);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("ClassPath of forked process:\n  " + classpath.replace(":", "\n  "));
+      logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(":", "\n  "));
 
     // It is necessary to add the classpath locations of Tracer, NoopTracer,
     // GlobalTracer, TracerResolver, OpenTracingAgent and InstrumenterTest
@@ -336,8 +350,23 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     //    InstrumenterTest$MockTracer in the BootClassLoader, while this code
     //    will load InstrumenterTest$MockTracer in URLClassLoader.
     final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, OpenTracingAgent.class, InstrumenterRunner.class), null);
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(":", "\n  "));
 
-    final String[] args = {"java", "-Xbootclasspath/a:" + bootClassPath, "-cp", classpath, "-javaagent:" + getInstrumenterPath(), "-D" + PORT_ARG + "=" + port, JUnitCore.class.getName(), mainClass.getName()};
+    int i = -1;
+    final String[] args = new String[8 + (loggingProperties != null ? 1 : 0)];
+    args[++i] = "java";
+    args[++i] = "-Xbootclasspath/a:" + bootClassPath;
+    args[++i] = "-cp";
+    args[++i] = classpath;
+    args[++i] = "-javaagent:" + getInstrumenterPath();
+    args[++i] = "-D" + PORT_ARG + "=" + port;
+    if (loggingProperties != null)
+      args[++i] = "-Djava.util.logging.config.file=" + loggingProperties.toString();
+
+    args[++i] = JUnitCore.class.getName();
+    args[++i] = mainClass.getName();
+
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Forking process:\n  " + Arrays.toString(args).replace(", ", " "));
 
