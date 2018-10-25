@@ -798,15 +798,12 @@
             unpacks JUnit dependencies in the generate-test-resources phase, they end up being picked up
             by maven-surefire-plugin in the test phase. -->
           <includes>
-            <include>io/opentracing/contrib/instrumenter/**/Test*.java</include>
             <include>io/opentracing/contrib/instrumenter/**/*Test.java</include>
-            <include>io/opentracing/contrib/instrumenter/**/*Tests.java</include>
             <include>io/opentracing/contrib/instrumenter/**/*TestCase.java</include>
           </includes>
           <excludes>
-            <exclude>io/opentracing/contrib/instrumenter/**/IntegrationTest*.java</exclude>
+            <excludes>io/opentracing/contrib/instrumenter/**/*ITest.java</excludes>
             <exclude>io/opentracing/contrib/instrumenter/**/*IntegrationTest.java</exclude>
-            <exclude>io/opentracing/contrib/instrumenter/**/*IntegrationTests.java</exclude>
             <exclude>io/opentracing/contrib/instrumenter/**/*IntegrationTestCase.java</exclude>
           </excludes>
         </configuration>
@@ -825,9 +822,8 @@
             <configuration>
               <trimStackTrace>false</trimStackTrace>
               <includes>
-                <include>io/opentracing/contrib/instrumenter/**/IntegrationTest*.java</include>
+                <include>io/opentracing/contrib/instrumenter/**/*ITest.java</include>
                 <include>io/opentracing/contrib/instrumenter/**/*IntegrationTest.java</include>
-                <include>io/opentracing/contrib/instrumenter/**/*IntegrationTests.java</include>
                 <include>io/opentracing/contrib/instrumenter/**/*IntegrationTestCase.java</include>
               </includes>
             </configuration>

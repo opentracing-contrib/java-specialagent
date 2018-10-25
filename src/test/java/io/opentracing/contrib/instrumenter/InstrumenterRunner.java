@@ -137,7 +137,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
         logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(":", "\n  "));
 
       final URL[] libs = buildClassPath(classpath);
-      final URLClassLoader classLoader = new URLClassLoader(libs, cls != InstrumenterRunnerTest.class ? null : new ClassLoader() {
+      final URLClassLoader classLoader = new URLClassLoader(libs, cls != InstrumenterRunnerITest.class ? null : new ClassLoader() {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           return name.equals(cls.getName()) ? null : super.loadClass(name, resolve);
@@ -290,7 +290,8 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
 
       @Override
       public Object invokeExplosively(final Object target, final Object ... params) throws Throwable {
-        log("invokeExplosively [" + getName() + ", " + isStatic() + "](" + target + ")");
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("invokeExplosively [" + getName() + ", " + isStatic() + "](" + target + ")");
         if (isInFork) {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
           Assert.assertNotNull("Method getName() should not be executed in BootClassLoader", classLoader);
@@ -301,7 +302,8 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
             return result;
           }
           catch (final Throwable t) {
-            log("Throwing: " + t.getClass().getName());
+            if (logger.isLoggable(Level.FINEST))
+              logger.finest("Throwing: " + t.getClass().getName());
             write(new TestResult(getName(), t));
             throw t;
           }
@@ -378,7 +380,9 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
   private TestResult read() {
     try {
       final TestResult result = (TestResult)in.readObject();
-      log("Read: " + result);
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("Read: " + result);
+
       return result;
     }
     catch (final ClassNotFoundException | IOException e) {
@@ -388,15 +392,13 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
 
   private void write(final TestResult result) {
     try {
-      log("Write: " + result);
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("Write: " + result);
+
       out.writeObject(result);
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private static void log(final String message) {
-    logger.fine(message);
   }
 }

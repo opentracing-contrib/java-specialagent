@@ -17,12 +17,12 @@ import io.opentracing.mock.MockTracer;
 
 @RunWith(TestRunner.class)
 @InstrumenterRunner.Debug(true)
-public class InstrumenterRunnerTest {
-  private static final Logger logger = Logger.getLogger(InstrumenterRunnerTest.class.getName());
+public class InstrumenterRunnerITest {
+  private static final Logger logger = Logger.getLogger(InstrumenterRunnerITest.class.getName());
 
   private static void assertClassLoader() {
     logger.fine("  " + new Exception().getStackTrace()[1]);
-    assertEquals(URLClassLoader.class, InstrumenterRunnerTest.class.getClassLoader().getClass());
+    assertEquals(URLClassLoader.class, InstrumenterRunnerITest.class.getClassLoader().getClass());
   }
 
   @BeforeClass
