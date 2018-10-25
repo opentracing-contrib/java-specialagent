@@ -16,15 +16,14 @@
  */
 package io.opentracing.contrib.instrumenter;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,16 +51,6 @@ public class OpenTracingManager {
 
   protected static Retransformer transformer;
   private static URLClassLoader allPluginsClassLoader;
-  private static URL[] apiJars;
-
-  private static List<URL> getJavaClassPath() throws MalformedURLException {
-    final String[] paths = System.getProperty("java.class.path").split(":");
-    final List<URL> libs = new ArrayList<>();
-    for (int i = 0; i < paths.length; ++i)
-      libs.add(new File(paths[i]).toURI().toURL());
-
-    return libs;
-  }
 
   /**
    * This method initializes the manager.
@@ -72,32 +61,23 @@ public class OpenTracingManager {
     transformer = trans;
 
     try {
-      final List<URL> classpath = getJavaClassPath();
+      final URL[] classpath = OpenTracingUtil.classPathToURLs(System.getProperty("java.class.path"));
       final List<URL> pluginJarUrls = OpenTracingUtil.findResources("META-INF/opentracing-instrumenter/");
       if (logger.isLoggable(Level.FINE))
         logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
 
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("Process classpath: " + classpath.toString().replace(", ", "\n  ").replace("[", "[\n  ").replace("]", "\n]"));
+        logger.finest("Process classpath: " + Arrays.toString(classpath).toString().replace(", ", "\n  ").replace("[", "[\n  ").replace("]", "\n]"));
 
       // Override parent ClassLoader methods to avoid delegation of resource
       // resolution to BootLoader
-      allPluginsClassLoader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]), new ClassLoader(null) {
+      allPluginsClassLoader = new URLClassLoader(classpath, new ClassLoader(null) {
         // This is overridden to ensure resources are not discovered in BootClassLoader
         @Override
         public Enumeration<URL> getResources(final String name) throws IOException {
           return null;
         }
       });
-
-      apiJars = new URL[] {
-//        // Add org.opentracing:opentracing-api
-//        allPluginsClassLoader.loadClass("io.opentracing.Tracer").getProtectionDomain().getCodeSource().getLocation(),
-        // Add org.opentracing.contrib:opentracing-util
-//        allPluginsClassLoader.loadClass("io.opentracing.util.GlobalTracer").getProtectionDomain().getCodeSource().getLocation(),
-//        // Add org.opentracing.contrib:opentracing-noop
-//        allPluginsClassLoader.loadClass("io.opentracing.noop.NoopTracerFactory").getProtectionDomain().getCodeSource().getLocation()
-      };
 
       loadRules();
     }
@@ -278,17 +258,14 @@ public class OpenTracingManager {
     // Get the ClassLoader of the caller class
     final ClassLoader classLoader = caller.getClass().getClassLoader();
 
-    // Collect the API JARs + the Plugin JAR (identified by index passed to this
-    // method)
-    final URL[] pluginJarUrls = new URL[apiJars.length + 1];
-    System.arraycopy(apiJars, 0, pluginJarUrls, 0, apiJars.length);
-    pluginJarUrls[apiJars.length] = allPluginsClassLoader.getURLs()[index];
+    // Find the Plugin JAR (identified by index passed to this method)
+    final URL pluginJar = allPluginsClassLoader.getURLs()[index];
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("  Plugin JAR: " + pluginJarUrls[apiJars.length]);
+      logger.finest("  Plugin JAR: " + pluginJar);
 
     // Create an isolated (no parent ClassLoader) URLClassLoader with the
     // pluginJarUrls
-    final URLClassLoader pluginClassLoader = new URLClassLoader(pluginJarUrls, classLoader);
+    final URLClassLoader pluginClassLoader = new URLClassLoader(new URL[] {pluginJar}, classLoader);
 
     // Associate the pluginClassLoader with the caller's classLoader
     classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);

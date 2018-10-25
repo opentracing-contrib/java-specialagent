@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -31,8 +32,31 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public final class OpenTracingUtil {
+final class OpenTracingUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
+
+  /**
+   * Returns an array of {@code URL} objects representing each path entry in the
+   * specified {@code classpath}.
+   *
+   * @param classpath The classpath which to convert to an array of {@code URL}
+   *          objects.
+   * @return An array of {@code URL} objects representing each path entry in the
+   *         specified {@code classpath}.
+   */
+  static URL[] classPathToURLs(final String classpath) {
+    final String[] paths = classpath.split(File.pathSeparator);
+    final URL[] libs = new URL[paths.length];
+    try {
+      for (int i = 0; i < paths.length; ++i)
+        libs[i] = new File(paths[i]).toURI().toURL();
+    }
+    catch (final MalformedURLException e) {
+      throw new UnsupportedOperationException(e);
+    }
+
+    return libs;
+  }
 
   /**
    * Returns the array of bytes read from an {@code InputStream}.
@@ -41,7 +65,7 @@ public final class OpenTracingUtil {
    * @return The array of bytes read from an {@code InputStream}.
    * @throws IOException If an I/O error has occurred.
    */
-  public static byte[] readBytes(final InputStream in) throws IOException {
+  static byte[] readBytes(final InputStream in) throws IOException {
     final ByteArrayOutputStream buffer = new ByteArrayOutputStream(DEFAULT_SOCKET_BUFFER_SIZE);
     final byte[] data = new byte[DEFAULT_SOCKET_BUFFER_SIZE];
     for (int len; (len = in.read(data)) != -1; buffer.write(data, 0, len));
@@ -54,7 +78,7 @@ public final class OpenTracingUtil {
    * @param obj The object.
    * @return The hexadecimal representation of an object's identity hash code.
    */
-  public static String getIdentityCode(final Object obj) {
+  static String getIdentityCode(final Object obj) {
     return obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16);
   }
 
@@ -68,7 +92,7 @@ public final class OpenTracingUtil {
    *         matches {@code path}.
    * @throws IOException If an I/O error has occurred.
    */
-  public static List<URL> findResources(final String path) throws IOException {
+  static List<URL> findResources(final String path) throws IOException {
     final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
     if (!resources.hasMoreElements())
       return null;

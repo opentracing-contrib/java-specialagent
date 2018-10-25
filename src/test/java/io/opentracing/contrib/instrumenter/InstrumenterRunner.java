@@ -11,7 +11,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -52,15 +50,28 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(InstrumenterRunner.class.getName());
   private static final String PORT_ARG = "io.opentracing.contrib.instrumenter.port";
 
+  /**
+   * Annotation to specify whether debug logging should be turned on or off.
+   */
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
   public static @interface Debug {
     boolean value();
   }
 
+  /**
+   * Returns a {@code Set} of string paths representing the classpath locations
+   * of the specified classes.
+   *
+   * @param classes The classes for which to return a {@code Set} of classpath
+   *          paths.
+   * @return A {@code Set} of string paths representing the classpath locations
+   *         of the specified classes.
+   * @throws IOException If an I/O error has occurred.
+   */
   private static Set<String> getLocations(final Class<?> ... classes) throws IOException {
     final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    final Set<String> excludes = new HashSet<>();
+    final Set<String> excludes = new LinkedHashSet<>();
     for (final Class<?> cls : classes) {
       final String resourceName = cls.getName().replace('.', '/').concat(".class");
       final Enumeration<URL> urls = classLoader.getResources(resourceName);
@@ -73,10 +84,24 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return excludes;
   }
 
+  /**
+   * @return A {@code Set} representation of paths in classpath of the current
+   *         process.
+   */
   private static Set<String> getJavaClassPath() {
-    return new LinkedHashSet<>(Arrays.asList(System.getProperty("java.class.path").split(":")));
+    return new LinkedHashSet<>(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
   }
 
+  /**
+   * Returns a classpath string that includes the specified set of classpath
+   * paths in the {@code includes} parameter, and excludes the specified set of
+   * classpath paths from the {@code excludes} parameter.
+   *
+   * @param includes The paths to include in the returned classpath.
+   * @param excludes The paths to exclude from the returned classpath.
+   * @return A classpath string that includes paths from {@code includes}, and
+   *         excludes paths from {@code excludes}.
+   */
   private static String buildClassPath(final Set<String> includes, final Set<String> excludes) {
     if (excludes != null)
       includes.removeAll(excludes);
@@ -85,7 +110,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     final Iterator<String> iterator = includes.iterator();
     for (int i = 0; iterator.hasNext(); ++i) {
       if (i > 0)
-        builder.append(':');
+        builder.append(File.pathSeparatorChar);
 
       builder.append(iterator.next());
     }
@@ -93,15 +118,15 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return builder.toString();
   }
 
-  private static URL[] buildClassPath(final String classpath) throws MalformedURLException {
-    final String[] paths = classpath.split(":");
-    final URL[] libs = new URL[paths.length];
-    for (int i = 0; i < paths.length; ++i)
-      libs[i] = new File(paths[i]).toURI().toURL();
-
-    return libs;
-  }
-
+  /**
+   * Initializes the OpenTracing {@code Tracer} to be used for the duration of
+   * this test process. If the {@code "-javaagent"} argument is not specified
+   * for the current process, this function will return {@code null}.
+   *
+   * @return The OpenTracing {@code Tracer} to be used for the duration of this
+   *         test process, or {@code null} if the {@code "-javaagent"} argument
+   *         is not specified for the current process.
+   */
   private static MockTracer initTracer() {
     final RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
     final List<String> arguments = runtimeMxBean.getInputArguments();
@@ -124,16 +149,28 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return null;
   }
 
-  private static Class<?> getTargetClass(final Class<?> cls) throws InitializationError {
-    if (!isInFork)
-      return cls;
-
+  /**
+   * Loads the specified class in an {@code URLClassLoader}. The class loader
+   * will be initialized with the process classpath, and will be detached from
+   * the System ClassLoader. This construct guarantees that any {@code cls}
+   * passed to this function will be unable to resolve classes in the System
+   * ClassLoader.
+   * <p>
+   * <i><b>Note:</b> If {@code cls} is present in the Bootstrap ClassLoader, it
+   * will be resolved there instead of the {@code URLClassLoader}.</i>
+   *
+   * @param cls The {@code Class} to load in the {@code URLClassLoader}.
+   * @return The class loaded in the {@code URLClassLoader}.
+   * @throws InitializationError If the specified class cannot be located by the
+   *           URLClassLoader.
+   */
+  private static Class<?> loadClassInURLClassLoader(final Class<?> cls) throws InitializationError {
     try {
       final String classpath = System.getProperty("java.class.path");
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(":", "\n  "));
+        logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
-      final URL[] libs = buildClassPath(classpath);
+      final URL[] libs = OpenTracingUtil.classPathToURLs(classpath);
       // Special case for InstrumenterRunnerITest, because it belongs to the same classpath path as the InstrumenterRunner
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != InstrumenterRunnerITest.class ? null : new ClassLoader() {
         @Override
@@ -148,7 +185,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       Assert.assertNull(Rule.class.getClassLoader());
       return classInClassLoader;
     }
-    catch (final ClassNotFoundException | MalformedURLException e) {
+    catch (final ClassNotFoundException e) {
       throw new InitializationError(e);
     }
   }
@@ -160,8 +197,16 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
   private final ObjectOutputStream out;
   private final URL loggingProperties;
 
+  /**
+   * Creates a new {@code InstrumentationRunner} for the specified test class.
+   *
+   * @param cls The test class.
+   * @throws InitializationError If the test class is malformed, or if the
+   *           specified class cannot be located by the URLClassLoader in the
+   *           forked process.
+   */
   public InstrumenterRunner(final Class<?> cls) throws InitializationError {
-    super(getTargetClass(cls));
+    super(isInFork ? loadClassInURLClassLoader(cls) : cls);
     final Debug debug = cls.getAnnotation(Debug.class);
     this.loggingProperties = debug != null && debug.value() ? getClass().getResource("/logging.properties") : null;
     if (loggingProperties != null) {
@@ -251,11 +296,17 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  @Override
-  protected Object createTest() throws Exception {
-    return isInFork ? getTestClass().getOnlyConstructor().newInstance() : super.createTest();
-  }
-
+  /**
+   * Creates the {@code TestClass} object for this JUnit runner with the
+   * specified test class.
+   * <p>
+   * This method has been overridden to retrofit the {@code FrameworkMethod}
+   * objects.
+   *
+   * @param testClass The test class.
+   * @return The {@code TestClass} object for this JUnit runner with the
+   *         specified test class.
+   */
   @Override
   protected TestClass createTestClass(final Class<?> testClass) {
     return new TestClass(testClass) {
@@ -263,7 +314,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       public List<FrameworkMethod> getAnnotatedMethods(final Class<? extends Annotation> annotationClass) {
         final List<FrameworkMethod> augmented = new ArrayList<>();
         for (final FrameworkMethod method : super.getAnnotatedMethods(annotationClass))
-          augmented.add(alterMethod(method));
+          augmented.add(retrofitMethod(method));
 
         return Collections.unmodifiableList(augmented);
       }
@@ -274,13 +325,20 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
         for (final List<FrameworkMethod> methods : methodsForAnnotations.values()) {
           final ListIterator<FrameworkMethod> iterator = methods.listIterator();
           while (iterator.hasNext())
-            iterator.set(alterMethod(iterator.next()));
+            iterator.set(retrofitMethod(iterator.next()));
         }
       }
     };
   }
 
-  private FrameworkMethod alterMethod(final FrameworkMethod method) {
+  /**
+   * Retrofits the specified {@code FrameworkMethod} to work with the forked
+   * testing design of this runner.
+   *
+   * @param method The {@code FrameworkMethod} to retrofit.
+   * @return The retrofitted {@code FrameworkMethod}.
+   */
+  private FrameworkMethod retrofitMethod(final FrameworkMethod method) {
     return new FrameworkMethod(method.getMethod()) {
       @Override
       public void validatePublicVoidNoArg(boolean isStatic, List<Throwable> errors) {
@@ -328,10 +386,21 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     };
   }
 
+  /**
+   * @return The classpath path of the opentracing-instrumenter.
+   */
   protected String getInstrumenterPath() {
     return OpenTracingAgent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   }
 
+  /**
+   * Fork the javaagent process for the specified JUnit test class, and socket port.
+   *
+   * @param mainClass The main class to invoke with JUnit.
+   * @param port The socket port on which the parent process is waiting for connection.
+   * @return The {@code Process} reference of the forked process.
+   * @throws IOException If an I/O error has occurred.
+   */
   private Process fork(final Class<?> mainClass, final int port) throws IOException {
     if (isInFork)
       throw new IllegalStateException("Attempting to fork from a fork");
@@ -340,7 +409,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     // on the classpath may be used in the implementation of the test method.
     final String classpath = buildClassPath(getJavaClassPath(), null);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(":", "\n  "));
+      logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
     // It is necessary to add the classpath locations of Tracer, NoopTracer,
     // GlobalTracer, TracerResolver, OpenTracingAgent and InstrumenterTest
@@ -355,7 +424,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     //    will load InstrumenterTest$MockTracer in URLClassLoader.
     final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, OpenTracingAgent.class, InstrumenterRunner.class), null);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(":", "\n  "));
+      logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(File.pathSeparator, "\n  "));
 
     int i = -1;
     final String[] args = new String[8 + (loggingProperties != null ? 1 : 0)];
@@ -379,6 +448,12 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     return builder.start();
   }
 
+  /**
+   * Returns a {@code TestResult} object serialized over the socket. This method
+   * will block until an object is available.
+   *
+   * @return A {@code TestResult} object serialized over the socket.
+   */
   private TestResult read() {
     try {
       final TestResult result = (TestResult)in.readObject();
@@ -392,6 +467,11 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * Writes a {@code TestResult} object to the socket.
+   *
+   * @param result The {@code TestResult} object to write.
+   */
   private void write(final TestResult result) {
     try {
       if (logger.isLoggable(Level.FINEST))
