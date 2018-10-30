@@ -1,3 +1,8 @@
+<!--
+  This file is not being used, because a bug in maven-assembly-plugin does not
+  allow the packacking of test-scoped dependencies only. Keeping this file in
+  the hopes that one day this bug will be resolved.
+-->
 <assembly
   xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

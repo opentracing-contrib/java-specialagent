@@ -1,10 +1,10 @@
-RULE OpenTracing ClassLoader Injection
+RULE OpenTracing Instrumenter ClassLoader Injection
 
 CLASS ^java.lang.ClassLoader
 
 METHOD findClass
 BIND
-  cls = io.opentracing.contrib.instrumenter.OpenTracingManager.findClass($this, $1);
+  cls = io.opentracing.contrib.instrumenter.InstrumenterManager.findClass($this, $1);
 IF cls != null
 DO
   traceln(">>>>>>>> defineClass(" + $1 + ")");

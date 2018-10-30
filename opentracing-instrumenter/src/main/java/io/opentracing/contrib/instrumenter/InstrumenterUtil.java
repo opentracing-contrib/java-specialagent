@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-final class OpenTracingUtil {
+final class InstrumenterUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
   /**
@@ -157,6 +157,6 @@ final class OpenTracingUtil {
     return dir.delete();
   }
 
-  private OpenTracingUtil() {
+  private InstrumenterUtil() {
   }
 }

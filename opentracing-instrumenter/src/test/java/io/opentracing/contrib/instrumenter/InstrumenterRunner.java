@@ -170,7 +170,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
-      final URL[] libs = OpenTracingUtil.classPathToURLs(classpath);
+      final URL[] libs = InstrumenterUtil.classPathToURLs(classpath);
       // Special case for InstrumenterRunnerITest, because it belongs to the same classpath path as the InstrumenterRunner
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != InstrumenterRunnerITest.class ? null : new ClassLoader() {
         @Override
@@ -390,7 +390,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
    * @return The classpath path of the opentracing-instrumenter.
    */
   protected String getInstrumenterPath() {
-    return OpenTracingAgent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+    return InstrumenterAgent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   }
 
   /**
@@ -412,7 +412,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
       logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
     // It is necessary to add the classpath locations of Tracer, NoopTracer,
-    // GlobalTracer, TracerResolver, OpenTracingAgent and InstrumenterTest
+    // GlobalTracer, TracerResolver, InstrumenterAgent and InstrumenterTest
     // to the BootClassLoader, because:
     // 1) These classes are required for the test to run, since the test
     //    directly references these classes, leaving just the SystemClassLoader
@@ -422,7 +422,7 @@ public class InstrumenterRunner extends BlockJUnit4ClassRunner {
     //    BootClassLoader, or otherwise Byteman will load the
     //    InstrumenterTest$MockTracer in the BootClassLoader, while this code
     //    will load InstrumenterTest$MockTracer in URLClassLoader.
-    final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, OpenTracingAgent.class, InstrumenterRunner.class), null);
+    final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, InstrumenterAgent.class, InstrumenterRunner.class), null);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(File.pathSeparator, "\n  "));
 

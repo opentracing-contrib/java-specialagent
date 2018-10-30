@@ -15,7 +15,7 @@ public class SocketTest {
   public void test() throws ClassNotFoundException, IOException {
     try (final ServerSocket serverSocket = new ServerSocket(0)) {
       final int port = serverSocket.getLocalPort();
-      final Thread child = new Thread() {
+      new Thread() {
         @Override
         public void run() {
           try (final Socket socket = new Socket("127.0.0.1", port)) {
@@ -28,9 +28,8 @@ public class SocketTest {
             throw new IllegalStateException(e);
           }
         }
-      };
+      }.start();
 
-      child.start();
       final Socket socket = serverSocket.accept();
       final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
       final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());

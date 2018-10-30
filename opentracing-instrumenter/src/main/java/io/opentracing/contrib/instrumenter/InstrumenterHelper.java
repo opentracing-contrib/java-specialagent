@@ -17,7 +17,6 @@
 package io.opentracing.contrib.instrumenter;
 
 import java.net.HttpURLConnection;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -39,10 +38,10 @@ import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
 /**
- * This class provides helper capabilities to the byteman rules.
+ * Provides helper capabilities to the Byteman rules.
  */
-public class OpenTracingHelper extends Helper {
-  private static final Logger logger = Logger.getLogger(OpenTracingHelper.class.getName());
+public class InstrumenterHelper extends Helper {
+  private static final Logger logger = Logger.getLogger(InstrumenterHelper.class.getName());
 
   private static final Map<Object,Span> spanAssociations = Collections.synchronizedMap(new WeakHashMap<Object,Span>());
   private static final Map<Object,Span> finished = Collections.synchronizedMap(new WeakHashMap<Object,Span>());
@@ -51,7 +50,7 @@ public class OpenTracingHelper extends Helper {
   private static final Object tracerMutex = new Object();
   private static Tracer tracer;
 
-  public OpenTracingHelper(final Rule rule) {
+  public InstrumenterHelper(final Rule rule) {
     super(rule);
   }
 
@@ -145,7 +144,6 @@ public class OpenTracingHelper extends Helper {
   public boolean isFinished(final Object key) {
     return finished.containsKey(key);
   }
-
   /**********************************************/
 
   /**

@@ -26,10 +26,10 @@ import org.jboss.byteman.agent.Main;
 import com.sun.tools.attach.VirtualMachine;
 
 /**
- * This class provides a wrapper around the ByteMan agent, to establish required
- * system properties and the manager class.
+ * Provides a wrapper around the ByteMan agent, to establish required system
+ * properties and the manager class.
  */
-public class OpenTracingAgent {
+public class InstrumenterAgent {
   static {
     final String loggingConfig = System.getProperty("java.util.logging.config.file");
     if (loggingConfig != null) {
@@ -49,7 +49,7 @@ public class OpenTracingAgent {
     }
 
     final VirtualMachine vm = VirtualMachine.attach(args[0]);
-    final String agentPath = OpenTracingAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    final String agentPath = InstrumenterAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     try {
       vm.loadAgent(agentPath, null);
     }
@@ -72,7 +72,7 @@ public class OpenTracingAgent {
     else
       agentArgs += ",";
 
-    agentArgs += "manager:" + OpenTracingManager.class.getName();
+    agentArgs += "manager:" + InstrumenterManager.class.getName();
     return agentArgs;
   }
 }

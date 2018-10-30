@@ -40,10 +40,10 @@ import java.util.zip.ZipInputStream;
 import org.jboss.byteman.agent.Retransformer;
 
 /**
- * This class provides the ByteMan manager implementation for OpenTracing.
+ * Provides the ByteMan manager implementation for OpenTracing.
  */
-public class OpenTracingManager {
-  private static final Logger logger = Logger.getLogger(OpenTracingManager.class.getName());
+public class InstrumenterManager {
+  private static final Logger logger = Logger.getLogger(InstrumenterManager.class.getName());
   private static final String AGENT_RULES = "otarules.btm";
 
   private static final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
@@ -61,8 +61,8 @@ public class OpenTracingManager {
     transformer = trans;
 
     try {
-      final URL[] classpath = OpenTracingUtil.classPathToURLs(System.getProperty("java.class.path"));
-      final List<URL> pluginJarUrls = OpenTracingUtil.findResources("META-INF/opentracing-instrumenter/");
+      final URL[] classpath = InstrumenterUtil.classPathToURLs(System.getProperty("java.class.path"));
+      final List<URL> pluginJarUrls = InstrumenterUtil.findResources("META-INF/opentracing-instrumenter/");
       if (logger.isLoggable(Level.FINE))
         logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
 
@@ -220,7 +220,7 @@ public class OpenTracingManager {
       final String lineUC = line.toUpperCase();
       if (methodSeen) {
         builder.append("IF TRUE\n");
-        builder.append("DO ").append(OpenTracingManager.class.getName()).append(".triggerLoadClasses($this, ").append(index).append(")\n");
+        builder.append("DO ").append(InstrumenterManager.class.getName()).append(".triggerLoadClasses($this, ").append(index).append(")\n");
         builder.append("ENDRULE\n");
         return builder.toString();
       }
@@ -327,12 +327,12 @@ public class OpenTracingManager {
 
     classNames.add(resourceName);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + OpenTracingUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findClass(" + InstrumenterUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Return the resource's bytes, or null if the resource does not exist in
     // pluginClassLoader
     try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
-      return in == null ? null : OpenTracingUtil.readBytes(in);
+      return in == null ? null : InstrumenterUtil.readBytes(in);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to read bytes for " + resourceName, e);
