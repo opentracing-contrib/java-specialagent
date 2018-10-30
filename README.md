@@ -19,7 +19,7 @@ Any exception that occurs during the execution of the bootstrap process will not
 3) The _Java Instrumenter_ must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the _Java Instrumenter_, and cannot apply to the code of the instrumentation plugins made available in opentracing-contrib.
 4) The _Java Instrumenter_ must support static and dynamic attach to applications running on JVM versions 1.7 to latest.
 5) The _Java Instrumenter_ must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party plugin. This test must simulate:
-   1) Launching the test in a process with the -javaagent flag that points to the _Java Instrumenter_ (in order to test automatic instrumentation functionality of the `otarules.btm` file).
+   1) Launching the test in a process with the `-javaagent` vm argument that points to the _Java Instrumenter_ (in order to test automatic instrumentation functionality of the `otarules.btm` file).
    2) Elevating the test code to be executed from a custom ClassLoader that is disconnected from the system ClassLoader (in order to test bytecode injection into an isolated ClassLoader that cannot resolve classes on the system classpath).
    3) Initialize a MockTracer as GlobalTracer, and provide a reference to the Tracer instance in the test method for assertions with JUnit.
 The _Java Instrumenter_ must provide a means by which instrumentation plugins can be configured before use on a target application. 
@@ -37,7 +37,7 @@ The _Java Instrumenter_ is built with Maven, and produces 2 artifacts:
 
 1) `opentracing-instrumenter-<version>-tests.jar`
 
-    This is the test artifact that contains within it the InstrumentationRunner, which is a JUnit runner class provided for testing of `otarules.btm` files in instrumentation plugins. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation. This JAR can be used in the same manner as the main JAR, both for static and dynamic attach.
+    This is the test artifact that contains within it the `InstrumenterRunner`, which is a JUnit runner class provided for testing of `otarules.btm` files in instrumentation plugins. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation. This JAR can be used in the same manner as the main JAR, both for static and dynamic attach.
 
 ## Usage
 
@@ -45,7 +45,7 @@ The _Java Instrumenter_ uses Java’s Instrumentation interface to transform the
 
 ### Static Attach
 
-Statically attaching to a Java application involves the use of the -javaagent vm argument at the time of startup of the target Java application. The following command can be used as an example:
+Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
 java -javaagent:opentracing-instrumenter.jar -jar myapp.jar
@@ -66,7 +66,7 @@ java -jar opentracing-instrumenter.jar <PID> # Replate <PID> with the PID from j
 
 The _Java Instrumenter_ uses the JUnit Runner API to implement a lightweight test methodology that can be easily applied to modules that implement instrumentation for 3rd-party plugins. This runner is named `InstrumenterRunner`, and allows developers to implement tests using vanilla JUnit patterns, transparently providing the following behavior:
 
-1) Launch the test in a process with the -javaagent flag that points to the _Java Instrumenter_ (in order to test automatic instrumentation functionality of the otarules.btm file).
+1) Launch the test in a process with the `-javaagent` vm argument that points to the _Java Instrumenter_ (in order to test automatic instrumentation functionality of the otarules.btm file).
 2) Elevate the test code to be executed from a custom ClassLoader that is disconnected from the system ClassLoader (in order to test bytecode injection into the custom ClassLoader).
 3) Initialize a MockTracer as GlobalTracer, and provide a reference to the Tracer instance in the test method for assertions with JUnit.
 
