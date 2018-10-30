@@ -59,7 +59,7 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 ```bash
 jps # Call this to obtain the PID of the target application
-java -jar opentracing-instrumenter.jar <PID> # Replate <PID> with the PID from jps
+java -jar opentracing-instrumenter.jar <PID> # Replace <PID> with the PID from jps
 ```
 
 ## Test Usage
