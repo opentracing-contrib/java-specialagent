@@ -5,13 +5,13 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.opentracing.contrib</groupId>
-    <artifactId>java-instrumenter</artifactId>
+    <artifactId>java-specialagent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>java-instrumenter-rules</artifactId>
+  <artifactId>java-specialagent-rules</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>opentracing-instrumenter-okhttp</module>
+    <module>opentracing-specialagent-okhttp</module>
   </modules>
   <profiles>
     <profile>
@@ -23,7 +23,7 @@
       <dependencies>
         <dependency>
           <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-instrumenter</artifactId>
+          <artifactId>opentracing-specialagent</artifactId>
           <version>${project.version}</version>
           <type>test-jar</type>
           <scope>test</scope>

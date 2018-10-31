@@ -1,0 +1,41 @@
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.opentracing.contrib</groupId>
+    <artifactId>java-specialagent-rules</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <version.opentracing-okhttp3>0.1.1-SNAPSHOT</version.opentracing-okhttp3>
+    <version.okhttp3>3.6.0</version.okhttp3>
+  </properties>
+  <artifactId>opentracing-specialagent-okhttp</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-okhttp3</artifactId>
+      <version>${version.opentracing-okhttp3}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>okhttp</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${version.okhttp3}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>${version.okhttp3}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

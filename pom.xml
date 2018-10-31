@@ -4,15 +4,15 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib</groupId>
-  <artifactId>java-instrumenter</artifactId>
+  <artifactId>java-specialagent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>OpenTracing Instrumenter Agent</name>
+  <name>OpenTracing Special Agent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
   <scm>
-    <url>https://github.com/opentracing-contrib/java-instrumenter</url>
-    <connection>scm:git:https://github.com/opentracing-contrib/java-instrumenter.git</connection>
-    <developerConnection>scm:git:https://github.com/opentracing-contrib/java-instrumenter.git</developerConnection>
+    <url>https://github.com/opentracing-contrib/java-specialagent</url>
+    <connection>scm:git:https://github.com/opentracing-contrib/java-specialagent.git</connection>
+    <developerConnection>scm:git:https://github.com/opentracing-contrib/java-specialagent.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
   <licenses>
@@ -30,7 +30,7 @@
     </developer>
   </developers>
   <modules>
-    <module>opentracing-instrumenter</module>
+    <module>opentracing-specialagent</module>
     <module>rules</module>
   </modules>
   <properties>
@@ -97,7 +97,7 @@
           <configuration>
             <subject>opentracing</subject>
             <repo>maven</repo>
-            <packageName>java-instrumenter</packageName>
+            <packageName>java-specialagent</packageName>
           </configuration>
         </plugin>
         <plugin>
@@ -182,7 +182,7 @@
   <distributionManagement>
     <repository>
       <id>bintray</id>
-      <url>https://api.bintray.com/maven/opentracing/maven/opentracing-instrumenter/;publish=1</url>
+      <url>https://api.bintray.com/maven/opentracing/maven/opentracing-specialagent/;publish=1</url>
     </repository>
     <snapshotRepository>
       <id>jfrog-snapshots</id>

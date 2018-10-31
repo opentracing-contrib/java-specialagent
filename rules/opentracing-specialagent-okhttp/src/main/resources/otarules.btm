@@ -1,0 +1,14 @@
+RULE OkHttp3 install tracing interceptor
+CLASS okhttp3.OkHttpClient$Builder
+METHOD build()
+HELPER io.opentracing.contrib.specialagent.Helper
+BIND
+  interceptor:io.opentracing.contrib.okhttp3.TracingInterceptor =
+    new io.opentracing.contrib.okhttp3.TracingInterceptor(getTracer(),
+      java.util.Collections.singletonList(io.opentracing.contrib.okhttp3.OkHttpClientSpanDecorator.STANDARD_TAGS));
+AT ENTRY
+IF TRUE
+DO
+  $0.addInterceptor(interceptor);
+  $0.addNetworkInterceptor(interceptor);
+ENDRULE
