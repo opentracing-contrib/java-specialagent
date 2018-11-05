@@ -30,6 +30,7 @@
     </developer>
   </developers>
   <modules>
+    <module>specialagent-maven-plugin</module>
     <module>opentracing-specialagent</module>
     <module>rules</module>
   </modules>
@@ -120,6 +121,33 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>3.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>2.0.0</version> <!-- v3 clones the src into "its" dir, which breaks everything -->
+          <executions>
+            <execution>
+              <phase>install</phase>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <pom>pom.xml</pom>
+                <streamLogs>true</streamLogs>
+                <showErrors>true</showErrors>
+                <noLog>true</noLog>
+                <properties>
+                  <maven.itest.skip>${maven.itest.skip}</maven.itest.skip>
+                  <maven.rtest.skip>${maven.rtest.skip}</maven.rtest.skip>
+                  <skipTests>${skipTests}</skipTests>
+                </properties>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
