@@ -1,11 +1,11 @@
 package io.opentracing.contrib.specialagent;
 
-abstract class NamedDigest<T extends NamedDigest<T>> extends Digest implements Comparable<T> {
+abstract class NamedFingerprint<T extends NamedFingerprint<T>> extends Fingerprint implements Comparable<T> {
   private static final long serialVersionUID = 3682401024183679159L;
 
   private final String name;
 
-  NamedDigest(final String name) {
+  NamedFingerprint(final String name) {
     this.name = name;
   }
 
@@ -14,7 +14,7 @@ abstract class NamedDigest<T extends NamedDigest<T>> extends Digest implements C
   }
 
   @Override
-  public final int compareTo(final T o) {
+  public int compareTo(final T o) {
     return getName().compareTo(o.getName());
   }
 }

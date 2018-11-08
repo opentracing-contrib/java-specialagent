@@ -3,27 +3,27 @@ package io.opentracing.contrib.specialagent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-class FieldDigest extends NamedDigest<FieldDigest> {
+class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
   private static final long serialVersionUID = 3516568839736210165L;
 
-  static FieldDigest[] recurse(final Field[] fields, final int index, final int depth) {
+  static FieldFingerprint[] recurse(final Field[] fields, final int index, final int depth) {
     for (int i = index; i < fields.length; ++i) {
       if (!Modifier.isPrivate(fields[i].getModifiers())) {
-        final FieldDigest digest = new FieldDigest(fields[i]);
-        final FieldDigest[] digests = recurse(fields, i + 1, depth + 1);
+        final FieldFingerprint digest = new FieldFingerprint(fields[i]);
+        final FieldFingerprint[] digests = recurse(fields, i + 1, depth + 1);
         digests[depth] = digest;
         return digests;
       }
     }
 
-    return depth == 0 ? null : new FieldDigest[depth];
+    return depth == 0 ? null : new FieldFingerprint[depth];
   }
 
   private final String type;
 
-  FieldDigest(final Field field) {
+  FieldFingerprint(final Field field) {
     super(field.getName());
-    this.type = DigestUtil.getName(field.getType());
+    this.type = Util.getName(field.getType());
   }
 
   @Override
@@ -31,10 +31,10 @@ class FieldDigest extends NamedDigest<FieldDigest> {
     if (obj == this)
       return true;
 
-    if (!(obj instanceof FieldDigest))
+    if (!(obj instanceof FieldFingerprint))
       return false;
 
-    final FieldDigest that = (FieldDigest)obj;
+    final FieldFingerprint that = (FieldFingerprint)obj;
     return type != null ? type.equals(that.type) : that.type == null;
   }
 

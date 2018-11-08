@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,10 +35,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.jboss.byteman.agent.Retransformer;
+import org.jboss.byteman.rule.Rule;
 
 /**
  * Provides the ByteMan manager implementation for OpenTracing.
@@ -46,8 +46,7 @@ public class Manager {
   private static final Logger logger = Logger.getLogger(Manager.class.getName());
   private static final String AGENT_RULES = "otarules.btm";
 
-  private static final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
-  private static final Map<ClassLoader,URLClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
+  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
 
   protected static Retransformer transformer;
   private static URLClassLoader allPluginsClassLoader;
@@ -60,30 +59,25 @@ public class Manager {
   public static void initialize(final Retransformer trans) {
     transformer = trans;
 
-    try {
-      final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
-      final List<URL> pluginJarUrls = Util.findResources("META-INF/opentracing-specialagent/");
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
+    final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
+    final List<URL> pluginJarUrls = Util.findResources("META-INF/opentracing-specialagent/");
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
 
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("Process classpath: " + Arrays.toString(classpath).toString().replace(", ", "\n  ").replace("[", "[\n  ").replace("]", "\n]"));
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("Process classpath: " + Util.toIndentedString(classpath));
 
-      // Override parent ClassLoader methods to avoid delegation of resource
-      // resolution to BootLoader
-      allPluginsClassLoader = new URLClassLoader(classpath, new ClassLoader(null) {
-        // This is overridden to ensure resources are not discovered in BootClassLoader
-        @Override
-        public Enumeration<URL> getResources(final String name) throws IOException {
-          return null;
-        }
-      });
+    // Override parent ClassLoader methods to avoid delegation of resource
+    // resolution to BootLoader
+    allPluginsClassLoader = new URLClassLoader(classpath, new ClassLoader(null) {
+      // This is overridden to ensure resources are not discovered in BootClassLoader
+      @Override
+      public Enumeration<URL> getResources(final String name) throws IOException {
+        return null;
+      }
+    });
 
-      loadRules();
-    }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
+    loadRules();
   }
 
   /**
@@ -132,16 +126,7 @@ public class Manager {
         loadRules(scriptUrl, index, scripts, scriptNames);
       }
 
-      final StringWriter sw = new StringWriter();
-      try (final PrintWriter pw = new PrintWriter(sw)) {
-        transformer.installScript(scripts, scriptNames, pw);
-      }
-      catch (final Exception e) {
-        logger.log(Level.SEVERE, "Failed to install scripts", e);
-      }
-
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(sw.toString());
+      installScripts(scripts, scriptNames);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -149,6 +134,43 @@ public class Manager {
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("OpenTracing Agent rules loaded");
+  }
+
+  private static void installScripts(final List<String> scripts, final List<String> scriptNames) {
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Installing rules: " + Util.toIndentedString(scriptNames));
+
+    if (logger.isLoggable(Level.FINEST))
+      for (final String script : scripts)
+        logger.finest(script);
+
+    final StringWriter sw = new StringWriter();
+    try (final PrintWriter pw = new PrintWriter(sw)) {
+      transformer.installScript(scripts, scriptNames, pw);
+    }
+    catch (final Exception e) {
+      e.printStackTrace();
+      logger.log(Level.SEVERE, "Failed to install scripts", e);
+    }
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine(sw.toString());
+  }
+
+  private static String readScript(final URL url) {
+    try {
+      final StringBuilder builder = new StringBuilder();
+      try (final InputStream in = url.openStream()) {
+        final byte[] bytes = new byte[1024];
+        for (int len; (len = in.read(bytes)) != -1;)
+          builder.append(new String(bytes, 0, len));
+      }
+
+      return builder.toString();
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**
@@ -168,32 +190,21 @@ public class Manager {
    * @param scriptNames The list of script names.
    * @throws IOException If an I/O error has occurred.
    */
-  private static void loadRules(final URL url, final Integer index, final List<String> scripts, final List<String> scriptNames) throws IOException {
+  private static void loadRules(final URL url, final Integer index, final List<String> scripts, final List<String> scriptNames) {
     if (logger.isLoggable(Level.FINE))
       logger.fine("Load rules for index " + index + " from URL = " + url);
 
-    final StringBuilder builder = new StringBuilder();
-    try (final InputStream in = url.openStream()) {
-      final byte[] bytes = new byte[1024];
-      for (int len; (len = in.read(bytes)) != -1;)
-        builder.append(new String(bytes, 0, len));
-    }
-
-    final String script = builder.toString();
+    final String script = readScript(url);
     if (index != null) {
       final String discovery = createLoadClasses(script, index);
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(discovery);
-
       scripts.add(discovery);
-      scriptNames.add(url.toString() + "-discovery");
+      final String scriptName = url.toString();
+      scriptNames.add(scriptName.substring(0, scriptName.length() - 4) + "-discovery.btm");
     }
-
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest(script);
-
-    scripts.add(script);
-    scriptNames.add(url.toString());
+    else {
+      scripts.add(script);
+      scriptNames.add(url.toString());
+    }
   }
 
   /**
@@ -214,49 +225,148 @@ public class Manager {
   private static String createLoadClasses(final String script, final int index) {
     final StringBuilder builder = new StringBuilder();
     final StringTokenizer tokenizer = new StringTokenizer(script, "\n\r");
-    boolean methodSeen = false;
+    String classRef = null;
+    String methodName = null;
+    int argc = 0;
     while (tokenizer.hasMoreTokens()) {
       final String line = tokenizer.nextToken().trim();
       final String lineUC = line.toUpperCase();
-      if (methodSeen) {
-        builder.append("IF TRUE\n");
-        builder.append("DO ").append(Manager.class.getName()).append(".triggerLoadClasses($this, ").append(index).append(")\n");
+      if (methodName != null) {
+        builder.append("BIND\n");
+        builder.append("  compatible = ").append(Manager.class.getName()).append(".triggerLoadClasses(").append(index).append(", " + classRef + ", \"" + methodName + "\", " + argc + ", $*);\n");
+        builder.append("IF compatible\n");
+        builder.append("DO\n");
+        builder.append("  traceln(\">>>>>>>> COMPATIBLE\");\n");
+        builder.append("  RETURN $0." + methodName + "();\n");
         builder.append("ENDRULE\n");
         return builder.toString();
       }
-      else if (lineUC.startsWith("RULE ")) {
+
+      if (lineUC.startsWith("RULE ")) {
         builder.append(line).append(" (Discovery)\n");
       }
-      else if (lineUC.startsWith("CLASS ") || lineUC.startsWith("INTERFACE ")) {
+      else if (lineUC.startsWith("CLASS ")) {
+        builder.append(line).append('\n');
+        classRef = line.substring(6).trim() + ".class";
+      }
+      else if (lineUC.startsWith("INTERFACE ")) {
         builder.append(line).append('\n');
       }
       else if (lineUC.startsWith("METHOD ")) {
-        methodSeen = true;
         builder.append(line).append('\n');
+        builder.append("HELPER io.opentracing.contrib.specialagent.Helper\n");
+        methodName = line.substring(7).trim();
+        final int o = methodName.indexOf('(');
+        if (o != -1) {
+          final int c = methodName.indexOf(')', o);
+          if (c - o > 1)
+            argc = Util.getOccurrences(methodName.substring(o + 1, c), ',') + 1;
+
+          methodName = methodName.substring(0, o);
+        }
       }
     }
 
     throw new UnsupportedOperationException("Did not see line starting with: \"METHOD ...\"");
   }
 
-  /**
-   * Execute the "load classes" procedure. This method is called by Byteman when
-   * a "*-discovery" script is triggered. The {@code caller} object is used to
-   * determine the target {@code ClassLoader} into which the plugin at
-   * {@code index} must be loaded. This method calls {@code Class.forName(...)}
-   * on each class in the plugin jar, in order to trigger the "OpenTracing
-   * ClassLoader Injection" Byteman script.
-   *
-   * @param caller The caller object passed as $this by Byteman.
-   * @param index The index of the plugin jar URL in
-   *          allPluginsClassLoader.getURLs()
-   */
-  public static void triggerLoadClasses(final Object caller, final int index) {
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("triggerLoadClasses(" + caller + ", " + index + ")");
+  static class PluginClassLoader extends URLClassLoader {
+    private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
+    private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
 
-    // Get the ClassLoader of the caller class
-    final ClassLoader classLoader = caller.getClass().getClassLoader();
+    PluginClassLoader(final URL[] urls, final ClassLoader parent) {
+      super(urls, parent);
+    }
+
+    boolean isCompatible(final ClassLoader classLoader) {
+      final Boolean compatible = compatibility.get(classLoader);
+      if (compatible != null)
+        return compatible;
+
+      final URL fpURL = getResource("fingerprint.bin");
+      if (fpURL != null) {
+        Rule.disableTriggers();
+        try {
+          final LibraryFingerprint digest = LibraryFingerprint.fromFile(fpURL);
+          final FingerprintError[] errors = digest.matchesRuntime(classLoader, 0, 0);
+          if (errors != null) {
+            logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
+            compatibility.put(classLoader, false);
+            return false;
+          }
+
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
+        }
+        catch (final IOException e) {
+          // TODO: Parameterize the default behavior!
+          logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
+        }
+        finally {
+          Rule.enableTriggers();
+        }
+      }
+      else {
+        // TODO: Parameterize the default behavior!
+        logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+      }
+
+      compatibility.put(classLoader, true);
+      final URL url = getResource(AGENT_RULES);
+      installScripts(Collections.singletonList(readScript(url)), Collections.singletonList(url.toString()));
+      return true;
+    }
+
+    boolean shouldFindResource(final ClassLoader classLoader, final String resourceName) {
+      Set<String> classNames = classLoaderToClassName.get(classLoader);
+      if (classNames == null)
+        classLoaderToClassName.put(classLoader, classNames = new HashSet<>());
+      else if (classNames.contains(resourceName))
+        return false;
+
+      classNames.add(resourceName);
+      return true;
+    }
+  }
+
+  private static final ThreadLocal<Boolean> lock = new ThreadLocal<Boolean>() {
+    @Override
+    protected Boolean initialValue() {
+      return false;
+    }
+  };
+
+  /**
+   * FIXME: Rewrite this... Execute the "load classes" procedure. This method is
+   * called by Byteman when a "*-discovery" script is triggered. The
+   * {@code caller} object is used to determine the target {@code ClassLoader}
+   * into which the plugin at {@code index} must be loaded. This method calls
+   * {@code Class.forName(...)} on each class in the plugin jar, in order to
+   * trigger the "OpenTracing ClassLoader Injection" Byteman script.
+   *
+   * @param index The index of the plugin jar URL in
+   *          {@link #allPluginsClassLoader}
+   * @param cls The class on which the trigger event occurred.
+   * @param methodName The name of the method on which the trigger event
+   *          occurred.
+   * @param argc The number of expected args as declared in the Byteman rule.
+   * @param args The arguments used for the triggered method call.
+   */
+  public static boolean triggerLoadClasses(final int index, final Class<?> cls, final String methodName, final int argc, final Object[] args) {
+    if (lock.get()) {
+      lock.set(false);
+      return false;
+    }
+
+    if (argc != args.length - 1)
+      throw new UnsupportedOperationException("The number of method parameters (" + argc + ") declared in rule does not match actual number of paramterers passed to: " + cls + "#" + methodName + " PLEASE UPDATE YOUR " + AGENT_RULES);
+
+    final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("triggerLoadClasses(" + index + ", " + cls.getName() + ".class, " + methodName + ", " + argc + ", " + Arrays.toString(args) + ")");
+
+    // Get the ClassLoader of the target class
+    final ClassLoader classLoader = targetClass.getClassLoader();
 
     // Find the Plugin JAR (identified by index passed to this method)
     final URL pluginJar = allPluginsClassLoader.getURLs()[index];
@@ -265,30 +375,15 @@ public class Manager {
 
     // Create an isolated (no parent ClassLoader) URLClassLoader with the
     // pluginJarUrls
-    final URLClassLoader pluginClassLoader = new URLClassLoader(new URL[] {pluginJar}, classLoader);
+    final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {pluginJar}, classLoader);
 
-    // Associate the pluginClassLoader with the caller's classLoader
+    // Associate the pluginClassLoader with the target class's classLoader
     classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+    if (!pluginClassLoader.isCompatible(classLoader))
+      return false;
 
-    // Call Class.forName(...) for each class in pluginClassLoader to load in
-    // the caller's classLoader
-    for (final URL jarUrl : pluginClassLoader.getURLs()) {
-      try (final ZipInputStream zip = new ZipInputStream(jarUrl.openStream())) {
-        for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
-          if (entry.getName().endsWith(".class")) {
-//            try {
-//              Class.forName(entry.getName().substring(0, entry.getName().length() - 6).replace('/', '.'), false, classLoader);
-//            }
-//            catch (final ClassNotFoundException e) {
-//              logger.log(Level.SEVERE, "Failed to load class", e);
-//            }
-          }
-        }
-      }
-      catch (final IOException e) {
-        logger.log(Level.SEVERE, "Failed to read from JAR: " + jarUrl, e);
-      }
-    }
+    lock.set(true);
+    return true;
   }
 
   /**
@@ -311,21 +406,17 @@ public class Manager {
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     // Check if the classLoader matches a pluginClassLoader
-    final URLClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+    final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
     if (pluginClassLoader == null)
       return null;
 
     // Check that the resourceName has not already been retrieved by this method
-    // (this may be a moot point, because the JVM won't call findClass() twice
+    // (this may be a moot check, because the JVM won't call findClass() twice
     // for the same class)
     final String resourceName = name.replace('.', '/').concat(".class");
-    Set<String> classNames = classLoaderToClassName.get(classLoader);
-    if (classNames == null)
-      classLoaderToClassName.put(classLoader, classNames = new HashSet<>());
-    else if (classNames.contains(resourceName))
+    if (!pluginClassLoader.shouldFindResource(classLoader, resourceName))
       return null;
 
-    classNames.add(resourceName);
     if (logger.isLoggable(Level.FINEST))
       logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 

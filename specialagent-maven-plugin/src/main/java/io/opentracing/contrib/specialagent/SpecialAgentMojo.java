@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.maven.artifact.Artifact;
@@ -127,8 +128,9 @@ public final class SpecialAgentMojo extends AbstractMojo {
       if (dependencies == null)
         throw new MojoExecutionException("No dependencies were found with <optional>true</optional>");
 
-      final LibraryDigest libraryDigest = new LibraryDigest(dependencies);
+      final LibraryFingerprint libraryDigest = new LibraryFingerprint(dependencies);
       destFile.getParentFile().mkdirs();
+      System.err.println(Arrays.toString(dependencies));
       libraryDigest.toFile(destFile);
     }
     catch (final IOException e) {

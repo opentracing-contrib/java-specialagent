@@ -76,6 +76,7 @@
             </goals>
             <phase>integration-test</phase>
             <configuration>
+              <trimStackTrace>false</trimStackTrace>
               <includes>
                 <include>**/*ITest</include>
                 <include>**/*IntegrationTest</include>

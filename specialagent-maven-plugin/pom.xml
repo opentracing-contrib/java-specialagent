@@ -109,6 +109,11 @@
       <version>3.5.0</version>
     </dependency>
     <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-specialagent</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
       <scope>test</scope>

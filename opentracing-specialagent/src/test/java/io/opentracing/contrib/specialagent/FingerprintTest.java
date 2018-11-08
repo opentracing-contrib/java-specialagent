@@ -4,26 +4,39 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.logging.Logger;
-
-import javax.el.ELClass;
 
 import org.junit.Test;
 
-public class DigestTest {
-  private static final Logger logger = Logger.getLogger(DigestTest.class.getName());
+import io.opentracing.contrib.specialagent.ClassFingerprint;
+import io.opentracing.contrib.specialagent.ConstructorFingerprint;
+import io.opentracing.contrib.specialagent.LibraryFingerprint;
+import io.opentracing.contrib.specialagent.MethodFingerprint;
+
+public class FingerprintTest {
+  private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
 
   @Test
   public void test() throws IOException {
-    final LibraryDigest lib = new LibraryDigest(new URL [] {
-      ELClass.class.getProtectionDomain().getCodeSource().getLocation()
-    });
+    final Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources("javax/el/ELClass.class");
+    URL jarURL = null;
+    while (urls.hasMoreElements() && jarURL == null) {
+      final URL url = urls.nextElement();
+      if ("jar".equals(url.getProtocol()))
+        jarURL = new URL("file", "", url.getPath().substring(5, url.getPath().indexOf('!')));
+    }
+
+    if (jarURL == null)
+      fail("Could not find JAR resource");
+
+    final LibraryFingerprint lib = new LibraryFingerprint(jarURL);
     logger.fine(lib.toString());
     assertEquals(37, lib.getClasses().length);
 
-    ClassDigest digest;
-    ConstructorDigest constructor;
-    MethodDigest method;
+    ClassFingerprint digest;
+    ConstructorFingerprint constructor;
+    MethodFingerprint method;
 
     digest = lib.getClasses()[0];
     assertEquals("javax.el.ArrayELResolver", digest.getName());

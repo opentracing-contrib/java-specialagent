@@ -2,35 +2,35 @@ package io.opentracing.contrib.specialagent;
 
 import java.util.Arrays;
 
-class ClassDigest extends NamedDigest<ClassDigest> {
+class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
   private static final long serialVersionUID = 3179458505281585557L;
 
   private final String superClass;
-  private final ConstructorDigest[] constructors;
-  private final MethodDigest[] methods;
-  private final FieldDigest[] fields;
+  private final ConstructorFingerprint[] constructors;
+  private final MethodFingerprint[] methods;
+  private final FieldFingerprint[] fields;
 
-  ClassDigest(final Class<?> cls) {
+  ClassFingerprint(final Class<?> cls) {
     super(cls.getName());
     this.superClass = cls.getSuperclass() == null || cls.getSuperclass() == Object.class ? null : cls.getSuperclass().getName();
-    this.constructors = DigestUtil.sort(ConstructorDigest.recurse(cls.getDeclaredConstructors(), 0, 0));
-    this.methods = DigestUtil.sort(MethodDigest.recurse(cls.getDeclaredMethods(), 0, 0));
-    this.fields = DigestUtil.sort(FieldDigest.recurse(cls.getDeclaredFields(), 0, 0));
+    this.constructors = Util.sort(ConstructorFingerprint.recurse(cls.getDeclaredConstructors(), 0, 0));
+    this.methods = Util.sort(MethodFingerprint.recurse(cls.getDeclaredMethods(), 0, 0));
+    this.fields = Util.sort(FieldFingerprint.recurse(cls.getDeclaredFields(), 0, 0));
   }
 
   public String getSuperClass() {
     return this.superClass;
   }
 
-  public FieldDigest[] getFields() {
+  public FieldFingerprint[] getFields() {
     return this.fields;
   }
 
-  public ConstructorDigest[] getConstructors() {
+  public ConstructorFingerprint[] getConstructors() {
     return this.constructors;
   }
 
-  public MethodDigest[] getMethods() {
+  public MethodFingerprint[] getMethods() {
     return this.methods;
   }
 
@@ -39,10 +39,10 @@ class ClassDigest extends NamedDigest<ClassDigest> {
     if (obj == this)
       return true;
 
-    if (!(obj instanceof ClassDigest))
+    if (!(obj instanceof ClassFingerprint))
       return false;
 
-    final ClassDigest that = (ClassDigest)obj;
+    final ClassFingerprint that = (ClassFingerprint)obj;
     if (superClass != null ? !superClass.equals(that.superClass) : that.superClass != null)
       return false;
 
@@ -67,13 +67,13 @@ class ClassDigest extends NamedDigest<ClassDigest> {
 
     builder.append(" {\n");
     if (constructors != null)
-      builder.append("  ").append(getName()).append(DigestUtil.toString(constructors, "\n  " + getName())).append('\n');
+      builder.append("  ").append(getName()).append(Util.toString(constructors, "\n  " + getName())).append('\n');
 
     if (methods != null)
-      builder.append("  ").append(DigestUtil.toString(methods, "\n  ")).append('\n');
+      builder.append("  ").append(Util.toString(methods, "\n  ")).append('\n');
 
     if (fields != null)
-      builder.append("  ").append(DigestUtil.toString(fields, "\n  ")).append('\n');
+      builder.append("  ").append(Util.toString(fields, "\n  ")).append('\n');
 
     builder.append('}');
     return builder.toString();

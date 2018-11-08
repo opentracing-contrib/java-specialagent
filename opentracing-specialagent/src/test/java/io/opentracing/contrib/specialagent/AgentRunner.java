@@ -41,8 +41,6 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.Agent;
-import io.opentracing.contrib.specialagent.Util;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.noop.NoopTracer;
@@ -197,7 +195,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   private final ObjectInputStream in;
   private final ObjectOutputStream out;
-  private final URL loggingProperties;
+  private final URL loggingConfigFile;
 
   /**
    * Creates a new {@code InstrumentationRunner} for the specified test class.
@@ -210,10 +208,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> cls) throws InitializationError {
     super(isInFork ? loadClassInURLClassLoader(cls) : cls);
     final Debug debug = cls.getAnnotation(Debug.class);
-    this.loggingProperties = debug != null && debug.value() ? getClass().getResource("/logging.properties") : null;
-    if (loggingProperties != null) {
+    this.loggingConfigFile = debug != null && debug.value() ? getClass().getResource("/logging.properties") : null;
+    if (loggingConfigFile != null) {
       try {
-        LogManager.getLogManager().readConfiguration(loggingProperties.openStream());
+        LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
       }
       catch (final IOException e) {
         throw new ExceptionInInitializerError(e);
@@ -429,15 +427,15 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(File.pathSeparator, "\n  "));
 
     int i = -1;
-    final String[] args = new String[8 + (loggingProperties != null ? 1 : 0)];
+    final String[] args = new String[8 + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-Xbootclasspath/a:" + bootClassPath;
     args[++i] = "-cp";
     args[++i] = classpath;
     args[++i] = "-javaagent:" + getAgentPath();
     args[++i] = "-D" + PORT_ARG + "=" + port;
-    if (loggingProperties != null)
-      args[++i] = "-Djava.util.logging.config.file=" + loggingProperties.toString();
+    if (loggingConfigFile != null)
+      args[++i] = "-Djava.util.logging.config.file=" + ("file".equals(loggingConfigFile.getProtocol()) ? loggingConfigFile.getPath() : loggingConfigFile.toString());
 
     args[++i] = JUnitCore.class.getName();
     args[++i] = mainClass.getName();

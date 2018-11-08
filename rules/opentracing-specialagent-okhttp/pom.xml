@@ -26,7 +26,7 @@
             </goals>
             <phase>generate-resources</phase>
             <configuration>
-              <destFile>${project.build.directory}/generated-resources/fingerprint.bin</destFile>
+              <destFile>${project.build.directory}/classes/fingerprint.bin</destFile>
             </configuration>
           </execution>
         </executions>
