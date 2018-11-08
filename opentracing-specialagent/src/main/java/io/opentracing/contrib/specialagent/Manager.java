@@ -236,8 +236,16 @@ public class Manager {
         builder.append("  compatible = ").append(Manager.class.getName()).append(".triggerLoadClasses(").append(index).append(", " + classRef + ", \"" + methodName + "\", " + argc + ", $*);\n");
         builder.append("IF compatible\n");
         builder.append("DO\n");
-        builder.append("  traceln(\">>>>>>>> COMPATIBLE\");\n");
-        builder.append("  RETURN $0." + methodName + "();\n");
+        builder.append("  traceln(\">>>>>>>> RE-INVOKING...\");\n");
+        builder.append("  RETURN $0.").append(methodName).append('(');
+        for (int i = 1; i <= argc; ++i) {
+          if (i > 1)
+            builder.append(',');
+
+          builder.append('$').append(i);
+        }
+
+        builder.append(");\n");
         builder.append("ENDRULE\n");
         return builder.toString();
       }
