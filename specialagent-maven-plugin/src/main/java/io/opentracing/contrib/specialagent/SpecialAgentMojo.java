@@ -125,8 +125,10 @@ public final class SpecialAgentMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     try {
       final URL[] dependencies = getOptionalDependencyPaths(localRepository, project.getArtifacts().iterator(), 0);
-      if (dependencies == null)
-        throw new MojoExecutionException("No dependencies were found with <optional>true</optional>");
+      if (dependencies == null) {
+        getLog().warn("No dependencies were found with <optional>true</optional> -- fingerprint.bin will not be generated");
+        return;
+      }
 
       final LibraryFingerprint libraryDigest = new LibraryFingerprint(dependencies);
       destFile.getParentFile().mkdirs();

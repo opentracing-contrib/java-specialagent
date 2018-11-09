@@ -262,8 +262,11 @@ public class Manager {
       }
       else if (lineUC.startsWith("METHOD ")) {
         builder.append(line).append('\n');
-        builder.append("HELPER io.opentracing.contrib.specialagent.Helper\n");
         methodName = line.substring(7).trim();
+        final int s = methodName.indexOf(' ');
+        if (s != -1)
+          methodName = methodName.substring(s + 1).trim();
+
         final int o = methodName.indexOf('(');
         if (o != -1) {
           final int c = methodName.indexOf(')', o);
@@ -371,7 +374,7 @@ public class Manager {
 
     final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("triggerLoadClasses(" + index + ", " + cls.getName() + ".class, " + methodName + ", " + argc + ", " + Arrays.toString(args) + ")");
+      logger.finest("triggerLoadClasses(" + index + ", " + (cls == null ? "null" : cls.getName()) + ".class, " + methodName + ", " + argc + ", " + Arrays.toString(args) + ")");
 
     // Get the ClassLoader of the target class
     final ClassLoader classLoader = targetClass.getClassLoader();

@@ -142,6 +142,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }
 
         GlobalTracer.register(tracer);
+        System.out.println("sun.boot.class.path: " + System.getProperty("sun.boot.class.path"));
         return tracer;
       }
     }
@@ -172,7 +173,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
       final URL[] libs = Util.classPathToURLs(classpath);
       // Special case for AgentRunnerITest, because it belongs to the same classpath path as the AgentRunner
-      final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? null : new ClassLoader() {
+      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : ClassLoader.getPlatformClassLoader();
+      final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader() {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           return name.equals(cls.getName()) ? null : super.loadClass(name, resolve);

@@ -12,6 +12,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>opentracing-specialagent-okhttp</module>
+    <module>opentracing-specialagent-jdbc</module>
   </modules>
   <profiles>
     <profile>
@@ -85,6 +86,22 @@
               <excludes>
                 <exclude></exclude> <!-- This is necessary for inner classes to be run -->
               </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>specialagent-maven-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>fingerprint</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <destFile>${project.build.directory}/classes/fingerprint.bin</destFile>
             </configuration>
           </execution>
         </executions>

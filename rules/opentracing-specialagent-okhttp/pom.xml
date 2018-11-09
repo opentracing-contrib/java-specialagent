@@ -9,35 +9,14 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <version.opentracing-okhttp3>0.1.1-SNAPSHOT</version.opentracing-okhttp3>
     <version.okhttp3>3.6.0</version.okhttp3>
   </properties>
   <artifactId>opentracing-specialagent-okhttp</artifactId>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>specialagent-maven-plugin</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>fingerprint</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <destFile>${project.build.directory}/classes/fingerprint.bin</destFile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
-      <version>${version.opentracing-okhttp3}</version>
+      <version>0.1.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.squareup.okhttp3</groupId>
