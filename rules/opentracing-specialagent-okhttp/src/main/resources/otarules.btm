@@ -1,6 +1,6 @@
 RULE OkHttp3 install tracing interceptor
 CLASS okhttp3.OkHttpClient$Builder
-METHOD build()
+METHOD okhttp3.OkHttpClient build()
 HELPER io.opentracing.contrib.specialagent.Helper
 BIND
   interceptor:io.opentracing.contrib.okhttp3.TracingInterceptor =

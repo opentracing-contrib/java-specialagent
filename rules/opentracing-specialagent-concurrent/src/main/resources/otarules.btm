@@ -1,0 +1,58 @@
+##################################################################################
+# java-concurrent Rule Set
+#
+# This rule set will intercept calls to all methods specified by
+# java.util.concurrent.Executor and subinterfaces in java.util.concurrent.
+#
+# The rule set assumes that all calls to ExecutorService's methods eventually
+# call Executor.execute(Runnable)
+#
+# TODO: Consider generating rule set from script.
+# See: https://stackoverflow.com/a/32763032/4814697
+
+HELPER io.opentracing.contrib.specialagent.Helper
+
+RULE Executor.execute
+INTERFACE ^java.util.concurrent.Executor
+METHOD execute(Runnable)
+AT ENTRY
+IF getTracer().activeSpan() != null
+DO
+   $1 = new io.opentracing.contrib.concurrent.TracedRunnable($1, getTracer());
+ENDRULE
+
+RULE ScheduledExecutorService.schedule(Runnable)
+INTERFACE ^java.util.concurrent.ScheduledExecutorService
+METHOD java.util.concurrent.ScheduledFuture schedule(Runnable,long,java.util.concurrent.TimeUnit)
+AT ENTRY
+IF getTracer().activeSpan() != null
+DO
+   $1 = new io.opentracing.contrib.concurrent.TracedRunnable($1, getTracer());
+ENDRULE
+
+RULE ScheduledExecutorService.schedule(Callable)
+INTERFACE ^java.util.concurrent.ScheduledExecutorService
+METHOD java.util.concurrent.ScheduledFuture schedule(java.util.concurrent.Callable,long,java.util.concurrent.TimeUnit)
+AT ENTRY
+IF getTracer().activeSpan() != null
+DO
+   $1 = new io.opentracing.contrib.concurrent.TracedCallable($1, getTracer());
+ENDRULE
+
+RULE ScheduledExecutorService.scheduleAtFixedRate
+INTERFACE ^java.util.concurrent.ScheduledExecutorService
+METHOD java.util.concurrent.ScheduledFuture scheduleAtFixedRate(Runnable,long,long,java.util.concurrent.TimeUnit)
+AT ENTRY
+IF getTracer().activeSpan() != null
+DO
+   $1 = new io.opentracing.contrib.concurrent.TracedRunnable($1, getTracer());
+ENDRULE
+
+RULE ScheduledExecutorService.scheduleWithFixedDelay
+INTERFACE ^java.util.concurrent.ScheduledExecutorService
+METHOD java.util.concurrent.ScheduledFuture scheduleWithFixedDelay(Runnable,long,long,java.util.concurrent.TimeUnit)
+AT ENTRY
+IF getTracer().activeSpan() != null
+DO
+   $1 = new io.opentracing.contrib.concurrent.TracedRunnable($1, getTracer());
+ENDRULE

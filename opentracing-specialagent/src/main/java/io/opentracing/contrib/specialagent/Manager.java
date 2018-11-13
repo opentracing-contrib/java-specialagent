@@ -28,11 +28,11 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +46,8 @@ public class Manager {
   private static final Logger logger = Logger.getLogger(Manager.class.getName());
   private static final String AGENT_RULES = "otarules.btm";
 
-  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
+  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new ConcurrentHashMap<>();
+  private static final ClassLoader bootstrapClassLoaderMutex = new ClassLoader() {};
 
   protected static Retransformer transformer;
   private static URLClassLoader allPluginsClassLoader;
@@ -163,7 +164,8 @@ public class Manager {
       try (final InputStream in = url.openStream()) {
         final byte[] bytes = new byte[1024];
         for (int len; (len = in.read(bytes)) != -1;)
-          builder.append(new String(bytes, 0, len));
+          if (len != 0)
+            builder.append(new String(bytes, 0, len));
       }
 
       return builder.toString();
@@ -226,31 +228,15 @@ public class Manager {
     final StringBuilder builder = new StringBuilder();
     final StringTokenizer tokenizer = new StringTokenizer(script, "\n\r");
     String classRef = null;
-    String methodName = null;
+    String methodLine = null;
     int argc = 0;
     while (tokenizer.hasMoreTokens()) {
       final String line = tokenizer.nextToken().trim();
       final String lineUC = line.toUpperCase();
-      if (methodName != null) {
-        builder.append("BIND\n");
-        builder.append("  compatible = ").append(Manager.class.getName()).append(".triggerLoadClasses(").append(index).append(", " + classRef + ", \"" + methodName + "\", " + argc + ", $*);\n");
-        builder.append("IF compatible\n");
-        builder.append("DO\n");
-        builder.append("  traceln(\">>>>>>>> RE-INVOKING...\");\n");
-        builder.append("  RETURN $0.").append(methodName).append('(');
-        for (int i = 1; i <= argc; ++i) {
-          if (i > 1)
-            builder.append(',');
-
-          builder.append('$').append(i);
-        }
-
-        builder.append(");\n");
-        builder.append("ENDRULE\n");
-        return builder.toString();
-      }
-
       if (lineUC.startsWith("RULE ")) {
+        if (builder.length() > 0)
+          builder.append('\n');
+
         builder.append(line).append(" (Discovery)\n");
       }
       else if (lineUC.startsWith("CLASS ")) {
@@ -259,13 +245,21 @@ public class Manager {
       }
       else if (lineUC.startsWith("INTERFACE ")) {
         builder.append(line).append('\n');
+        classRef = null;
       }
       else if (lineUC.startsWith("METHOD ")) {
-        builder.append(line).append('\n');
-        methodName = line.substring(7).trim();
+        methodLine = line;
+      }
+      else if (lineUC.startsWith("ENDRULE")) {
+        String methodSignature = methodLine.substring(7).trim();
+
+        String methodName = methodSignature;
+        String returnType = null;
         final int s = methodName.indexOf(' ');
-        if (s != -1)
+        if (s != -1) {
+          returnType = methodName.substring(0, s).trim();
           methodName = methodName.substring(s + 1).trim();
+        }
 
         final int o = methodName.indexOf('(');
         if (o != -1) {
@@ -275,57 +269,88 @@ public class Manager {
 
           methodName = methodName.substring(0, o);
         }
+
+        builder.append(methodLine).append('\n');
+        builder.append("BIND\n");
+        builder.append("  compatible = ").append(Manager.class.getName()).append(".triggerLoadClasses(").append(index).append(", ").append(classRef).append(", \"").append(methodSignature).append("\", $METHOD, $*);\n");
+        builder.append("IF compatible\n");
+        builder.append("DO\n");
+        builder.append("  traceln(\">>>>>>>> RE-INVOKING...\");\n");
+        if (returnType == null)
+          builder.append("  $0.").append(methodName).append('(');
+        else
+          builder.append("  RETURN $0.").append(methodName).append('(');
+
+        for (int i = 1; i <= argc; ++i) {
+          if (i > 1)
+            builder.append(',');
+
+          builder.append('$').append(i);
+        }
+
+        builder.append(");\n");
+        if (returnType == null)
+          builder.append("  RETURN;\n");
+
+        builder.append("ENDRULE\n");
+
+        // Reset variables
+        argc = 0;
+        classRef = null;
+        methodLine = null;
       }
     }
 
-    throw new UnsupportedOperationException("Did not see line starting with: \"METHOD ...\"");
+    return builder.toString();
   }
 
   static class PluginClassLoader extends URLClassLoader {
-    private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-    private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
+    private final Map<ClassLoader,Boolean> compatibility = new ConcurrentHashMap<>();
+    private final Map<ClassLoader,Set<String>> classLoaderToClassName = new ConcurrentHashMap<>();
 
     PluginClassLoader(final URL[] urls, final ClassLoader parent) {
       super(urls, parent);
     }
 
     boolean isCompatible(final ClassLoader classLoader) {
-      final Boolean compatible = compatibility.get(classLoader);
+      Boolean compatible = compatibility.get(classLoader);
       if (compatible != null)
         return compatible;
 
-      final URL fpURL = getResource("fingerprint.bin");
-      if (fpURL != null) {
-        Rule.disableTriggers();
-        try {
-          final LibraryFingerprint digest = LibraryFingerprint.fromFile(fpURL);
-          final FingerprintError[] errors = digest.matchesRuntime(classLoader, 0, 0);
-          if (errors != null) {
-            logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
-            compatibility.put(classLoader, false);
-            return false;
+      synchronized (classLoader) {
+        compatible = compatibility.get(classLoader);
+        if (compatible != null)
+          return compatible;
+
+        final URL fpURL = getResource("fingerprint.bin");
+        if (fpURL != null) {
+          try {
+            final LibraryFingerprint digest = LibraryFingerprint.fromFile(fpURL);
+            final FingerprintError[] errors = digest.matchesRuntime(classLoader, 0, 0);
+            if (errors != null) {
+              logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
+              compatibility.put(classLoader, false);
+              return false;
+            }
+
+            if (logger.isLoggable(Level.FINE))
+              logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
           }
-
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
+          catch (final IOException e) {
+            // TODO: Parameterize the default behavior!
+            logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
+          }
         }
-        catch (final IOException e) {
+        else {
           // TODO: Parameterize the default behavior!
-          logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
+          logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
         }
-        finally {
-          Rule.enableTriggers();
-        }
-      }
-      else {
-        // TODO: Parameterize the default behavior!
-        logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
-      }
 
-      compatibility.put(classLoader, true);
-      final URL url = getResource(AGENT_RULES);
-      installScripts(Collections.singletonList(readScript(url)), Collections.singletonList(url.toString()));
-      return true;
+        compatibility.put(classLoader, true);
+        final URL url = getResource(AGENT_RULES);
+        installScripts(Collections.singletonList(readScript(url)), Collections.singletonList(url.toString()));
+        return true;
+      }
     }
 
     boolean shouldFindResource(final ClassLoader classLoader, final String resourceName) {
@@ -347,6 +372,22 @@ public class Manager {
     }
   };
 
+  private static ClassLoader getClassLoader(final Class<?> cls) {
+    final ClassLoader classLoader = cls.getClassLoader();
+    if (classLoader != null)
+      return classLoader;
+
+    return bootstrapClassLoaderMutex;
+  }
+
+  private static boolean lock(final boolean compatible) {
+    if (!compatible)
+      return false;
+
+    lock.set(true);
+    return true;
+  }
+
   /**
    * FIXME: Rewrite this... Execute the "load classes" procedure. This method is
    * called by Byteman when a "*-discovery" script is triggered. The
@@ -363,38 +404,58 @@ public class Manager {
    * @param argc The number of expected args as declared in the Byteman rule.
    * @param args The arguments used for the triggered method call.
    */
-  public static boolean triggerLoadClasses(final int index, final Class<?> cls, final String methodName, final int argc, final Object[] args) {
-    if (lock.get()) {
-      lock.set(false);
-      return false;
+  public static boolean triggerLoadClasses(final int index, final Class<?> cls, String declaredMethodSignature, String methodSignature, final Object[] args) {
+    Rule.disableTriggers();
+    try {
+      if (lock.get()) {
+        lock.set(false);
+        return false;
+      }
+
+      declaredMethodSignature = declaredMethodSignature.replace("java.lang.", "").replace(", ", ",");
+      methodSignature = methodSignature.replace("java.lang.", "").replace(", ", ",").replace(" void", "");
+      final int s = methodSignature.indexOf(' ');
+      if (s != -1)
+        methodSignature = methodSignature.substring(s + 1) + " " + methodSignature.substring(0, s);
+
+      if (!declaredMethodSignature.equals(methodSignature))
+        throw new UnsupportedOperationException("Declared method signature \"" + declaredMethodSignature + "\" does not match actual method signature \"" + methodSignature + "\" PLEASE UPDATE YOUR " + AGENT_RULES);
+
+      final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("triggerLoadClasses(" + index + ", " + (cls == null ? "null" : cls.getName()) + ".class, " + declaredMethodSignature + ", " + methodSignature + ", " + Arrays.toString(args) + ")");
+
+      // Get the ClassLoader of the target class
+      final ClassLoader classLoader = getClassLoader(targetClass);
+
+      // Synchronize on classLoader, because we cannot have 2 threads create
+      // different PluginClassLoader instances
+      PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+      if (pluginClassLoader != null)
+        return lock(pluginClassLoader.isCompatible(classLoader));
+
+      synchronized (classLoader) {
+        pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+        if (pluginClassLoader != null)
+          return lock(pluginClassLoader.isCompatible(classLoader));
+
+        // Find the Plugin JAR (identified by index passed to this method)
+        final URL pluginJar = allPluginsClassLoader.getURLs()[index];
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("  Plugin JAR: " + pluginJar);
+
+        // Create an isolated (no parent ClassLoader) URLClassLoader with the
+        // pluginJarUrls
+        pluginClassLoader = new PluginClassLoader(new URL[] {pluginJar}, classLoader);
+
+        // Associate the pluginClassLoader with the target class's classLoader
+        classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+        return lock(pluginClassLoader.isCompatible(classLoader));
+      }
     }
-
-    if (argc != args.length - 1)
-      throw new UnsupportedOperationException("The number of method parameters (" + argc + ") declared in rule does not match actual number of paramterers passed to: " + cls + "#" + methodName + " PLEASE UPDATE YOUR " + AGENT_RULES);
-
-    final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("triggerLoadClasses(" + index + ", " + (cls == null ? "null" : cls.getName()) + ".class, " + methodName + ", " + argc + ", " + Arrays.toString(args) + ")");
-
-    // Get the ClassLoader of the target class
-    final ClassLoader classLoader = targetClass.getClassLoader();
-
-    // Find the Plugin JAR (identified by index passed to this method)
-    final URL pluginJar = allPluginsClassLoader.getURLs()[index];
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("  Plugin JAR: " + pluginJar);
-
-    // Create an isolated (no parent ClassLoader) URLClassLoader with the
-    // pluginJarUrls
-    final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {pluginJar}, classLoader);
-
-    // Associate the pluginClassLoader with the target class's classLoader
-    classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
-    if (!pluginClassLoader.isCompatible(classLoader))
-      return false;
-
-    lock.set(true);
-    return true;
+    finally {
+      Rule.enableTriggers();
+    }
   }
 
   /**
@@ -416,29 +477,35 @@ public class Manager {
    *         {@code classLoader} and {@code name}.
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
-    // Check if the classLoader matches a pluginClassLoader
-    final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
-    if (pluginClassLoader == null)
-      return null;
+    Rule.disableTriggers();
+    try {
+      // Check if the classLoader matches a pluginClassLoader
+      final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+      if (pluginClassLoader == null)
+        return null;
 
-    // Check that the resourceName has not already been retrieved by this method
-    // (this may be a moot check, because the JVM won't call findClass() twice
-    // for the same class)
-    final String resourceName = name.replace('.', '/').concat(".class");
-    if (!pluginClassLoader.shouldFindResource(classLoader, resourceName))
-      return null;
+      // Check that the resourceName has not already been retrieved by this method
+      // (this may be a moot check, because the JVM won't call findClass() twice
+      // for the same class)
+      final String resourceName = name.replace('.', '/').concat(".class");
+      if (!pluginClassLoader.shouldFindResource(classLoader, resourceName))
+        return null;
 
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-    // Return the resource's bytes, or null if the resource does not exist in
-    // pluginClassLoader
-    try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
-      return in == null ? null : Util.readBytes(in);
+      // Return the resource's bytes, or null if the resource does not exist in
+      // pluginClassLoader
+      try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
+        return in == null ? null : Util.readBytes(in);
+      }
+      catch (final IOException e) {
+        logger.log(Level.SEVERE, "Failed to read bytes for " + resourceName, e);
+        return null;
+      }
     }
-    catch (final IOException e) {
-      logger.log(Level.SEVERE, "Failed to read bytes for " + resourceName, e);
-      return null;
+    finally {
+      Rule.enableTriggers();
     }
   }
 }

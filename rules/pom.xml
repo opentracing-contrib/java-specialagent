@@ -13,6 +13,7 @@
   <modules>
     <module>opentracing-specialagent-okhttp</module>
     <module>opentracing-specialagent-jdbc</module>
+    <module>opentracing-specialagent-concurrent</module>
   </modules>
   <profiles>
     <profile>

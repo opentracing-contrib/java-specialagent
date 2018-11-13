@@ -343,7 +343,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private FrameworkMethod retrofitMethod(final FrameworkMethod method) {
     return new FrameworkMethod(method.getMethod()) {
       @Override
-      public void validatePublicVoidNoArg(boolean isStatic, List<Throwable> errors) {
+      public void validatePublicVoidNoArg(final boolean isStatic, final List<Throwable> errors) {
         validatePublicVoid(isStatic, errors);
         if (method.getMethod().getParameterTypes().length != 1)
           errors.add(new Exception("Method " + method.getName() + " must declare one parameter of type: " + MockTracer.class.getName()));
@@ -358,6 +358,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
           Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
           try {
+            tracer.reset();
             final Object result = super.invokeExplosively(target, tracer);
             write(new TestResult(getName(), null));
             return result;
