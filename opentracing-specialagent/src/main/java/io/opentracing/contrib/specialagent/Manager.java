@@ -28,11 +28,11 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,8 +46,7 @@ public class Manager {
   private static final Logger logger = Logger.getLogger(Manager.class.getName());
   private static final String AGENT_RULES = "otarules.btm";
 
-  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new ConcurrentHashMap<>();
-  private static final ClassLoader bootstrapClassLoaderMutex = new ClassLoader() {};
+  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
 
   protected static Retransformer transformer;
   private static URLClassLoader allPluginsClassLoader;
@@ -179,7 +178,7 @@ public class Manager {
    * This method digests the Byteman rule script at {@code url}, and adds the
    * script to the {@code scripts} and {@code scriptNames} lists. If
    * {@code index} is not null, this method calls
-   * {@link #createLoadClasses(String,int)} to create a "load classes" script
+   * {@link #createLoadPluginScript(String,int)} to create a "load classes" script
    * that is triggered in the same manner as the script at {@code url}, and is
    * used to load API and instrumentation classes into the calling object's
    * {@code ClassLoader}.
@@ -198,10 +197,10 @@ public class Manager {
 
     final String script = readScript(url);
     if (index != null) {
-      final String discovery = createLoadClasses(script, index);
-      scripts.add(discovery);
+      final String loadPluginScript = createLoadPluginScript(script, index);
+      scripts.add(loadPluginScript);
       final String scriptName = url.toString();
-      scriptNames.add(scriptName.substring(0, scriptName.length() - 4) + "-discovery.btm");
+      scriptNames.add(scriptName.substring(0, scriptName.length() - 4) + "-load.btm");
     }
     else {
       scripts.add(script);
@@ -213,7 +212,7 @@ public class Manager {
    * This method consumes a Byteman script that is intended for the
    * instrumentation of the OpenTracing API into a 3rd-party library, and
    * produces a Byteman script that is used to trigger the "load classes"
-   * procedure {@link #triggerLoadClasses(Object, int)} that loads the
+   * procedure {@link #loadPlugin(Object, int)} that loads the
    * instrumentation and OpenTracing API classes directly into the
    * {@code ClassLoader} in which the 3rd-party library is loaded.
    *
@@ -222,9 +221,9 @@ public class Manager {
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
    * @return The script used to trigger the "load classes" procedure
-   *         {@link #triggerLoadClasses(Object, int)}.
+   *         {@link #loadPlugin(Object, int)}.
    */
-  private static String createLoadClasses(final String script, final int index) {
+  private static String createLoadPluginScript(final String script, final int index) {
     final StringBuilder builder = new StringBuilder();
     final StringTokenizer tokenizer = new StringTokenizer(script, "\n\r");
     String classRef = null;
@@ -237,7 +236,7 @@ public class Manager {
         if (builder.length() > 0)
           builder.append('\n');
 
-        builder.append(line).append(" (Discovery)\n");
+        builder.append(line).append(" (Load Plugin)\n");
       }
       else if (lineUC.startsWith("CLASS ")) {
         builder.append(line).append('\n');
@@ -272,7 +271,7 @@ public class Manager {
 
         builder.append(methodLine).append('\n');
         builder.append("BIND\n");
-        builder.append("  compatible = ").append(Manager.class.getName()).append(".triggerLoadClasses(").append(index).append(", ").append(classRef).append(", \"").append(methodSignature).append("\", $METHOD, $*);\n");
+        builder.append("  compatible = ").append(Manager.class.getName()).append(".loadPlugin(").append(index).append(", ").append(classRef).append(", \"").append(methodSignature).append("\", $METHOD, $*);\n");
         builder.append("IF compatible\n");
         builder.append("DO\n");
         builder.append("  traceln(\">>>>>>>> RE-INVOKING...\");\n");
@@ -305,52 +304,46 @@ public class Manager {
   }
 
   static class PluginClassLoader extends URLClassLoader {
-    private final Map<ClassLoader,Boolean> compatibility = new ConcurrentHashMap<>();
-    private final Map<ClassLoader,Set<String>> classLoaderToClassName = new ConcurrentHashMap<>();
+    private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
+    private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
 
     PluginClassLoader(final URL[] urls, final ClassLoader parent) {
       super(urls, parent);
     }
 
     boolean isCompatible(final ClassLoader classLoader) {
-      Boolean compatible = compatibility.get(classLoader);
+      final Boolean compatible = compatibility.get(classLoader);
       if (compatible != null)
         return compatible;
 
-      synchronized (classLoader) {
-        compatible = compatibility.get(classLoader);
-        if (compatible != null)
-          return compatible;
-
-        final URL fpURL = getResource("fingerprint.bin");
-        if (fpURL != null) {
-          try {
-            final LibraryFingerprint digest = LibraryFingerprint.fromFile(fpURL);
-            final FingerprintError[] errors = digest.matchesRuntime(classLoader, 0, 0);
-            if (errors != null) {
-              logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
-              compatibility.put(classLoader, false);
-              return false;
-            }
-
-            if (logger.isLoggable(Level.FINE))
-              logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
+      final URL fpURL = getResource("fingerprint.bin");
+      if (fpURL != null) {
+        try {
+          final LibraryFingerprint digest = LibraryFingerprint.fromFile(fpURL);
+          final FingerprintError[] errors = digest.matchesRuntime(classLoader, 0, 0);
+          if (errors != null) {
+            logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
+            compatibility.put(classLoader, false);
+            return false;
           }
-          catch (final IOException e) {
-            // TODO: Parameterize the default behavior!
-            logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
-          }
+
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
         }
-        else {
+        catch (final IOException e) {
           // TODO: Parameterize the default behavior!
-          logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+          logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
         }
-
-        compatibility.put(classLoader, true);
-        final URL url = getResource(AGENT_RULES);
-        installScripts(Collections.singletonList(readScript(url)), Collections.singletonList(url.toString()));
-        return true;
       }
+      else {
+        // TODO: Parameterize the default behavior!
+        logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+      }
+
+      compatibility.put(classLoader, true);
+      final URL url = getResource(AGENT_RULES);
+      installScripts(Collections.singletonList(readScript(url)), Collections.singletonList(url.toString()));
+      return true;
     }
 
     boolean shouldFindResource(final ClassLoader classLoader, final String resourceName) {
@@ -365,53 +358,78 @@ public class Manager {
     }
   }
 
-  private static final ThreadLocal<Boolean> lock = new ThreadLocal<Boolean>() {
+  private static final ThreadLocal<Boolean> recursionLock = new ThreadLocal<Boolean>() {
     @Override
     protected Boolean initialValue() {
       return false;
     }
   };
 
-  private static ClassLoader getClassLoader(final Class<?> cls) {
-    final ClassLoader classLoader = cls.getClassLoader();
-    if (classLoader != null)
-      return classLoader;
-
-    return bootstrapClassLoaderMutex;
-  }
-
-  private static boolean lock(final boolean compatible) {
+  private static boolean prepareForRecursion(final boolean compatible) {
     if (!compatible)
       return false;
 
-    lock.set(true);
+    recursionLock.set(true);
     return true;
   }
 
   /**
-   * FIXME: Rewrite this... Execute the "load classes" procedure. This method is
-   * called by Byteman when a "*-discovery" script is triggered. The
-   * {@code caller} object is used to determine the target {@code ClassLoader}
-   * into which the plugin at {@code index} must be loaded. This method calls
-   * {@code Class.forName(...)} on each class in the plugin jar, in order to
-   * trigger the "OpenTracing ClassLoader Injection" Byteman script.
+   * Loads the instrumentation plugin at the specified index. This method is
+   * called by Byteman upon trigger of a "*-load.btm" script, and its purpose
+   * is:
+   * <ol>
+   * <li>To link a plugin JAR to a {@code ClassLoader} in which the
+   * instrumentation plugin is relevant.</li>
+   * <li>To check if the instrumentation code is compatible with the classes
+   * that are to be instrumented in the {@code ClassLoader}.</li>
+   * <li>To load the rules file for the instrumentation plugin, if it is
+   * compatible, and thereafter to re-invoke the trigger method so the just
+   * loaded rules file is executed for the same trigger point where the decision
+   * to load the script is made.</li>
+   * </ol>
+   * The {@code index} is a reference to the array index of the plugin JAR's
+   * {@code URL} in {@link #allPluginsClassLoader}, and is statically declared
+   * in the generated script by {@link #createLoadPluginScript(String,int)}.
+   * <p>
+   * The {@code declaredMethodSignature} is the method signature declared in the
+   * rules file, and is used to validate against {@code methodSignature}, which
+   * is the actual method signature reported by Byteman, via the {@code $METHOD}
+   * variable. It is necessary for the {@code declaredMethodSignature} and
+   * {@code methodSignature} to be identical, because the
+   * {@code declaredMethodSignature} is used to construct the recursive
+   * re-invocation of the triggered method after the instrumentation plugin's
+   * rules file is loaded.
+   * <p>
+   * The {@code args} parameter is used to obtain the caller object, which is
+   * itself used to determine the {@code ClassLoader} in which the classes
+   * relevant for instrumentation are being invoked, and are thus loaded. If the
+   * caller object is null (meaning the triggered method is static), the
+   * {@code cls} parameter is used to determine the target {@code ClassLoader}.
+   * This method thereafter associates (in
+   * {@link #classLoaderToPluginClassLoader}) a {@link PluginClassLoader} for
+   * the instrumentation plugin at {@code index}. The association thereafter
+   * allows the {@link #findClass(ClassLoader,String)} method to directly inject
+   * the bytecode of the instrumentation classes into the target
+   * {@code ClassLoader}.
    *
-   * @param index The index of the plugin jar URL in
-   *          {@link #allPluginsClassLoader}
+   * @param index The index of the plugin JAR's {@code URL} in
+   *          {@link #allPluginsClassLoader}.
    * @param cls The class on which the trigger event occurred.
-   * @param methodName The name of the method on which the trigger event
-   *          occurred.
-   * @param argc The number of expected args as declared in the Byteman rule.
+   * @param declaredMethodSignature The method signature declared in the rules
+   *          file.
+   * @param methodSignature The method signature reported by Byteman, via
+   *          {@code $METHOD} variable.
    * @param args The arguments used for the triggered method call.
+   * @see #createLoadPluginScript(String,int)
    */
-  public static boolean triggerLoadClasses(final int index, final Class<?> cls, String declaredMethodSignature, String methodSignature, final Object[] args) {
+  public static boolean loadPlugin(final int index, final Class<?> cls, String declaredMethodSignature, String methodSignature, final Object[] args) {
     Rule.disableTriggers();
     try {
-      if (lock.get()) {
-        lock.set(false);
+      if (recursionLock.get())
         return false;
-      }
 
+      // Canonicalize the declaredMethodSignature and methodSignature, so that
+      // they can be compared to each other.
       declaredMethodSignature = declaredMethodSignature.replace("java.lang.", "").replace(", ", ",");
       methodSignature = methodSignature.replace("java.lang.", "").replace(", ", ",").replace(" void", "");
       final int s = methodSignature.indexOf(' ');
@@ -423,35 +441,27 @@ public class Manager {
 
       final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("triggerLoadClasses(" + index + ", " + (cls == null ? "null" : cls.getName()) + ".class, " + declaredMethodSignature + ", " + methodSignature + ", " + Arrays.toString(args) + ")");
+        logger.finest("loadPlugin(" + index + ", " + (cls == null ? "null" : cls.getName()) + ".class, " + declaredMethodSignature + ", " + methodSignature + ", " + Arrays.toString(args) + ")");
 
       // Get the ClassLoader of the target class
-      final ClassLoader classLoader = getClassLoader(targetClass);
+      final ClassLoader classLoader = targetClass.getClassLoader();
 
-      // Synchronize on classLoader, because we cannot have 2 threads create
-      // different PluginClassLoader instances
       PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
       if (pluginClassLoader != null)
-        return lock(pluginClassLoader.isCompatible(classLoader));
+        return prepareForRecursion(pluginClassLoader.isCompatible(classLoader));
 
-      synchronized (classLoader) {
-        pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
-        if (pluginClassLoader != null)
-          return lock(pluginClassLoader.isCompatible(classLoader));
+      // Find the Plugin JAR (identified by index passed to this method)
+      final URL pluginJar = allPluginsClassLoader.getURLs()[index];
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("  Plugin JAR: " + pluginJar);
 
-        // Find the Plugin JAR (identified by index passed to this method)
-        final URL pluginJar = allPluginsClassLoader.getURLs()[index];
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("  Plugin JAR: " + pluginJar);
+      // Create an isolated (no parent ClassLoader) URLClassLoader with the
+      // pluginJarUrls
+      pluginClassLoader = new PluginClassLoader(new URL[] {pluginJar}, classLoader);
 
-        // Create an isolated (no parent ClassLoader) URLClassLoader with the
-        // pluginJarUrls
-        pluginClassLoader = new PluginClassLoader(new URL[] {pluginJar}, classLoader);
-
-        // Associate the pluginClassLoader with the target class's classLoader
-        classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
-        return lock(pluginClassLoader.isCompatible(classLoader));
-      }
+      // Associate the pluginClassLoader with the target class's classLoader
+      classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+      return prepareForRecursion(pluginClassLoader.isCompatible(classLoader));
     }
     finally {
       Rule.enableTriggers();
