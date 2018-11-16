@@ -11,6 +11,7 @@
   <artifactId>opentracing-specialagent-concurrent</artifactId>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-concurrent -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-concurrent</artifactId>
       <version>0.2.0</version>

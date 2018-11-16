@@ -19,6 +19,24 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-specialagent-jdbc</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-specialagent-concurrent</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-specialagent-web-servlet-filter</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
@@ -270,13 +288,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-concurrent -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-concurrent</artifactId>
-      <version>0.2.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <!-- https://github.com/opentracing-contrib/java-kafka-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-client</artifactId>
@@ -312,13 +323,6 @@
           <artifactId>spring-kafka</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-web-servlet-filter -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-web-servlet-filter</artifactId>
-      <version>0.2.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-solr-client -->
@@ -518,13 +522,6 @@
           <artifactId>spring-boot-autoconfigure</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-jdbc -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jdbc</artifactId>
-      <version>0.0.8</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-grpc -->

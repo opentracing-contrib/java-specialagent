@@ -16,7 +16,7 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Debug(true)
+@AgentRunner.Config(debug=true)
 public class JdbcITest {
   @Test
   public void test(final MockTracer tracer) throws Exception {

@@ -14,6 +14,7 @@
     <module>opentracing-specialagent-okhttp</module>
     <module>opentracing-specialagent-jdbc</module>
     <module>opentracing-specialagent-concurrent</module>
+    <module>opentracing-specialagent-web-servlet-filter</module>
   </modules>
   <profiles>
     <profile>

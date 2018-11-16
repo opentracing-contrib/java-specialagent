@@ -11,6 +11,7 @@
   <artifactId>opentracing-specialagent-jdbc</artifactId>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-jdbc -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jdbc</artifactId>
       <version>0.0.8</version>

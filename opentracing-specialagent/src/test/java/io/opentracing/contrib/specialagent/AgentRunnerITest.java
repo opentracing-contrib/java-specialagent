@@ -15,8 +15,8 @@ import org.junit.runner.RunWith;
 
 import io.opentracing.mock.MockTracer;
 
-@RunWith(TestRunner.class)
-@AgentRunner.Debug(true)
+@RunWith(TestAgentRunner.class)
+@AgentRunner.Config(debug=true)
 public class AgentRunnerITest {
   private static final Logger logger = Logger.getLogger(AgentRunnerITest.class.getName());
 

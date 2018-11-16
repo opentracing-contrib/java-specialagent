@@ -14,6 +14,7 @@
   <artifactId>opentracing-specialagent-okhttp</artifactId>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-okhttp -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
       <version>0.1.0</version>

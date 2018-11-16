@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.jboss.byteman.agent.Transformer;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.internal.runners.model.ReflectiveCallable;
@@ -46,17 +47,63 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.noop.NoopTracer;
 import io.opentracing.util.GlobalTracer;
 
+/**
+ * A JUnit runner that is designed to run tests for instrumentation plugins that
+ * have an associated {@code otarules.btm} file for automatic instrumentation
+ * via Byteman.
+ * <p>
+ * The {@code AgentRunner} spawns a child process that executes the JUnit test
+ * with an argument specifying {@code -javaagent}. The {@code AgentRunner}
+ * establishes a socket-based communication with the child process to relay test
+ * results. This architecture allows tests with the
+ * {@code @RunWith(AgentRunner.class)} annotation to be run from any environment
+ * (i.e. from Maven's Surefire plugin, from an IDE, or directly via JUnit
+ * itself).
+ * <p>
+ * The {@code AgentRunner} also has a facility to "raise" the classes loaded for
+ * the purpose of the test into an isolated {@code ClassLoader} (see
+ * {@link Config#isolateClassLoader()}). This allows the test to ensure that
+ * instrumentation is successful for classes that are loaded in a
+ * {@code ClassLoader} that is not the System or Bootstrap {@code ClassLoader}.
+ * <p>
+ * The {@code AgentRunner} also has a facility to aide in debugging of the
+ * runner's runtime, as well as Byteman's runtime (see {@link Config#debug()}
+ * and {@link Config#verbose()}).
+ *
+ * @author Seva Safris
+ */
 public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(AgentRunner.class.getName());
   private static final String PORT_ARG = "io.opentracing.contrib.specialagent.port";
 
   /**
-   * Annotation to specify whether debug logging should be turned on or off.
+   * Annotation to specify configuration parameters for {@code AgentRunner}.
    */
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
-  public static @interface Debug {
-    boolean value();
+  public static @interface Config {
+    /**
+     * @return Whether to set Java logging level to {@link Level#FINEST}.
+     *         <p>
+     *         Default: {@code false}.
+     */
+    boolean debug() default false;
+
+    /**
+     * @return Whether to activate Byteman verbose logging via
+     *         {@link Transformer#VERBOSE}.
+     *         <p>
+     *         Default: {@code false}.
+     */
+    boolean verbose() default false;
+
+    /**
+     * @return Whether the tests should be run in a {@code ClassLoader} that is
+     *         isolated from the system {@code ClassLoader}.
+     *         <p>
+     *         Default: {@code true}.
+     */
+    boolean isolateClassLoader() default true;
   }
 
   /**
@@ -85,8 +132,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * @return A {@code Set} representation of paths in classpath of the current
-   *         process.
+   * @return A {@code Set} of strings representing the paths in classpath of the
+   *         current process.
    */
   private static Set<String> getJavaClassPath() {
     return new LinkedHashSet<>(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
@@ -99,7 +146,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    *
    * @param includes The paths to include in the returned classpath.
    * @param excludes The paths to exclude from the returned classpath.
-   * @return A classpath string that includes paths from {@code includes}, and
+   * @return The classpath string that includes paths from {@code includes}, and
    *         excludes paths from {@code excludes}.
    */
   private static String buildClassPath(final Set<String> includes, final Set<String> excludes) {
@@ -119,9 +166,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Initializes the OpenTracing {@code Tracer} to be used for the duration of
-   * this test process. If the {@code "-javaagent"} argument is not specified
-   * for the current process, this function will return {@code null}.
+   * Initializes the OpenTracing {@link MockTracer} to be used for the duration
+   * of this test process, if the process is running with the Java agent
+   * argument. If the {@code "-javaagent"} argument is not specified for the
+   * current process, this function will return {@code null}.
    *
    * @return The OpenTracing {@code Tracer} to be used for the duration of this
    *         test process, or {@code null} if the {@code "-javaagent"} argument
@@ -142,7 +190,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }
 
         GlobalTracer.register(tracer);
-        System.out.println("sun.boot.class.path: " + System.getProperty("sun.boot.class.path"));
         return tracer;
       }
     }
@@ -151,19 +198,21 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Loads the specified class in an {@code URLClassLoader}. The class loader
-   * will be initialized with the process classpath, and will be detached from
-   * the System ClassLoader. This construct guarantees that any {@code cls}
-   * passed to this function will be unable to resolve classes in the System
-   * ClassLoader.
+   * Loads the specified class in an isolated {@code URLClassLoader}. The class
+   * loader will be initialized with the process classpath, and will be detached
+   * from the System {@code ClassLoader}. This construct guarantees that any
+   * {@code cls} passed to this function will be unable to resolve classes in
+   * the System {@code ClassLoader}.
    * <p>
-   * <i><b>Note:</b> If {@code cls} is present in the Bootstrap ClassLoader, it
-   * will be resolved there instead of the {@code URLClassLoader}.</i>
+   * <i><b>Note:</b> If {@code cls} is present in the Bootstrap
+   * {@code ClassLoader}, it will be resolved in the Bootstrap
+   * {@code ClassLoader} instead of the {@code URLClassLoader} created by this
+   * function.</i>
    *
    * @param cls The {@code Class} to load in the {@code URLClassLoader}.
    * @return The class loaded in the {@code URLClassLoader}.
    * @throws InitializationError If the specified class cannot be located by the
-   *           URLClassLoader.
+   *           {@code URLClassLoader}.
    */
   private static Class<?> loadClassInURLClassLoader(final Class<?> cls) throws InitializationError {
     try {
@@ -172,7 +221,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
       final URL[] libs = Util.classPathToURLs(classpath);
-      // Special case for AgentRunnerITest, because it belongs to the same classpath path as the AgentRunner
+      // Special case for AgentRunnerITest, because it belongs to the same
+      // classpath path as the AgentRunner
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : ClassLoader.getPlatformClassLoader();
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader() {
         @Override
@@ -195,12 +245,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final MockTracer tracer = initTracer();
   private static final boolean isInFork = tracer != null;
 
+  private final Config config;
+  private final URL loggingConfigFile;
   private final ObjectInputStream in;
   private final ObjectOutputStream out;
-  private final URL loggingConfigFile;
 
   /**
-   * Creates a new {@code InstrumentationRunner} for the specified test class.
+   * Creates a new {@code AgentRunner} for the specified test class.
    *
    * @param cls The test class.
    * @throws InitializationError If the test class is malformed, or if the
@@ -208,9 +259,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    *           forked process.
    */
   public AgentRunner(final Class<?> cls) throws InitializationError {
-    super(isInFork ? loadClassInURLClassLoader(cls) : cls);
-    final Debug debug = cls.getAnnotation(Debug.class);
-    this.loggingConfigFile = debug != null && debug.value() ? getClass().getResource("/logging.properties") : null;
+    super(isInFork && (cls.getAnnotation(Config.class) == null || cls.getAnnotation(Config.class).isolateClassLoader()) ? loadClassInURLClassLoader(cls) : cls);
+    this.config = cls.getAnnotation(Config.class);
+    this.loggingConfigFile = config != null && config.debug() ? getClass().getResource("/logging.properties") : null;
     if (loggingConfigFile != null) {
       try {
         LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
@@ -335,7 +386,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   /**
    * Retrofits the specified {@code FrameworkMethod} to work with the forked
-   * testing design of this runner.
+   * testing architecture of this runner.
    *
    * @param method The {@code FrameworkMethod} to retrofit.
    * @return The retrofitted {@code FrameworkMethod}.
@@ -355,8 +406,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           logger.finest("invokeExplosively [" + getName() + "](" + target + ")");
 
         if (isInFork) {
-          final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
-          Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
+          if (config.isolateClassLoader()) {
+            final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
+            Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
+          }
+
           try {
             tracer.reset();
             final Object result = super.invokeExplosively(target, tracer);
@@ -397,12 +451,16 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Fork the javaagent process for the specified JUnit test class, and socket port.
+   * Fork a process for the specified JUnit test class with the
+   * {@code -javaagent} argument as well as the socket port for IPC.
    *
    * @param mainClass The main class to invoke with JUnit.
-   * @param port The socket port on which the parent process is waiting for connection.
+   * @param port The socket port on which the parent process is waiting for
+   *          connection.
    * @return The {@code Process} reference of the forked process.
    * @throws IOException If an I/O error has occurred.
+   * @throws IllegalStateException If this method is itself called from a forked
+   *           process.
    */
   private Process fork(final Class<?> mainClass, final int port) throws IOException {
     if (isInFork)
@@ -418,25 +476,28 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     // GlobalTracer, TracerResolver, Agent, and AgentRunner to the
     // BootClassLoader, because:
     // 1) These classes are required for the test to run, since the test
-    //    directly references these classes, leaving just the SystemClassLoader
-    //    and BootClassLoader as the only options.
+    // directly references these classes, leaving just the SystemClassLoader
+    // and BootClassLoader as the only options.
     // 2) The URLClassLoader must be detached from the SystemClassLoader, thus
-    //    requiring the AgentRunner class to be loaded in the BootClassLoader,
-    //    or otherwise Byteman will load the AgentRunner$MockTracer in the
-    //    BootClassLoader, while this code will load AgentRunner$MockTracer
-    //    in URLClassLoader.
+    // requiring the AgentRunner class to be loaded in the BootClassLoader,
+    // or otherwise Byteman will load the AgentRunner$MockTracer in the
+    // BootClassLoader, while this code will load AgentRunner$MockTracer
+    // in URLClassLoader.
     final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, Agent.class, AgentRunner.class), null);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(File.pathSeparator, "\n  "));
 
     int i = -1;
-    final String[] args = new String[8 + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[8 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-Xbootclasspath/a:" + bootClassPath;
     args[++i] = "-cp";
     args[++i] = classpath;
     args[++i] = "-javaagent:" + getAgentPath();
     args[++i] = "-D" + PORT_ARG + "=" + port;
+    if (config.verbose())
+      args[++i] = "-Dorg.jboss.byteman.verbose";
+
     if (loggingConfigFile != null)
       args[++i] = "-Djava.util.logging.config.file=" + ("file".equals(loggingConfigFile.getProtocol()) ? loggingConfigFile.getPath() : loggingConfigFile.toString());
 

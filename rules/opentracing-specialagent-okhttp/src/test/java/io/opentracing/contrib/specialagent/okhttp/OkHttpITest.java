@@ -24,7 +24,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Debug(true)
+@AgentRunner.Config(debug=true)
 public class OkHttpITest {
   private static final Logger logger = Logger.getLogger(OkHttpITest.class.getName());
 
