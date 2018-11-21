@@ -42,6 +42,8 @@ public class Agent {
     }
   }
 
+  static Instrumentation instrumentation;
+
   public static void main(final String[] args) throws Exception {
     if (args.length != 1) {
       System.err.println("Usage: <PID>");
@@ -58,12 +60,13 @@ public class Agent {
     }
   }
 
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-    Main.premain(addManager(agentArgs), inst);
+  public static void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+    Agent.instrumentation = instrumentation;
+    Main.premain(addManager(agentArgs), instrumentation);
   }
 
-  public static void agentmain(final String agentArgs, final Instrumentation inst) throws Exception {
-    premain(agentArgs, inst);
+  public static void agentmain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+    premain(agentArgs, instrumentation);
   }
 
   protected static String addManager(String agentArgs) {

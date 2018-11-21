@@ -35,6 +35,14 @@
     </profile>
   </profiles>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${project.build.directory}/generated-resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -47,6 +55,22 @@
             </goals>
             <configuration>
               <skip>${deploy}</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>tree</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <outputType>tgf</outputType>
+              <outputFile>${project.build.directory}/generated-resources/dependencies.tgf</outputFile>
             </configuration>
           </execution>
         </executions>
@@ -103,7 +127,7 @@
             </goals>
             <phase>generate-resources</phase>
             <configuration>
-              <destFile>${project.build.directory}/classes/fingerprint.bin</destFile>
+              <destFile>${project.build.directory}/generated-resources/fingerprint.bin</destFile>
             </configuration>
           </execution>
         </executions>

@@ -110,7 +110,6 @@ class LibraryFingerprint extends Fingerprint {
   public FingerprintError[] matchesRuntime(final ClassLoader classLoader, final int start, final int depth) {
     final TempClassLoader cl = new TempClassLoader(classLoader);
     for (int i = start; i < classes.length; ++i) {
-      System.err.println("XXX: " + classes[i].getName());
       FingerprintError error = null;
       try {
         final Class<?> cls = Class.forName(classes[i].getName(), false, cl);

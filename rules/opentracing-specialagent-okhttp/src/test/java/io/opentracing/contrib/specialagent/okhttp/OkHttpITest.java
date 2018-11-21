@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +49,8 @@ public class OkHttpITest {
       assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
       assertEquals(URLClassLoader.class, OkHttpClient.Builder.class.getClassLoader().getClass());
       assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
+
+      System.out.println(Arrays.toString(((URLClassLoader)Interceptor.class.getClassLoader()).getURLs()));
 
       // TODO: Rule does not currently work when just using the OkHttpClient
       // default constructor

@@ -18,9 +18,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -104,39 +102,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: {@code true}.
      */
     boolean isolateClassLoader() default true;
-  }
-
-  /**
-   * Returns a {@code Set} of string paths representing the classpath locations
-   * of the specified classes.
-   *
-   * @param classes The classes for which to return a {@code Set} of classpath
-   *          paths.
-   * @return A {@code Set} of string paths representing the classpath locations
-   *         of the specified classes.
-   * @throws IOException If an I/O error has occurred.
-   */
-  private static Set<String> getLocations(final Class<?> ... classes) throws IOException {
-    final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    final Set<String> excludes = new LinkedHashSet<>();
-    for (final Class<?> cls : classes) {
-      final String resourceName = cls.getName().replace('.', '/').concat(".class");
-      final Enumeration<URL> urls = classLoader.getResources(resourceName);
-      while (urls.hasMoreElements()) {
-        final String path = urls.nextElement().getFile();
-        excludes.add(path.startsWith("file:") ? path.substring(5, path.indexOf('!')) : path.substring(0, path.length() - resourceName.length() - 1));
-      }
-    }
-
-    return excludes;
-  }
-
-  /**
-   * @return A {@code Set} of strings representing the paths in classpath of the
-   *         current process.
-   */
-  private static Set<String> getJavaClassPath() {
-    return new LinkedHashSet<>(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
   }
 
   /**
@@ -224,7 +189,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : ClassLoader.getPlatformClassLoader();
-      final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader() {
+      final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader(parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           return name.equals(cls.getName()) ? null : super.loadClass(name, resolve);
@@ -466,9 +431,26 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (isInFork)
       throw new IllegalStateException("Attempting to fork from a fork");
 
+    final Set<String> javaClassPath = Util.getJavaClassPath();
+    final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
+    final String[] pluginPaths;
+    if (dependenciesUrl != null) {
+      final URL[] pluginUrls = Util.filterPluginURLs(Util.classPathToURLs(System.getProperty("java.class.path")), dependenciesUrl);
+      pluginPaths = new String[pluginUrls.length];
+      for (int i = 0; i < pluginUrls.length; ++i)
+        javaClassPath.remove(pluginPaths[i] = pluginUrls[i].getFile());
+    }
+    else {
+      logger.warning("dependencies.tgf was not found! `mvn generate-resources` phase must be run for this file to be generated!");
+      pluginPaths = null;
+    }
+
+    // BootClassLoader needs to have resolution of the following classes...
+    final Set<String> bootPaths = Util.getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, Agent.class, AgentRunner.class);
+
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
-    final String classpath = buildClassPath(getJavaClassPath(), null);
+    final String classpath = buildClassPath(javaClassPath, bootPaths);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
@@ -483,18 +465,22 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     // or otherwise Byteman will load the AgentRunner$MockTracer in the
     // BootClassLoader, while this code will load AgentRunner$MockTracer
     // in URLClassLoader.
-    final String bootClassPath = buildClassPath(getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, Agent.class, AgentRunner.class), null);
+    final String bootClassPath = buildClassPath(bootPaths, null);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("BootClassPath of forked process will be:\n  " + bootClassPath.replace(File.pathSeparator, "\n  "));
+      logger.finest("BootClassPath of forked process will be:\n" + Util.toIndentedString(bootPaths));
+
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
 
     int i = -1;
-    final String[] args = new String[8 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-Xbootclasspath/a:" + bootClassPath;
     args[++i] = "-cp";
     args[++i] = classpath;
     args[++i] = "-javaagent:" + getAgentPath();
     args[++i] = "-D" + PORT_ARG + "=" + port;
+    args[++i] = "-D" + Manager.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
     if (config.verbose())
       args[++i] = "-Dorg.jboss.byteman.verbose";
 

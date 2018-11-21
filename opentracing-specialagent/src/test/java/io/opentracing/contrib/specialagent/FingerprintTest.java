@@ -9,11 +9,6 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 
-import io.opentracing.contrib.specialagent.ClassFingerprint;
-import io.opentracing.contrib.specialagent.ConstructorFingerprint;
-import io.opentracing.contrib.specialagent.LibraryFingerprint;
-import io.opentracing.contrib.specialagent.MethodFingerprint;
-
 public class FingerprintTest {
   private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
 

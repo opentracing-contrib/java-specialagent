@@ -14,7 +14,7 @@ HELPER io.opentracing.contrib.specialagent.Helper
 
 RULE Executor.execute
 INTERFACE ^java.util.concurrent.Executor
-METHOD execute(Runnable)
+METHOD execute
 AT ENTRY
 IF getTracer().activeSpan() != null
 DO
@@ -23,7 +23,7 @@ ENDRULE
 
 RULE ScheduledExecutorService.schedule(Runnable)
 INTERFACE ^java.util.concurrent.ScheduledExecutorService
-METHOD java.util.concurrent.ScheduledFuture schedule(Runnable,long,java.util.concurrent.TimeUnit)
+METHOD schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)
 AT ENTRY
 IF getTracer().activeSpan() != null
 DO
@@ -32,7 +32,7 @@ ENDRULE
 
 RULE ScheduledExecutorService.schedule(Callable)
 INTERFACE ^java.util.concurrent.ScheduledExecutorService
-METHOD java.util.concurrent.ScheduledFuture schedule(java.util.concurrent.Callable,long,java.util.concurrent.TimeUnit)
+METHOD schedule(java.util.concurrent.Callable,long,java.util.concurrent.TimeUnit)
 AT ENTRY
 IF getTracer().activeSpan() != null
 DO
@@ -41,7 +41,7 @@ ENDRULE
 
 RULE ScheduledExecutorService.scheduleAtFixedRate
 INTERFACE ^java.util.concurrent.ScheduledExecutorService
-METHOD java.util.concurrent.ScheduledFuture scheduleAtFixedRate(Runnable,long,long,java.util.concurrent.TimeUnit)
+METHOD scheduleAtFixedRate
 AT ENTRY
 IF getTracer().activeSpan() != null
 DO
@@ -50,7 +50,7 @@ ENDRULE
 
 RULE ScheduledExecutorService.scheduleWithFixedDelay
 INTERFACE ^java.util.concurrent.ScheduledExecutorService
-METHOD java.util.concurrent.ScheduledFuture scheduleWithFixedDelay(Runnable,long,long,java.util.concurrent.TimeUnit)
+METHOD scheduleWithFixedDelay
 AT ENTRY
 IF getTracer().activeSpan() != null
 DO

@@ -2,9 +2,9 @@ RULE OpenTracing SpecialAgent ClassLoader Injection
 
 CLASS ^java.lang.ClassLoader
 
-METHOD findClass
+METHOD Class findClass(String)
 BIND
-  cls = io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  cls:byte[] = io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
 IF cls != null
 DO
   traceln(">>>>>>>> defineClass(" + $1 + ")");

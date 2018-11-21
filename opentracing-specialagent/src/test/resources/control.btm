@@ -1,0 +1,73 @@
+RULE OpenTracing SpecialAgent ClassLoader Injection (Load Classes)
+
+CLASS ^java.lang.ClassLoader
+
+METHOD findClass
+AT ENTRY
+IF TRUE
+DO
+  traceln(">>>>>>>> Load Classes 0");
+  io.opentracing.contrib.specialagent.Manager.linkPlugin(0, java.lang.ClassLoader.class, $*);
+ENDRULE
+RULE OpenTracing SpecialAgent ClassLoader Injection
+
+CLASS ^java.lang.ClassLoader
+
+METHOD findClass
+AT ENTRY
+BIND
+  cOmPaTiBlE:boolean = io.opentracing.contrib.specialagent.Manager.linkPlugin(0, java.lang.ClassLoader.class, $*);
+  cls1 = !cOmPaTiBlE ? null : foo == true ? io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  $cls2 : java.lang.Class = !cOmPaTiBlE ? $cls2 : bar >= false ? io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  cls3 = !cOmPaTiBlE ? null : foo == true ?
+    io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  $cls4:
+  java.lang.Class = !cOmPaTiBlE ? $cls4 : bar >= false ?
+    io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  cls3 = !cOmPaTiBlE ? null : 
+    foo == true ?
+    io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  $cls4:java.lang.Class = !cOmPaTiBlE ? $cls4 : 
+    bar >= false ?
+    io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+
+  cls3
+    = !cOmPaTiBlE ? null : 
+    foo == true ?
+    io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+
+  $cls4
+  :java.lang.Class
+    = !cOmPaTiBlE ? $cls4 : 
+    bar >= false ?
+    io.opentracing.contrib.specialagent.Manager.findClass($this, $1)
+IF cOmPaTiBlE AND (cls != null)
+DO
+  traceln(">>>>>>>> defineClass(" + $1 + ")");
+  RETURN $this.defineClass($1, cls, 0, cls.length, null);
+ENDRULE
+RULE OpenTracing SpecialAgent ClassLoader Injection (Load Classes)
+
+INTERFACE ^java.lang.ClassLoader
+
+METHOD findClass
+IF TRUE
+DO
+  traceln(">>>>>>>> Load Classes 0");
+  io.opentracing.contrib.specialagent.Manager.linkPlugin(0, java.lang.ClassLoader.class, $*);
+ENDRULE
+
+
+RULE OpenTracing SpecialAgent ClassLoader Injection
+
+INTERFACE ^java.lang.ClassLoader
+
+METHOD findClass
+BIND
+  cOmPaTiBlE:boolean = io.opentracing.contrib.specialagent.Manager.linkPlugin(0, java.lang.ClassLoader.class, $*); cls:java.lang.Class = !cOmPaTiBlE ? null : io.opentracing.contrib.specialagent.Manager.findClass($this, $1)
+AT ENTRY
+IF cOmPaTiBlE
+DO
+  traceln(">>>>>>>> defineClass(" + $1 + ")");
+  RETURN $this.defineClass($1, cls, 0, cls.length, null);
+ENDRULE

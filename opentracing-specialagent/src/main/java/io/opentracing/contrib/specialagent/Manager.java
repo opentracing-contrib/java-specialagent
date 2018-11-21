@@ -16,25 +16,29 @@
  */
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.jboss.byteman.agent.Retransformer;
 import org.jboss.byteman.rule.Rule;
@@ -44,6 +48,9 @@ import org.jboss.byteman.rule.Rule;
  */
 public class Manager {
   private static final Logger logger = Logger.getLogger(Manager.class.getName());
+
+  static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
+
   private static final String AGENT_RULES = "otarules.btm";
 
   private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
@@ -59,17 +66,34 @@ public class Manager {
   public static void initialize(final Retransformer trans) {
     transformer = trans;
 
-    final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
-    final List<URL> pluginJarUrls = Util.findResources("META-INF/opentracing-specialagent/");
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Loading " + (pluginJarUrls == null ? null : pluginJarUrls.size()) + " plugin JARs");
+    final List<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
+    if (pluginJarUrls.isEmpty()) {
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
+
+      try {
+        final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(AGENT_RULES);
+        while (resources.hasMoreElements())
+          pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), AGENT_RULES)));
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+
+      final URL[] pluginPaths = Util.classPathToURLs(System.getProperty(PLUGIN_ARG));
+      for (final URL pluginPath : pluginPaths)
+        pluginJarUrls.add(pluginPath);
+    }
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("Process classpath: " + Util.toIndentedString(classpath));
+      logger.finest("Agent initialize java.class.path:\n" + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
 
     // Override parent ClassLoader methods to avoid delegation of resource
     // resolution to BootLoader
-    allPluginsClassLoader = new URLClassLoader(classpath, new ClassLoader(null) {
+    allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader(null) {
       // This is overridden to ensure resources are not discovered in BootClassLoader
       @Override
       public Enumeration<URL> getResources(final String name) throws IOException {
@@ -112,13 +136,7 @@ public class Manager {
       final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(AGENT_RULES);
       while (enumeration.hasMoreElements()) {
         final URL scriptUrl = enumeration.nextElement();
-        final int bang = scriptUrl.toString().indexOf('!');
-        final String pluginJar;
-        if (bang != -1)
-          pluginJar = scriptUrl.toString().substring(4, bang);
-        else
-          pluginJar = scriptUrl.toString().substring(0, scriptUrl.toString().lastIndexOf('/') + 1);
-
+        final String pluginJar = Util.getSourceLocation(scriptUrl, AGENT_RULES);
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Dereferencing index for " + pluginJar);
 
@@ -126,7 +144,7 @@ public class Manager {
         digestRule(scriptUrl, index, scripts, scriptNames);
       }
 
-      installScripts(scripts, scriptNames);
+      loadScripts(scripts, scriptNames);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -136,9 +154,15 @@ public class Manager {
       logger.fine("OpenTracing Agent rules loaded");
   }
 
-  private static void installScripts(final List<String> scripts, final List<String> scriptNames) {
+  /**
+   * Loads the specified scripts with script names into Byteman.
+   *
+   * @param scripts The list of scripts.
+   * @param scriptNames The list of script names.
+   */
+  private static void loadScripts(final List<String> scripts, final List<String> scriptNames) {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Installing rules: " + Util.toIndentedString(scriptNames));
+      logger.fine("Installing rules:\n" + Util.toIndentedString(scriptNames));
 
     if (logger.isLoggable(Level.FINEST))
       for (final String script : scripts)
@@ -156,21 +180,25 @@ public class Manager {
       logger.fine(sw.toString());
   }
 
-  private static String readScript(final URL url) {
-    try {
-      final StringBuilder builder = new StringBuilder();
-      try (final InputStream in = url.openStream()) {
-        final byte[] bytes = new byte[1024];
-        for (int len; (len = in.read(bytes)) != -1;)
-          if (len != 0)
-            builder.append(new String(bytes, 0, len));
-      }
+  /**
+   * Unloads a rule from Byteman by the specified rule name.
+   *
+   * @param ruleName The name of the rule to unload.
+   */
+  private static void unloadRule(final String ruleName) {
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Unloading rule: " + ruleName);
 
-      return builder.toString();
+    final StringWriter sw = new StringWriter();
+    try (final PrintWriter pw = new PrintWriter(sw)) {
+      transformer.removeScripts(Collections.singletonList("RULE " + ruleName), pw);
     }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
+    catch (final Exception e) {
+      logger.log(Level.SEVERE, "Failed to unload rule: " + ruleName, e);
     }
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine(sw.toString());
   }
 
   /**
@@ -191,11 +219,43 @@ public class Manager {
    */
   private static void digestRule(final URL url, final Integer index, final List<String> scripts, final List<String> scriptNames) {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Load rules for index " + index + " from URL = " + url);
+      logger.fine("Digest rule for index " + index + " from URL = " + url);
 
-    final String script = readScript(url);
+    final String script = Util.readBytes(url);
     scripts.add(index == null ? script : retrofitScript(script, index));
     scriptNames.add(url.toString());
+  }
+
+  private static void writeLoadClassesRule(final StringBuilder out, final String builder, final int index, final String classRef) {
+    final int s = builder.indexOf("RULE ");
+    final int e = builder.indexOf('\n', s + 5);
+    if (out.length() > 0)
+      out.append('\n');
+
+    out.append(builder.substring(0, e)).append(" (Load Classes)");
+    out.append(builder.substring(e));
+    out.append("IF TRUE\n");
+    out.append("DO\n");
+    out.append("  traceln(\">>>>>>>> Load Classes " + index + "\");\n");
+    out.append("  ").append(Manager.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
+    out.append("ENDRULE\n");
+  }
+
+  private static int match(final String script, final String string, int index, final StringBuilder builder) {
+    if (index < 0)
+      index = -index;
+
+    int i = -1;
+    int j;
+    while (++i < string.length() && (j = index + i) < script.length()) {
+      final char ch = script.charAt(j);
+      if (ch != string.charAt(i))
+        return -index - i;
+
+      builder.append(ch);
+    }
+
+    return index + i;
   }
 
   /**
@@ -213,192 +273,181 @@ public class Manager {
    * @return The script used to trigger the "load classes" procedure
    *         {@link #linkPlugin(Object,int)}.
    */
-  private static String retrofitScript(final String script, final int index) {
+  static String retrofitScript(final String script, final int index) {
+    final StringBuilder out = new StringBuilder();
     final StringBuilder builder = new StringBuilder();
-    final StringTokenizer tokenizer = new StringTokenizer(script, "\n\r");
-    String classRef = null;
-    String bindSpec = null;
-    boolean hasBind = false;
+    int ruleStart = 0;
+
+    String var = null;
     boolean inBind = false;
-    while (tokenizer.hasMoreTokens()) {
-      final String rawLine = tokenizer.nextToken();
-      final String line = rawLine.trim();
-      final String lineUC = line.toUpperCase();
-      if (lineUC.startsWith("BIND")) {
-        inBind = true;
-        hasBind = true;
-        if (builder.length() > 0)
-          builder.append('\n');
+    boolean hasBind = false;
+    boolean preAdded = false;
+    String classRef = null;
+    String bindClause = null;
+    for (int i = 0; i < script.length();) {
+      final char ch = script.charAt(i);
+      builder.append(ch);
+      if (ch == ';') {
+        var = null;
+      }
+      else if (ch == '\n') {
+        int m = i + 1;
+        m = match(script, "RULE ", m, builder);
+        if (m > -1) {
+          ruleStart = builder.length() - 5;
+          if ((i = script.indexOf('\n', m)) == -1)
+            i = script.length();
 
-        final String inLineBind = line.substring(4).trim();
-        builder.append(bindSpec);
-        if (inLineBind.length() > 0)
-          builder.append("  ").append(inLineBind).append('\n');
-      }
-      else if (lineUC.startsWith("IF ")) {
-        inBind = false;
-        if (!hasBind)
-          builder.append(bindSpec);
+          builder.append(script.substring(m, i));
+          continue;
+        }
 
-        builder.append("IF ");
-        final String condition = line.substring(3).trim();
-        if ("TRUE".equalsIgnoreCase(condition))
-          builder.append("cOmPaTiBlE\n");
-        else
-          builder.append("cOmPaTiBlE AND ").append(condition).append('\n');
-      }
-      else if (lineUC.startsWith("AT ")) {
-        inBind = false;
-        builder.append(rawLine).append('\n');
-      }
-      else if (inBind) {
-        builder.append(rawLine.replace("=", "= !cOmPaTiBlE ? null :")).append('\n');
-      }
-      else {
-        builder.append(rawLine).append('\n');
-        inBind = false;
-        if (lineUC.startsWith("CLASS ")) {
-          classRef = line.substring(6).trim() + ".class";
+        m = match(script, "CLASS ", m, builder);
+        if (m > -1) {
+          if ((i = script.indexOf('\n', m)) == -1)
+            i = script.length();
+
+          classRef = script.substring(m, i).trim() + ".class";
+          if (classRef.charAt(0) == '^')
+            classRef = classRef.substring(1);
+
+          builder.append(script.substring(m, i));
+          continue;
         }
-        else if (lineUC.startsWith("INTERFACE ")) {
-          classRef = null;
+
+        m = match(script, "AT ", m, builder);
+        if (m > -1) {
+          inBind = false;
+          i = m;
+          continue;
         }
-        else if (lineUC.startsWith("METHOD ")) {
-          bindSpec = "BIND\n  cOmPaTiBlE = " + Manager.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);\n";
+
+        m = match(script, "METHOD ", m, builder);
+        if (m > -1) {
+          inBind = false;
+          i = m;
+          bindClause = "\n  cOmPaTiBlE:boolean = " + Manager.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
+          continue;
         }
+
+        m = match(script, "ENDRULE", m, builder);
+        if (m > -1) {
+          inBind = false;
+          hasBind = false;
+          i = m;
+          out.append(builder);
+          builder.setLength(0);
+          preAdded = false;
+          continue;
+        }
+
+        m = match(script, "IF ", m, builder);
+        if (m > -1) {
+          if (!preAdded) {
+            writeLoadClassesRule(out, builder.substring(ruleStart, builder.length() - 3), index, classRef);
+            ruleStart = 0;
+            preAdded = true;
+          }
+
+          if (!hasBind)
+            builder.insert(builder.length() - 3, "BIND" + bindClause + "\n");
+
+          inBind = false;
+          if ((i = script.indexOf("\nDO", m)) == -1)
+            i = script.length();
+
+          final String condition = script.substring(m, i).trim();
+          builder.append("cOmPaTiBlE");
+          if (!"TRUE".equalsIgnoreCase(condition))
+            builder.append(" AND (").append(condition).append(")");
+
+          continue;
+        }
+
+        m = match(script, "BIND", m, builder);
+        if (m > -1) {
+          if (!preAdded) {
+            writeLoadClassesRule(out, builder.substring(ruleStart, builder.length() - 4), index, classRef);
+            ruleStart = 0;
+            preAdded = true;
+          }
+
+          inBind = true;
+          hasBind = true;
+          builder.append(bindClause);
+          i = m - 1;
+        }
+
+        if (inBind) {
+          // Find the '=' sign, and make sure it's not "==", "!=", ">=", "<=", "+=", "-=", "*=", "/=", "%=", "&=", "^=", "|="
+          int eq = i;
+          final int sc = script.indexOf(';', i + 1);
+          while ((eq = script.indexOf('=', eq + 1)) != -1) {
+            final char a = script.charAt(eq - 1);
+            if (a != '=' && a != '!' && a != '>' && a != '<' && a != '+' && a != '-' && a != '*' && a != '/' && a != '%' && a != '&' && a != '^' && a != '!' && (eq == script.length() - 1 || script.charAt(eq + 1) != '='))
+              break;
+          }
+
+          ++i;
+          if (eq > sc)
+            continue;
+
+          if (eq != -1) {
+            if (var == null) {
+              final int colon = script.indexOf(':', i);
+              var = script.substring(i, colon != -1 && colon < eq ? colon : eq).trim();
+            }
+
+            final String noop = var.startsWith("$") ? var : "null";
+            builder.append(script.substring(i, eq)).append("= !cOmPaTiBlE ? ").append(noop).append(" : ");
+            final int nl = script.indexOf('\n', eq + 1);
+            i = sc != -1 && sc < nl ? sc : nl;
+            // Reset the var if there is a semicolon
+            if (i == sc)
+              var = null;
+
+            builder.append(script.substring(eq + 1, i == sc ? ++i : i).trim());
+          }
+          else {
+            final int s = i;
+            if ((i = script.indexOf('\n', i + 1)) == -1)
+              i = script.length();
+
+            builder.append(script.substring(s, i));
+          }
+
+          continue;
+        }
+
+        if (m < 0)
+          i = -m - 1;
       }
+
+      ++i;
     }
 
-    return builder.toString();
+    return out.toString();
   }
 
   /**
-   * An {@link URLClassLoader} that encloses an instrumentation plugin, and
-   * provides the following functionalities:
-   * <ol>
-   * <li>{@link #isCompatible(ClassLoader)}: Determines whether the
-   * instrumentation plugin it repserents is compatible with a specified
-   * {@code ClassLoader}.</li>
-   * <li>{@link #markFindResource(ClassLoader,String)}: Keeps track of the
-   * names of classes that have been loaded into a specified
-   * {@code ClassLoader}.</li>
-   * </ol>
+   * Callback that is used to load a class by the specified resource path into
+   * the specified {@code ClassLoader}.
    */
-  static class PluginClassLoader extends URLClassLoader {
-    private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-    private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
-
-    /**
-     * Creates a new {@code PluginClassLoader} with the specified classpath URLs
-     * and parent {@code ClassLoader}.
-     *
-     * @param urls The classpath URLs.
-     * @param parent The parent {@code ClassLoader}.
-     */
-    PluginClassLoader(final URL[] urls, final ClassLoader parent) {
-      super(urls, parent);
-    }
-
-    /**
-     * Returns {@code true} if the instrumentation plugin represented by this
-     * instance is compatible with its target classes that are loaded in the
-     * specified {@code ClassLoader}.
-     * <p>
-     * This method utilizes the {@link LibraryFingerprint} class to determine
-     * compatibility via "fingerprinting".
-     * <p>
-     * Once "fingerprinting" has been performed, the resulting value is
-     * associated with the specified {@code ClassLoader} in the
-     * {@link #compatibility} map as a cache.
-     *
-     * @param classLoader The {@code ClassLoader} for which the instrumentation
-     *          plugin represented by this {@code PluginClassLoader} is to be
-     *          checked for compatibility.
-     * @return {@code true} if the target classes in the specified
-     *         {@code ClassLoader} are compatible with the instrumentation
-     *         plugin represented by this {@code PluginClassLoader}, and
-     *         {@code false} if the specified {@code ClassLoader} is
-     *         incompatible.
-     */
-    boolean isCompatible(final ClassLoader classLoader) {
-      final Boolean compatible = compatibility.get(classLoader);
-      if (compatible != null)
-        return compatible;
-
-      final URL fpURL = getResource("fingerprint.bin");
-      if (fpURL != null) {
+  private static final BiPredicate<String,ClassLoader> loadClass = new BiPredicate<String,ClassLoader>() {
+    @Override
+    public boolean test(final String path, final ClassLoader classLoader) {
+      if (path.endsWith(".class")) {
         try {
-          final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
-          final FingerprintError[] errors = fingerprint.matchesRuntime(classLoader, 0, 0);
-          if (errors != null) {
-            logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
-            compatibility.put(classLoader, false);
-            return false;
-          }
-
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
+          Class.forName(path.substring(0, path.length() - 6).replace('/', '.'), false, classLoader);
         }
-        catch (final IOException e) {
-          // TODO: Parameterize the default behavior!
-          logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
+        catch (final ClassNotFoundException e) {
+          logger.log(Level.SEVERE, "Failed to load class", e);
         }
       }
-      else {
-        // TODO: Parameterize the default behavior!
-        logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
-      }
 
-      compatibility.put(classLoader, true);
       return true;
     }
-
-    /**
-     * Marks the specified resource name with {@code true}, associated with the
-     * specified {@code ClassLoader}, and returns the previous value of the
-     * mark.
-     * <p>
-     * The first invocation of this method for a specified {@code ClassLoader}
-     * and resource name will return {@code false}.
-     * <p>
-     * Subsequent calls to this method for a specified {@code ClassLoader} and
-     * resource name will return {@code true}.
-     *
-     * @param classLoader The {@code ClassLoader} to which the value of the mark
-     *          for the specified resource name is associated.
-     * @param resourceName The name of the resource as the target of the mark.
-     * @return {@code false} if this method was never called with the specific
-     *         {@code ClassLoader} and resource name; {@code true} if this
-     *         method was previously called with the specific
-     *         {@code ClassLoader} and resource name.
-     */
-    boolean markFindResource(final ClassLoader classLoader, final String resourceName) {
-      Set<String> classNames = classLoaderToClassName.get(classLoader);
-      if (classNames == null)
-        classLoaderToClassName.put(classLoader, classNames = new HashSet<>());
-      else if (classNames.contains(resourceName))
-        return true;
-
-      classNames.add(resourceName);
-      return false;
-    }
-  }
-
-  private static void unloadRule(final String ruleName) {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Uninstalling rule: " + ruleName);
-
-    final StringWriter sw = new StringWriter();
-    try (final PrintWriter pw = new PrintWriter(sw)) {
-      transformer.removeScripts(Collections.singletonList("RULE " + ruleName), pw);
-    }
-    catch (final Exception e) {
-      logger.log(Level.SEVERE, "Failed to uninstall rule: " + ruleName, e);
-    }
-
-    if (logger.isLoggable(Level.FINE))
-      logger.fine(sw.toString());
-  }
+  };
 
   /**
    * Links the instrumentation plugin at the specified index. This method is
@@ -438,7 +487,7 @@ public class Manager {
   @SuppressWarnings("resource")
   public static boolean linkPlugin(final int index, final Class<?> cls, final Object[] args) {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("linkPlugin(" + index + ", " + (cls == null ? "null" : cls.getName()) + ".class, " + Arrays.toString(args) + ")");
+      logger.finest("linkPlugin(" + index + ", " + (cls != null ? cls.getName() + ".class" : "null") + ", " + Arrays.toString(args) + ")");
 
     Rule.disableTriggers();
     try {
@@ -446,20 +495,96 @@ public class Manager {
       final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
       final ClassLoader classLoader = targetClass.getClassLoader();
 
-      // Find the Plugin JAR (identified by index passed to this method)
-      final URL pluginJar = allPluginsClassLoader.getURLs()[index];
+      // Find the Plugin Path (identified by index passed to this method)
+      final URL pluginPath = allPluginsClassLoader.getURLs()[index];
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("  Plugin JAR: " + pluginJar);
+        logger.finest("  Plugin Path: " + pluginPath);
 
-      // Create an isolated (no parent ClassLoader) URLClassLoader with the pluginJarUrls
-      final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {pluginJar}, classLoader);
-      if (pluginClassLoader.isCompatible(classLoader)) {
-        // Associate the pluginClassLoader with the target class's classLoader
-        classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
-        return true;
+      // Now find all the paths that pluginPath depends on, by reading dependencies.tgf
+      final URL[] pluginPaths;
+      try {
+        final URL dependenciesUrl = pluginPath.toString().endsWith(".jar") ? new URL("jar:" + pluginPath.toString() + "!/dependencies.tgf") : new URL(pluginPath.toString() + "/dependencies.tgf");
+        pluginPaths = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependenciesUrl);
+      }
+      catch (final IOException e) {
+        logger.log(Level.SEVERE, "Failed to read from Plugin Path: " + pluginPath, e);
+        return false;
       }
 
-      return false;
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("new PluginClassLoader([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
+
+      // Create an isolated (no parent ClassLoader) URLClassLoader with the pluginPaths
+      final PluginClassLoader pluginClassLoader = new PluginClassLoader(pluginPaths, classLoader);
+      if (!pluginClassLoader.isCompatible(classLoader)) {
+        try {
+          pluginClassLoader.close();
+        }
+        catch (final IOException e) {
+          logger.log(Level.WARNING, "Failed to close PluginClassLoader: " + Util.getIdentityCode(pluginClassLoader), e);
+        }
+
+        return false;
+      }
+
+      if (classLoader == null) {
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("Target classLoader is the BootClassLoader, so adding plugin JARs to the bootstrap classpath directly");
+
+        for (final URL path : pluginPaths) {
+          try {
+            Agent.instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
+          }
+          catch (final IOException e) {
+            logger.log(Level.SEVERE, "Failed to add path to BootClassLoader classpath: " + path.getPath(), e);
+          }
+        }
+      }
+      else if (classLoader == ClassLoader.getSystemClassLoader()) {
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("Target classLoader is the SystemClassLoader, so adding plugin JARs to the system classpath directly");
+
+        for (final URL path : pluginPaths) {
+          try {
+            Agent.instrumentation.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
+          }
+          catch (final IOException e) {
+            logger.log(Level.SEVERE, "Failed to add path to SystemClassLoader classpath: " + path.getPath(), e);
+          }
+        }
+      }
+
+      // Associate the pluginClassLoader with the target class's classLoader
+      classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+
+      // Enable triggers to the LoadClasses script can execute
+      Rule.enableTriggers();
+
+      // Call Class.forName(...) for each class in pluginClassLoader to load in
+      // the caller's classLoader
+      for (final URL pathUrl : pluginClassLoader.getURLs()) {
+        if (pathUrl.toString().endsWith(".jar")) {
+          try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
+            for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
+          }
+          catch (final IOException e) {
+            logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
+          }
+        }
+        else {
+          final File dir = new File(URI.create(pathUrl.toString()));
+          final Path path = dir.toPath();
+          Util.recurseDir(dir, new Predicate<File>() {
+            @Override
+            public boolean test(final File file) {
+              loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
+              return true;
+            }
+          });
+        }
+      }
+
+      return true;
     }
     finally {
       Rule.enableTriggers();
@@ -487,6 +612,9 @@ public class Manager {
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     Rule.disableTriggers();
     try {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+
       // Check if the classLoader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
       if (pluginClassLoader == null)
@@ -498,9 +626,6 @@ public class Manager {
       final String resourceName = name.replace('.', '/').concat(".class");
       if (pluginClassLoader.markFindResource(classLoader, resourceName))
         return null;
-
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Return the resource's bytes, or null if the resource does not exist in
       // pluginClassLoader

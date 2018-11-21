@@ -1,0 +1,29 @@
+1825983295 io.opentracing.contrib:opentracing-specialagent2:test-jar:tests:0.0.1-SNAPSHOT
+2102909877 io.opentracing.contrib:opentracing-specialagent-okhttp:jar:0.0.1-SNAPSHOT
+1603662305 io.opentracing.contrib:opentracing-okhttp3:jar:0.1.0:compile
+1730813026 io.opentracing:opentracing-api:jar:0.31.0:compile
+2121443020 io.opentracing:opentracing-noop:jar:0.31.0:compile
+1612031141 io.opentracing.contrib:opentracing-concurrent:jar:0.1.0:compile
+1829440934 com.squareup.okhttp3:okhttp:jar:3.6.0:test (optional) 
+1199155942 com.squareup.okio:okio:jar:1.11.0:test (optional) 
+752230403 com.squareup.okhttp3:mockwebserver:jar:3.6.0:test
+1638631856 org.bouncycastle:bcprov-jdk15on:jar:1.50:test
+1417203230 io.opentracing:opentracing-mock:jar:0.31.0:test
+1591505133 io.opentracing:opentracing-util:jar:0.31.0:test
+1125614861 junit:junit:jar:4.12:test
+2118939350 org.hamcrest:hamcrest-core:jar:1.3:test
+1825983295 io.opentracing.contrib:opentracing-specialagent1:test-jar:tests:0.0.1-SNAPSHOT:test
+#
+1603662305 1730813026 compile
+1603662305 2121443020 compile
+1603662305 1612031141 compile
+2102909877 1603662305 compile
+1829440934 1199155942 test
+2102909877 1829440934 test
+752230403 1638631856 test
+2102909877 752230403 test
+1417203230 1591505133 test
+2102909877 1417203230 test
+1125614861 2118939350 test
+2102909877 1125614861 test
+2102909877 1825983295 test
