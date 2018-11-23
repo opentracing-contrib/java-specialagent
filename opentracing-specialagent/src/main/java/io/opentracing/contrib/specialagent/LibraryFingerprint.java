@@ -129,7 +129,7 @@ class LibraryFingerprint extends Fingerprint {
       try {
         final Class<?> cls = Class.forName(classes[i].getName(), false, tempClassLoader);
         final ClassFingerprint fingerprint = new ClassFingerprint(cls);
-        if (!classes[i].compatible(fingerprint))
+        if (!fingerprint.compatible(classes[i]))
           error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
       }
       catch (final ClassNotFoundException e) {
