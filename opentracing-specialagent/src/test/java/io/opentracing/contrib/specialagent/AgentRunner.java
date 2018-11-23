@@ -495,7 +495,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     args[++i] = classpath;
     args[++i] = "-javaagent:" + getAgentPath();
     args[++i] = "-D" + PORT_ARG + "=" + port;
-    args[++i] = "-D" + Manager.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
+    args[++i] = "-D" + Agent.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
     if (config.verbose())
       args[++i] = "-Dorg.jboss.byteman.verbose";
 

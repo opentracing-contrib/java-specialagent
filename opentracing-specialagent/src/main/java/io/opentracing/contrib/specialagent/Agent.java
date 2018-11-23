@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,18 +35,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.jboss.byteman.agent.Main;
 import org.jboss.byteman.agent.Retransformer;
 import org.jboss.byteman.rule.Rule;
+
+import com.sun.tools.attach.VirtualMachine;
 
 /**
  * Provides the Byteman manager implementation for OpenTracing.
  */
-public class Manager {
-  private static final Logger logger = Logger.getLogger(Manager.class.getName());
+public class Agent {
+  private static final Logger logger = Logger.getLogger(Agent.class.getName());
 
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
 
@@ -55,6 +60,55 @@ public class Manager {
 
   protected static Retransformer transformer;
   private static URLClassLoader allPluginsClassLoader;
+
+  static {
+    final String loggingConfig = System.getProperty("java.util.logging.config.file");
+    if (loggingConfig != null) {
+      try {
+        LogManager.getLogManager().readConfiguration((loggingConfig.contains("file:/") ? new URL(loggingConfig) : new URL("file", "", loggingConfig)).openStream());
+      }
+      catch (final IOException e) {
+        throw new ExceptionInInitializerError(e);
+      }
+    }
+  }
+
+  private static Instrumentation instrumentation;
+
+  public static void main(final String[] args) throws Exception {
+    if (args.length != 1) {
+      System.err.println("Usage: <PID>");
+      System.exit(1);
+    }
+
+    final VirtualMachine vm = VirtualMachine.attach(args[0]);
+    final String agentPath = Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    try {
+      vm.loadAgent(agentPath, null);
+    }
+    finally {
+      vm.detach();
+    }
+  }
+
+  public static void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+    Agent.instrumentation = instrumentation;
+    Main.premain(addManager(agentArgs), instrumentation);
+  }
+
+  public static void agentmain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+    premain(agentArgs, instrumentation);
+  }
+
+  protected static String addManager(String agentArgs) {
+    if (agentArgs == null || agentArgs.trim().isEmpty())
+      agentArgs = "";
+    else
+      agentArgs += ",";
+
+    agentArgs += "manager:" + Agent.class.getName();
+    return agentArgs;
+  }
 
   /**
    * This method initializes the manager.
@@ -235,7 +289,7 @@ public class Manager {
     out.append("IF TRUE\n");
     out.append("DO\n");
     out.append("  traceln(\">>>>>>>> Load Classes " + index + "\");\n");
-    out.append("  ").append(Manager.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
+    out.append("  ").append(Agent.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
     out.append("ENDRULE\n");
   }
 
@@ -324,7 +378,7 @@ public class Manager {
         if (m > -1) {
           inBind = false;
           i = m;
-          bindClause = "\n  cOmPaTiBlE:boolean = " + Manager.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
+          bindClause = "\n  cOmPaTiBlE:boolean = " + Agent.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
           continue;
         }
 
@@ -480,6 +534,9 @@ public class Manager {
    *          {@link #allPluginsClassLoader}.
    * @param cls The class on which the trigger event occurred.
    * @param args The arguments used for the triggered method call.
+   * @return {@code true} if the plugin at the specified index is compatible
+   *         with its target classes in the invoking class's
+   *         {@code ClassLoader}.
    * @see #retrofitScript(String,int)
    */
   @SuppressWarnings("resource")
@@ -510,7 +567,7 @@ public class Manager {
       }
 
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("new PluginClassLoader([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
+        logger.finest("new " + PluginClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
 
       // Create an isolated (no parent ClassLoader) URLClassLoader with the pluginPaths
       final PluginClassLoader pluginClassLoader = new PluginClassLoader(pluginPaths, classLoader);
@@ -519,7 +576,7 @@ public class Manager {
           pluginClassLoader.close();
         }
         catch (final IOException e) {
-          logger.log(Level.WARNING, "Failed to close PluginClassLoader: " + Util.getIdentityCode(pluginClassLoader), e);
+          logger.log(Level.WARNING, "Failed to close " + PluginClassLoader.class.getSimpleName() + ": " + Util.getIdentityCode(pluginClassLoader), e);
         }
 
         return false;
@@ -531,7 +588,7 @@ public class Manager {
 
         for (final URL path : pluginPaths) {
           try {
-            Agent.instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
+            instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
           }
           catch (final IOException e) {
             logger.log(Level.SEVERE, "Failed to add path to BootClassLoader classpath: " + path.getPath(), e);
@@ -544,7 +601,7 @@ public class Manager {
 
         for (final URL path : pluginPaths) {
           try {
-            Agent.instrumentation.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
+            instrumentation.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
           }
           catch (final IOException e) {
             logger.log(Level.SEVERE, "Failed to add path to SystemClassLoader classpath: " + path.getPath(), e);

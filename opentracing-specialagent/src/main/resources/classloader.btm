@@ -4,7 +4,7 @@ CLASS ^java.lang.ClassLoader
 
 METHOD Class findClass(String)
 BIND
-  cls:byte[] = io.opentracing.contrib.specialagent.Manager.findClass($this, $1);
+  cls:byte[] = io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
 IF cls != null
 DO
   traceln(">>>>>>>> defineClass(" + $1 + ")");

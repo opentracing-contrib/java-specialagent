@@ -29,6 +29,8 @@ public interface BiPredicate<T,U> {
    *
    * @param t The first input argument.
    * @param u The second input argument.
+   * @return {@code true} if the input arguments match the predicate, otherwise
+   *         {@code false}.
    */
   boolean test(T t, U u);
 }
