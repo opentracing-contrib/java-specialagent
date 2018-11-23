@@ -80,6 +80,9 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
       return false;
 
     final MethodFingerprint that = (MethodFingerprint)obj;
+    if (!getName().equals(that.getName()))
+      return false;
+
     if (returnType != null ? !returnType.equals(that.returnType) : that.returnType != null)
       return false;
 

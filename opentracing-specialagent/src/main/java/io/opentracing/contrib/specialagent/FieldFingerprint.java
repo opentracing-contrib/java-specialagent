@@ -50,7 +50,7 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
       return false;
 
     final FieldFingerprint that = (FieldFingerprint)obj;
-    return type != null ? type.equals(that.type) : that.type == null;
+    return getName().equals(that.getName()) && type.equals(that.type);
   }
 
   @Override

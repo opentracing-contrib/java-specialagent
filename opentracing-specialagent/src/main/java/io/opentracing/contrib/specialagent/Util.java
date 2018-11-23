@@ -29,6 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -571,8 +572,7 @@ final class Util {
 
   /**
    * Returns an array of type {@code <T>} that includes only the elements that
-   * belong to the first and second specified array (the specified arrays must
-   * be sorted).
+   * belong to the specified arrays (the specified arrays must be sorted).
    * <p>
    * <i><b>Note:</b> This is a recursive algorithm, implemented to take
    * advantage of the high performance of callstack registers, but will fail due
@@ -610,6 +610,66 @@ final class Util {
 
         return retained;
       }
+    }
+  }
+
+  /**
+   * Tests whether the first specifies array contains all {@link Comparable}
+   * elements in the second specified array.
+   *
+   * @param <T> Type parameter of array, which must extend {@link Comparable}.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @return {@code true} if the first specifies array contains all elements in
+   *         the second specified array.
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
+    for (int i = 0, j = 0;;) {
+      if (j == b.length)
+        return true;
+
+      if (i == a.length)
+        return false;
+
+      final int comparison = a[i].compareTo(b[j]);
+      if (comparison > 0)
+        return false;
+
+      ++i;
+      if (comparison == 0)
+        ++j;
+    }
+  }
+
+  /**
+   * Tests whether the first specifies array contains all elements in the second
+   * specified array, with comparison determined by the specified
+   * {@link Comparator}.
+   *
+   * @param <T> Type parameter of array.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @param c The {@link Comparator}.
+   * @return {@code true} if the first specifies array contains all elements in
+   *         the second specified array.
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  static <T>boolean containsAll(final T[] a, final T[] b, final Comparator<T> c) {
+    for (int i = 0, j = 0;;) {
+      if (j == b.length)
+        return true;
+
+      if (i == a.length)
+        return false;
+
+      final int comparison = c.compare(a[i], b[j]);
+      if (comparison > 0)
+        return false;
+
+      ++i;
+      if (comparison == 0)
+        ++j;
     }
   }
 

@@ -28,6 +28,92 @@ import io.opentracing.noop.NoopTracer;
 
 public class UtilTest {
   @Test
+  public void testGetPluginPathsAll() throws IOException {
+    final Set<String> expected = new HashSet<>();
+    expected.add("bcprov-jdk15on-1.50.jar");
+    expected.add("hamcrest-core-1.3.jar");
+    expected.add("junit-4.12.jar");
+    expected.add("mockwebserver-3.6.0.jar");
+    expected.add("okhttp-3.6.0.jar");
+    expected.add("okio-1.11.0.jar");
+    expected.add("opentracing-api-0.31.0.jar");
+    expected.add("opentracing-concurrent-0.1.0.jar");
+    expected.add("opentracing-mock-0.31.0.jar");
+    expected.add("opentracing-noop-0.31.0.jar");
+    expected.add("opentracing-okhttp3-0.1.0.jar");
+    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
+    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-util-0.31.0.jar");
+
+    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final Set<String> actual = Util.selectFromTgf(test, true, null);
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetPluginPathsOptionalTest() throws IOException {
+    final Set<String> expected = new HashSet<>();
+    expected.add("bcprov-jdk15on-1.50.jar");
+    expected.add("hamcrest-core-1.3.jar");
+    expected.add("junit-4.12.jar");
+    expected.add("mockwebserver-3.6.0.jar");
+    expected.add("okhttp-3.6.0.jar");
+    expected.add("okio-1.11.0.jar");
+    expected.add("opentracing-mock-0.31.0.jar");
+    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-util-0.31.0.jar");
+
+    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final Set<String> actual = Util.selectFromTgf(test, true, new String[] {"test"});
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetPluginPathsTest() throws IOException {
+    final Set<String> expected = new HashSet<>();
+    expected.add("bcprov-jdk15on-1.50.jar");
+    expected.add("hamcrest-core-1.3.jar");
+    expected.add("junit-4.12.jar");
+    expected.add("mockwebserver-3.6.0.jar");
+    expected.add("opentracing-mock-0.31.0.jar");
+    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-util-0.31.0.jar");
+
+    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"test"});
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetPluginPathsCompile() throws IOException {
+    final Set<String> expected = new HashSet<>();
+    expected.add("opentracing-concurrent-0.1.0.jar");
+    expected.add("opentracing-okhttp3-0.1.0.jar");
+    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
+    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-noop-0.31.0.jar");
+    expected.add("opentracing-api-0.31.0.jar");
+
+    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"});
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetPluginPathsCompileExclude() throws IOException {
+    final Set<String> expected = new HashSet<>();
+    expected.add("opentracing-concurrent-0.1.0.jar");
+    expected.add("opentracing-okhttp3-0.1.0.jar");
+    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
+    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+
+    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class, Tracer.class);
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testRetain() {
     String[] a, b, r;
 
@@ -113,88 +199,71 @@ public class UtilTest {
   }
 
   @Test
-  public void testGetPluginPathsAll() throws IOException {
-    final Set<String> expected = new HashSet<>();
-    expected.add("bcprov-jdk15on-1.50.jar");
-    expected.add("hamcrest-core-1.3.jar");
-    expected.add("junit-4.12.jar");
-    expected.add("mockwebserver-3.6.0.jar");
-    expected.add("okhttp-3.6.0.jar");
-    expected.add("okio-1.11.0.jar");
-    expected.add("opentracing-api-0.31.0.jar");
-    expected.add("opentracing-concurrent-0.1.0.jar");
-    expected.add("opentracing-mock-0.31.0.jar");
-    expected.add("opentracing-noop-0.31.0.jar");
-    expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
-    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
-    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
-    expected.add("opentracing-util-0.31.0.jar");
+  public void testContainsAll() {
+    String[] a, b;
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
-    final Set<String> actual = Util.selectFromTgf(test, true, null);
-    assertEquals(expected, actual);
-  }
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertTrue(Util.containsAll(a, b));
 
-  @Test
-  public void testGetPluginPathsOptionalTest() throws IOException {
-    final Set<String> expected = new HashSet<>();
-    expected.add("bcprov-jdk15on-1.50.jar");
-    expected.add("hamcrest-core-1.3.jar");
-    expected.add("junit-4.12.jar");
-    expected.add("mockwebserver-3.6.0.jar");
-    expected.add("okhttp-3.6.0.jar");
-    expected.add("okio-1.11.0.jar");
-    expected.add("opentracing-mock-0.31.0.jar");
-    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
-    expected.add("opentracing-util-0.31.0.jar");
+    a = new String[] {"b", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(Util.containsAll(a, b));
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
-    final Set<String> actual = Util.selectFromTgf(test, true, new String[] {"test"});
-    assertEquals(expected, actual);
-  }
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"b", "c", "d"};
+    assertTrue(Util.containsAll(a, b));
 
-  @Test
-  public void testGetPluginPathsTest() throws IOException {
-    final Set<String> expected = new HashSet<>();
-    expected.add("bcprov-jdk15on-1.50.jar");
-    expected.add("hamcrest-core-1.3.jar");
-    expected.add("junit-4.12.jar");
-    expected.add("mockwebserver-3.6.0.jar");
-    expected.add("opentracing-mock-0.31.0.jar");
-    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
-    expected.add("opentracing-util-0.31.0.jar");
+    a = new String[] {"a", "b", "c"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(Util.containsAll(a, b));
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
-    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"test"});
-    assertEquals(expected, actual);
-  }
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "c"};
+    assertTrue(Util.containsAll(a, b));
 
-  @Test
-  public void testGetPluginPathsCompile() throws IOException {
-    final Set<String> expected = new HashSet<>();
-    expected.add("opentracing-concurrent-0.1.0.jar");
-    expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
-    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
-    expected.add("opentracing-noop-0.31.0.jar");
-    expected.add("opentracing-api-0.31.0.jar");
+    a = new String[] {"a", "b", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(Util.containsAll(a, b));
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
-    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"});
-    assertEquals(expected, actual);
-  }
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "d"};
+    assertTrue(Util.containsAll(a, b));
 
-  @Test
-  public void testGetPluginPathsCompileExclude() throws IOException {
-    final Set<String> expected = new HashSet<>();
-    expected.add("opentracing-concurrent-0.1.0.jar");
-    expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
-    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+    a = new String[] {"a", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(Util.containsAll(a, b));
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
-    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class, Tracer.class);
-    assertEquals(expected, actual);
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "c", "d"};
+    assertTrue(Util.containsAll(a, b));
+
+    a = new String[] {"a", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(Util.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "d"};
+    assertTrue(Util.containsAll(a, b));
+
+    a = new String[] {"a", "c", "d"};
+    b = new String[] {"a", "b", "d"};
+    assertFalse(Util.containsAll(a, b));
+
+    a = new String[] {"a", "b", "d"};
+    b = new String[] {"a", "c", "d"};
+    assertFalse(Util.containsAll(a, b));
+
+    a = new String[] {"c", "d"};
+    b = new String[] {"a", "b", "d"};
+    assertFalse(Util.containsAll(a, b));
+
+    a = new String[] {"a", "b"};
+    b = new String[] {"a", "c"};
+    assertFalse(Util.containsAll(a, b));
+
+    a = new String[] {"a", "b"};
+    b = new String[] {"c", "d"};
+    assertFalse(Util.containsAll(a, b));
   }
 }

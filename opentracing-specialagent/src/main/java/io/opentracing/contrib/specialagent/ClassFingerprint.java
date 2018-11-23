@@ -49,6 +49,22 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     return this.methods;
   }
 
+  public boolean compatible(final ClassFingerprint o) {
+    if (superClass != null ? !superClass.equals(o.superClass) : o.superClass != null)
+      return false;
+
+    if (constructors == null ? o.constructors != null : o.constructors == null || !Util.containsAll(constructors, o.constructors))
+      return false;
+
+    if (methods == null ? o.methods != null : o.methods == null || !Util.containsAll(methods, o.methods))
+      return false;
+
+    if (fields == null ? o.fields != null : o.fields == null || !Util.containsAll(fields, o.fields))
+      return false;
+
+    return true;
+  }
+
   @Override
   public boolean equals(final Object obj) {
     if (obj == this)
