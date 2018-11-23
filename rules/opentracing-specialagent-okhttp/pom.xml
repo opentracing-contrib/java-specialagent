@@ -44,7 +44,6 @@
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>${version.okhttp3}</version>
-      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
