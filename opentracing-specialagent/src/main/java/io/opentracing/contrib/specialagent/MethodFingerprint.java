@@ -25,10 +25,10 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   static MethodFingerprint[] recurse(final Method[] methods, final int index, final int depth) {
     for (int i = index; i < methods.length; ++i) {
       if (!methods[i].isSynthetic() && !Modifier.isPrivate(methods[i].getModifiers())) {
-        final MethodFingerprint digest = new MethodFingerprint(methods[i]);
-        final MethodFingerprint[] digests = recurse(methods, i + 1, depth + 1);
-        digests[depth] = digest;
-        return digests;
+        final MethodFingerprint fingerprint = new MethodFingerprint(methods[i]);
+        final MethodFingerprint[] fingerprints = recurse(methods, i + 1, depth + 1);
+        fingerprints[depth] = fingerprint;
+        return fingerprints;
       }
     }
 

@@ -66,10 +66,10 @@ class LibraryFingerprint extends Fingerprint {
     }
     while (cls == null || cls.isInterface() || cls.isSynthetic() || Modifier.isPrivate(cls.getModifiers()));
 
-    final ClassFingerprint digest = new ClassFingerprint(cls);
-    final ClassFingerprint[] digests = recurse(classLoader, jarURLs, jarIndex, in, depth + 1);
-    digests[depth] = digest;
-    return digests;
+    final ClassFingerprint fingerprint = new ClassFingerprint(cls);
+    final ClassFingerprint[] fingerprints = recurse(classLoader, jarURLs, jarIndex, in, depth + 1);
+    fingerprints[depth] = fingerprint;
+    return fingerprints;
   }
 
   private final ClassFingerprint[] classes;
@@ -93,8 +93,8 @@ class LibraryFingerprint extends Fingerprint {
     return this.classes;
   }
 
-  public ClassFingerprint[] retainClasses(final LibraryFingerprint digest) {
-    return this.classes == null || digest.classes == null ? null : Util.retain(classes, digest.classes, 0, 0, 0);
+  public ClassFingerprint[] retainClasses(final LibraryFingerprint fingerprint) {
+    return this.classes == null || fingerprint.classes == null ? null : Util.retain(classes, fingerprint.classes, 0, 0, 0);
   }
 
   private class TempClassLoader extends ClassLoader {
@@ -123,14 +123,14 @@ class LibraryFingerprint extends Fingerprint {
   }
 
   public FingerprintError[] matchesRuntime(final ClassLoader classLoader, final int start, final int depth) {
-    final TempClassLoader cl = new TempClassLoader(classLoader);
+    final TempClassLoader tempClassLoader = new TempClassLoader(classLoader);
     for (int i = start; i < classes.length; ++i) {
       FingerprintError error = null;
       try {
-        final Class<?> cls = Class.forName(classes[i].getName(), false, cl);
-        final ClassFingerprint classDigest = new ClassFingerprint(cls);
-        if (!classes[i].equals(classDigest))
-          error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], classDigest);
+        final Class<?> cls = Class.forName(classes[i].getName(), false, tempClassLoader);
+        final ClassFingerprint fingerprint = new ClassFingerprint(cls);
+        if (!classes[i].equals(fingerprint))
+          error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
       }
       catch (final ClassNotFoundException e) {
         error = new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null);

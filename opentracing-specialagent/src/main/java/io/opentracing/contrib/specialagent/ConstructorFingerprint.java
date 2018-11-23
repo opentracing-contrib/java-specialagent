@@ -25,10 +25,10 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
   static ConstructorFingerprint[] recurse(final Constructor<?>[] methods, final int index, final int depth) {
     for (int i = index; i < methods.length; ++i) {
       if (!methods[i].isSynthetic() && !Modifier.isPrivate(methods[i].getModifiers())) {
-        final ConstructorFingerprint digest = new ConstructorFingerprint(methods[i]);
-        final ConstructorFingerprint[] digests = recurse(methods, i + 1, depth + 1);
-        digests[depth] = digest;
-        return digests;
+        final ConstructorFingerprint fingerprint = new ConstructorFingerprint(methods[i]);
+        final ConstructorFingerprint[] fingerprints = recurse(methods, i + 1, depth + 1);
+        fingerprints[depth] = fingerprint;
+        return fingerprints;
       }
     }
 

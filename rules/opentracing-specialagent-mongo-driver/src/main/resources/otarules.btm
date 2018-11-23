@@ -1,0 +1,9 @@
+RULE MongoClientSettings.Builder add tracing command listener
+CLASS ^com.mongodb.MongoClientSettings
+METHOD builder
+HELPER io.opentracing.contrib.specialagent.Helper
+AT EXIT
+IF NOT callerEquals("com.mongodb.async.client.MongoClientSettings.createFromClientSettings", true, true, 3, 1)
+DO
+  $!.addCommandListener(new io.opentracing.contrib.mongo.TracingCommandListener(getTracer()));
+ENDRULE

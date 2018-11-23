@@ -24,10 +24,10 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
   static FieldFingerprint[] recurse(final Field[] fields, final int index, final int depth) {
     for (int i = index; i < fields.length; ++i) {
       if (!Modifier.isPrivate(fields[i].getModifiers())) {
-        final FieldFingerprint digest = new FieldFingerprint(fields[i]);
-        final FieldFingerprint[] digests = recurse(fields, i + 1, depth + 1);
-        digests[depth] = digest;
-        return digests;
+        final FieldFingerprint fingerprint = new FieldFingerprint(fields[i]);
+        final FieldFingerprint[] fingerprints = recurse(fields, i + 1, depth + 1);
+        fingerprints[depth] = fingerprint;
+        return fingerprints;
       }
     }
 

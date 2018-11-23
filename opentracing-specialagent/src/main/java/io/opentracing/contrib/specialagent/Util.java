@@ -67,10 +67,10 @@ final class Util {
     for (int i = index; i < urls.length; ++i) {
       final String string = urls[i].toString();
       if (names.contains(string.substring(string.lastIndexOf('/') + 1))) {
-        final URL url = new URL(string);
-        final URL[] digests = filterUrlFileNames(urls, names, i + 1, depth + 1);
-        digests[depth] = url;
-        return digests;
+        final URL result = new URL(string);
+        final URL[] results = filterUrlFileNames(urls, names, i + 1, depth + 1);
+        results[depth] = result;
+        return results;
       }
     }
 
