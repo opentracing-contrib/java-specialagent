@@ -17,6 +17,10 @@ package io.opentracing.contrib.specialagent;
 
 import java.util.Arrays;
 
+/**
+ * A {@link NamedFingerprint} that represents the fingerprint of a
+ * {@code Class}.
+ */
 class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
   private static final long serialVersionUID = 3179458505281585557L;
 
@@ -25,6 +29,11 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
   private final MethodFingerprint[] methods;
   private final FieldFingerprint[] fields;
 
+  /**
+   * Creates a new {@code ClassFingerprint} for the specified {@code Class}.
+   *
+   * @param cls The {@code Class} to be fingerprinted.
+   */
   ClassFingerprint(final Class<?> cls) {
     super(cls.getName());
     this.superClass = cls.getSuperclass() == null || cls.getSuperclass() == Object.class ? null : cls.getSuperclass().getName();
@@ -33,22 +42,60 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     this.fields = Util.sort(FieldFingerprint.recurse(cls.getDeclaredFields(), 0, 0));
   }
 
+  /**
+   * Returns the name of the super {@code Class}, or {@code null} if the super
+   * class is {@code Object.class}.
+   *
+   * @return The name of the super {@code Class}, or {@code null} if the super
+   *         class is {@code Object.class}.
+   */
   public String getSuperClass() {
     return this.superClass;
   }
 
+  /**
+   * Returns an array of {@link FieldFingerprint} objects, or {@code null} if no
+   * fields are present in this fingerprint.
+   *
+   * @return An array of {@link FieldFingerprint} objects, or {@code null} if no
+   *         fields are present in this fingerprint.
+   */
   public FieldFingerprint[] getFields() {
     return this.fields;
   }
 
+  /**
+   * Returns an array of {@link ConstructorFingerprint} objects, or {@code null}
+   * if no constructors are present in this fingerprint.
+   *
+   * @return An array of {@link ConstructorFingerprint} objects, or {@code null}
+   *         if no constructors are present in this fingerprint.
+   */
   public ConstructorFingerprint[] getConstructors() {
     return this.constructors;
   }
 
+  /**
+   * Returns an array of {@link MethodFingerprint} objects, or {@code null} if
+   * no methods are present in this fingerprint.
+   *
+   * @return An array of {@link MethodFingerprint} objects, or {@code null} if
+   *         no methods are present in this fingerprint.
+   */
   public MethodFingerprint[] getMethods() {
     return this.methods;
   }
 
+  /**
+   * Tests if the specified {@code ClassFingerprint} is compatible with this
+   * fingerprint. A fingerprint {@code a} is considered to be compatible with
+   * fingerprint {@code b} if {@code a} contains all, or a subset of, field,
+   * method, and constructor fingerprints in the fingerprint of {@code b}.
+   *
+   * @param o The fingerprint to check for compatibility with this fingerprint.
+   * @return {@code true} if the specified {@code ClassFingerprint} is
+   *         compatible with this fingerprint.
+   */
   public boolean compatible(final ClassFingerprint o) {
     if (superClass != null ? !superClass.equals(o.superClass) : o.superClass != null)
       return false;

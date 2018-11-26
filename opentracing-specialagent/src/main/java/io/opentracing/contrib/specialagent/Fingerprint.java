@@ -17,6 +17,9 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.Serializable;
 
+/**
+ * Base abstract class representing a fingerprint.
+ */
 abstract class Fingerprint implements Serializable {
   private static final long serialVersionUID = -8309824318401101365L;
 }

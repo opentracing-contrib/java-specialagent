@@ -15,7 +15,13 @@
 
 package io.opentracing.contrib.specialagent;
 
+/**
+ * Class representing an error when performing a fingerprint compatibility test.
+ */
 class FingerprintError {
+  /**
+   * An enum representing the reason for the error.
+   */
   public static enum Reason {
     MISSING,
     MISMATCH
@@ -25,6 +31,16 @@ class FingerprintError {
   private final ClassFingerprint a;
   private final ClassFingerprint b;
 
+  /**
+   * Creates a new {@code FingerprintError} with the specified {@code Reason}
+   * and provided {@code ClassFingerprint} objects for which the failure
+   * occurred.
+   *
+   * @param reason The reason for the error.
+   * @param a The first {@code ClassFingerprint} object.
+   * @param b The second {@code ClassFingerprint} object, or {@code null} if the
+   *          fingerprint is missing.
+   */
   FingerprintError(final Reason reason, final ClassFingerprint a, final ClassFingerprint b) {
     this.reason = reason;
     this.a = a;

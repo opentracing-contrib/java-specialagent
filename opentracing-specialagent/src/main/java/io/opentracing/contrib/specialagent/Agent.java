@@ -278,28 +278,64 @@ public class Agent {
     scriptNames.add(url.toString());
   }
 
-  private static void writeLoadClassesRule(final StringBuilder out, final String builder, final int index, final String classRef) {
-    final int s = builder.indexOf("RULE ");
-    final int e = builder.indexOf('\n', s + 5);
-    if (out.length() > 0)
-      out.append('\n');
+  /**
+   * Writes a "Load Classes" rule into the specified {@code StringBuilder} for
+   * the provided rule {@code header}, JAR reference {@code index}, and
+   * {@code classRef}.
+   *
+   * @param builder The {@code StringBuilder} into which the script is to be
+   *          written.
+   * @param header The header of the rule for which the "Load Classes" rule is
+   *          to be created.
+   * @param index The index of the OpenTracing instrumentation JAR in
+   *          {@code allPluginsClassLoader.getURLs()} which corresponds to
+   *          {@code script}.
+   * @param classRef A string representing the reference to the {@code Class}
+   *          object on which the rule is to be triggered, or {@code null} if
+   *          the class is an interface.
+   */
+  private static void writeLoadClassesRule(final StringBuilder builder, final String header, final int index, final String classRef) {
+    final int s = header.indexOf("RULE ");
+    final int e = header.indexOf('\n', s + 5);
+    if (builder.length() > 0)
+      builder.append('\n');
 
-    out.append(builder.substring(0, e)).append(" (Load Classes)");
-    out.append(builder.substring(e));
-    out.append("IF TRUE\n");
-    out.append("DO\n");
-    out.append("  traceln(\">>>>>>>> Load Classes " + index + "\");\n");
-    out.append("  ").append(Agent.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
-    out.append("ENDRULE\n");
+    builder.append(header.substring(0, e)).append(" (Load Classes)");
+    builder.append(header.substring(e));
+    builder.append("IF TRUE\n");
+    builder.append("DO\n");
+    builder.append("  traceln(\">>>>>>>> Load Classes " + index + "\");\n");
+    builder.append("  ").append(Agent.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
+    builder.append("ENDRULE\n");
   }
 
+  /**
+   * Tests if the specified {@code string} is present at the {@code index} in
+   * the provided {@code script}. Each character that is read is appended to the
+   * provided {@code StringBuilder}. This method tests each character in the
+   * specified {@code script} for equality starting at {@code index} of the
+   * provided {@code script}. If all characters in {@code string} match, this
+   * method returns {@code index + string.length()}. If a character mismatch is
+   * encountered at {@code string} index={@code i}, this method returns
+   * {@code -i}.
+   *
+   * @param script The script in which {@code string} is to be matched.
+   * @param string The string to match.
+   * @param index The starting index in {@code script} from which to attempt to
+   *          match {@code string}.
+   * @param builder The {@code StringBuilder} into which each checked byte is to
+   *          be appended.
+   * @return If all characters in {@code string} match, this method returns
+   *         {@code index + string.length()}. If a character mismatch is
+   *         encountered at {@code string} index={@code i}, this method returns
+   *         {@code -i}.
+   */
   private static int match(final String script, final String string, int index, final StringBuilder builder) {
     if (index < 0)
       index = -index;
 
     int i = -1;
-    int j;
-    while (++i < string.length() && (j = index + i) < script.length()) {
+    for (int j; ++i < string.length() && (j = index + i) < script.length();) {
       final char ch = script.charAt(j);
       if (ch != string.charAt(i))
         return -index - i;

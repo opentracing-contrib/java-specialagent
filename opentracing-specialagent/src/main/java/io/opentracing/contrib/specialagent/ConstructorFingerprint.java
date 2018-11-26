@@ -19,14 +19,32 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+/**
+ * A {@link Fingerprint} that represents the fingerprint of a
+ * {@code Constructor}.
+ */
 class ConstructorFingerprint extends Fingerprint implements Comparable<ConstructorFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;
 
-  static ConstructorFingerprint[] recurse(final Constructor<?>[] methods, final int index, final int depth) {
-    for (int i = index; i < methods.length; ++i) {
-      if (!methods[i].isSynthetic() && !Modifier.isPrivate(methods[i].getModifiers())) {
-        final ConstructorFingerprint fingerprint = new ConstructorFingerprint(methods[i]);
-        final ConstructorFingerprint[] fingerprints = recurse(methods, i + 1, depth + 1);
+  /**
+   * Returns an array of {@code ConstructorFingerprint} objects for the
+   * non-private and non-synthetic constructors in the specified array of
+   * {@code Constructor} objects. This is a recursive algorithm, and the
+   * {@code index} and {@code depth} parameters are used to track the execution
+   * state on the call stack.
+   *
+   * @param constructors The {@code Constructor} objects to be fingerprinted.
+   * @param index The index of the iteration (should be 0 when called).
+   * @param depth The depth of the iteration (should be 0 when called).
+   * @return An array of {@code ConstructorFingerprint} objects for the
+   *         non-private and non-synthetic constructors in the specified array
+   *         of {@code Constructor} objects.
+   */
+  static ConstructorFingerprint[] recurse(final Constructor<?>[] constructors, final int index, final int depth) {
+    for (int i = index; i < constructors.length; ++i) {
+      if (!constructors[i].isSynthetic() && !Modifier.isPrivate(constructors[i].getModifiers())) {
+        final ConstructorFingerprint fingerprint = new ConstructorFingerprint(constructors[i]);
+        final ConstructorFingerprint[] fingerprints = recurse(constructors, i + 1, depth + 1);
         fingerprints[depth] = fingerprint;
         return fingerprints;
       }
@@ -38,15 +56,31 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
   private final String[] parameterTypes;
   private final String[] exceptionTypes;
 
+  /**
+   * Creates a new {@code ConstructorFingerprint} for the specified
+   * {@code Constructor}.
+   *
+   * @param constructor The {@code Constructor} to be fingerprinted.
+   */
   ConstructorFingerprint(final Constructor<?> constructor) {
     this.parameterTypes = Util.getNames(constructor.getParameterTypes());
     this.exceptionTypes = Util.sort(Util.getNames(constructor.getExceptionTypes()));
   }
 
+  /**
+   * Returns the parameter type names.
+   *
+   * @return The parameter type names.
+   */
   public String[] getParameterTypes() {
     return this.parameterTypes;
   }
 
+  /**
+   * Returns the exception type names.
+   *
+   * @return The exception type names.
+   */
   public String[] getExceptionTypes() {
     return this.exceptionTypes;
   }

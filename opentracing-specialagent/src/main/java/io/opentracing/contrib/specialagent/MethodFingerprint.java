@@ -19,9 +19,25 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+/**
+ * A {@link Fingerprint} that represents the fingerprint of a {@code Method}.
+ */
 class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;
 
+  /**
+   * Returns an array of {@code MethodFingerprint} objects for the non-private
+   * and non-synthetic methods in the specified array of {@code Method} objects.
+   * This is a recursive algorithm, and the {@code index} and {@code depth}
+   * parameters are used to track the execution state on the call stack.
+   *
+   * @param methods The {@code Method} objects to be fingerprinted.
+   * @param index The index of the iteration (should be 0 when called).
+   * @param depth The depth of the iteration (should be 0 when called).
+   * @return An array of {@code MethodFingerprint} objects for the non-private
+   *         and non-synthetic methods in the specified array of {@code Method}
+   *         objects.
+   */
   static MethodFingerprint[] recurse(final Method[] methods, final int index, final int depth) {
     for (int i = index; i < methods.length; ++i) {
       if (!methods[i].isSynthetic() && !Modifier.isPrivate(methods[i].getModifiers())) {
@@ -39,6 +55,11 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   private final String[] parameterTypes;
   private final String[] exceptionTypes;
 
+  /**
+   * Creates a new {@code MethodFingerprint} for the specified {@code Method}.
+   *
+   * @param method The {@code Method} to be fingerprinted.
+   */
   MethodFingerprint(final Method method) {
     super(method.getName());
     this.returnType = Util.getName(method.getReturnType());
@@ -46,14 +67,29 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     this.exceptionTypes = Util.sort(Util.getNames(method.getExceptionTypes()));
   }
 
+  /**
+   * Returns the name of the return type.
+   *
+   * @return The name of the return type.
+   */
   public String getReturnType() {
     return this.returnType;
   }
 
+  /**
+   * Returns the names of the parameter types.
+   *
+   * @return The names of the parameter types.
+   */
   public String[] getParameterTypes() {
     return this.parameterTypes;
   }
 
+  /**
+   * Returns the names of the exception types.
+   *
+   * @return The names of the exception types.
+   */
   public String[] getExceptionTypes() {
     return this.exceptionTypes;
   }

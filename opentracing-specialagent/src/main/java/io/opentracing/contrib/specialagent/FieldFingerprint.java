@@ -18,9 +18,27 @@ package io.opentracing.contrib.specialagent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+/**
+ * A {@link Fingerprint} that represents the fingerprint of a
+ * {@code Field}.
+ */
 class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
   private static final long serialVersionUID = 3516568839736210165L;
 
+  /**
+   * Returns an array of {@code FieldFingerprint} objects for the
+   * non-private and non-synthetic fields in the specified array of
+   * {@code Field} objects. This is a recursive algorithm, and the
+   * {@code index} and {@code depth} parameters are used to track the execution
+   * state on the call stack.
+   *
+   * @param fields The {@code Field} objects to be fingerprinted.
+   * @param index The index of the iteration (should be 0 when called).
+   * @param depth The depth of the iteration (should be 0 when called).
+   * @return An array of {@code FieldFingerprint} objects for the
+   *         non-private and non-synthetic fields in the specified array
+   *         of {@code Field} objects.
+   */
   static FieldFingerprint[] recurse(final Field[] fields, final int index, final int depth) {
     for (int i = index; i < fields.length; ++i) {
       if (!Modifier.isPrivate(fields[i].getModifiers())) {
@@ -36,6 +54,12 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
 
   private final String type;
 
+  /**
+   * Creates a new {@code FieldFingerprint} for the specified
+   * {@code Field}.
+   *
+   * @param field The {@code Field} to be fingerprinted.
+   */
   FieldFingerprint(final Field field) {
     super(field.getName());
     this.type = Util.getName(field.getType());

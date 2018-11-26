@@ -84,7 +84,7 @@ class PluginClassLoader extends URLClassLoader {
     if (fpURL != null) {
       try {
         final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
-        final FingerprintError[] errors = fingerprint.matchesRuntime(classLoader, 0, 0);
+        final FingerprintError[] errors = fingerprint.isCompatible(classLoader, 0, 0);
         if (errors != null) {
           logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
           compatibility.put(classLoader, false);

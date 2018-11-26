@@ -30,10 +30,23 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+/**
+ * A {@link Fingerprint} that represents the fingerprint of a library.
+ */
 class LibraryFingerprint extends Fingerprint {
   private static final long serialVersionUID = -8454972655262482231L;
   private static final Logger logger = Logger.getLogger(LibraryFingerprint.class.getName());
 
+  /**
+   * Returns a {@code LibraryFingerprint} for the serialized object encoding at
+   * the specified URL.
+   *
+   * @param url The URL referencing the resource with the serialized object
+   *          encoding representing a {@code LibraryFingerprint} object.
+   * @return A {@code LibraryFingerprint} for the serialized object encoding at
+   *         the specified URL.
+   * @throws IOException If an I/O error has occurred.
+   */
   static LibraryFingerprint fromFile(final URL url) throws IOException {
     try (final ObjectInputStream in = new ObjectInputStream(url.openStream())) {
       return (LibraryFingerprint)in.readObject();
@@ -43,6 +56,27 @@ class LibraryFingerprint extends Fingerprint {
     }
   }
 
+  /**
+   * Returns an array of {@code ClassFingerprint} objects for the non-private,
+   * non-interface, and non-synthetic classes present in the specified
+   * {@code jarURLs}, belonging to the provided {@code ClassLoader}. This is a
+   * recursive algorithm, and the {@code jarIndex}, {@code in}, and
+   * {@code depth} parameters are used to track the execution state on the call
+   * stack.
+   *
+   * @param classLoader The {@code ClassLoader} in which the specified
+   *          {@code jarURLs} are classpath entries.
+   * @param jarURLs The {@code URL} objects identifying JAR files to be scanned
+   *          for classes.
+   * @param jarIndex The iteration index of the {@code jarURLs} parameter
+   *          (should be 0 when called).
+   * @param in The {@code ZipInputStream} for the JAR at the current iteration's
+   *          {@code jarURLs}.
+   * @param depth The depth of the iteration (should be 0 when called).
+   * @return An array of {@code ConstructorFingerprint} objects for the
+   *         non-private and non-synthetic constructors in the specified array
+   *         of {@code Constructor} objects.
+   */
   private static ClassFingerprint[] recurse(final URLClassLoader classLoader, final URL[] jarURLs, final int jarIndex, final ZipInputStream in, final int depth) throws IOException {
     Class<?> cls = null;
     do {
@@ -74,6 +108,13 @@ class LibraryFingerprint extends Fingerprint {
 
   private final ClassFingerprint[] classes;
 
+  /**
+   * Creates a new {@code LibraryFingerprint} with the specified {@code URL}
+   * objects referencing JAR files.
+   *
+   * @param urls The {@code URL} objects referencing JAR files.
+   * @throws IOException If an I/O error has occurred.
+   */
   LibraryFingerprint(final URL ... urls) throws IOException {
     if (urls.length == 0)
       throw new IllegalArgumentException("Number of arguments must be greater than 0");
@@ -83,23 +124,44 @@ class LibraryFingerprint extends Fingerprint {
     }
   }
 
+  /**
+   * Exports this {@code LibraryFingerprint} to the specified {@code File} in
+   * the form of a serialized object representation.
+   *
+   * @param file The {@code File} to which to export.
+   * @throws IOException If an I/O error has occurred.
+   */
   public void toFile(final File file) throws IOException {
     try (final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
       out.writeObject(this);
     }
   }
 
+  /**
+   * Returns the {@code ClassFingerprint} array of this
+   * {@code LibraryFingerprint}.
+   *
+   * @return The {@code ClassFingerprint} array of this
+   *         {@code LibraryFingerprint}.
+   */
   public ClassFingerprint[] getClasses() {
     return this.classes;
   }
 
-  public ClassFingerprint[] retainClasses(final LibraryFingerprint fingerprint) {
-    return this.classes == null || fingerprint.classes == null ? null : Util.retain(classes, fingerprint.classes, 0, 0, 0);
-  }
-
+  /**
+   * A dispensable {@code ClassLoader} used for dereferencing class names when
+   * evaluating compatibility of a fingerprint to that of a runtime.
+   */
   private class TempClassLoader extends ClassLoader {
     private final ClassLoader classLoader;
 
+    /**
+     * Creates a new {@code TempClassLoader} with the specified
+     * {@code ClassLoader} as its source.
+     *
+     * @param classLoader The {@code ClassLoader} used as the source for loading
+     *          of bytecode.
+     */
     private TempClassLoader(final ClassLoader classLoader) {
       super(null);
       this.classLoader = classLoader;
@@ -122,9 +184,21 @@ class LibraryFingerprint extends Fingerprint {
     }
   }
 
-  public FingerprintError[] matchesRuntime(final ClassLoader classLoader, final int start, final int depth) {
+  /**
+   * Tests whether the runtime represented by the specified {@code ClassLoader}
+   * is compatible with this fingerprint.
+   *
+   * @param classLoader The {@code ClassLoader} representing the runtime to test
+   *          for compatibility.
+   * @param index The index of the iteration (should be 0 when called).
+   * @param depth The depth of the iteration (should be 0 when called).
+   * @return An array of @{@code FingerprintError} objects representing all
+   *         errors encountered in the compatibility test, or {@code null} if the
+   *         runtime is compatible with this fingerprint,
+   */
+  public FingerprintError[] isCompatible(final ClassLoader classLoader, final int index, final int depth) {
     final TempClassLoader tempClassLoader = new TempClassLoader(classLoader);
-    for (int i = start; i < classes.length; ++i) {
+    for (int i = index; i < classes.length; ++i) {
       FingerprintError error = null;
       try {
         final Class<?> cls = Class.forName(classes[i].getName(), false, tempClassLoader);
@@ -137,7 +211,7 @@ class LibraryFingerprint extends Fingerprint {
       }
 
       if (error != null) {
-        final FingerprintError[] errors = matchesRuntime(classLoader, i + 1, depth + 1);
+        final FingerprintError[] errors = isCompatible(classLoader, i + 1, depth + 1);
         errors[depth] = error;
         return errors;
       }

@@ -45,6 +45,9 @@ import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.noop.NoopTracer;
 import io.opentracing.util.GlobalTracer;
 
+/**
+ * Utility functions for the SpecialAgent.
+ */
 final class Util {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
@@ -558,6 +561,7 @@ final class Util {
    * throw a {@link ClassCastException} for any elements {@code e1} and
    * {@code e2} in the array).
    *
+   * @param <T> The component type of the specified array.
    * @param array The array to be sorted.
    * @return The specified array, which is sorted in-place (unless it is null).
    * @see Arrays#sort(Object[])
