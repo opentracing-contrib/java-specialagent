@@ -1,7 +1,7 @@
 RULE java-jdbc wrap Driver Connection
 INTERFACE ^java.sql.Driver
 METHOD java.sql.Connection connect(String, java.util.Properties)
-HELPER io.opentracing.contrib.specialagent.Helper
+HELPER io.opentracing.contrib.agent.OpenTracingHelper
 AT EXIT
 IF NOT $! == null
     AND NOT callerEquals("io.opentracing.contrib.jdbc.TracingDriver.connect", true, true, 0, 1)

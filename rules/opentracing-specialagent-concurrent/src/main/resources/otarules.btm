@@ -10,7 +10,7 @@
 # TODO: Consider generating rule set from script.
 # See: https://stackoverflow.com/a/32763032/4814697
 
-HELPER io.opentracing.contrib.specialagent.Helper
+HELPER io.opentracing.contrib.agent.OpenTracingHelper
 
 RULE Executor.execute
 INTERFACE ^java.util.concurrent.Executor

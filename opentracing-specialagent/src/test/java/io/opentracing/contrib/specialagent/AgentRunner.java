@@ -146,7 +146,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Initializes the OpenTracing {@link MockTracer} to be used for the duration
+   * FIXME: Rewrite this...
+   * Initializes the OpenTracing {@link Tracer} to be used for the duration
    * of this test process, if the process is running with the Java agent
    * argument. If the {@code "-javaagent"} argument is not specified for the
    * current process, this function will return {@code null}.
@@ -155,26 +156,29 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    *         test process, or {@code null} if the {@code "-javaagent"} argument
    *         is not specified for the current process.
    */
-  private static MockTracer initTracer() {
-    final RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-    final List<String> arguments = runtimeMxBean.getInputArguments();
-    for (final String argument : arguments) {
-      if (argument.startsWith("-javaagent")) {
-        final MockTracer tracer = new MockTracer();
-        if (logger.isLoggable(Level.FINEST)) {
-          logger.finest("Registering tracer in forked InstrumentRunner: " + tracer);
-          logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
-          logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
-          logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
-          logger.finest("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
-        }
+  private static Tracer getTracer() {
+    if (!isInFork || tracer != null)
+      return tracer;
 
-        GlobalTracer.register(tracer);
+    synchronized (tracerMutex) {
+      if (tracer != null)
         return tracer;
-      }
-    }
 
-    return null;
+      Tracer tracer = TracerResolver.resolveTracer();
+      if (tracer == null)
+        tracer = new MockTracer();
+
+      if (logger.isLoggable(Level.FINEST)) {
+        logger.finest("Registering tracer in forked InstrumentRunner: " + tracer);
+        logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
+        logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+        logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
+        logger.finest("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
+      }
+
+      GlobalTracer.register(tracer);
+      return AgentRunner.tracer = tracer;
+    }
   }
 
   /**
@@ -222,8 +226,20 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private static final MockTracer tracer = initTracer();
-  private static final boolean isInFork = tracer != null;
+  private static Tracer tracer = null;
+  private static final Object tracerMutex = new Object();
+  private static boolean isInFork = false;
+
+  static {
+    final RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+    final List<String> arguments = runtimeMxBean.getInputArguments();
+    for (final String argument : arguments) {
+      if (argument.startsWith("-javaagent")) {
+        isInFork = true;
+        break;
+      }
+    }
+  }
 
   private final Config config;
   private final URL loggingConfigFile;
@@ -278,9 +294,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           @Override
           public void run() {
             try {
+              Thread.currentThread().sleep(10000);
               serverSocket.close();
             }
-            catch (final IOException e) {
+            catch (final Exception e) {
             }
 
             if (!process.isAlive())
@@ -376,8 +393,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       @Override
       public void validatePublicVoidNoArg(final boolean isStatic, final List<Throwable> errors) {
         validatePublicVoid(isStatic, errors);
-        if (method.getMethod().getParameterTypes().length != 1)
-          errors.add(new Exception("Method " + method.getName() + " must declare one parameter of type: " + MockTracer.class.getName()));
+        if (method.getMethod().getParameterTypes().length > 1)
+          errors.add(new Exception("Method " + method.getName() + " can declare no parameters, or one parameter of type: " + Tracer.class.getName()));
       }
 
       @Override
@@ -392,8 +409,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           }
 
           try {
-            tracer.reset();
-            final Object result = super.invokeExplosively(target, tracer);
+            if (method.getMethod().getParameterTypes().length == 1)
+              System.err.println("XXX: " + getTracer().getClass().getName());
+
+            final Object result = method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, getTracer()) : super.invokeExplosively(target);
             write(new TestResult(getName(), null));
             return result;
           }
@@ -477,9 +496,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     // and BootClassLoader as the only options.
     // 2) The URLClassLoader must be detached from the SystemClassLoader, thus
     // requiring the AgentRunner class to be loaded in the BootClassLoader,
-    // or otherwise Byteman will load the AgentRunner$MockTracer in the
-    // BootClassLoader, while this code will load AgentRunner$MockTracer
-    // in URLClassLoader.
+    // or otherwise Byteman will load the MockTracer in the BootClassLoader,
+    // while this code will load MockTracer in URLClassLoader.
     final String bootClassPath = buildClassPath(bootPaths, null);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("BootClassPath of forked process will be:\n" + Util.toIndentedString(bootPaths));

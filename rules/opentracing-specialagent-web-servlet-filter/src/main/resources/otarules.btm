@@ -4,7 +4,7 @@
 RULE Jetty servlet filter installation
 CLASS org.eclipse.jetty.servlet.ServletContextHandler
 METHOD <init>
-HELPER io.opentracing.contrib.specialagent.Helper
+HELPER io.opentracing.contrib.agent.OpenTracingHelper
 BIND
   filter:io.opentracing.contrib.web.servlet.filter.TracingFilter =
         new io.opentracing.contrib.web.servlet.filter.TracingFilter(getTracer());
@@ -21,7 +21,7 @@ ENDRULE
 RULE Tomcat servlet filter installation
 CLASS org.apache.catalina.core.ApplicationContext
 METHOD <init>
-HELPER io.opentracing.contrib.specialagent.Helper
+HELPER io.opentracing.contrib.agent.OpenTracingHelper
 BIND
   filter:io.opentracing.contrib.web.servlet.filter.TracingFilter =
          new io.opentracing.contrib.web.servlet.filter.TracingFilter(getTracer());

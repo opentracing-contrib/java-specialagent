@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.contrib.agent;
 
 import java.net.HttpURLConnection;
 import java.util.Collections;
@@ -38,8 +38,8 @@ import io.opentracing.util.GlobalTracer;
 /**
  * Provides helper capabilities to the Byteman rules.
  */
-public class Helper extends org.jboss.byteman.rule.helper.Helper {
-  private static final Logger logger = Logger.getLogger(Helper.class.getName());
+public class OpenTracingHelper extends org.jboss.byteman.rule.helper.Helper {
+  private static final Logger logger = Logger.getLogger(OpenTracingHelper.class.getName());
 
   private static final Map<Object,Span> spanAssociations = Collections.synchronizedMap(new WeakHashMap<Object,Span>());
   private static final Map<Object,Span> finished = Collections.synchronizedMap(new WeakHashMap<Object,Span>());
@@ -48,7 +48,7 @@ public class Helper extends org.jboss.byteman.rule.helper.Helper {
   private static final Object tracerMutex = new Object();
   private static Tracer tracer;
 
-  public Helper(final Rule rule) {
+  public OpenTracingHelper(final Rule rule) {
     super(rule);
   }
 

@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Before;
+
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -28,6 +30,11 @@ public abstract class AbstractConcurrentTest {
         assertEquals(parent.context().spanId(), child.parentId());
       }
     }
+  }
+
+  @Before
+  public void reset(final MockTracer tracer) {
+    tracer.reset();
   }
 
   class TestRunnable implements Runnable {

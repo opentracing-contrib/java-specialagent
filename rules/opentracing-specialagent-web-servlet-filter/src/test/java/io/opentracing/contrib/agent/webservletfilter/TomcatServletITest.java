@@ -43,13 +43,13 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, isolateClassLoader=false)
+@AgentRunner.Config(debug=true, verbose=true, isolateClassLoader=false)
 public class TomcatServletITest {
   private int serverPort = 9786;
   private Tomcat tomcatServer;
 
   @Before
-  public void beforeTest(final MockTracer tracer) throws LifecycleException, ServletException {
+  public void beforeTest() throws LifecycleException, ServletException {
     tomcatServer = new Tomcat();
     tomcatServer.setPort(serverPort);
 
@@ -67,11 +67,6 @@ public class TomcatServletITest {
     System.out.println("Tomcat server: http://" + tomcatServer.getHost().getName() + ":" + serverPort + "/");
   }
 
-  @After
-  public void afterTest(final MockTracer tracer) throws LifecycleException {
-    tomcatServer.stop();
-  }
-
   @Test
   public void testHelloRequest(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
@@ -80,5 +75,10 @@ public class TomcatServletITest {
 
     assertEquals(HttpServletResponse.SC_ACCEPTED, response.code());
     assertEquals(1, tracer.finishedSpans().size());
+  }
+
+  @After
+  public void afterTest() throws LifecycleException {
+    tomcatServer.stop();
   }
 }

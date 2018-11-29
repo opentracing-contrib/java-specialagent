@@ -23,7 +23,7 @@ import io.opentracing.mock.MockTracer;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true)
+@AgentRunner.Config(debug=true, verbose=true)
 public class ExecutorServiceITest extends AbstractConcurrentTest {
 	private static final int NUMBER_OF_THREADS = 4;
 

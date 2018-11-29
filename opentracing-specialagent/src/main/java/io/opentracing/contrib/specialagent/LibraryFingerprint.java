@@ -90,7 +90,7 @@ class LibraryFingerprint extends Fingerprint {
 
         name = entry.getName();
       }
-      while (!name.endsWith(".class"));
+      while (!name.endsWith(".class") || name.startsWith("META-INF/") || name.startsWith("module-info"));
 
       try {
         cls = Class.forName(name.substring(0, name.length() - 6).replace('/', '.'), false, classLoader);
@@ -115,11 +115,11 @@ class LibraryFingerprint extends Fingerprint {
    * @param urls The {@code URL} objects referencing JAR files.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final URL ... urls) throws IOException {
+  LibraryFingerprint(final ClassLoader parent, final URL ... urls) throws IOException {
     if (urls.length == 0)
       throw new IllegalArgumentException("Number of arguments must be greater than 0");
 
-    try (final URLClassLoader classLoader = new URLClassLoader(urls)) {
+    try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
       this.classes = Util.sort(recurse(classLoader, urls, 0, new ZipInputStream(urls[0].openStream()), 0));
     }
   }

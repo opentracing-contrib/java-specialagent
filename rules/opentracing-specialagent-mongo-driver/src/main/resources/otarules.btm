@@ -1,7 +1,7 @@
 RULE MongoClientSettings.Builder add tracing command listener
 CLASS ^com.mongodb.MongoClientSettings
 METHOD builder
-HELPER io.opentracing.contrib.specialagent.Helper
+HELPER io.opentracing.contrib.agent.OpenTracingHelper
 AT EXIT
 IF NOT callerEquals("com.mongodb.async.client.MongoClientSettings.createFromClientSettings", true, true, 3, 1)
 DO

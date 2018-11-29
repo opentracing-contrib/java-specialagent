@@ -138,7 +138,7 @@ public class Agent {
     }
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("Agent initialize java.class.path:\n" + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
+      logger.finest("Agent initialize java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
@@ -350,7 +350,7 @@ public class Agent {
    * This method consumes a Byteman script that is intended for the
    * instrumentation of the OpenTracing API into a 3rd-party library, and
    * produces a Byteman script that is used to trigger the "load classes"
-   * procedure {@link #linkPlugin(Object,int)} that loads the
+   * procedure {@link #linkPlugin(int,Class,Object[])} that loads the
    * instrumentation and OpenTracing API classes directly into the
    * {@code ClassLoader} in which the 3rd-party library is loaded.
    *
@@ -359,7 +359,7 @@ public class Agent {
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
    * @return The script used to trigger the "load classes" procedure
-   *         {@link #linkPlugin(Object,int)}.
+   *         {@link #linkPlugin(int,Class,Object[])}.
    */
   static String retrofitScript(final String script, final int index) {
     final StringBuilder out = new StringBuilder();

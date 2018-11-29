@@ -41,7 +41,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true)
+@AgentRunner.Config(debug=true, verbose=true)
 public class JettyServletITest {
   // jetty starts on random port
   private int serverPort;
@@ -49,7 +49,7 @@ public class JettyServletITest {
   protected Server jettyServer;
 
   @Before
-  public void beforeTest(final MockTracer tracer) throws Exception {
+  public void beforeTest() throws Exception {
     final ServletContextHandler servletContext = new ServletContextHandler();
     servletContext.setContextPath("/");
     servletContext.addServlet(MockServlet.class, "/hello");
@@ -60,12 +60,6 @@ public class JettyServletITest {
     serverPort = ((ServerConnector)jettyServer.getConnectors()[0]).getLocalPort();
   }
 
-  @After
-  public void afterTest(final MockTracer tracer) throws Exception {
-    jettyServer.stop();
-    jettyServer.join();
-  }
-
   @Test
   public void testHelloRequest(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
@@ -74,5 +68,11 @@ public class JettyServletITest {
 
     assertEquals(HttpServletResponse.SC_ACCEPTED, response.code());
     assertEquals(1, tracer.finishedSpans().size());
+  }
+
+  @After
+  public void afterTest() throws Exception {
+    jettyServer.stop();
+    jettyServer.join();
   }
 }

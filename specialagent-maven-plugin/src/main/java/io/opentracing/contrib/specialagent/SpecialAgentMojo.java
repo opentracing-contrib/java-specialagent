@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -107,16 +108,17 @@ public final class SpecialAgentMojo extends AbstractMojo {
    * {@link Artifact} objects marked with {@code <optional>true</optional>} in
    * the specified iterator.
    *
-   * @param project The {@link MavenProject} for which to return the classpath.
    * @param localRepository The local {@link ArtifactRepository}.
-   * @return A list of dependency paths in the specified {@link MavenProject}.
+   * @param iterator The {@code Iterator} of {@code Artifact} objects.
+   * @param depth The depth value for stack tracking (must be called with 0).
+   * @return A list of dependency paths in the specified {@code iterator}.
    */
-  private static URL[] getOptionalDependencyPaths(final ArtifactRepository localRepository, final Iterator<Artifact> iterator, final int depth) {
+  private static URL[] getDependencyPaths(final ArtifactRepository localRepository, final boolean optional, final Iterator<Artifact> iterator, final int depth) {
     while (iterator.hasNext()) {
       final Artifact dependency = iterator.next();
-      if (dependency.isOptional()) {
+      if (optional == dependency.isOptional()) {
         final URL url = getPathOf(localRepository, dependency);
-        final URL[] urls = getOptionalDependencyPaths(localRepository, iterator, depth + 1);
+        final URL[] urls = getDependencyPaths(localRepository, optional, iterator, depth + 1);
         if (urls != null && url != null)
           urls[depth] = url;
 
@@ -139,15 +141,16 @@ public final class SpecialAgentMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     try {
-      final URL[] dependencies = getOptionalDependencyPaths(localRepository, project.getArtifacts().iterator(), 0);
-      if (dependencies == null) {
+      final URL[] optionalDeps = getDependencyPaths(localRepository, true, project.getArtifacts().iterator(), 0);
+      if (optionalDeps == null) {
         getLog().warn("No dependencies were found with <optional>true</optional> -- fingerprint.bin will not be generated");
         return;
       }
 
-      final LibraryFingerprint libraryDigest = new LibraryFingerprint(dependencies);
+      final URL[] nonOptionalDeps = getDependencyPaths(localRepository, false, project.getArtifacts().iterator(), 0);
+      final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), optionalDeps);
       destFile.getParentFile().mkdirs();
-      System.err.println(Arrays.toString(dependencies));
+      System.err.println(Arrays.toString(optionalDeps));
       libraryDigest.toFile(destFile);
     }
     catch (final IOException e) {
