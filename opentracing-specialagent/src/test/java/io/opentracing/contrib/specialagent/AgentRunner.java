@@ -47,7 +47,9 @@ import org.jboss.byteman.agent.Transformer;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.internal.runners.model.ReflectiveCallable;
+import org.junit.rules.TestRule;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
@@ -245,6 +247,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private final URL loggingConfigFile;
   private final ObjectInputStream in;
   private final ObjectOutputStream out;
+  private final Process process;
 
   /**
    * Creates a new {@code AgentRunner} for the specified test class.
@@ -283,18 +286,18 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           }
         };
 
+        this.process = null;
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.in = null;
       }
       else {
         final ServerSocket serverSocket = new ServerSocket(0);
         final int port = serverSocket.getLocalPort();
-        final Process process = fork(cls, port);
+        this.process = fork(cls, port);
         shutdownHook = new Thread() {
           @Override
           public void run() {
             try {
-              Thread.currentThread().sleep(10000);
               serverSocket.close();
             }
             catch (final Exception e) {
@@ -409,9 +412,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           }
 
           try {
-            if (method.getMethod().getParameterTypes().length == 1)
-              System.err.println("XXX: " + getTracer().getClass().getName());
-
             final Object result = method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, getTracer()) : super.invokeExplosively(target);
             write(new TestResult(getName(), null));
             return result;
@@ -440,6 +440,33 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }.run();
       }
     };
+  }
+
+  @Override
+  public void run(final RunNotifier notifier) {
+    super.run(notifier);
+    if (!isInFork) {
+      try {
+        process.waitFor();
+      }
+      catch (final InterruptedException e) {
+      }
+    }
+  }
+
+  /**
+   * Overridden because the stock implementation does not remove null values,
+   * which ends up causing a NullPointerException later down a callstack.
+   */
+  @Override
+  protected List<TestRule> getTestRules(final Object target) {
+    final List<TestRule> rules = super.getTestRules(target);
+    final ListIterator<TestRule> iterator = rules.listIterator(rules.size());
+    while (iterator.hasPrevious())
+      if (iterator.previous() == null)
+        iterator.remove();
+
+    return rules;
   }
 
   /**

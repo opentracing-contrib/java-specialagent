@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -55,11 +56,12 @@ public class Agent {
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
 
   private static final String AGENT_RULES = "otarules.btm";
+  private static final String DEPENDENCIES = "dependencies.tgf";
 
   private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
 
   protected static Retransformer transformer;
-  private static URLClassLoader allPluginsClassLoader;
+  private static AllPluginsClassLoader allPluginsClassLoader;
 
   static {
     final String loggingConfig = System.getProperty("java.util.logging.config.file");
@@ -110,6 +112,25 @@ public class Agent {
     return agentArgs;
   }
 
+  private static class AllPluginsClassLoader extends URLClassLoader {
+    private final Set<URL> urls;
+
+    public AllPluginsClassLoader(final Set<URL> urls) {
+      super(urls.toArray(new URL[urls.size()]), new ClassLoader(null) {
+        // This is overridden to ensure resources are not discovered in BootClassLoader
+        @Override
+        public Enumeration<URL> getResources(final String name) throws IOException {
+          return null;
+        }
+      });
+      this.urls = urls;
+    }
+
+    public boolean containsPath(final URL url) {
+      return urls.contains(url);
+    }
+  }
+
   /**
    * This method initializes the manager.
    *
@@ -118,8 +139,9 @@ public class Agent {
   public static void initialize(final Retransformer trans) {
     transformer = trans;
 
-    final List<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
-    if (pluginJarUrls.isEmpty()) {
+    final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
+    final boolean runningFromTest = pluginJarUrls.isEmpty();
+    if (runningFromTest) {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
@@ -138,29 +160,66 @@ public class Agent {
     }
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("Agent initialize java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
+      logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
 
     // Override parent ClassLoader methods to avoid delegation of resource
     // resolution to BootLoader
-    allPluginsClassLoader = new URLClassLoader(pluginJarUrls.toArray(new URL[pluginJarUrls.size()]), new ClassLoader(null) {
-      // This is overridden to ensure resources are not discovered in BootClassLoader
-      @Override
-      public Enumeration<URL> getResources(final String name) throws IOException {
-        return null;
-      }
-    });
+    allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
+
+    int count = loadDependencies(allPluginsClassLoader);
+    if (runningFromTest)
+      count += loadDependencies(ClassLoader.getSystemClassLoader());
+
+    if (count == 0)
+      throw new IllegalStateException("Could not find " + DEPENDENCIES + " in any plugin JARs!");
 
     loadRules();
   }
+
+  private static int loadDependencies(final ClassLoader classLoader) {
+    int count = 0;
+    try {
+      final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES);
+      OUTER:
+      while (enumeration.hasMoreElements()) {
+        final URL dependencyUrl = enumeration.nextElement();
+        final URL jarUrl = new URL(Util.getSourceLocation(dependencyUrl, DEPENDENCIES));
+        final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependencyUrl);
+        for (final URL dependency : dependencies) {
+          if (allPluginsClassLoader.containsPath(dependency)) {
+            if (pluginToDependencies.containsKey(dependency))
+              throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple plugin JARs with " + DEPENDENCIES + " referencing the same plugin JAR? Offending JAR: " + jarUrl);
+
+            if (logger.isLoggable(Level.FINEST))
+              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":" + Util.toIndentedString(dependencies));
+
+            ++count;
+            pluginToDependencies.put(jarUrl, dependencies);
+            pluginToDependencies.put(dependency, dependencies);
+            continue OUTER;
+          }
+        }
+
+        throw new IllegalStateException("Could not find a plugin JAR referenced in " + DEPENDENCIES + " of " + jarUrl);
+      }
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+    return count;
+  }
+
+  private static final Map<URL,URL[]> pluginToDependencies = new HashMap<>();
 
   /**
    * This method loads any OpenTracing Agent rules (otarules.btm) found as
    * resources within the supplied classloader.
    */
-  public static void loadRules() {
+  private static void loadRules() {
     if (allPluginsClassLoader == null) {
       logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
       return;
@@ -592,15 +651,9 @@ public class Agent {
         logger.finest("  Plugin Path: " + pluginPath);
 
       // Now find all the paths that pluginPath depends on, by reading dependencies.tgf
-      final URL[] pluginPaths;
-      try {
-        final URL dependenciesUrl = pluginPath.toString().endsWith(".jar") ? new URL("jar:" + pluginPath.toString() + "!/dependencies.tgf") : new URL(pluginPath.toString() + "/dependencies.tgf");
-        pluginPaths = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependenciesUrl);
-      }
-      catch (final IOException e) {
-        logger.log(Level.SEVERE, "Failed to read from Plugin Path: " + pluginPath, e);
-        return false;
-      }
+      final URL[] pluginPaths = pluginToDependencies.get(pluginPath);
+      if (pluginPaths == null)
+        throw new IllegalStateException("No " + DEPENDENCIES + " was registered for: " + pluginPath);
 
       if (logger.isLoggable(Level.FINEST))
         logger.finest("new " + PluginClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");

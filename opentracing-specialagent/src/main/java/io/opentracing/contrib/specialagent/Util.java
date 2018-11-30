@@ -435,10 +435,10 @@ final class Util {
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static List<URL> findJarResources(final String path) {
+  static Set<URL> findJarResources(final String path) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
-      final List<URL> urls = new ArrayList<>();
+      final Set<URL> urls = new HashSet<>();
       if (!resources.hasMoreElements())
         return urls;
 
