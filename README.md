@@ -13,6 +13,7 @@ _Java SpecialAgent_ automatically instruments Java applications to produce trace
 3) [JDBC](https://github.com/opentracing-contrib/java-jdbc)
 4) [Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter)
 5) [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
+6) [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
 
 ## Operation
 
@@ -159,6 +160,7 @@ _The SpecialAgent_ uses Byteman to perform bytecode injection for the purpose of
 3) [otarules.btm for JDBC](https://github.com/opentracing-contrib/java-jdbc/src/main/resources/otarules.btm)
 4) [otarules.btm for Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter/src/main/resources/otarules.btm)
 5) [otarules.btm for Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver/src/main/resources/otarules.btm)
+6) [otarules.btm for Apache Camel](https://github.com/apache/camel/blob/master/components/camel-opentracing/src/main/resources/otarules.btm)
 
 #### Packaging
 
