@@ -26,7 +26,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -34,7 +33,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
@@ -387,6 +385,9 @@ final class Util {
    *         specified {@code classpath}.
    */
   static URL[] classPathToURLs(final String classpath) {
+    if (classpath == null)
+      return null;
+
     final String[] paths = classpath.split(File.pathSeparator);
     final URL[] libs = new URL[paths.length];
     try {
@@ -675,6 +676,59 @@ final class Util {
       if (comparison == 0)
         ++j;
     }
+  }
+
+  /**
+   * Compares two {@code Object} arrays, within comparable elements,
+   * lexicographically.
+   * <p>
+   * A {@code null} array reference is considered lexicographically less than a
+   * non-{@code null} array reference. Two {@code null} array references are
+   * considered equal. A {@code null} array element is considered
+   * lexicographically than a non-{@code null} array element. Two {@code null}
+   * array elements are considered equal.
+   * <p>
+   * The comparison is consistent with {@link Arrays#equals(Object[], Object[])
+   * equals}, more specifically the following holds for arrays {@code a} and
+   * {@code b}:
+   *
+   * <pre>
+   * {@code Arrays.equals(a, b) == (Arrays.compare(a, b) == 0)}
+   * </pre>
+   *
+   * @param a The first array to compare.
+   * @param b The second array to compare.
+   * @param <T> The type of comparable array elements.
+   * @return The value {@code 0} if the first and second array are equal and
+   *         contain the same elements in the same order; a value less than
+   *         {@code 0} if the first array is lexicographically less than the
+   *         second array; and a value greater than {@code 0} if the first array
+   *         is lexicographically greater than the second array.
+   */
+  public static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
+    if (a == b)
+      return 0;
+
+    // A null array is less than a non-null array
+    if (a == null || b == null)
+      return a == null ? -1 : 1;
+
+    int length = Math.min(a.length, b.length);
+    for (int i = 0; i < length; i++) {
+      final T oa = a[i];
+      final T ob = b[i];
+      if (oa != ob) {
+        // A null element is less than a non-null element
+        if (oa == null || ob == null)
+          return oa == null ? -1 : 1;
+
+        final int v = oa.compareTo(ob);
+        if (v != 0)
+          return v;
+      }
+    }
+
+    return a.length - b.length;
   }
 
   private Util() {

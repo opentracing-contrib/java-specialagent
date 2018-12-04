@@ -176,7 +176,7 @@ _The SpecialAgent_ has specific requirements for packaging of instrumentation pl
     <plugin>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>specialagent-maven-plugin</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.1-SNAPSHOT</version>
       <executions>
         <execution>
           <goals>

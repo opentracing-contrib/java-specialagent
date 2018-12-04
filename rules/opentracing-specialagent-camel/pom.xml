@@ -25,6 +25,8 @@
   </parent>
   <artifactId>opentracing-specialagent-camel</artifactId>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.apache.camel>2.22.2</version.org.apache.camel>
   </properties>
   <dependencies>

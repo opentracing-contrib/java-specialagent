@@ -26,6 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -119,6 +120,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: {@code true}.
      */
     boolean isolateClassLoader() default true;
+
+    /**
+     * @return Whether the "Load Classes" functionality should be disabled. The "Load Classes" functionality in SpecialAgent is responsible for
+     * force-loading bytecode into the ClassLoader to which the trigger object belongs.
+     *         <p>
+     *         Default: {@code false}.
+     */
+    boolean disableLoadClasses() default false;
   }
 
   /**
@@ -209,7 +218,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final URL[] libs = Util.classPathToURLs(classpath);
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
-      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : ClassLoader.getPlatformClassLoader();
+      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader(parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
@@ -223,7 +232,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       Assert.assertNull(Rule.class.getClassLoader());
       return classInClassLoader;
     }
-    catch (final ClassNotFoundException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
       throw new InitializationError(e);
     }
   }
@@ -266,7 +275,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
       }
       catch (final IOException e) {
-        throw new ExceptionInInitializerError(e);
+        throw new InitializationError(e);
       }
     }
 
@@ -303,8 +312,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
             catch (final Exception e) {
             }
 
-            if (!process.isAlive())
+            try {
+              process.exitValue();
               return;
+            }
+            catch (final IllegalThreadStateException e) {
+            }
 
             if (logger.isLoggable(Level.FINEST))
               logger.finest("Destroying forked process...");
@@ -493,6 +506,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       throw new IllegalStateException("Attempting to fork from a fork");
 
     final Set<String> javaClassPath = Util.getJavaClassPath();
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("java.class.path:\n  " + Util.toIndentedString(javaClassPath));
+
     final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
     final String[] pluginPaths;
     if (dependenciesUrl != null) {
@@ -533,7 +549,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
 
     int i = -1;
-    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (config.disableLoadClasses() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-Xbootclasspath/a:" + bootClassPath;
     args[++i] = "-cp";
@@ -543,6 +559,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     args[++i] = "-D" + Agent.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
     if (config.verbose())
       args[++i] = "-Dorg.jboss.byteman.verbose";
+
+    if (config.disableLoadClasses())
+      args[++i] = "-D" + Agent.DISABLE_LC + "=*";
 
     if (loggingConfigFile != null)
       args[++i] = "-Djava.util.logging.config.file=" + ("file".equals(loggingConfigFile.getProtocol()) ? loggingConfigFile.getPath() : loggingConfigFile.toString());

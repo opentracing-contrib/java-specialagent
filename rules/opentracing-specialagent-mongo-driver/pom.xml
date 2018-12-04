@@ -24,6 +24,8 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.mongodb.mongo-java-driver>3.8.1</version.org.mongodb.mongo-java-driver>
   </properties>
   <artifactId>opentracing-specialagent-mongo-driver</artifactId>

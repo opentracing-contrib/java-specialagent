@@ -207,7 +207,7 @@
       <dependency>
         <groupId>org.jboss.byteman</groupId>
         <artifactId>byteman</artifactId>
-        <version>4.0.4</version>
+        <version>4.0.5</version>
       </dependency>
       <dependency>
         <groupId>io.opentracing</groupId>

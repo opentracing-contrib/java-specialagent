@@ -87,11 +87,11 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
 
   @Override
   public int compareTo(final ConstructorFingerprint o) {
-    final int comparison = Arrays.compare(parameterTypes, o.parameterTypes);
+    final int comparison = Util.compare(parameterTypes, o.parameterTypes);
     if (comparison != 0)
       return comparison;
 
-    return Arrays.compare(exceptionTypes, o.exceptionTypes);
+    return Util.compare(exceptionTypes, o.exceptionTypes);
   }
 
   @Override

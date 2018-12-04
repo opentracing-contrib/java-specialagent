@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +55,17 @@ public class Agent {
   private static final Logger logger = Logger.getLogger(Agent.class.getName());
 
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
+  static final String DISABLE_LC = "io.opentracing.contrib.specialagent.disableLC";
 
   private static final String AGENT_RULES = "otarules.btm";
   private static final String DEPENDENCIES = "dependencies.tgf";
 
   private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
 
-  protected static Retransformer transformer;
+  private static Retransformer retransformer;
   private static AllPluginsClassLoader allPluginsClassLoader;
+
+  private static final Set<String> disabledLoadClasses;
 
   static {
     final String loggingConfig = System.getProperty("java.util.logging.config.file");
@@ -72,6 +76,17 @@ public class Agent {
       catch (final IOException e) {
         throw new ExceptionInInitializerError(e);
       }
+    }
+
+    final String disableLc = System.getProperty(DISABLE_LC);
+    if (disableLc != null) {
+      final String[] jarNames = disableLc.split(":");
+      disabledLoadClasses = new HashSet<>(jarNames.length);
+      for (final String jarName : jarNames)
+        disabledLoadClasses.add(jarName);
+    }
+    else {
+      disabledLoadClasses = null;
     }
   }
 
@@ -134,10 +149,13 @@ public class Agent {
   /**
    * This method initializes the manager.
    *
-   * @param trans The ByteMan retransformer.
+   * @param retransformer The ByteMan retransformer.
    */
-  public static void initialize(final Retransformer trans) {
-    transformer = trans;
+  public static void initialize(final Retransformer retransformer) {
+    Agent.retransformer = retransformer;
+
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
     final boolean runningFromTest = pluginJarUrls.isEmpty();
@@ -155,12 +173,10 @@ public class Agent {
       }
 
       final URL[] pluginPaths = Util.classPathToURLs(System.getProperty(PLUGIN_ARG));
-      for (final URL pluginPath : pluginPaths)
-        pluginJarUrls.add(pluginPath);
+      if (pluginPaths != null)
+        for (final URL pluginPath : pluginPaths)
+          pluginJarUrls.add(pluginPath);
     }
-
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
@@ -183,27 +199,47 @@ public class Agent {
     int count = 0;
     try {
       final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES);
+      final Set<String> dependencyUrls = new HashSet<>();
+
       OUTER:
       while (enumeration.hasMoreElements()) {
         final URL dependencyUrl = enumeration.nextElement();
+        if (dependencyUrls.contains(dependencyUrl.toString()))
+          continue;
+
+        dependencyUrls.add(dependencyUrl.toString());
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("Found " + DEPENDENCIES + ": " + dependencyUrl + " " + Util.getIdentityCode(dependencyUrl));
+
         final URL jarUrl = new URL(Util.getSourceLocation(dependencyUrl, DEPENDENCIES));
         final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependencyUrl);
+        boolean foundReference = false;
         for (final URL dependency : dependencies) {
           if (allPluginsClassLoader.containsPath(dependency)) {
-            if (pluginToDependencies.containsKey(dependency))
+            // When run from a test, it may happen that both the "allPluginsClassLoader"
+            // and SystemClassLoader have the same path, leading to the same dependencies.tgf
+            // file to be processed twice. This check asserts the previously registered
+            // dependencies are correct.
+            final URL[] registered = pluginToDependencies.get(dependency);
+            if (registered != null) {
+              if (registered == pluginToDependencies.get(jarUrl))
+                continue OUTER;
+
               throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple plugin JARs with " + DEPENDENCIES + " referencing the same plugin JAR? Offending JAR: " + jarUrl);
+            }
 
             if (logger.isLoggable(Level.FINEST))
               logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":" + Util.toIndentedString(dependencies));
 
             ++count;
+            foundReference =  true;
             pluginToDependencies.put(jarUrl, dependencies);
             pluginToDependencies.put(dependency, dependencies);
-            continue OUTER;
           }
         }
 
-        throw new IllegalStateException("Could not find a plugin JAR referenced in " + DEPENDENCIES + " of " + jarUrl);
+        if (!foundReference)
+          throw new IllegalStateException("Could not find a plugin JAR referenced in " + DEPENDENCIES + " of " + jarUrl);
       }
     }
     catch (final IOException e) {
@@ -225,7 +261,7 @@ public class Agent {
       return;
     }
 
-    if (transformer == null) {
+    if (retransformer == null) {
       logger.severe("Attempt to load OpenTracing agent rules before transformer initialized");
       return;
     }
@@ -281,7 +317,7 @@ public class Agent {
 
     final StringWriter sw = new StringWriter();
     try (final PrintWriter pw = new PrintWriter(sw)) {
-      transformer.installScript(scripts, scriptNames, pw);
+      retransformer.installScript(scripts, scriptNames, pw);
     }
     catch (final Exception e) {
       logger.log(Level.SEVERE, "Failed to install scripts", e);
@@ -302,7 +338,7 @@ public class Agent {
 
     final StringWriter sw = new StringWriter();
     try (final PrintWriter pw = new PrintWriter(sw)) {
-      transformer.removeScripts(Collections.singletonList("RULE " + ruleName), pw);
+      retransformer.removeScripts(Collections.singletonList("RULE " + ruleName), pw);
     }
     catch (final Exception e) {
       logger.log(Level.SEVERE, "Failed to unload rule: " + ruleName, e);
@@ -596,6 +632,15 @@ public class Agent {
     }
   };
 
+  private static boolean isLoadClassesDisabled(final URL pluginUrl) {
+    if (disabledLoadClasses == null)
+      return false;
+
+    final String path = pluginUrl.toString();
+    final String jarName = path.substring(path.lastIndexOf('/') + 1);
+    return disabledLoadClasses.contains("*") || disabledLoadClasses.contains(jarName);
+  }
+
   /**
    * Links the instrumentation plugin at the specified index. This method is
    * called by Byteman upon trigger of a rule from a otarules.btm script, and
@@ -698,34 +743,39 @@ public class Agent {
         }
       }
 
-      // Associate the pluginClassLoader with the target class's classLoader
-      classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+      if (!isLoadClassesDisabled(pluginPath)) {
+        // Associate the pluginClassLoader with the target class's classLoader
+        classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 
-      // Enable triggers to the LoadClasses script can execute
-      Rule.enableTriggers();
+        // Enable triggers to the LoadClasses script can execute
+        Rule.enableTriggers();
 
-      // Call Class.forName(...) for each class in pluginClassLoader to load in
-      // the caller's classLoader
-      for (final URL pathUrl : pluginClassLoader.getURLs()) {
-        if (pathUrl.toString().endsWith(".jar")) {
-          try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
-            for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
-          }
-          catch (final IOException e) {
-            logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
-          }
-        }
-        else {
-          final File dir = new File(URI.create(pathUrl.toString()));
-          final Path path = dir.toPath();
-          Util.recurseDir(dir, new Predicate<File>() {
-            @Override
-            public boolean test(final File file) {
-              loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
-              return true;
+        // Call Class.forName(...) for each class in pluginClassLoader to load in
+        // the caller's classLoader
+        for (final URL pathUrl : pluginClassLoader.getURLs()) {
+          if (pathUrl.toString().endsWith(".jar")) {
+            try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
+              for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
             }
-          });
+            catch (final IOException e) {
+              logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
+            }
+          }
+          else {
+            final File dir = new File(URI.create(pathUrl.toString()));
+            final Path path = dir.toPath();
+            Util.recurseDir(dir, new Predicate<File>() {
+              @Override
+              public boolean test(final File file) {
+                loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
+                return true;
+              }
+            });
+          }
         }
+      }
+      else if (logger.isLoggable(Level.FINEST)) {
+        logger.finest("  LoadClasses is disabled for: " + pluginPath);
       }
 
       return true;

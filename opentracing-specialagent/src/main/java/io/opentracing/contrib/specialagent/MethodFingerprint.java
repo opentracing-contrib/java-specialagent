@@ -100,11 +100,11 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     if (comparison != 0)
       return comparison;
 
-    comparison = Arrays.compare(parameterTypes, o.parameterTypes);
+    comparison = Util.compare(parameterTypes, o.parameterTypes);
     if (comparison != 0)
       return comparison;
 
-    return Arrays.compare(exceptionTypes, o.exceptionTypes);
+    return Util.compare(exceptionTypes, o.exceptionTypes);
   }
 
   @Override
