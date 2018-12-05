@@ -171,25 +171,27 @@ _The SpecialAgent_ has specific requirements for packaging of instrumentation pl
     * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the SpecialAgent package, as all of the instrumentation plugins as contained within it.
     * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
     * Many of the currently implemented instrumentation plugins _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the instrumentation plugin artifact. An example of this can be seen with the instrumentation plugin for the Mongo Driver [here](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-mongo-driver/pom.xml#L37-L44).
-2) The package must contain a `fingerprint.bin` file. This file provides the SpecialAgent with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the SpecialAgent to determine if the plugin is compatible with the relevant 3rd-party library in a target application. To generate this file, include the following plugin in the project's POM:
-    ```xml
-    <plugin>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>specialagent-maven-plugin</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-      <executions>
-        <execution>
-          <goals>
-            <goal>fingerprint</goal>
-          </goals>
-          <phase>generate-resources</phase>
-          <configuration>
-            <destFile>${project.build.directory}/generated-resources/fingerprint.bin</destFile>
-          </configuration>
-        </execution>
-      </executions>
-    </plugin>
-    ```
+2) The package must contain a `fingerprint.bin` file. This file provides the SpecialAgent with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the SpecialAgent to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
+    1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-okhttp/pom.xml) as an example.
+    2. Next, include the following plugin in the project's POM:
+        ```xml
+        <plugin>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>specialagent-maven-plugin</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>fingerprint</goal>
+              </goals>
+              <phase>generate-resources</phase>
+              <configuration>
+                <destFile>${project.build.directory}/generated-resources/fingerprint.bin</destFile>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        ```
 3) The package must contain a `dependencies.tgf` file. This file allows the SpecialAgent to distinguish instrumentation plugin dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
     ```xml
     <plugin>

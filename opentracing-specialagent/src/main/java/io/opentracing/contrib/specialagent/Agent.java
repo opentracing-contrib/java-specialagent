@@ -201,7 +201,6 @@ public class Agent {
       final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES);
       final Set<String> dependencyUrls = new HashSet<>();
 
-      OUTER:
       while (enumeration.hasMoreElements()) {
         final URL dependencyUrl = enumeration.nextElement();
         if (dependencyUrls.contains(dependencyUrl.toString()))
@@ -223,7 +222,7 @@ public class Agent {
             final URL[] registered = pluginToDependencies.get(dependency);
             if (registered != null) {
               if (registered == pluginToDependencies.get(jarUrl))
-                continue OUTER;
+                continue;
 
               throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple plugin JARs with " + DEPENDENCIES + " referencing the same plugin JAR? Offending JAR: " + jarUrl);
             }

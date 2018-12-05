@@ -40,7 +40,7 @@
       <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
       <!-- If we add <optional>true</optional>, a fingerprint.bin will be
-        generated, adn the SpecialAgent will validate the APIs match in runtime.
+        generated, and the SpecialAgent will validate the APIs match in runtime.
         This may or may not be desirable, because it would then restrict this
         plugin only to the Servlet API version specified. -->
       <scope>provided</scope>

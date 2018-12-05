@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -112,6 +113,8 @@ class LibraryFingerprint extends Fingerprint {
    * Creates a new {@code LibraryFingerprint} with the specified {@code URL}
    * objects referencing JAR files.
    *
+   * @param parent The parent {@code ClassLoader} to use for resolution of
+   *          classes that should not be part of the fingerprint.
    * @param urls The {@code URL} objects referencing JAR files.
    * @throws IOException If an I/O error has occurred.
    */
@@ -162,8 +165,8 @@ class LibraryFingerprint extends Fingerprint {
      * @param classLoader The {@code ClassLoader} used as the source for loading
      *          of bytecode.
      */
-    private TempClassLoader(final ClassLoader classLoader) {
-      super(null);
+    private TempClassLoader(final ClassLoader classLoader, final ClassLoader parent) {
+      super(parent);
       this.classLoader = classLoader;
     }
 
@@ -178,7 +181,7 @@ class LibraryFingerprint extends Fingerprint {
         return defineClass(name, bytes, 0, bytes.length, null);
       }
       catch (final IOException e) {
-        logger.log(Level.SEVERE, "Failed to read bytes for " + resourceName, e);
+        logger.log(Level.SEVERE, "Failed to read bytes for: " + resourceName, e);
         return null;
       }
     }
@@ -193,25 +196,30 @@ class LibraryFingerprint extends Fingerprint {
    * @param index The index of the iteration (should be 0 when called).
    * @param depth The depth of the iteration (should be 0 when called).
    * @return An array of @{@code FingerprintError} objects representing all
-   *         errors encountered in the compatibility test, or {@code null} if the
-   *         runtime is compatible with this fingerprint,
+   *         errors encountered in the compatibility test, or {@code null} if
+   *         the runtime is compatible with this fingerprint,
    */
-  public FingerprintError[] isCompatible(final ClassLoader classLoader, final int index, final int depth) {
-    final TempClassLoader tempClassLoader = new TempClassLoader(classLoader);
+  public FingerprintError[] isCompatible(final ClassLoader classLoader, final ClassLoader parentClassLoader, final int index, final int depth) {
+    final TempClassLoader tempClassLoader = new TempClassLoader(classLoader, parentClassLoader);
     for (int i = index; i < classes.length; ++i) {
       FingerprintError error = null;
       try {
         final Class<?> cls = Class.forName(classes[i].getName(), false, tempClassLoader);
-        final ClassFingerprint fingerprint = new ClassFingerprint(cls);
-        if (!fingerprint.compatible(classes[i]))
-          error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
+        try {
+          final ClassFingerprint fingerprint = new ClassFingerprint(cls);
+          if (!fingerprint.compatible(classes[i]))
+            error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
+        }
+        catch (final VerifyError e) {
+          logger.log(Level.WARNING, "Failed generate class fingerprint due to VerifyError -- resorting to default behavior (permit instrumentation)", e);
+        }
       }
       catch (final ClassNotFoundException e) {
         error = new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null);
       }
 
       if (error != null) {
-        final FingerprintError[] errors = isCompatible(classLoader, i + 1, depth + 1);
+        final FingerprintError[] errors = isCompatible(classLoader, parentClassLoader, i + 1, depth + 1);
         errors[depth] = error;
         return errors;
       }
@@ -234,6 +242,6 @@ class LibraryFingerprint extends Fingerprint {
 
   @Override
   public String toString() {
-    return "\n" + Util.toString(classes, "\n") ;
+    return "\n" + Util.toString(classes, "\n");
   }
 }
