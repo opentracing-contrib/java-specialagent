@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 /**
@@ -25,32 +23,6 @@ import java.util.Arrays;
 class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;
 
-  /**
-   * Returns an array of {@code MethodFingerprint} objects for the non-private
-   * and non-synthetic methods in the specified array of {@code Method} objects.
-   * This is a recursive algorithm, and the {@code index} and {@code depth}
-   * parameters are used to track the execution state on the call stack.
-   *
-   * @param methods The {@code Method} objects to be fingerprinted.
-   * @param index The index of the iteration (should be 0 when called).
-   * @param depth The depth of the iteration (should be 0 when called).
-   * @return An array of {@code MethodFingerprint} objects for the non-private
-   *         and non-synthetic methods in the specified array of {@code Method}
-   *         objects.
-   */
-  static MethodFingerprint[] recurse(final Method[] methods, final int index, final int depth) {
-    for (int i = index; i < methods.length; ++i) {
-      if (!methods[i].isSynthetic() && !Modifier.isPrivate(methods[i].getModifiers())) {
-        final MethodFingerprint fingerprint = new MethodFingerprint(methods[i]);
-        final MethodFingerprint[] fingerprints = recurse(methods, i + 1, depth + 1);
-        fingerprints[depth] = fingerprint;
-        return fingerprints;
-      }
-    }
-
-    return depth == 0 ? null : new MethodFingerprint[depth];
-  }
-
   private final String returnType;
   private final String[] parameterTypes;
   private final String[] exceptionTypes;
@@ -58,13 +30,18 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   /**
    * Creates a new {@code MethodFingerprint} for the specified {@code Method}.
    *
-   * @param method The {@code Method} to be fingerprinted.
+   * @param name The name of the method.
+   * @param returnType The class name of the return type.
+   * @param parameterTypes The array of class names in the parameter signature,
+   *          or {@code null} if there are no parameters.
+   * @param exceptionTypes The sorted array of class names in the exception
+   *          signature, or {@code null} if there are no exceptions.
    */
-  MethodFingerprint(final Method method) {
-    super(method.getName());
-    this.returnType = Util.getName(method.getReturnType());
-    this.parameterTypes = Util.getNames(method.getParameterTypes());
-    this.exceptionTypes = Util.sort(Util.getNames(method.getExceptionTypes()));
+  MethodFingerprint(final String name, final String returnType, final String[] parameterTypes, final String[] exceptionTypes) {
+    super(name);
+    this.returnType = returnType;
+    this.parameterTypes = parameterTypes;
+    this.exceptionTypes = exceptionTypes;
   }
 
   /**

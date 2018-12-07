@@ -121,6 +121,12 @@
       <artifactId>byteman</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>5.0.3</version>
+      <optional>true</optional>
+    </dependency>
 
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-hazelcast -->
@@ -808,6 +814,7 @@
           </includes>
           <excludes>
             <exclude>io/opentracing/contrib/specialagent/**/*ITest</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*ITestCase</exclude>
             <exclude>io/opentracing/contrib/specialagent/**/*IntegrationTest</exclude>
             <exclude>io/opentracing/contrib/specialagent/**/*IntegrationTestCase</exclude>
           </excludes>
@@ -826,6 +833,7 @@
             <configuration>
               <includes>
                 <include>io/opentracing/contrib/specialagent/**/*ITest</include>
+                <include>io/opentracing/contrib/specialagent/**/*ITestCase</include>
                 <include>io/opentracing/contrib/specialagent/**/*IntegrationTest</include>
                 <include>io/opentracing/contrib/specialagent/**/*IntegrationTestCase</include>
               </includes>

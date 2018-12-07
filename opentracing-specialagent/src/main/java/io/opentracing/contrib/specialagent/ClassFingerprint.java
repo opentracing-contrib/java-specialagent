@@ -30,16 +30,24 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
   private final FieldFingerprint[] fields;
 
   /**
-   * Creates a new {@code ClassFingerprint} for the specified {@code Class}.
+   * Creates a new {@code ClassFingerprint} for the specified parameters.
    *
-   * @param cls The {@code Class} to be fingerprinted.
+   * @param name The name of the class.
+   * @param superClass The name of the super class, or {@code null} for
+   *          {@code java.lang.Object}.
+   * @param constructors The sorted array of {@code ConstructorFingerprint}
+   *          objects, or {@code null} if there are no constructors.
+   * @param methods The sorted array of {@code MethodFingerprint} objects, or
+   *          {@code null} if there are no methods.
+   * @param fields The sorted array of {@code FieldFingerprint} objects, or
+   *          {@code null} if there are no fields.
    */
-  ClassFingerprint(final Class<?> cls) {
-    super(cls.getName());
-    this.superClass = cls.getSuperclass() == null || cls.getSuperclass() == Object.class ? null : cls.getSuperclass().getName();
-    this.constructors = Util.sort(ConstructorFingerprint.recurse(cls.getDeclaredConstructors(), 0, 0));
-    this.methods = Util.sort(MethodFingerprint.recurse(cls.getDeclaredMethods(), 0, 0));
-    this.fields = Util.sort(FieldFingerprint.recurse(cls.getDeclaredFields(), 0, 0));
+  ClassFingerprint(final String name, final String superClass, final ConstructorFingerprint[] constructors, final MethodFingerprint[] methods, final FieldFingerprint[] fields) {
+    super(name);
+    this.superClass = superClass;
+    this.constructors = constructors;
+    this.methods = methods;
+    this.fields = fields;
   }
 
   /**

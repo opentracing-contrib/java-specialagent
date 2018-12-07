@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 /**
@@ -26,45 +24,21 @@ import java.util.Arrays;
 class ConstructorFingerprint extends Fingerprint implements Comparable<ConstructorFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;
 
-  /**
-   * Returns an array of {@code ConstructorFingerprint} objects for the
-   * non-private and non-synthetic constructors in the specified array of
-   * {@code Constructor} objects. This is a recursive algorithm, and the
-   * {@code index} and {@code depth} parameters are used to track the execution
-   * state on the call stack.
-   *
-   * @param constructors The {@code Constructor} objects to be fingerprinted.
-   * @param index The index of the iteration (should be 0 when called).
-   * @param depth The depth of the iteration (should be 0 when called).
-   * @return An array of {@code ConstructorFingerprint} objects for the
-   *         non-private and non-synthetic constructors in the specified array
-   *         of {@code Constructor} objects.
-   */
-  static ConstructorFingerprint[] recurse(final Constructor<?>[] constructors, final int index, final int depth) {
-    for (int i = index; i < constructors.length; ++i) {
-      if (!constructors[i].isSynthetic() && !Modifier.isPrivate(constructors[i].getModifiers())) {
-        final ConstructorFingerprint fingerprint = new ConstructorFingerprint(constructors[i]);
-        final ConstructorFingerprint[] fingerprints = recurse(constructors, i + 1, depth + 1);
-        fingerprints[depth] = fingerprint;
-        return fingerprints;
-      }
-    }
-
-    return depth == 0 ? null : new ConstructorFingerprint[depth];
-  }
-
   private final String[] parameterTypes;
   private final String[] exceptionTypes;
 
   /**
-   * Creates a new {@code ConstructorFingerprint} for the specified
-   * {@code Constructor}.
+   * Creates a new {@code ConstructorFingerprint} for the specified arrays of
+   * parameters and exceptions.
    *
-   * @param constructor The {@code Constructor} to be fingerprinted.
+   * @param parameterTypes The array of class names in the parameter signature,
+   *          or {@code null} if there are no parameters.
+   * @param exceptionTypes The sorted array of class names in the exception
+   *          signature, or {@code null} if there are no exceptions.
    */
-  ConstructorFingerprint(final Constructor<?> constructor) {
-    this.parameterTypes = Util.getNames(constructor.getParameterTypes());
-    this.exceptionTypes = Util.sort(Util.getNames(constructor.getExceptionTypes()));
+  ConstructorFingerprint(final String[] parameterTypes, final String[] exceptionTypes) {
+    this.parameterTypes = parameterTypes;
+    this.exceptionTypes = exceptionTypes;
   }
 
   /**

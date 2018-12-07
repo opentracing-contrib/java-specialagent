@@ -16,7 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -85,15 +84,7 @@ class PluginClassLoader extends URLClassLoader {
     if (fpURL != null) {
       try {
         final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
-        final ClassLoader parentClassLoader;
-        try {
-          parentClassLoader = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-        }
-        catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-          throw new IllegalStateException(e);
-        }
-
-        final FingerprintError[] errors = fingerprint.isCompatible(classLoader, parentClassLoader, 0, 0);
+        final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
         if (errors != null) {
           logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
           compatibility.put(classLoader, false);

@@ -219,6 +219,7 @@ public class Agent {
             // and SystemClassLoader have the same path, leading to the same dependencies.tgf
             // file to be processed twice. This check asserts the previously registered
             // dependencies are correct.
+            foundReference =  true;
             final URL[] registered = pluginToDependencies.get(dependency);
             if (registered != null) {
               if (registered == pluginToDependencies.get(jarUrl))
@@ -231,14 +232,13 @@ public class Agent {
               logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":" + Util.toIndentedString(dependencies));
 
             ++count;
-            foundReference =  true;
             pluginToDependencies.put(jarUrl, dependencies);
             pluginToDependencies.put(dependency, dependencies);
           }
         }
 
         if (!foundReference)
-          throw new IllegalStateException("Could not find a plugin JAR referenced in " + DEPENDENCIES + " of " + jarUrl);
+          throw new IllegalStateException("Could not find a plugin JAR referenced in " + jarUrl + DEPENDENCIES + " from: \n" + Util.toIndentedString(dependencies));
       }
     }
     catch (final IOException e) {

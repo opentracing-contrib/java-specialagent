@@ -34,7 +34,7 @@ abstract class NamedFingerprint<T extends NamedFingerprint<T>> extends Fingerpri
     this.name = name;
   }
 
-  public final String getName() {
+  final String getName() {
     return name;
   }
 

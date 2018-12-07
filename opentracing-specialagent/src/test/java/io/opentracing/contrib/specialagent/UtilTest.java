@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracer;
 
+@Ignore
 public class UtilTest {
   @Test
   public void testGetPluginPathsAll() throws IOException {
