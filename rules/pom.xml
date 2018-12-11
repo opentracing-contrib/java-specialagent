@@ -35,6 +35,7 @@
   </modules>
   <profiles>
     <profile>
+      <id>default</id>
       <activation>
         <property>
           <name>!deploy</name>

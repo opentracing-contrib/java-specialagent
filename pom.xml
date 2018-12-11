@@ -45,7 +45,6 @@
     </developer>
   </developers>
   <modules>
-    <module>specialagent-maven-plugin</module>
     <module>opentracing-specialagent</module>
     <module>rules</module>
   </modules>
@@ -55,6 +54,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <property>
+          <name>!deploy</name>
+        </property>
+      </activation>
+      <modules>
+        <module>specialagent-maven-plugin</module>
+      </modules>
+    </profile>
     <profile>
       <id>release</id>
       <build>

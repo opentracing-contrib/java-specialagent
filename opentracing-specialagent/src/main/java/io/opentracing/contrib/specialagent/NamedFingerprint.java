@@ -19,6 +19,7 @@ package io.opentracing.contrib.specialagent;
  * Abstract class representing a {@link Fingerprint} with a name.
  *
  * @param <T> The self-type parameter.
+ * @author Seva Safris
  */
 abstract class NamedFingerprint<T extends NamedFingerprint<T>> extends Fingerprint implements Comparable<T> {
   private static final long serialVersionUID = 3682401024183679159L;
@@ -34,6 +35,9 @@ abstract class NamedFingerprint<T extends NamedFingerprint<T>> extends Fingerpri
     this.name = name;
   }
 
+  /**
+   * @return The name of this fingerprint.
+   */
   final String getName() {
     return name;
   }

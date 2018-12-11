@@ -25,6 +25,11 @@ import java.net.Socket;
 
 import org.junit.Test;
 
+/**
+ * Tests the socket architecture for the AgentRunner.
+ *
+ * @author Seva Safris
+ */
 public class SocketTest {
   @Test
   public void test() throws ClassNotFoundException, IOException {

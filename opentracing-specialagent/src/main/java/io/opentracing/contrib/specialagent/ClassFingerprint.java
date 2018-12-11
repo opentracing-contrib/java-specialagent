@@ -20,6 +20,8 @@ import java.util.Arrays;
 /**
  * A {@link NamedFingerprint} that represents the fingerprint of a
  * {@code Class}.
+ *
+ * @author Seva Safris
  */
 class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
   private static final long serialVersionUID = 3179458505281585557L;

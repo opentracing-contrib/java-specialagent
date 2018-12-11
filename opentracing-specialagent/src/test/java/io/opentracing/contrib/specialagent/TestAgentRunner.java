@@ -17,6 +17,11 @@ package io.opentracing.contrib.specialagent;
 
 import org.junit.runners.model.InitializationError;
 
+/**
+ * Specialized AgentRunner to be used for testing the AgentRunner itself.
+ *
+ * @author Seva Safris
+ */
 public class TestAgentRunner extends AgentRunner {
   public TestAgentRunner(final Class<?> cls) throws InitializationError {
     super(cls);

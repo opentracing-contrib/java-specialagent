@@ -19,6 +19,7 @@ package io.opentracing.contrib.specialagent;
  * Represents a predicate (boolean-valued function) of one argument.
  *
  * @param <T> The type of the input to the operation.
+ * @author Seva Safris
  */
 public interface Predicate<T> {
   /**

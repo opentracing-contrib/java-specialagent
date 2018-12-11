@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a library.
+ *
+ * @author Seva Safris
  */
 class LibraryFingerprint extends Fingerprint {
   private static final long serialVersionUID = -8454972655262482231L;
@@ -51,7 +53,6 @@ class LibraryFingerprint extends Fingerprint {
       throw new UnsupportedOperationException(e);
     }
   }
-
 
   private final ClassFingerprint[] classes;
 
@@ -117,7 +118,8 @@ class LibraryFingerprint extends Fingerprint {
    *
    * @param classLoader The {@code ClassLoader} representing the runtime to test
    *          for compatibility.
-   * @param fingerprinter The {@code Fingerprinter} to be used for fingerprinting.
+   * @param fingerprinter The {@code Fingerprinter} to be used for
+   *          fingerprinting.
    * @param index The index of the iteration (should be 0 when called).
    * @param depth The depth of the iteration (should be 0 when called).
    * @return An array of @{@code FingerprintError} objects representing all

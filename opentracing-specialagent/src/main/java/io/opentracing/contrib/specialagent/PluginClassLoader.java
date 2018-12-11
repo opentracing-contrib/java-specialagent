@@ -32,16 +32,24 @@ import java.util.logging.Logger;
  * <li>{@link #isCompatible(ClassLoader)}: Determines whether the
  * instrumentation plugin it repserents is compatible with a specified
  * {@code ClassLoader}.</li>
- * <li>{@link #markFindResource(ClassLoader,String)}: Keeps track of the
- * names of classes that have been loaded into a specified
- * {@code ClassLoader}.</li>
+ * <li>{@link #markFindResource(ClassLoader,String)}: Keeps track of the names
+ * of classes that have been loaded into a specified {@code ClassLoader}.</li>
  * </ol>
+ *
+ * @author Seva Safris
  */
 class PluginClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(PluginClassLoader.class.getName());
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
   private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
+
+  private static final boolean failOnMissingFingerprint;
+
+  static {
+    final String property = System.getProperty("failOnMissingFingerprint");
+    failOnMissingFingerprint = property != null && !"false".equalsIgnoreCase(property);
+  }
 
   /**
    * Creates a new {@code PluginClassLoader} with the specified classpath URLs
@@ -62,18 +70,17 @@ class PluginClassLoader extends URLClassLoader {
    * This method utilizes the {@link LibraryFingerprint} class to determine
    * compatibility via "fingerprinting".
    * <p>
-   * Once "fingerprinting" has been performed, the resulting value is
-   * associated with the specified {@code ClassLoader} in the
-   * {@link #compatibility} map as a cache.
+   * Once "fingerprinting" has been performed, the resulting value is associated
+   * with the specified {@code ClassLoader} in the {@link #compatibility} map as
+   * a cache.
    *
    * @param classLoader The {@code ClassLoader} for which the instrumentation
    *          plugin represented by this {@code PluginClassLoader} is to be
    *          checked for compatibility.
    * @return {@code true} if the target classes in the specified
-   *         {@code ClassLoader} are compatible with the instrumentation
-   *         plugin represented by this {@code PluginClassLoader}, and
-   *         {@code false} if the specified {@code ClassLoader} is
-   *         incompatible.
+   *         {@code ClassLoader} are compatible with the instrumentation plugin
+   *         represented by this {@code PluginClassLoader}, and {@code false} if
+   *         the specified {@code ClassLoader} is incompatible.
    */
   boolean isCompatible(final ClassLoader classLoader) {
     final Boolean compatible = compatibility.get(classLoader);
@@ -95,13 +102,17 @@ class PluginClassLoader extends URLClassLoader {
           logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
       }
       catch (final IOException e) {
-        // TODO: Parameterize the default behavior!
-        logger.log(Level.SEVERE, "Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin read error\" in: " + Util.toIndentedString(getURLs()), e);
+        throw new IllegalStateException(e);
       }
     }
     else {
-      // TODO: Parameterize the default behavior!
-      logger.warning("Resorting to default behavior (permit instrumentation) due to \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+      if (failOnMissingFingerprint) {
+        logger.warning("Disallowing instrumentation due to \"-DfailOnMissingFingerprint=true\" and \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+        compatibility.put(classLoader, false);
+        return false;
+      }
+
+      logger.warning("Allowing instrumentation due to default \"-DfailOnMissingFingerprint=false\" and \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
     }
 
     compatibility.put(classLoader, true);
@@ -110,11 +121,10 @@ class PluginClassLoader extends URLClassLoader {
 
   /**
    * Marks the specified resource name with {@code true}, associated with the
-   * specified {@code ClassLoader}, and returns the previous value of the
-   * mark.
+   * specified {@code ClassLoader}, and returns the previous value of the mark.
    * <p>
-   * The first invocation of this method for a specified {@code ClassLoader}
-   * and resource name will return {@code false}.
+   * The first invocation of this method for a specified {@code ClassLoader} and
+   * resource name will return {@code false}.
    * <p>
    * Subsequent calls to this method for a specified {@code ClassLoader} and
    * resource name will return {@code true}.
@@ -123,9 +133,9 @@ class PluginClassLoader extends URLClassLoader {
    *          for the specified resource name is associated.
    * @param resourceName The name of the resource as the target of the mark.
    * @return {@code false} if this method was never called with the specific
-   *         {@code ClassLoader} and resource name; {@code true} if this
-   *         method was previously called with the specific
-   *         {@code ClassLoader} and resource name.
+   *         {@code ClassLoader} and resource name; {@code true} if this method
+   *         was previously called with the specific {@code ClassLoader} and
+   *         resource name.
    */
   boolean markFindResource(final ClassLoader classLoader, final String resourceName) {
     Set<String> classNames = classLoaderToClassName.get(classLoader);

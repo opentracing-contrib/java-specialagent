@@ -19,6 +19,8 @@ import java.util.Arrays;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a {@code Method}.
+ *
+ * @author Seva Safris
  */
 class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;

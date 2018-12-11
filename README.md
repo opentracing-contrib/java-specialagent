@@ -66,10 +66,20 @@ This command statically attaches _Java SpecialAgent_ into the application in `my
 
 Dynamically attaching to a Java application involves the use of a running application’s PID, after the application’s startup. The following commands can be used as an example:
 
-```bash
-jps # Call this to obtain the PID of the target application
-java -jar opentracing-specialagent.jar <PID> # Replace <PID> with the PID from jps
-```
+1. Call this to obtain the `PID` of the target application:
+    ```bash
+    jps 
+    ```
+
+2. For jdk1.8
+    ```bash
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent.jar <PID>
+    ```
+
+2. For jdk9+
+    ```bash
+    java -jar opentracing-specialagent.jar <PID>
+    ```
 
 ## Test Usage
 
@@ -219,6 +229,24 @@ The SpecialAgent provides a convenient methodolofy for testing of the auto-instr
 #### Including the Instrumentation Plugin in the SpecialAgent
 
 Instrumentation plugins must be explicitly packaged into the main JAR of the SpecialAgent. Please refer to the `<id>deploy</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
+
+#### Building
+
+The SpecialAgent is built in 2 profiles:
+
+1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in `opentracing-specialagent-<version>.jar`
+
+    To run this profile:
+    ```bash
+    mvn clean install
+    ```
+
+2. The `deploy` profile is used for packaging of plugins into the `opentracing-specialagent-<version>.jar`. It builds each plugin, but does not run their tests. Once the build is finished, the `opentracing-specialagent-<version>.jar` will contain the built plugins inside it.
+
+    To run this profile:
+    ```bash
+    mvn -Ddeploy clean install
+    ```
 
 ## Contributing
 

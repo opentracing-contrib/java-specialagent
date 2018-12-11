@@ -27,6 +27,11 @@
   <profiles>
     <profile>
       <id>deploy</id>
+      <activation>
+        <property>
+          <name>deploy</name>
+        </property>
+      </activation>
       <dependencies>
         <dependency>
           <groupId>io.opentracing.contrib</groupId>

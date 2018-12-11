@@ -16,8 +16,9 @@
 package io.opentracing.contrib.specialagent;
 
 /**
- * A {@link Fingerprint} that represents the fingerprint of a
- * {@code Field}.
+ * A {@link Fingerprint} that represents the fingerprint of a {@code Field}.
+ *
+ * @author Seva Safris
  */
 class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
   private static final long serialVersionUID = 3516568839736210165L;

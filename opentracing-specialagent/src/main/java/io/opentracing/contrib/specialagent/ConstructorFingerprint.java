@@ -20,6 +20,8 @@ import java.util.Arrays;
 /**
  * A {@link Fingerprint} that represents the fingerprint of a
  * {@code Constructor}.
+ *
+ * @author Seva Safris
  */
 class ConstructorFingerprint extends Fingerprint implements Comparable<ConstructorFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;

@@ -45,6 +45,8 @@ import io.opentracing.util.GlobalTracer;
 
 /**
  * Utility functions for the SpecialAgent.
+ *
+ * @author Seva Safris
  */
 final class Util {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;

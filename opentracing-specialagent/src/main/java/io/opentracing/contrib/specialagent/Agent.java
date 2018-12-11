@@ -49,7 +49,9 @@ import org.jboss.byteman.rule.Rule;
 import com.sun.tools.attach.VirtualMachine;
 
 /**
- * Provides the Byteman manager implementation for OpenTracing.
+ * The agent and Byteman manager.
+ *
+ * @author Seva Safris
  */
 public class Agent {
   private static final Logger logger = Logger.getLogger(Agent.class.getName());
@@ -147,7 +149,7 @@ public class Agent {
   }
 
   /**
-   * This method initializes the manager.
+   * Initializes the manager.
    *
    * @param retransformer The ByteMan retransformer.
    */
@@ -195,6 +197,14 @@ public class Agent {
     loadRules();
   }
 
+  /**
+   * Loads all dependencies.tgf files, and cross-links the dependency references
+   * with the matching plugin JARs.
+   *
+   * @param classLoader The {@code ClassLoader} in which to search for
+   *          dependencies.tgf files.
+   * @return The number of loaded dependencies.tgf files.
+   */
   private static int loadDependencies(final ClassLoader classLoader) {
     int count = 0;
     try {
@@ -351,7 +361,7 @@ public class Agent {
    * This method digests the Byteman rule script at {@code url}, and adds the
    * script to the {@code scripts} and {@code scriptNames} lists. If
    * {@code index} is not null, this method calls
-   * {@link #retrofitScript(String,int)} to create a "load classes" script that
+   * {@link #retrofitScript(String,int)} to create a "Load Classes" script that
    * is triggered in the same manner as the script at {@code url}, and is used
    * to load API and instrumentation classes into the calling object's
    * {@code ClassLoader}.
@@ -389,13 +399,13 @@ public class Agent {
    *          the class is an interface.
    */
   private static void writeLoadClassesRule(final StringBuilder builder, final String header, final int index, final String classRef) {
-    final int s = header.indexOf("RULE ");
-    final int e = header.indexOf('\n', s + 5);
+    final int start = header.indexOf("RULE ");
+    final int end = header.indexOf('\n', start + 5);
     if (builder.length() > 0)
       builder.append('\n');
 
-    builder.append(header.substring(0, e)).append(" (Load Classes)");
-    builder.append(header.substring(e));
+    builder.append(header.substring(0, end)).append(" (Load Classes)");
+    builder.append(header.substring(end));
     builder.append("IF TRUE\n");
     builder.append("DO\n");
     builder.append("  traceln(\">>>>>>>> Load Classes " + index + "\");\n");
@@ -452,7 +462,7 @@ public class Agent {
    * @param index The index of the OpenTracing instrumentation JAR in
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
-   * @return The script used to trigger the "load classes" procedure
+   * @return The script used to trigger the "Load Classes" procedure
    *         {@link #linkPlugin(int,Class,Object[])}.
    */
   static String retrofitScript(final String script, final int index) {
@@ -613,7 +623,7 @@ public class Agent {
 
   /**
    * Callback that is used to load a class by the specified resource path into
-   * the specified {@code ClassLoader}.
+   * the provided {@code ClassLoader}.
    */
   private static final BiPredicate<String,ClassLoader> loadClass = new BiPredicate<String,ClassLoader>() {
     @Override
@@ -631,6 +641,15 @@ public class Agent {
     }
   };
 
+  /**
+   * Returns {@code true} if the "Load Classes" Byteman rule is disabled for the
+   * specified plugin {@code URL}.
+   *
+   * @param pluginUrl The {@code URL} for which to check if "Load Classes" is
+   *          disabled.
+   * @return {@code true} if the "Load Classes" Byteman rule is disabled for the
+   *         specified plugin {@code URL}.
+   */
   private static boolean isLoadClassesDisabled(final URL pluginUrl) {
     if (disabledLoadClasses == null)
       return false;

@@ -17,22 +17,40 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.Serializable;
 
+/**
+ * The class used for RPC between the AgentRunner's main process, and its
+ * spawned child process.
+ *
+ * @author Seva Safris
+ */
 class TestResult implements Serializable {
   private static final long serialVersionUID = -5513350610214154919L;
 
   private final String methodName;
   private final Throwable targetException;
 
-  public TestResult(final String methodName, final Throwable targetException) {
+  /**
+   * Creates a new {@code TestResult} for the specified method and exception.
+   *
+   * @param methodName The name of the method.
+   * @param targetException The target exception.
+   */
+  TestResult(final String methodName, final Throwable targetException) {
     this.methodName = methodName;
     this.targetException = targetException;
   }
 
-  public String getMethodName() {
+  /**
+   * @return The name of the method represented by this {@code TestResult}.
+   */
+  String getMethodName() {
     return this.methodName;
   }
 
-  public Throwable getTargetException() {
+  /**
+   * @return The target exception represented by this {@code TestResult}.
+   */
+  Throwable getTargetException() {
     return this.targetException;
   }
 

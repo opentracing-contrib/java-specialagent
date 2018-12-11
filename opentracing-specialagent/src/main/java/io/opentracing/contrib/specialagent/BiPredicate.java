@@ -22,6 +22,7 @@ package io.opentracing.contrib.specialagent;
  * @param <T> the type of the first argument to the operation
  * @param <U> the type of the second argument to the operation
  * @see Predicate
+ * @author Seva Safris
  */
 public interface BiPredicate<T,U> {
   /**

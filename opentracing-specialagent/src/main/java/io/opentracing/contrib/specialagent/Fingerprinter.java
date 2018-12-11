@@ -36,8 +36,17 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+/**
+ * An ASM {@link ClassVisitor} that creates {@link Fingerprint} objects for
+ * classes in a {@code ClassLoader}.
+ *
+ * @author Seva Safris
+ */
 class Fingerprinter extends ClassVisitor {
-  static enum Visibility {
+  /**
+   * Enum representing the visibility access modifiers.
+   */
+  enum Visibility {
     PRIVATE(Modifier.PRIVATE),
     PROTECTED(Modifier.PROTECTED),
     PACKAGE(Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE, 0),
@@ -55,19 +64,39 @@ class Fingerprinter extends ClassVisitor {
       this(modifier, modifier);
     }
 
-    static Visibility get(final int access) {
+    /**
+     * Returns the {@code Visibility} instance representing the visibility bit
+     * set in the specified access modifier.
+     *
+     * @param modifier The access modifier for which to return the
+     *          {@code Visibility}.
+     * @return The {@code Visibility} instance representing the visibility bit
+     *         set in the specified access modifier.
+     */
+    static Visibility get(final int modifier) {
       for (final Visibility visibility : values())
-        if ((access & visibility.modifier) == visibility.test)
+        if ((modifier & visibility.modifier) == visibility.test)
           return visibility;
 
       return null;
     }
   }
 
+  /**
+   * Tests whether the {@code ACC_SYNTHETIC} bit is set in the specified access
+   * modifier.
+   *
+   * @param mod The access modifier to test.
+   * @return {@code true} if the {@code ACC_SYNTHETIC} bit is set in the
+   *         specified access modifier.
+   */
   private static boolean isSynthetic(final int mod) {
     return (mod & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
+  /**
+   * Creates a new {@code Fingerprinter}.
+   */
   Fingerprinter() {
     super(Opcodes.ASM4);
   }
@@ -81,6 +110,19 @@ class Fingerprinter extends ClassVisitor {
   private final Map<String,ClassFingerprint> classNameToFingerprint = new HashMap<>();
   private final Set<String> excludes = new HashSet<>();
 
+  /**
+   * Fingerprints all class resources in the specified {@code ClassLoader}.
+   * <p>
+   * <i><b>Note:</b> Classes under {@code /META-INF} or {@code /module-info} are
+   * not fingerprinted</i>.
+   *
+   * @param classLoader The {@code ClassLoader} in which the resource path is to
+   *          be found.
+   * @return An array of {@code ClassFingerprint} objects representing the
+   *         fingerprints of all class resources in the specified
+   *         {@code ClassLoader}.
+   * @throws IOException If an I/O error has occurred.
+   */
   ClassFingerprint[] fingerprint(final URLClassLoader classLoader) throws IOException {
     for (final URL url : classLoader.getURLs()) {
       try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
@@ -99,6 +141,17 @@ class Fingerprinter extends ClassVisitor {
     return Util.sort(classNameToFingerprint.values().toArray(new ClassFingerprint[classNameToFingerprint.size()]));
   }
 
+  /**
+   * Fingerprints the provided resource path representing a class in the
+   * specified {@code ClassLoader}.
+   *
+   * @param classLoader The {@code ClassLoader} in which the resource path is to
+   *          be found.
+   * @param resourcePath The resource path to fingerprint.
+   * @return A {@code ClassFingerprint} object representing the fingerprint of
+   *         the class at the specified resource path.
+   * @throws IOException If an I/O error has occurred.
+   */
   ClassFingerprint fingerprint(final ClassLoader classLoader, final String resourcePath) throws IOException {
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);

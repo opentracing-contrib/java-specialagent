@@ -19,6 +19,8 @@ import java.io.Serializable;
 
 /**
  * Base abstract class representing a fingerprint.
+ *
+ * @author Seva Safris
  */
 abstract class Fingerprint implements Serializable {
   private static final long serialVersionUID = -8309824318401101365L;

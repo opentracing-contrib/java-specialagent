@@ -148,7 +148,6 @@ public final class SpecialAgentMojo extends AbstractMojo {
       }
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, false, project.getArtifacts().iterator(), 0);
-      System.err.println("XXX: \n" + Util.toIndentedString(nonOptionalDeps));
       final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), optionalDeps);
       destFile.getParentFile().mkdirs();
       System.err.println(Arrays.toString(optionalDeps));

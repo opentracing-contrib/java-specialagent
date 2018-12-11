@@ -122,8 +122,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     boolean isolateClassLoader() default true;
 
     /**
-     * @return Whether the "Load Classes" functionality should be disabled. The "Load Classes" functionality in SpecialAgent is responsible for
-     * force-loading bytecode into the ClassLoader to which the trigger object belongs.
+     * @return Whether the "Load Classes" functionality should be disabled. The
+     *         "Load Classes" functionality in SpecialAgent is responsible for
+     *         force-loading bytecode into the ClassLoader to which the trigger
+     *         object belongs.
      *         <p>
      *         Default: {@code false}.
      */

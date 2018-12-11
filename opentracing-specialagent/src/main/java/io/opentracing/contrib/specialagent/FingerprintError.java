@@ -17,6 +17,8 @@ package io.opentracing.contrib.specialagent;
 
 /**
  * Class representing an error when performing a fingerprint compatibility test.
+ *
+ * @author Seva Safris
  */
 class FingerprintError {
   /**
