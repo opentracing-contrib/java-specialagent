@@ -230,7 +230,7 @@ The SpecialAgent provides a convenient methodolofy for testing of the auto-instr
 
 Instrumentation plugins must be explicitly packaged into the main JAR of the SpecialAgent. Please refer to the `<id>deploy</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
 
-#### Building
+### Building
 
 The SpecialAgent is built in 2 profiles:
 
