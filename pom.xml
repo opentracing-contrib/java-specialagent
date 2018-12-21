@@ -52,6 +52,8 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <version.bytebuddy>1.9.6</version.bytebuddy>
+    <version.opentracing>0.31.0</version.opentracing>
   </properties>
   <profiles>
     <profile>
@@ -197,17 +199,22 @@
       <dependency>
         <groupId>io.opentracing</groupId>
         <artifactId>opentracing-api</artifactId>
-        <version>0.31.0</version>
+        <version>${version.opentracing}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentracing</groupId>
+        <artifactId>opentracing-mock</artifactId>
+        <version>${version.opentracing}</version>
       </dependency>
       <dependency>
         <groupId>io.opentracing</groupId>
         <artifactId>opentracing-util</artifactId>
-        <version>0.31.0</version>
+        <version>${version.opentracing}</version>
       </dependency>
       <dependency>
         <groupId>io.opentracing</groupId>
         <artifactId>opentracing-noop</artifactId>
-        <version>0.31.0</version>
+        <version>${version.opentracing}</version>
       </dependency>
       <dependency>
         <groupId>io.opentracing.contrib</groupId>
@@ -220,9 +227,16 @@
         <version>4.0.5</version>
       </dependency>
       <dependency>
-        <groupId>io.opentracing</groupId>
-        <artifactId>opentracing-mock</artifactId>
-        <version>0.31.0</version>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>${version.bytebuddy}</version>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>${version.bytebuddy}</version>
+        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

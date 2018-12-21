@@ -122,6 +122,16 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.byteman</groupId>
       <artifactId>byteman</artifactId>
       <optional>true</optional>
@@ -132,7 +142,7 @@
       <version>5.0.3</version>
       <optional>true</optional>
     </dependency>
-
+    
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-hazelcast -->
       <groupId>io.opentracing.contrib</groupId>

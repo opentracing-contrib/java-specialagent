@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.jboss.byteman.agent.Transformer;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.internal.runners.model.ReflectiveCallable;
@@ -97,7 +96,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
-  public static @interface Config {
+  public @interface Config {
     /**
      * @return Whether to set Java logging level to {@link Level#FINEST}.
      *         <p>
@@ -130,6 +129,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: {@code false}.
      */
     boolean disableLoadClasses() default false;
+
+    /**
+     * @return Which {@link Instrumenter} to use for the tests.
+     *         <p>
+     *         Default: {@link Instrumenter#BYTEMAN}.
+     */
+    Instrumenter instrumenter() default Instrumenter.BYTEMAN;
   }
 
   /**
@@ -551,7 +557,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
 
     int i = -1;
-    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (config.disableLoadClasses() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[10 + (config.verbose() ? 1 : 0) + (config.disableLoadClasses() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-Xbootclasspath/a:" + bootClassPath;
     args[++i] = "-cp";
@@ -559,6 +565,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     args[++i] = "-javaagent:" + getAgentPath();
     args[++i] = "-D" + PORT_ARG + "=" + port;
     args[++i] = "-D" + Agent.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
+    args[++i] = "-D" + Agent.INSTRUMENTER + "=" + config.instrumenter();
     if (config.verbose())
       args[++i] = "-Dorg.jboss.byteman.verbose";
 

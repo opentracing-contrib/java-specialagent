@@ -31,5 +31,17 @@
       <artifactId>opentracing-concurrent</artifactId>
       <version>0.2.0</version>
     </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <version>1.9.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <version>1.9.6</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

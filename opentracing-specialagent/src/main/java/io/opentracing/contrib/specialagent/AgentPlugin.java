@@ -15,16 +15,5 @@
 
 package io.opentracing.contrib.specialagent;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class AgentTest {
-  @Test
-  public void testRetrofitScript() {
-    final String expected = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("control.btm"));
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.btm"));
-    final String actual = BytemanTransformer.retrofitScript(test, 0);
-    assertEquals(actual, expected, actual);
-  }
+public interface AgentPlugin {
 }
