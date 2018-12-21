@@ -752,6 +752,7 @@
               <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
               <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
               <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+              <Boot-Class-Path>${project.artifactId}-${project.version}.jar</Boot-Class-Path>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
             </manifestEntries>
@@ -762,6 +763,13 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
+            <configuration>
+              <archive>
+                <manifestEntries>
+                  <Boot-Class-Path>${project.artifactId}-${project.version}-tests.jar</Boot-Class-Path>
+                </manifestEntries>
+              </archive>
+            </configuration>
           </execution>
         </executions>
       </plugin>

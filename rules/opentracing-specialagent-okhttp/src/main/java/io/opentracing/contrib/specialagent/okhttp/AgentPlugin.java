@@ -35,11 +35,10 @@ public class AgentPlugin {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(@Advice.Origin Method method, @Advice.This Object thiz) {
+  public static void enter(@Advice.Origin Method method, @Advice.This OkHttpClient.Builder thiz) {
     System.out.println(">>>>>> " + method);
     final TracingInterceptor interceptor = new TracingInterceptor(GlobalTracer.get(), Collections.singletonList(OkHttpClientSpanDecorator.STANDARD_TAGS));
-    final OkHttpClient.Builder builder = (OkHttpClient.Builder)thiz;
-    builder.addInterceptor(interceptor);
-    builder.addNetworkInterceptor(interceptor);
+    thiz.addInterceptor(interceptor);
+    thiz.addNetworkInterceptor(interceptor);
   }
 }

@@ -290,7 +290,7 @@ public class Agent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      instrumenter.transformer.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs, instrumentation);
+      instrumenter.transformer.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs, instrumenter == Instrumenter.BYTEMAN ? retransformer : instrumentation);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);

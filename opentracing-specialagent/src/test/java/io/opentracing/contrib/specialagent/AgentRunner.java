@@ -515,7 +515,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
     final Set<String> javaClassPath = Util.getJavaClassPath();
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("java.class.path:\n  " + Util.toIndentedString(javaClassPath));
+      logger.finest("java.class.path:\n" + Util.toIndentedString(javaClassPath));
 
     final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
     final String[] pluginPaths;
@@ -530,36 +530,22 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       pluginPaths = null;
     }
 
-    // BootClassLoader needs to have resolution of the following classes...
+    // These classes will be present in the Boot-Path...
     final Set<String> bootPaths = Util.getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, Agent.class, AgentRunner.class);
 
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
+    // Exclude JARs containing the classes in the Boot-Path.
     final String classpath = buildClassPath(javaClassPath, bootPaths);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
-
-    // It is necessary to add the classpath locations of Tracer, NoopTracer,
-    // GlobalTracer, TracerResolver, Agent, and AgentRunner to the
-    // BootClassLoader, because:
-    // 1) These classes are required for the test to run, since the test
-    // directly references these classes, leaving just the SystemClassLoader
-    // and BootClassLoader as the only options.
-    // 2) The URLClassLoader must be detached from the SystemClassLoader, thus
-    // requiring the AgentRunner class to be loaded in the BootClassLoader,
-    // or otherwise Byteman will load the MockTracer in the BootClassLoader,
-    // while this code will load MockTracer in URLClassLoader.
-    final String bootClassPath = buildClassPath(bootPaths, null);
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("BootClassPath of forked process will be:\n" + Util.toIndentedString(bootPaths));
 
     if (logger.isLoggable(Level.FINEST))
       logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
 
     int i = -1;
-    final String[] args = new String[10 + (config.verbose() ? 1 : 0) + (config.disableLoadClasses() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (config.disableLoadClasses() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
-    args[++i] = "-Xbootclasspath/a:" + bootClassPath;
     args[++i] = "-cp";
     args[++i] = classpath;
     args[++i] = "-javaagent:" + getAgentPath();
