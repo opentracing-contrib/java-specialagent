@@ -828,6 +828,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <trimStackTrace>false</trimStackTrace>
           <!-- Have to explicitly define the path of the tests, because when the maven-dependency-plugin
             unpacks JUnit dependencies in the generate-test-resources phase, they end up being picked up
             by maven-surefire-plugin in the test phase. -->
@@ -840,6 +841,10 @@
             <exclude>io/opentracing/contrib/specialagent/**/*ITestCase</exclude>
             <exclude>io/opentracing/contrib/specialagent/**/*IntegrationTest</exclude>
             <exclude>io/opentracing/contrib/specialagent/**/*IntegrationTestCase</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BTest</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BTestCase</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BootstrapTest</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BootstrapTestCase</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -854,12 +859,38 @@
               <goal>verify</goal>
             </goals>
             <configuration>
+              <trimStackTrace>false</trimStackTrace>
               <includes>
                 <include>io/opentracing/contrib/specialagent/**/*ITest</include>
                 <include>io/opentracing/contrib/specialagent/**/*ITestCase</include>
                 <include>io/opentracing/contrib/specialagent/**/*IntegrationTest</include>
                 <include>io/opentracing/contrib/specialagent/**/*IntegrationTestCase</include>
               </includes>
+              <excludes>
+                <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>bootstrap-test</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <trimStackTrace>false</trimStackTrace>
+              <argLine>
+                -Xbootclasspath/a:${project.build.outputDirectory}
+              </argLine>
+              <includes>
+                <include>io/opentracing/contrib/specialagent/**/*BTest</include>
+                <include>io/opentracing/contrib/specialagent/**/*BTestCase</include>
+                <include>io/opentracing/contrib/specialagent/**/*BootstrapTest</include>
+                <include>io/opentracing/contrib/specialagent/**/*BootstrapTestCase</include>
+              </includes>
+              <excludes>
+                <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+              </excludes>
             </configuration>
           </execution>
         </executions>

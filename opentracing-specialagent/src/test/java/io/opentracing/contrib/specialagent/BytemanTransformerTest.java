@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class AgentTest {
+public class BytemanTransformerTest {
   @Test
   public void testRetrofitScript() {
     final String expected = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("control.btm"));

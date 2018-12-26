@@ -18,21 +18,16 @@ package io.opentracing.contrib.specialagent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -41,10 +36,6 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.jboss.byteman.agent.Main;
-import org.jboss.byteman.agent.Retransformer;
-import org.jboss.byteman.rule.Rule;
 
 import com.sun.tools.attach.VirtualMachine;
 
@@ -66,7 +57,6 @@ public class Agent {
 
   private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
 
-  private static Retransformer retransformer;
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
 
@@ -96,7 +86,7 @@ public class Agent {
     }
 
     final String instrumenterProperty = System.getProperty(INSTRUMENTER);
-    instrumenter = instrumenterProperty == null ? Instrumenter.BYTEMAN : Instrumenter.valueOf(instrumenterProperty.toUpperCase());
+    instrumenter = instrumenterProperty == null ? Instrumenter.BYTEBUDDY : Instrumenter.valueOf(instrumenterProperty.toUpperCase());
   }
 
   private static Instrumentation instrumentation;
@@ -120,50 +110,14 @@ public class Agent {
   public static void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
     Agent.agentArgs = agentArgs;
     Agent.instrumentation = instrumentation;
-    Main.premain(addManager(agentArgs), instrumentation);
+    instrumenter.transformer.premain(agentArgs, instrumentation);
   }
 
   public static void agentmain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
     premain(agentArgs, instrumentation);
   }
 
-  protected static String addManager(String agentArgs) {
-    if (agentArgs == null || agentArgs.trim().isEmpty())
-      agentArgs = "";
-    else
-      agentArgs += ",";
-
-    agentArgs += "manager:" + Agent.class.getName();
-    return agentArgs;
-  }
-
-  private static class AllPluginsClassLoader extends URLClassLoader {
-    private final Set<URL> urls;
-
-    public AllPluginsClassLoader(final Set<URL> urls) {
-      super(urls.toArray(new URL[urls.size()]), new ClassLoader(null) {
-        // This is overridden to ensure resources are not discovered in BootClassLoader
-        @Override
-        public Enumeration<URL> getResources(final String name) throws IOException {
-          return null;
-        }
-      });
-      this.urls = urls;
-    }
-
-    public boolean containsPath(final URL url) {
-      return urls.contains(url);
-    }
-  }
-
-  /**
-   * Initializes the manager.
-   *
-   * @param retransformer The ByteMan retransformer.
-   */
-  public static void initialize(final Retransformer retransformer) {
-    Agent.retransformer = retransformer;
-
+  public static void initialize() {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
@@ -203,6 +157,25 @@ public class Agent {
       throw new IllegalStateException("Could not find " + DEPENDENCIES + " in any plugin JARs!");
 
     loadRules();
+  }
+
+  private static class AllPluginsClassLoader extends URLClassLoader {
+    private final Set<URL> urls;
+
+    public AllPluginsClassLoader(final Set<URL> urls) {
+      super(urls.toArray(new URL[urls.size()]), new ClassLoader(null) {
+        // This is overridden to ensure resources are not discovered in BootClassLoader
+        @Override
+        public Enumeration<URL> getResources(final String name) throws IOException {
+          return null;
+        }
+      });
+      this.urls = urls;
+    }
+
+    public boolean containsPath(final URL url) {
+      return urls.contains(url);
+    }
   }
 
   /**
@@ -278,11 +251,6 @@ public class Agent {
       return;
     }
 
-    if (retransformer == null) {
-      logger.severe("Attempt to load OpenTracing agent rules before transformer initialized");
-      return;
-    }
-
     try {
       // Create map from plugin jar URL to its index in
       // allPluginsClassLoader.getURLs()
@@ -290,7 +258,7 @@ public class Agent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      instrumenter.transformer.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs, instrumenter == Instrumenter.BYTEMAN ? retransformer : instrumentation);
+      instrumenter.transformer.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -388,7 +356,7 @@ public class Agent {
 
   @SuppressWarnings("resource")
   public static boolean linkPlugin(final int index, final ClassLoader classLoader) {
-    Rule.disableTriggers();
+    instrumenter.transformer.disableTriggers();
     try {
       // Find the Plugin Path (identified by index passed to this method)
       final URL pluginPath = allPluginsClassLoader.getURLs()[index];
@@ -448,7 +416,7 @@ public class Agent {
         classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 
         // Enable triggers to the LoadClasses script can execute
-        Rule.enableTriggers();
+        instrumenter.transformer.enableTriggers();
 
         // Call Class.forName(...) for each class in pluginClassLoader to load in
         // the caller's classLoader
@@ -481,7 +449,7 @@ public class Agent {
       return true;
     }
     finally {
-      Rule.enableTriggers();
+      instrumenter.transformer.enableTriggers();
     }
   }
 
@@ -504,7 +472,7 @@ public class Agent {
    *         {@code classLoader} and {@code name}.
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
-    Rule.disableTriggers();
+    instrumenter.transformer.disableTriggers();
     try {
       if (logger.isLoggable(Level.FINEST))
         logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
@@ -532,7 +500,7 @@ public class Agent {
       }
     }
     finally {
-      Rule.enableTriggers();
+      instrumenter.transformer.enableTriggers();
     }
   }
 }

@@ -1,3 +1,18 @@
+/* Copyright 2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent;
 
 import java.io.BufferedReader;
@@ -20,11 +35,19 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
 
-public class ByteBuddyTransformer extends Transformer<Instrumentation> {
+public class ByteBuddyTransformer extends Transformer {
   private static final Logger logger = Logger.getLogger(ByteBuddyTransformer.class.getName());
+
+  private Instrumentation instrumentation;
 
   ByteBuddyTransformer() {
     super("otaplugins.txt");
+  }
+
+  @Override
+  void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+    this.instrumentation = instrumentation;
+    Agent.initialize();
   }
 
   /**
@@ -32,7 +55,7 @@ public class ByteBuddyTransformer extends Transformer<Instrumentation> {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs, final Instrumentation retransformer) throws IOException {
+  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs) throws IOException {
     // Prepare the Plugin rules
     final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(file);
     while (enumeration.hasMoreElements()) {
@@ -47,14 +70,14 @@ public class ByteBuddyTransformer extends Transformer<Instrumentation> {
       for (String line; (line = reader.readLine()) != null;) {
         try {
           final Class<?> agentClass = Class.forName(line, false, allPluginsClassLoader);
-          final Method method = agentClass.getMethod("buildAgent", String.class);
-          final AgentBuilder builder = (AgentBuilder)method.invoke(null, agentArgs);
+          final Method method = agentClass.getMethod("premain", String.class, Instrumentation.class);
+          final AgentBuilder builder = (AgentBuilder)method.invoke(null, agentArgs, instrumentation);
           builder
             .with(RedefinitionStrategy.RETRANSFORMATION)
             .with(InitializationStrategy.NoOp.INSTANCE)
             .with(TypeStrategy.Default.REDEFINE)
             .with(new MainListener(index))
-            .installOn(retransformer);
+            .installOn(instrumentation);
         }
         catch (final NoSuchMethodException e) {
           logger.severe("Method " + line + "#buildAgent(String) was not found");
@@ -67,6 +90,16 @@ public class ByteBuddyTransformer extends Transformer<Instrumentation> {
         }
       }
     }
+  }
+
+  @Override
+  boolean disableTriggers() {
+    return false;
+  }
+
+  @Override
+  boolean enableTriggers() {
+    return false;
   }
 
   class MainListener implements AgentBuilder.Listener {

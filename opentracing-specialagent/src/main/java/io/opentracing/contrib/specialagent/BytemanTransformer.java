@@ -1,8 +1,24 @@
+/* Copyright 2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,13 +28,41 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jboss.byteman.agent.Main;
 import org.jboss.byteman.agent.Retransformer;
+import org.jboss.byteman.rule.Rule;
 
-class BytemanTransformer extends Transformer<Retransformer> {
+public class BytemanTransformer extends Transformer {
   private static final Logger logger = Logger.getLogger(BytemanTransformer.class.getName());
+  private static Retransformer retransformer;
 
   BytemanTransformer() {
     super("otarules.btm");
+  }
+
+  @Override
+  void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+    Main.premain(addManager(agentArgs), instrumentation);
+  }
+
+  /**
+   * Initializes the manager.
+   *
+   * @param retransformer The ByteMan retransformer.
+   */
+  public static void initialize(final Retransformer retransformer) {
+    BytemanTransformer.retransformer = retransformer;
+    Agent.initialize();
+  }
+
+  protected static String addManager(String agentArgs) {
+    if (agentArgs == null || agentArgs.trim().isEmpty())
+      agentArgs = "";
+    else
+      agentArgs += ",";
+
+    agentArgs += "manager:" + BytemanTransformer.class.getName();
+    return agentArgs;
   }
 
   /**
@@ -26,7 +70,7 @@ class BytemanTransformer extends Transformer<Retransformer> {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String arg, final Retransformer retransformer) throws IOException {
+  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String arg) throws IOException {
     final List<String> scripts = new ArrayList<>();
     final List<String> scriptNames = new ArrayList<>();
 
@@ -46,6 +90,16 @@ class BytemanTransformer extends Transformer<Retransformer> {
     }
 
     loadScripts(scripts, scriptNames, retransformer);
+  }
+
+  @Override
+  boolean disableTriggers() {
+    return Rule.disableTriggers();
+  }
+
+  @Override
+  boolean enableTriggers() {
+    return Rule.enableTriggers();
   }
 
   /**

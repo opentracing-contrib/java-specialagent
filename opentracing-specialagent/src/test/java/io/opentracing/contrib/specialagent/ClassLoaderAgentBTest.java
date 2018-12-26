@@ -1,68 +1,62 @@
+/* Copyright 2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent;
 
-import static net.bytebuddy.matcher.ElementMatchers.*;
+import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.junit.Test;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
-import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
-import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
-import net.bytebuddy.matcher.ElementMatchers;
-import net.bytebuddy.utility.JavaModule;
 
-public class ClassLoaderAgentTest {
+/**
+ * Test class to validate proper functioning of {@link ClassLoaderAgent}.
+ * <p>
+ * <i><b>Note</b>: This test class is only runnable via SureFire or FailSafe
+ * plugins with
+ * argLine="-Xbootclasspath/a:${project.build.outputDirectory}".</i>
+ *
+ * @author Seva Safris
+ */
+public class ClassLoaderAgentBTest {
   static {
+    assertNull("This test can only be executed from SureFire or FailSafe plugins with argLine=\"-Xbootclasspath/a:${project.build.outputDirectory}\"", ClassLoaderAgent.class.getClassLoader());
     try {
+      System.out.println(ClassLoaderAgentBTest.class.getName());
       final Instrumentation instrumentation = ByteBuddyAgent.install();
+
+      AgentAgent.premain(null, instrumentation);
       ClassLoaderAgent.premain(null, instrumentation);
-      premain(null, instrumentation);
     }
     catch (final Exception e) {
       throw new ExceptionInInitializerError(e);
     }
   }
 
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-    buildAgent(agentArgs)
-//      .with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-      .installOn(inst);
-  }
-
-  public static AgentBuilder buildAgent(final String agentArgs) throws Exception {
-    return new AgentBuilder.Default()
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
-      .type(is(Agent.class))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ClassLoaderAgentTest.class).on(named("findClass").and(isStatic())));
-        }});
-  }
-
-  @Advice.OnMethodEnter
-  public static void exit() throws IOException {
-    System.out.println(">>>>>> ");
-//    returned = Util.readBytes(ClassLoader.getSystemClassLoader().getResourceAsStream(arg.replace('.', '/').concat(".class")));
+  @Test
+  public void testAgentFindClass() throws Exception {
+    assertNotNull(Agent.findClass(null, Agent.class.getName()));
   }
 
   @Test
-  public void test() throws Exception {
-    final URLClassLoader classLoader = new URLClassLoader(new URL[] {}, null);
-    Class.forName(ClassLoaderAgentTest.class.getName(), true, classLoader);
+  public void testClassLoaderFindClass() throws Exception {
+    final URLClassLoader classLoader = new URLClassLoader(new URL[0], null);
+    assertNotNull(Class.forName(ClassLoaderAgentBTest.class.getName(), false, classLoader));
   }
 }
