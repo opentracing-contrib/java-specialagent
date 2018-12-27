@@ -17,8 +17,12 @@ package io.opentracing.contrib.specialagent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -42,6 +46,7 @@ import net.bytebuddy.utility.JavaModule;
  */
 public class AgentAgent {
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+    System.setProperty("AgentAgent", AgentAgent.class.getProtectionDomain().getCodeSource().getLocation().toString());
     new AgentBuilder.Default()
       .ignore(none())
       .disableClassFormatChanges()
@@ -58,8 +63,28 @@ public class AgentAgent {
   }
 
   @Advice.OnMethodExit
-  public static void exit(@Advice.Argument(0) ClassLoader classLoader, @Advice.Argument(1) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) byte[] returned) throws IOException {
-    returned = Util.readBytes(ClassLoader.getSystemClassLoader().getResourceAsStream(arg.replace('.', '/').concat(".class")));
-    System.err.println("<<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+  public static void exit(final @Advice.Argument(0) ClassLoader classLoader, final @Advice.Argument(1) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) byte[] returned) throws IOException {
+    try {
+      String classpath = System.getProperty("java.class.path");
+      final int index = classpath.indexOf("/opentracing-api-");
+      final int start = classpath.lastIndexOf(File.pathSeparatorChar, index);
+      final int end = classpath.indexOf(File.pathSeparatorChar, index);
+      classpath = classpath.substring(start + 1, end != -1 ? end : classpath.length());
+      if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
+        classpath += "/";
+
+      try (
+        final URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {new URL("file", null, classpath)}, null);
+        final InputStream in = urlClassLoader.getResourceAsStream(arg.replace('.', '/').concat(".class"));
+      ) {
+        if (in != null)
+          returned = Util.readBytes(in);
+      }
+      System.err.println("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+    }
+    catch (final Throwable t) {
+      System.err.println("AgentAgent.OnExit: " + t);
+      t.printStackTrace();
+    }
   }
 }

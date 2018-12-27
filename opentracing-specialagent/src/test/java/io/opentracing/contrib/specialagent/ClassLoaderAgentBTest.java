@@ -23,6 +23,8 @@ import java.net.URLClassLoader;
 
 import org.junit.Test;
 
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
@@ -51,12 +53,14 @@ public class ClassLoaderAgentBTest {
 
   @Test
   public void testAgentFindClass() throws Exception {
-    assertNotNull(Agent.findClass(null, Agent.class.getName()));
+    assertNotNull(Agent.findClass(null, Span.class.getName()));
   }
 
   @Test
   public void testClassLoaderFindClass() throws Exception {
     final URLClassLoader classLoader = new URLClassLoader(new URL[0], null);
-    assertNotNull(Class.forName(ClassLoaderAgentBTest.class.getName(), false, classLoader));
+    final Class<?> cls = Class.forName(Tracer.class.getName(), false, classLoader);
+    assertNotNull(cls);
+    assertEquals(Tracer.class.getName(), cls.getName());
   }
 }

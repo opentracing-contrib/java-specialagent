@@ -866,9 +866,6 @@
                 <include>io/opentracing/contrib/specialagent/**/*IntegrationTest</include>
                 <include>io/opentracing/contrib/specialagent/**/*IntegrationTestCase</include>
               </includes>
-              <excludes>
-                <exclude></exclude> <!-- This is necessary for inner classes to be run -->
-              </excludes>
             </configuration>
           </execution>
           <execution>
@@ -879,6 +876,7 @@
             </goals>
             <configuration>
               <trimStackTrace>false</trimStackTrace>
+              <reuseForks>false</reuseForks>
               <argLine>
                 -Xbootclasspath/a:${project.build.outputDirectory}
               </argLine>
@@ -888,12 +886,14 @@
                 <include>io/opentracing/contrib/specialagent/**/*BootstrapTest</include>
                 <include>io/opentracing/contrib/specialagent/**/*BootstrapTestCase</include>
               </includes>
-              <excludes>
-                <exclude></exclude> <!-- This is necessary for inner classes to be run -->
-              </excludes>
             </configuration>
           </execution>
         </executions>
+        <configuration>
+          <excludes>
+            <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>
