@@ -1,12 +1,12 @@
 package io.opentracing.contrib.specialagent;
 
 public enum Instrumenter {
-  BYTEMAN(new BytemanTransformer()),
-  BYTEBUDDY(new ByteBuddyTransformer());
+  BYTEMAN(new BytemanManager()),
+  BYTEBUDDY(new ByteBuddyManager());
 
-  final Transformer transformer;
+  final Manager manager;
 
-  Instrumenter(final Transformer transformer) {
-    this.transformer = transformer;
+  Instrumenter(final Manager manager) {
+    this.manager = manager;
   }
 }

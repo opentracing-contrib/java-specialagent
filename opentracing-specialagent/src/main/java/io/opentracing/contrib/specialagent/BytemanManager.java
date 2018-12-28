@@ -32,11 +32,11 @@ import org.jboss.byteman.agent.Main;
 import org.jboss.byteman.agent.Retransformer;
 import org.jboss.byteman.rule.Rule;
 
-public class BytemanTransformer extends Transformer {
-  private static final Logger logger = Logger.getLogger(BytemanTransformer.class.getName());
+public class BytemanManager extends Manager {
+  private static final Logger logger = Logger.getLogger(BytemanManager.class.getName());
   private static Retransformer retransformer;
 
-  BytemanTransformer() {
+  BytemanManager() {
     super("otarules.btm");
   }
 
@@ -51,7 +51,7 @@ public class BytemanTransformer extends Transformer {
    * @param retransformer The ByteMan retransformer.
    */
   public static void initialize(final Retransformer retransformer) {
-    BytemanTransformer.retransformer = retransformer;
+    BytemanManager.retransformer = retransformer;
     Agent.initialize();
   }
 
@@ -61,7 +61,7 @@ public class BytemanTransformer extends Transformer {
     else
       agentArgs += ",";
 
-    agentArgs += "manager:" + BytemanTransformer.class.getName();
+    agentArgs += "manager:" + BytemanManager.class.getName();
     return agentArgs;
   }
 

@@ -24,7 +24,7 @@ public class BytemanTransformerTest {
   public void testRetrofitScript() {
     final String expected = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("control.btm"));
     final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.btm"));
-    final String actual = BytemanTransformer.retrofitScript(test, 0);
+    final String actual = BytemanManager.retrofitScript(test, 0);
     assertEquals(actual, expected, actual);
   }
 }

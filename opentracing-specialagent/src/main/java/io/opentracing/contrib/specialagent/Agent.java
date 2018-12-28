@@ -51,8 +51,6 @@ public class Agent {
   static final String DISABLE_LC = "io.opentracing.contrib.specialagent.disableLC";
   static final String INSTRUMENTER = "io.opentracing.contrib.specialagent.instrumenter";
 
-  private static final String AGENT_RULES = "otarules.btm";
-  private static final String AGENT_PLUGINS = "otaplugins.txt";
   private static final String DEPENDENCIES = "dependencies.tgf";
 
   private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
@@ -110,7 +108,7 @@ public class Agent {
   public static void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
     Agent.agentArgs = agentArgs;
     Agent.instrumentation = instrumentation;
-    instrumenter.transformer.premain(agentArgs, instrumentation);
+    instrumenter.manager.premain(agentArgs, instrumentation);
   }
 
   public static void agentmain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
@@ -128,9 +126,9 @@ public class Agent {
         logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
       try {
-        final Enumeration<URL> resources = instrumenter.transformer.getResources();
+        final Enumeration<URL> resources = instrumenter.manager.getResources();
         while (resources.hasMoreElements())
-          pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), instrumenter.transformer.getFile())));
+          pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), instrumenter.manager.getFile())));
       }
       catch (final IOException e) {
         throw new IllegalStateException(e);
@@ -159,7 +157,7 @@ public class Agent {
     loadRules();
   }
 
-  private static class AllPluginsClassLoader extends URLClassLoader {
+  static class AllPluginsClassLoader extends URLClassLoader {
     private final Set<URL> urls;
 
     public AllPluginsClassLoader(final Set<URL> urls) {
@@ -258,7 +256,7 @@ public class Agent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      instrumenter.transformer.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs);
+      instrumenter.manager.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -356,7 +354,7 @@ public class Agent {
 
   @SuppressWarnings("resource")
   public static boolean linkPlugin(final int index, final ClassLoader classLoader) {
-    instrumenter.transformer.disableTriggers();
+    instrumenter.manager.disableTriggers();
     try {
       // Find the Plugin Path (identified by index passed to this method)
       final URL pluginPath = allPluginsClassLoader.getURLs()[index];
@@ -416,7 +414,7 @@ public class Agent {
         classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 
         // Enable triggers to the LoadClasses script can execute
-        instrumenter.transformer.enableTriggers();
+        instrumenter.manager.enableTriggers();
 
         // Call Class.forName(...) for each class in pluginClassLoader to load in
         // the caller's classLoader
@@ -449,7 +447,7 @@ public class Agent {
       return true;
     }
     finally {
-      instrumenter.transformer.enableTriggers();
+      instrumenter.manager.enableTriggers();
     }
   }
 
@@ -472,7 +470,7 @@ public class Agent {
    *         {@code classLoader} and {@code name}.
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
-    instrumenter.transformer.disableTriggers();
+    instrumenter.manager.disableTriggers();
     try {
       if (logger.isLoggable(Level.FINEST))
         logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
@@ -500,7 +498,7 @@ public class Agent {
       }
     }
     finally {
-      instrumenter.transformer.enableTriggers();
+      instrumenter.manager.enableTriggers();
     }
   }
 }

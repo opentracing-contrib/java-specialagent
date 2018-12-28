@@ -106,7 +106,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
     /**
      * @return Whether to activate Byteman verbose logging via
-     *         {@link Transformer#VERBOSE}.
+     *         {@link Manager#VERBOSE}.
      *         <p>
      *         Default: {@code false}.
      */

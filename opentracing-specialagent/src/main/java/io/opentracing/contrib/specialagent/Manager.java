@@ -6,10 +6,10 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
 
-public abstract class Transformer {
+public abstract class Manager {
   final String file;
 
-  Transformer(final String file) {
+  Manager(final String file) {
     this.file = file;
   }
 
