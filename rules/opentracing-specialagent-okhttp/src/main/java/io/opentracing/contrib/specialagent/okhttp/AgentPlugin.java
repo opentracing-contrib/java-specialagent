@@ -10,12 +10,14 @@ import io.opentracing.contrib.okhttp3.OkHttpClientSpanDecorator;
 import io.opentracing.contrib.okhttp3.TracingInterceptor;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
+import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
+import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
-import okhttp3.OkHttpClient;
 
 public class AgentPlugin {
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
@@ -26,7 +28,10 @@ public class AgentPlugin {
 
   public static AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
-      .type(is(OkHttpClient.Builder.class))
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .type(named("okhttp3.OkHttpClient$Builder"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -35,10 +40,13 @@ public class AgentPlugin {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(@Advice.Origin Method method, @Advice.This OkHttpClient.Builder thiz) {
+  public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) throws ReflectiveOperationException {
     System.out.println(">>>>>> " + method);
     final TracingInterceptor interceptor = new TracingInterceptor(GlobalTracer.get(), Collections.singletonList(OkHttpClientSpanDecorator.STANDARD_TAGS));
-    thiz.addInterceptor(interceptor);
-    thiz.addNetworkInterceptor(interceptor);
+    final Class<?> cls = Class.forName("okhttp3.OkHttpClient$Builder");
+    final Method addIntercept = cls.getMethod("addInterceptor", Class.forName("okhttp3.Interceptor"));
+    final Method addNetworkInterceptor = cls.getMethod("addNetworkInterceptor", Class.forName("okhttp3.Interceptor"));
+    addIntercept.invoke(thiz, interceptor);
+    addNetworkInterceptor.invoke(thiz, interceptor);
   }
 }
