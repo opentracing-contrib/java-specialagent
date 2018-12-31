@@ -102,6 +102,11 @@
       for OT libs so they make it into both the main and test JARs. -->
     
     <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-specialagent-api</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-api</artifactId>
       <optional>true</optional>

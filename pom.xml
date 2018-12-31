@@ -45,6 +45,7 @@
     </developer>
   </developers>
   <modules>
+    <module>opentracing-specialagent-api</module>
     <module>opentracing-specialagent</module>
     <module>rules</module>
   </modules>
@@ -197,6 +198,12 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-specialagent-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
         <groupId>io.opentracing</groupId>
         <artifactId>opentracing-api</artifactId>
         <version>${version.opentracing}</version>
@@ -230,13 +237,11 @@
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
         <version>${version.bytebuddy}</version>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-agent</artifactId>
         <version>${version.bytebuddy}</version>
-        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

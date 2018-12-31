@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
@@ -28,8 +27,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
+import net.bytebuddy.agent.builder.AgentBuilder.Listener;
+import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class ByteBuddyManager extends Manager {
@@ -73,21 +77,49 @@ public class ByteBuddyManager extends Manager {
 
         try {
           final Class<?> agentClass = Class.forName(line, true, allPluginsClassLoader);
-          final Method method = agentClass.getMethod("buildAgent", String.class);
-          final AgentBuilder builder = (AgentBuilder)method.invoke(null, agentArgs);
-          builder.with(new MainListener(index)).installOn(instrumentation);
-        }
-        catch (final NoSuchMethodException e) {
-          logger.log(Level.SEVERE, "Method " + line + "#buildAgent(String) was not found", e);
+          if (!AgentPlugin.class.isAssignableFrom(agentClass)) {
+            logger.severe("Class " + agentClass.getName() + " does not implement " + AgentPlugin.class);
+            continue;
+          }
+
+          final AgentPlugin agentPlugin = (AgentPlugin)agentClass.getConstructor().newInstance();
+          final AgentBuilder builder = agentPlugin.buildAgent(agentArgs);
+
+          final TransformationListener listener = new TransformationListener(index);
+//          if (agentPlugin.onEn().getOnEnter() != null)
+//            installOn(builder, agentPlugin.onEn().getOnEnter(), agentPlugin, listener, instrumentation);
+
+//          if (agentPlugin.onEn().getOnExit() != null)
+//            installOn(builder, agentPlugin.onEn().getOnExit(), agentPlugin, listener, instrumentation);
+
+          builder.with(listener).installOn(instrumentation);
         }
         catch (final InvocationTargetException e) {
           logger.log(Level.SEVERE, "Error initliaizing plugin", e);
         }
+        catch (final InstantiationException e) {
+          logger.log(Level.SEVERE, "Unable to instantiate: " + line, e);
+        }
         catch (final ClassNotFoundException | IllegalAccessException e) {
           throw new IllegalStateException(e);
         }
+        catch (final Exception e) {
+          logger.log(Level.SEVERE, "Error invoking " + line + "#buildAgent(String) was not found", e);
+        }
       }
     }
+  }
+
+  private static void installOn(final Narrowable builder, final Class<?> advice, final AgentPlugin agentPlugin, final Listener listener, final Instrumentation instrumentation) {
+    builder
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return null;//builder.visit(Advice.to(advice).on(agentPlugin.onMethod()));
+        }
+      })
+      .with(listener)
+      .installOn(instrumentation);
   }
 
   @Override
@@ -100,10 +132,10 @@ public class ByteBuddyManager extends Manager {
     return false;
   }
 
-  class MainListener implements AgentBuilder.Listener {
+  class TransformationListener implements AgentBuilder.Listener {
     private final int index;
 
-    MainListener(final int index) {
+    TransformationListener(final int index) {
       this.index = index;
     }
 
