@@ -17,9 +17,11 @@ package io.opentracing.contrib.specialagent;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Enumeration;
 
 import org.junit.Test;
 
@@ -58,9 +60,39 @@ public class ClassLoaderAgentBTest {
 
   @Test
   public void testClassLoaderFindClass() throws Exception {
-    final URLClassLoader classLoader = new URLClassLoader(new URL[0], null);
-    final Class<?> cls = Class.forName(Tracer.class.getName(), false, classLoader);
-    assertNotNull(cls);
-    assertEquals(Tracer.class.getName(), cls.getName());
+    try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
+      final Class<?> cls = Class.forName(Tracer.class.getName(), false, classLoader);
+      assertNotNull(cls);
+      assertEquals(Tracer.class.getName(), cls.getName());
+    }
+  }
+
+  @Test
+  public void testAgentFindResource() throws Exception {
+    assertNotNull(Agent.findResource(null, Span.class.getName().replace('.', '/').concat(".class")));
+  }
+
+  @Test
+  public void testClassLoaderFindResource() throws IOException {
+    try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
+      final URL resource = classLoader.findResource(Tracer.class.getName().replace('.', '/').concat(".class"));
+      assertNotNull(resource);
+    }
+  }
+
+  @Test
+  public void testAgentFindResources() throws Exception {
+    final Enumeration<URL> resources = Agent.findResources(null, Span.class.getName().replace('.', '/').concat(".class"));
+    assertNotNull(resources);
+    assertTrue(resources.hasMoreElements());
+  }
+
+  @Test
+  public void testClassLoaderFindResources() throws IOException {
+    try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
+      final Enumeration<URL> resources = classLoader.findResources(Tracer.class.getName().replace('.', '/').concat(".class"));
+      assertNotNull(resources);
+      assertTrue(resources.hasMoreElements());
+    }
   }
 }

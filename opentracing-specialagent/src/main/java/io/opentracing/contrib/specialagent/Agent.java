@@ -501,4 +501,38 @@ public class Agent {
       instrumenter.manager.enableTriggers();
     }
   }
+
+  public static URL findResource(final ClassLoader classLoader, final String name) {
+    instrumenter.manager.disableTriggers();
+    try {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+
+      // Check if the classLoader matches a pluginClassLoader
+      final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+      return pluginClassLoader == null ? null : pluginClassLoader.findResource(name);
+    }
+    finally {
+      instrumenter.manager.enableTriggers();
+    }
+  }
+
+  public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
+    instrumenter.manager.disableTriggers();
+    try {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+
+      // Check if the classLoader matches a pluginClassLoader
+      final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+      if (pluginClassLoader == null)
+        return null;
+
+      final Enumeration<URL> resources = pluginClassLoader.findResources(name);
+      return resources != null && resources.hasMoreElements() ? resources : null;
+    }
+    finally {
+      instrumenter.manager.enableTriggers();
+    }
+  }
 }
