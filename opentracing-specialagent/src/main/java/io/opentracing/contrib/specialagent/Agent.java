@@ -151,8 +151,13 @@ public class Agent {
     if (runningFromTest)
       count += loadDependencies(ClassLoader.getSystemClassLoader());
 
-    if (count == 0)
-      throw new IllegalStateException("Could not find " + DEPENDENCIES + " in any plugin JARs!");
+    if (count == 0) {
+      final String error = "Could not find " + DEPENDENCIES + " in any plugin JARs";
+      if (runningFromTest)
+        logger.warning(error);
+      else
+        throw new IllegalStateException(error);
+    }
 
     loadRules();
   }

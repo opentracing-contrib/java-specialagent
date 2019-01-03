@@ -884,6 +884,8 @@
               <reuseForks>false</reuseForks>
               <argLine>
                 -Xbootclasspath/a:${project.build.outputDirectory}
+                -Djava.util.logging.config.file=${basedir}/src/test/resources/logging.properties
+                -Dorg.jboss.byteman.verbose
               </argLine>
               <includes>
                 <include>io/opentracing/contrib/specialagent/**/*BTest</include>

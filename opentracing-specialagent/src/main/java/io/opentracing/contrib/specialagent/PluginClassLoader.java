@@ -99,7 +99,7 @@ class PluginClassLoader extends URLClassLoader {
         }
 
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for: " + Util.toIndentedString(getURLs()));
+          logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for:\n" + Util.toIndentedString(getURLs()));
       }
       catch (final IOException e) {
         throw new IllegalStateException(e);
@@ -107,12 +107,12 @@ class PluginClassLoader extends URLClassLoader {
     }
     else {
       if (failOnMissingFingerprint) {
-        logger.warning("Disallowing instrumentation due to \"-DfailOnMissingFingerprint=true\" and \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+        logger.warning("Disallowing instrumentation due to \"-DfailOnMissingFingerprint=true\" and \"fingerprint.bin not found\" in:\n" + Util.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
         return false;
       }
 
-      logger.warning("Allowing instrumentation due to default \"-DfailOnMissingFingerprint=false\" and \"fingerprint.bin not found\" in: " + Util.toIndentedString(getURLs()));
+      logger.warning("Allowing instrumentation due to default \"-DfailOnMissingFingerprint=false\" and \"fingerprint.bin not found\" in:\n" + Util.toIndentedString(getURLs()));
     }
 
     compatibility.put(classLoader, true);

@@ -1,9 +1,10 @@
-package io.opentracing.contrib.specialagent.okhttp;
+package io.opentracing.contrib.specialagent.jdbc;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -14,31 +15,34 @@ import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
+import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
 
-public class TracingInterceptor implements AgentPlugin {
+public class JdbcAgent implements AgentPlugin {
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-//    buildAgent(agentArgs)
-//      .with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-//      .installOn(inst);
+//  buildAgent(agentArgs).installOn(inst);
   }
 
+  @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
+    System.err.println(Thread.currentThread().getContextClassLoader());
     return new AgentBuilder.Default()
+//      .with(AgentBuilder.Listener.StreamWriting.toSystemError())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(named("okhttp3.OkHttpClient$Builder"))
+      .type(hasSuperType(named("java.sql.Driver")).and(not(named("io.opentracing.contrib.jdbc.TracingDriver"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(TracingInterceptor.class).on(named("build")));
+          return builder.visit(Advice.to(JdbcAgent.class).on(not(isAbstract()).and(named("connect").and(ElementMatchers.takesArguments(String.class, Properties.class)))));
         }});
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) {
+  @Advice.OnMethodExit
+  public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
     System.out.println(">>>>>> " + method);
-    BuildOnEnter.enter(thiz);
+    returned = Intercept.exit(returned);
   }
 }

@@ -1,1 +1,1 @@
-io.opentracing.contrib.specialagent.jdbc.AgentPlugin
+io.opentracing.contrib.specialagent.jdbc.JdbcAgent

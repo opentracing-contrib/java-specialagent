@@ -226,7 +226,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final URL[] libs = Util.classPathToURLs(classpath);
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
+      System.err.println(System.getProperty("java.version"));
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      if (parent != null && logger.isLoggable(Level.FINEST))
+        logger.finest("Setting PlatformClassLoader as parent class loader for JVM version: " + System.getProperty("java.version"));
+
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader(parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
@@ -276,6 +280,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   public AgentRunner(final Class<?> cls) throws InitializationError {
     super(isInFork && (cls.getAnnotation(Config.class) == null || cls.getAnnotation(Config.class).isolateClassLoader()) ? loadClassInURLClassLoader(cls) : cls);
+    System.out.println("isInFork: " + isInFork  + ", 3: " + cls.getAnnotation(Config.class).isolateClassLoader());
     this.config = cls.getAnnotation(Config.class);
     this.loggingConfigFile = config != null && config.debug() ? getClass().getResource("/logging.properties") : null;
     if (loggingConfigFile != null) {
@@ -320,6 +325,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
             catch (final Exception e) {
             }
 
+            try {
+              Thread.sleep(10000);
+            }
+            catch (InterruptedException e1) {
+            }
             try {
               process.exitValue();
               return;

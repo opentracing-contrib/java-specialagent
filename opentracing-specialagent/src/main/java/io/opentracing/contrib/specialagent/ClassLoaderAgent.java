@@ -22,7 +22,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Enumeration;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.opentracing.contrib.specialagent.Agent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -64,37 +65,39 @@ public class ClassLoaderAgent {
         }})
       .installOn(inst);
 
-    builder
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResource.class).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
-        }})
-      .installOn(inst);
-
-    builder
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResources.class).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
-        }})
-      .installOn(inst);
+//    builder
+//      .transform(new Transformer() {
+//        @Override
+//        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+//          return builder.visit(Advice.to(FindResource.class).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
+//        }})
+//      .installOn(inst);
+//
+//    builder
+//      .transform(new Transformer() {
+//        @Override
+//        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+//          return builder.visit(Advice.to(FindResources.class).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
+//        }})
+//      .installOn(inst);
   }
 
-  public static final ThreadLocal<AtomicBoolean> findClassMutex = new ThreadLocal<AtomicBoolean>() {
+  public static class Mutex extends ThreadLocal<Set<String>> {
     @Override
-    protected AtomicBoolean initialValue() {
-      return new AtomicBoolean(false);
+    protected Set<String> initialValue() {
+      return new HashSet<>();
     }
-  };
+  }
 
   public static class FindClass {
+    public static final Mutex findClassMutex = new Mutex();
+
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-      if (findClassMutex.get().get() || returned != null)
+      if (returned != null || findClassMutex.get().contains(arg))
         return;
 
-      findClassMutex.get().set(true);
+      findClassMutex.get().add(arg);
       try {
         final byte[] bytecode = Agent.findClass(thiz, arg);
         if (bytecode == null)
@@ -110,25 +113,20 @@ public class ClassLoaderAgent {
         t.printStackTrace();
       }
       finally {
-        findClassMutex.get().set(false);
+        findClassMutex.get().remove(arg);
       }
     }
   }
 
-  public static final ThreadLocal<AtomicBoolean> findResourceMutex = new ThreadLocal<AtomicBoolean>() {
-    @Override
-    protected AtomicBoolean initialValue() {
-      return new AtomicBoolean(false);
-    }
-  };
-
   public static class FindResource {
+    public static final Mutex findResourceMutex = new Mutex();
+
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (findResourceMutex.get().get() || returned != null)
+      if (returned != null || findResourceMutex.get().contains(arg))
         return;
 
-      findResourceMutex.get().set(true);
+      findResourceMutex.get().add(arg);
       try {
         final URL resource = Agent.findResource(thiz, arg);
         if (resource != null)
@@ -139,25 +137,20 @@ public class ClassLoaderAgent {
         t.printStackTrace();
       }
       finally {
-        findResourceMutex.get().set(false);
+        findResourceMutex.get().remove(arg);
       }
     }
   }
 
-  public static final ThreadLocal<AtomicBoolean> findResourcesMutex = new ThreadLocal<AtomicBoolean>() {
-    @Override
-    protected AtomicBoolean initialValue() {
-      return new AtomicBoolean(false);
-    }
-  };
-
   public static class FindResources {
+    public static final Mutex findResourcesMutex = new Mutex();
+
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      if (findResourcesMutex.get().get())
+      if (findResourcesMutex.get().contains(arg))
         return;
 
-      findResourcesMutex.get().set(true);
+      findResourcesMutex.get().add(arg);
       try {
         final Enumeration<URL> resources = Agent.findResources(thiz, arg);
         if (resources == null)
@@ -170,7 +163,7 @@ public class ClassLoaderAgent {
         t.printStackTrace();
       }
       finally {
-        findResourcesMutex.get().set(false);
+        findResourcesMutex.get().remove(arg);
       }
     }
   }

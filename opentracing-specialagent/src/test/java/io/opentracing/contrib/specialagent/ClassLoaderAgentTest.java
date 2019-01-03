@@ -23,6 +23,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
 
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.opentracing.Span;
@@ -30,7 +32,8 @@ import io.opentracing.Tracer;
 import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
- * Test class to validate proper functioning of {@link ClassLoaderAgent}.
+ * Test class to validate proper functioning of {@link ClassLoaderAgent} and
+ * {@code classloader.btm}.
  * <p>
  * <i><b>Note</b>: This test class is only runnable via SureFire or FailSafe
  * plugins with
@@ -38,18 +41,28 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  *
  * @author Seva Safris
  */
-public class ClassLoaderAgentBTest {
+public abstract class ClassLoaderAgentTest {
   static {
     assertNull("This test can only be executed from SureFire or FailSafe plugins with argLine=\"-Xbootclasspath/a:${project.build.outputDirectory}\"", ClassLoaderAgent.class.getClassLoader());
-    try {
-      System.out.println(ClassLoaderAgentBTest.class.getName());
+  }
+
+  public static class ByteBuddyBTest extends ClassLoaderAgentTest {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
       final Instrumentation instrumentation = ByteBuddyAgent.install();
 
       AgentAgent.premain(null, instrumentation);
       ClassLoaderAgent.premain(null, instrumentation);
     }
-    catch (final Exception e) {
-      throw new ExceptionInInitializerError(e);
+  }
+
+  @Ignore
+  public static class BytemanBTest extends ClassLoaderAgentTest {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+      System.setProperty(Agent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
+      final Instrumentation instrumentation = ByteBuddyAgent.install();
+      Agent.premain(null, instrumentation);
     }
   }
 

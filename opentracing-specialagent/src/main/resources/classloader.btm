@@ -5,7 +5,7 @@ CLASS ^java.lang.ClassLoader
 METHOD Class findClass(String)
 AT EXIT
 BIND
-  bytecode:byte[] = $! == null ? io.opentracing.contrib.specialagent.Agent.findClass($0, $1) : null;
+  bytecode = $! == null ? io.opentracing.contrib.specialagent.Agent.findClass($0, $1) : null;
 IF bytecode != null
 DO
   traceln(">>>>>>>> defineClass(" + $1 + ")");
@@ -30,6 +30,7 @@ RULE OpenTracing SpecialAgent Intercept for ClassLoader#findResources
 CLASS ^java.lang.ClassLoader
 
 METHOD java.util.Enumeration findResources(String)
+AT EXIT
 BIND
   resources:java.util.Enumeration = io.opentracing.contrib.specialagent.Agent.findResources($0, $1);
 IF resources != null
