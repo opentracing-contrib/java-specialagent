@@ -1,4 +1,4 @@
-package io.opentracing.contrib.agent.concurrent;
+package io.opentracing.contrib.specialagent.concurrent;
 
 import static org.junit.Assert.*;
 
@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import io.opentracing.Scope;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
@@ -21,7 +22,7 @@ import io.opentracing.mock.MockTracer;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
+@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
 public class ScheduledExecutorServiceITest extends AbstractConcurrentTest {
 	private static final int NUMBER_OF_THREADS = 4;
 

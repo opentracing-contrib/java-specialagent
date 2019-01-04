@@ -1,0 +1,5 @@
+io.opentracing.contrib.specialagent.concurrent.ExecutorAgentPlugin
+io.opentracing.contrib.specialagent.concurrent.FixedDelayAgentPlugin
+io.opentracing.contrib.specialagent.concurrent.FixedRateAgentPlugin
+io.opentracing.contrib.specialagent.concurrent.ScheduledCallableAgentPlugin
+io.opentracing.contrib.specialagent.concurrent.ScheduledRunnableAgentPlugin

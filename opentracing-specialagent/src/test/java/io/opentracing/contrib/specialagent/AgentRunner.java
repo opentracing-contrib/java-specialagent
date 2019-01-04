@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -56,10 +57,16 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
+import io.opentracing.Scope;
+import io.opentracing.ScopeManager;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.noop.NoopTracer;
+import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
 /**
@@ -188,7 +195,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         tracer = new MockTracer();
 
       if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("Registering tracer in forked InstrumentRunner: " + tracer);
+        logger.finest("Registering tracer in forked " + AgentRunner.class.getSimpleName() + ": " + tracer);
         logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
         logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
         logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
@@ -196,7 +203,130 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
 
       GlobalTracer.register(tracer);
-      return AgentRunner.tracer = tracer;
+      return AgentRunner.tracer = tracer instanceof MockTracer ? tracer : new ProxyTracer(tracer);
+    }
+  }
+
+  /**
+   * Proxy tracer used for one purpose - to enable the rules to define a ChildOf
+   * relationship without being concerned whether the supplied Span is null. If
+   * the spec (and Tracer implementations) are updated to indicate a null should
+   * be ignored, then this proxy can be removed.
+   */
+  public static class ProxyTracer implements Tracer {
+    private final Tracer tracer;
+
+    public ProxyTracer(final Tracer tracer) {
+      if (logger.isLoggable(Level.FINEST)) {
+        logger.finest("new SpecialTracer(" + tracer + ")");
+        logger.finest("  ClassLoader: " + tracer.getClass().getClassLoader());
+        logger.finest("  Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+      }
+
+      this.tracer = Objects.requireNonNull(tracer);
+    }
+
+    @Override
+    public SpanBuilder buildSpan(final String operation) {
+      return new AgentSpanBuilder(tracer.buildSpan(operation));
+    }
+
+    @Override
+    public <C>SpanContext extract(final Format<C> format, final C carrier) {
+      return tracer.extract(format, carrier);
+    }
+
+    @Override
+    public <C>void inject(final SpanContext ctx, final Format<C> format, final C carrier) {
+      tracer.inject(ctx, format, carrier);
+    }
+
+    @Override
+    public Span activeSpan() {
+      return tracer.activeSpan();
+    }
+
+    @Override
+    public ScopeManager scopeManager() {
+      return tracer.scopeManager();
+    }
+  }
+
+  public static class AgentSpanBuilder implements SpanBuilder {
+    private final SpanBuilder spanBuilder;
+
+    public AgentSpanBuilder(final SpanBuilder spanBuilder) {
+      this.spanBuilder = Objects.requireNonNull(spanBuilder);
+    }
+
+    @Override
+    public SpanBuilder addReference(final String type, final SpanContext ctx) {
+      if (ctx != null)
+        spanBuilder.addReference(type, ctx);
+
+      return this;
+    }
+
+    @Override
+    public SpanBuilder asChildOf(final SpanContext ctx) {
+      if (ctx != null)
+        spanBuilder.asChildOf(ctx);
+
+      return this;
+    }
+
+    @Override
+    public SpanBuilder asChildOf(final Span span) {
+      if (span != null)
+        spanBuilder.asChildOf(span);
+
+      return this;
+    }
+
+    @Override
+    public Span start() {
+      return spanBuilder.start();
+    }
+
+    @Override
+    public SpanBuilder withStartTimestamp(final long ts) {
+      spanBuilder.withStartTimestamp(ts);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder withTag(final String name, final String value) {
+      spanBuilder.withTag(name, value);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder withTag(final String name, final boolean value) {
+      spanBuilder.withTag(name, value);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder withTag(final String name, final Number value) {
+      spanBuilder.withTag(name, value);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder ignoreActiveSpan() {
+      spanBuilder.ignoreActiveSpan();
+      return this;
+    }
+
+    @Override
+    public Scope startActive(final boolean finishOnClose) {
+      return spanBuilder.startActive(finishOnClose);
+    }
+
+    @Override
+    @Deprecated
+    public Span startManual() {
+      return spanBuilder.startManual();
     }
   }
 

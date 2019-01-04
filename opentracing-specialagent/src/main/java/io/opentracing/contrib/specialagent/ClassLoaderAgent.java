@@ -47,6 +47,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgent {
+  @SuppressWarnings("unused")
   public static void premain(final String agentArgs, final Instrumentation inst) {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
@@ -65,21 +66,21 @@ public class ClassLoaderAgent {
         }})
       .installOn(inst);
 
-//    builder
-//      .transform(new Transformer() {
-//        @Override
-//        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-//          return builder.visit(Advice.to(FindResource.class).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
-//        }})
-//      .installOn(inst);
-//
-//    builder
-//      .transform(new Transformer() {
-//        @Override
-//        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-//          return builder.visit(Advice.to(FindResources.class).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
-//        }})
-//      .installOn(inst);
+    builder
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(FindResource.class).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
+        }})
+      .installOn(inst);
+
+    builder
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(FindResources.class).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
+        }})
+      .installOn(inst);
   }
 
   public static class Mutex extends ThreadLocal<Set<String>> {
@@ -92,6 +93,7 @@ public class ClassLoaderAgent {
   public static class FindClass {
     public static final Mutex findClassMutex = new Mutex();
 
+    @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
       if (returned != null || findClassMutex.get().contains(arg))
@@ -146,6 +148,7 @@ public class ClassLoaderAgent {
     public static final Mutex findResourcesMutex = new Mutex();
 
     @Advice.OnMethodExit
+    @SuppressWarnings("restriction")
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
       if (findResourcesMutex.get().contains(arg))
         return;

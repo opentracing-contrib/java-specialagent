@@ -1,4 +1,4 @@
-package io.opentracing.contrib.agent.concurrent;
+package io.opentracing.contrib.specialagent.concurrent;
 
 import static org.junit.Assert.*;
 
