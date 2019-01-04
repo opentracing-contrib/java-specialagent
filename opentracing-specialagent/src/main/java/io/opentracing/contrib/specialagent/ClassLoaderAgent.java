@@ -148,7 +148,6 @@ public class ClassLoaderAgent {
     public static final Mutex findResourcesMutex = new Mutex();
 
     @Advice.OnMethodExit
-    @SuppressWarnings("restriction")
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
       if (findResourcesMutex.get().contains(arg))
         return;
@@ -159,7 +158,7 @@ public class ClassLoaderAgent {
         if (resources == null)
           return;
 
-        returned = returned == null ? resources : new sun.misc.CompoundEnumeration<URL>(new Enumeration[] {returned, resources});
+        returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
         System.err.println("<><><><> ClassLoaderAgent.FindResources#exit: " + t);

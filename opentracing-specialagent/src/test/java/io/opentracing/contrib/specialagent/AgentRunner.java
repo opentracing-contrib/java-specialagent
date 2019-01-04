@@ -410,7 +410,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   public AgentRunner(final Class<?> cls) throws InitializationError {
     super(isInFork && (cls.getAnnotation(Config.class) == null || cls.getAnnotation(Config.class).isolateClassLoader()) ? loadClassInURLClassLoader(cls) : cls);
-    System.out.println("isInFork: " + isInFork  + ", 3: " + cls.getAnnotation(Config.class).isolateClassLoader());
     this.config = cls.getAnnotation(Config.class);
     this.loggingConfigFile = config != null && config.debug() ? getClass().getResource("/logging.properties") : null;
     if (loggingConfigFile != null) {
@@ -455,11 +454,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
             catch (final Exception e) {
             }
 
-            try {
-              Thread.sleep(10000);
-            }
-            catch (InterruptedException e1) {
-            }
             try {
               process.exitValue();
               return;

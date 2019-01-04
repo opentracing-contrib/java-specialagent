@@ -1,1 +1,1 @@
-io.opentracing.contrib.specialagent.okhttp.OkHttpAgent
+io.opentracing.contrib.specialagent.okhttp.BuilderAgentPlugin

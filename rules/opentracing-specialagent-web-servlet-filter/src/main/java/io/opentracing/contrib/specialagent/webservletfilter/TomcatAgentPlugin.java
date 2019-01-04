@@ -1,9 +1,8 @@
-package io.opentracing.contrib.specialagent.okhttp;
+package io.opentracing.contrib.specialagent.webservletfilter;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -16,28 +15,25 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class OkHttpAgent implements AgentPlugin {
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-//    buildAgent(agentArgs).installOn(inst);
-  }
-
+public class TomcatAgentPlugin implements AgentPlugin {
+  @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
 //      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(named("okhttp3.OkHttpClient$Builder"))
+      .type(named("org.apache.catalina.core.ApplicationContext"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OkHttpAgent.class).on(named("build")));
+          return builder.visit(Advice.to(TomcatAgentPlugin.class).on(isConstructor()));
         }});
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) {
-    System.out.println(">>>>>> " + method);
-    Intercept.enter(thiz);
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.Origin Constructor<?> constructor, final @Advice.This Object thiz) {
+    System.out.println(">>>>>> " + constructor);
+    TomcatAgentIntercept.exit(thiz);
   }
 }

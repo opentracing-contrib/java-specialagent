@@ -1,0 +1,2 @@
+io.opentracing.contrib.specialagent.webservletfilter.JettyAgentPlugin
+io.opentracing.contrib.specialagent.webservletfilter.TomcatAgentPlugin

@@ -278,7 +278,7 @@ public class Agent {
   private static final BiPredicate<String,ClassLoader> loadClass = new BiPredicate<String,ClassLoader>() {
     @Override
     public boolean test(final String path, final ClassLoader classLoader) {
-      if (path.endsWith(".class")) {
+      if (path.endsWith(".class") && !path.startsWith("META-INF/") && !path.startsWith("module-info")) {
         try {
           Class.forName(path.substring(0, path.length() - 6).replace('/', '.'), false, classLoader);
         }

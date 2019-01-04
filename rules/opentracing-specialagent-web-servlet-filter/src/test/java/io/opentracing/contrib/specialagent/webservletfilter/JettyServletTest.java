@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.agent.webservletfilter;
+package io.opentracing.contrib.specialagent.webservletfilter;
 
 import static org.junit.Assert.*;
 
@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -41,12 +42,12 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
-public class JettyServletITest {
+@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
+public class JettyServletTest {
   // jetty starts on random port
   private int serverPort;
 
-  protected Server jettyServer;
+  private Server jettyServer;
 
   @Before
   public void beforeTest() throws Exception {

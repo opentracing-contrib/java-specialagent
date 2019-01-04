@@ -1,4 +1,4 @@
-package io.opentracing.contrib.agent.webservletfilter;
+package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.io.IOException;
 
