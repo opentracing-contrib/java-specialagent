@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.agent.mongo;
+package io.opentracing.contrib.specialagent.mongo;
 
 import static org.junit.Assert.*;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 import org.junit.Test;
@@ -31,15 +29,15 @@ import org.junit.runner.RunWith;
 import com.mongodb.Block;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
-import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.MongoClient;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.connection.ClusterSettings;
 
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
@@ -48,44 +46,28 @@ import io.opentracing.mock.MockTracer;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
-public class AsyncMongoClientITest {
+@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
+public class MongoClientTest {
   @Test
-  public void testAsyncMongoClient(final MockTracer tracer) throws InterruptedException {
+  public void testMongoClient(final MockTracer tracer) {
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
 
     try {
-      final MongoClientSettings clientSettings = MongoClientSettings.builder().applyToClusterSettings(new Block<ClusterSettings.Builder>() {
+      MongoClientSettings mongoSettings = MongoClientSettings.builder().applyToClusterSettings(new Block<ClusterSettings.Builder>() {
         @Override
         public void apply(final ClusterSettings.Builder builder) {
           builder.hosts(Arrays.asList(new ServerAddress(serverAddress)));
         }
       }).build();
 
-      try (final MongoClient mongoClient = MongoClients.create(clientSettings)) {
-        final MongoCollection<Document> collection = mongoClient.getDatabase("MyDB").getCollection("MyCollection");
-        final CountDownLatch latch = new CountDownLatch(2);
+      final MongoClient mongoClient = MongoClients.create(mongoSettings);
 
-        final Document myDocument = new Document("name", "MyDocument");
-        collection.insertOne(myDocument, new SingleResultCallback<Void>() {
-          @Override
-          public void onResult(final Void result, final Throwable t) {
-            latch.countDown();
-
-            final SingleResultCallback<Document> doc = new SingleResultCallback<Document>() {
-              @Override
-              public void onResult(final Document document, final Throwable t) {
-                latch.countDown();
-              }
-            };
-
-            collection.find().first(doc);
-          }
-        });
-
-        assertTrue(latch.await(5, TimeUnit.SECONDS));
-      }
+      final MongoCollection<Document> collection = mongoClient.getDatabase("MyDB").getCollection("MyCollection");
+      final Document myDocument = new Document("name", "MyDocument");
+      collection.insertOne(myDocument);
+      collection.find().first();
+      mongoClient.close();
 
       final List<MockSpan> spans = tracer.finishedSpans();
       assertEquals(2, spans.size());
