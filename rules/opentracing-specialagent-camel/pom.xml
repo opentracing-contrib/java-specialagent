@@ -47,7 +47,7 @@
       <artifactId>camel-core</artifactId>
       <version>${version.org.apache.camel}</version>
       <optional>true</optional>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
