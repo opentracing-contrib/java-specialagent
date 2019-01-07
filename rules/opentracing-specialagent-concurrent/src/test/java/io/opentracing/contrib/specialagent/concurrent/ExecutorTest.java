@@ -21,7 +21,7 @@ import io.opentracing.mock.MockTracer;
  */
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
-public class ExecutorITest extends AbstractConcurrentTest {
+public class ExecutorTest extends AbstractConcurrentTest {
   @Test
 	public void testExecute(final MockTracer tracer) throws InterruptedException {
     final CountDownLatch countDownLatch = new CountDownLatch(1);

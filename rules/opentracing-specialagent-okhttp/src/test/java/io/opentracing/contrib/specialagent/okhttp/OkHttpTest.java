@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
@@ -25,9 +26,21 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
-public class OkHttpITest {
-  private static final Logger logger = Logger.getLogger(OkHttpITest.class.getName());
+@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
+public class OkHttpTest {
+//public static MockTracer tracer = new MockTracer();
+//
+//static {
+//  try {
+//    GlobalTracer.register(tracer);
+//    AgentPlugin.premain(null, ByteBuddyAgent.install());
+//  }
+//  catch (final Exception e) {
+//    throw new ExceptionInInitializerError(e);
+//  }
+//}
+
+  private static final Logger logger = Logger.getLogger(OkHttpTest.class.getName());
 
   @Test
   public void test(final MockTracer tracer) throws IOException {

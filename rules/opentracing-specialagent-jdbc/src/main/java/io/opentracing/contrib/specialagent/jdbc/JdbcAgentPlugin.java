@@ -19,7 +19,7 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
 
-public class JdbcAgent implements AgentPlugin {
+public class JdbcAgentPlugin implements AgentPlugin {
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
 //  buildAgent(agentArgs).installOn(inst);
   }
@@ -35,13 +35,13 @@ public class JdbcAgent implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(JdbcAgent.class).on(not(isAbstract()).and(named("connect").and(ElementMatchers.takesArguments(String.class, Properties.class)))));
+          return builder.visit(Advice.to(JdbcAgentPlugin.class).on(not(isAbstract()).and(named("connect").and(ElementMatchers.takesArguments(String.class, Properties.class)))));
         }});
   }
 
   @Advice.OnMethodExit
   public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
     System.out.println(">>>>>> " + method);
-    returned = Intercept.exit(returned);
+    returned = JdbcAgentIntercept.exit(returned);
   }
 }

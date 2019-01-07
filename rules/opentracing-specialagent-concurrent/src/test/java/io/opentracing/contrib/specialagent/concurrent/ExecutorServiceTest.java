@@ -25,7 +25,7 @@ import io.opentracing.mock.MockTracer;
  */
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
-public class ExecutorServiceITest extends AbstractConcurrentTest {
+public class ExecutorServiceTest extends AbstractConcurrentTest {
 	private static final int NUMBER_OF_THREADS = 4;
 
 	@Test
