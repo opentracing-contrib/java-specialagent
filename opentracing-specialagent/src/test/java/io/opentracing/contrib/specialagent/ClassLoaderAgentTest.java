@@ -62,6 +62,7 @@ public abstract class ClassLoaderAgentTest {
     public static void beforeClass() throws Exception {
       System.setProperty(Agent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
       final Instrumentation instrumentation = ByteBuddyAgent.install();
+      AgentAgent.premain(null, instrumentation);
       Agent.premain(null, instrumentation);
     }
   }
@@ -88,8 +89,7 @@ public abstract class ClassLoaderAgentTest {
   @Test
   public void testClassLoaderFindResource() throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
-      final URL resource = classLoader.findResource(Tracer.class.getName().replace('.', '/').concat(".class"));
-      assertNotNull(resource);
+      assertNotNull(classLoader.findResource(Tracer.class.getName().replace('.', '/').concat(".class")));
     }
   }
 

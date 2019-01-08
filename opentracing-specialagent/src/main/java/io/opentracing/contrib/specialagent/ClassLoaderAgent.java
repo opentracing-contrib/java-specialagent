@@ -91,15 +91,14 @@ public class ClassLoaderAgent {
   }
 
   public static class FindClass {
-    public static final Mutex findClassMutex = new Mutex();
+    public static final Mutex mutex = new Mutex();
 
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-      if (returned != null || findClassMutex.get().contains(arg))
+      if (returned != null || !mutex.get().add(arg))
         return;
 
-      findClassMutex.get().add(arg);
       try {
         final byte[] bytecode = Agent.findClass(thiz, arg);
         if (bytecode == null)
@@ -115,20 +114,19 @@ public class ClassLoaderAgent {
         t.printStackTrace();
       }
       finally {
-        findClassMutex.get().remove(arg);
+        mutex.get().remove(arg);
       }
     }
   }
 
   public static class FindResource {
-    public static final Mutex findResourceMutex = new Mutex();
+    public static final Mutex mutex = new Mutex();
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (returned != null || findResourceMutex.get().contains(arg))
+      if (returned != null || !mutex.get().add(arg))
         return;
 
-      findResourceMutex.get().add(arg);
       try {
         final URL resource = Agent.findResource(thiz, arg);
         if (resource != null)
@@ -139,20 +137,19 @@ public class ClassLoaderAgent {
         t.printStackTrace();
       }
       finally {
-        findResourceMutex.get().remove(arg);
+        mutex.get().remove(arg);
       }
     }
   }
 
   public static class FindResources {
-    public static final Mutex findResourcesMutex = new Mutex();
+    public static final Mutex mutex = new Mutex();
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      if (findResourcesMutex.get().contains(arg))
+      if (!mutex.get().add(arg))
         return;
 
-      findResourcesMutex.get().add(arg);
       try {
         final Enumeration<URL> resources = Agent.findResources(thiz, arg);
         if (resources == null)
@@ -165,7 +162,7 @@ public class ClassLoaderAgent {
         t.printStackTrace();
       }
       finally {
-        findResourcesMutex.get().remove(arg);
+        mutex.get().remove(arg);
       }
     }
   }

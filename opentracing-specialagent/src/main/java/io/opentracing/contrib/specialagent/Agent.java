@@ -246,7 +246,7 @@ public class Agent {
 
   /**
    * This method loads any OpenTracing Agent rules (otarules.btm) found as
-   * resources within the supplied classloader.
+   * resources within the supplied class loader.
    */
   private static void loadRules() {
     if (allPluginsClassLoader == null) {
@@ -324,7 +324,8 @@ public class Agent {
    * </ol>
    * The {@code index} is a reference to the array index of the plugin JAR's
    * {@code URL} in {@link #allPluginsClassLoader}, which is statically declared
-   * during the script retrofit in {@link #retrofitScript(String,int)}.
+   * during the script retrofit in
+   * {@link BytemanManager#retrofitScript(String,int)}.
    * <p>
    * The {@code args} parameter is used to obtain the caller object, which is
    * itself used to determine the {@code ClassLoader} in which the classes
@@ -345,13 +346,13 @@ public class Agent {
    * @return {@code true} if the plugin at the specified index is compatible
    *         with its target classes in the invoking class's
    *         {@code ClassLoader}.
-   * @see #retrofitScript(String,int)
+   * @see BytemanManager#retrofitScript(String,int)
    */
   public static boolean linkPlugin(final int index, final Class<?> cls, final Object[] args) {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("linkPlugin(" + index + ", " + (cls != null ? cls.getName() + ".class" : "null") + ", " + Arrays.toString(args) + ")");
 
-    // Get the ClassLoader of the target class
+    // Get the class loader of the target class
     final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
     final ClassLoader classLoader = targetClass.getClassLoader();
     return linkPlugin(index, classLoader);
@@ -374,7 +375,7 @@ public class Agent {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("new " + PluginClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
 
-      // Create an isolated (no parent ClassLoader) URLClassLoader with the pluginPaths
+      // Create an isolated (no parent class loader) URLClassLoader with the pluginPaths
       final PluginClassLoader pluginClassLoader = new PluginClassLoader(pluginPaths, classLoader);
       if (!pluginClassLoader.isCompatible(classLoader)) {
         try {
@@ -389,27 +390,27 @@ public class Agent {
 
       if (classLoader == null) {
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Target classLoader is the BootClassLoader, so adding plugin JARs to the bootstrap classpath directly");
+          logger.fine("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
 
         for (final URL path : pluginPaths) {
           try {
             instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
           }
           catch (final IOException e) {
-            logger.log(Level.SEVERE, "Failed to add path to BootClassLoader classpath: " + path.getPath(), e);
+            logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
           }
         }
       }
       else if (classLoader == ClassLoader.getSystemClassLoader()) {
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Target classLoader is the SystemClassLoader, so adding plugin JARs to the system classpath directly");
+          logger.fine("Target class loader is system, so adding plugin JARs to the system class loader directly");
 
         for (final URL path : pluginPaths) {
           try {
             instrumentation.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
           }
           catch (final IOException e) {
-            logger.log(Level.SEVERE, "Failed to add path to SystemClassLoader classpath: " + path.getPath(), e);
+            logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);
           }
         }
       }
@@ -418,11 +419,11 @@ public class Agent {
         // Associate the pluginClassLoader with the target class's classLoader
         classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 
-        // Enable triggers to the LoadClasses script can execute
+        // Enable triggers to the classloader.btm script can execute
         instrumenter.manager.enableTriggers();
 
         // Call Class.forName(...) for each class in pluginClassLoader to load in
-        // the caller's classLoader
+        // the caller's class loader
         for (final URL pathUrl : pluginClassLoader.getURLs()) {
           if (pathUrl.toString().endsWith(".jar")) {
             try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
@@ -480,7 +481,7 @@ public class Agent {
       if (logger.isLoggable(Level.FINEST))
         logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-      // Check if the classLoader matches a pluginClassLoader
+      // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
       if (pluginClassLoader == null)
         return null;
@@ -513,7 +514,7 @@ public class Agent {
       if (logger.isLoggable(Level.FINEST))
         logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-      // Check if the classLoader matches a pluginClassLoader
+      // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
       return pluginClassLoader == null ? null : pluginClassLoader.findResource(name);
     }
@@ -528,7 +529,7 @@ public class Agent {
       if (logger.isLoggable(Level.FINEST))
         logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-      // Check if the classLoader matches a pluginClassLoader
+      // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
       if (pluginClassLoader == null)
         return null;

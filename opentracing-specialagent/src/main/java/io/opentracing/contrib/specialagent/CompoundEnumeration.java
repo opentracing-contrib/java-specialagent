@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
  * A useful utility class that will enumerate over an array of enumerations.
  *
  * @param <E> The type parameter of the enumeration.
+ * @author Seva Safris
  */
 public class CompoundEnumeration<E> implements Enumeration<E> {
   private final Enumeration<E>[] enums;

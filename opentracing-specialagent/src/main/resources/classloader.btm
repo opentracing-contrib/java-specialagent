@@ -3,25 +3,26 @@ RULE OpenTracing SpecialAgent Intercept for ClassLoader#findClass
 CLASS ^java.lang.ClassLoader
 
 METHOD Class findClass(String)
-AT EXIT
 BIND
-  bytecode = $! == null ? io.opentracing.contrib.specialagent.Agent.findClass($0, $1) : null;
-IF bytecode != null
+  bytecode:byte[] = io.opentracing.contrib.specialagent.ClassLoaderAgent.FindClass.mutex.get().add($1) ? io.opentracing.contrib.specialagent.Agent.findClass($0, $1) : null;
+  cls:Class = bytecode == null ? null : $0.defineClass($1, bytecode, 0, bytecode.length, null);
+IF cls != null
 DO
   traceln(">>>>>>>> defineClass(" + $1 + ")");
-  RETURN $0.defineClass($1, bytecode, 0, bytecode.length, null);
+  io.opentracing.contrib.specialagent.ClassLoaderAgent.FindClass.mutex.get().remove($1);
+  RETURN cls;
 ENDRULE
 
 RULE OpenTracing SpecialAgent Intercept for ClassLoader#findResource
 
 CLASS ^java.lang.ClassLoader
 
-METHOD java.util.URL findResource(String)
-AT EXIT
+METHOD java.net.URL findResource(String)
 BIND
-  resource:java.util.URL = $! == null ? io.opentracing.contrib.specialagent.Agent.findResource($0, $1) : null;
+  resource:java.net.URL = io.opentracing.contrib.specialagent.Agent.findResource($0, $1);
 IF resource != null
 DO
+  traceln(">>>>>>>> findResource(" + $1 + "): " + resource);
   RETURN resource;
 ENDRULE
 
@@ -30,10 +31,9 @@ RULE OpenTracing SpecialAgent Intercept for ClassLoader#findResources
 CLASS ^java.lang.ClassLoader
 
 METHOD java.util.Enumeration findResources(String)
-AT EXIT
 BIND
   resources:java.util.Enumeration = io.opentracing.contrib.specialagent.Agent.findResources($0, $1);
 IF resources != null
 DO
-  RETURN $! == null ? resources : new sun.misc.CompoundEnumeration(new java.util.Enumeration[] {$!, resources});
+  RETURN new sun.misc.CompoundEnumeration(new java.util.Enumeration[] {$!, resources});
 ENDRULE

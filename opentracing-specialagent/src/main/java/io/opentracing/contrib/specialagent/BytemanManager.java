@@ -247,7 +247,7 @@ public class BytemanManager extends Manager {
    * This method consumes a Byteman script that is intended for the
    * instrumentation of the OpenTracing API into a 3rd-party library, and
    * produces a Byteman script that is used to trigger the "load classes"
-   * procedure {@link #linkPlugin(int,Class,Object[])} that loads the
+   * procedure {@link Agent#linkPlugin(int,Class,Object[])} that loads the
    * instrumentation and OpenTracing API classes directly into the
    * {@code ClassLoader} in which the 3rd-party library is loaded.
    *
@@ -256,7 +256,7 @@ public class BytemanManager extends Manager {
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
    * @return The script used to trigger the "Load Classes" procedure
-   *         {@link #linkPlugin(int,Class,Object[])}.
+   *         {@link Agent#linkPlugin(int,Class,Object[])}.
    */
   static String retrofitScript(final String script, final int index) {
     final StringBuilder out = new StringBuilder();
