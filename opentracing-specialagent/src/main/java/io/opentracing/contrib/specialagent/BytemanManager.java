@@ -36,6 +36,10 @@ public class BytemanManager extends Manager {
   private static final Logger logger = Logger.getLogger(BytemanManager.class.getName());
   private static Retransformer retransformer;
 
+  /**
+   * Creates a new {@code BytemanManager} with {@code "otarules.btm"} as the
+   * configuration file name.
+   */
   BytemanManager() {
     super("otarules.btm");
   }
@@ -48,14 +52,23 @@ public class BytemanManager extends Manager {
   /**
    * Initializes the manager.
    *
-   * @param retransformer The ByteMan retransformer.
+   * @param retransformer The Byteman retransformer.
    */
   public static void initialize(final Retransformer retransformer) {
     BytemanManager.retransformer = retransformer;
-    Agent.initialize();
+    SpecialAgent.initialize();
   }
 
-  protected static String addManager(String agentArgs) {
+  /**
+   * Adds the {@code "manager:"} argument to the {@code agentArgs} string for
+   * {@link Main} to call back to {@link #initialize(Retransformer)} method.
+   *
+   * @param agentArgs The {@code agentArgs} from
+   *          {@link #premain(String,Instrumentation)}.
+   * @return The {@code agentArgs} with the {@code "manager:"} argument set to
+   *         {@code BytemanManager}.
+   */
+  private static String addManager(String agentArgs) {
     if (agentArgs == null || agentArgs.trim().isEmpty())
       agentArgs = "";
     else
@@ -89,7 +102,7 @@ public class BytemanManager extends Manager {
       digestRule(scriptUrl, index, scripts, scriptNames);
     }
 
-    loadScripts(scripts, scriptNames, retransformer);
+    loadScripts(scripts, scriptNames);
   }
 
   @Override
@@ -108,7 +121,7 @@ public class BytemanManager extends Manager {
    * @param scripts The list of scripts.
    * @param scriptNames The list of script names.
    */
-  private static void loadScripts(final List<String> scripts, final List<String> scriptNames, final Retransformer retransformer) {
+  private static void loadScripts(final List<String> scripts, final List<String> scriptNames) {
     if (logger.isLoggable(Level.FINE))
       logger.fine("Installing rules:\n" + Util.toIndentedString(scriptNames));
 
@@ -133,7 +146,7 @@ public class BytemanManager extends Manager {
    *
    * @param ruleName The name of the rule to unload.
    */
-  private void unloadRule(final String ruleName, final Retransformer retransformer) {
+  private static void unloadRule(final String ruleName) {
     if (logger.isLoggable(Level.FINE))
       logger.fine("Unloading rule: " + ruleName);
 
@@ -149,14 +162,13 @@ public class BytemanManager extends Manager {
       logger.fine(sw.toString());
   }
 
-
   /**
    * This method digests the Byteman rule script at {@code url}, and adds the
    * script to the {@code scripts} and {@code scriptNames} lists. If
    * {@code index} is not null, this method calls
-   * {@link #retrofitScript(String,int)} to create a "Load Classes" script that
-   * is triggered in the same manner as the script at {@code url}, and is used
-   * to load API and instrumentation classes into the calling object's
+   * {@link #retrofitScript(String,int)} to create a "ClassLoaderAgent" script
+   * that is triggered in the same manner as the script at {@code url}, and is
+   * used to load API and instrumentation classes into the calling object's
    * {@code ClassLoader}.
    *
    * @param url The {@code URL} to the script resource.
@@ -176,14 +188,14 @@ public class BytemanManager extends Manager {
   }
 
   /**
-   * Writes a "Load Classes" rule into the specified {@code StringBuilder} for
-   * the provided rule {@code header}, JAR reference {@code index}, and
+   * Writes a "ClassLoaderAgent" rule into the specified {@code StringBuilder}
+   * for the provided rule {@code header}, JAR reference {@code index}, and
    * {@code classRef}.
    *
    * @param builder The {@code StringBuilder} into which the script is to be
    *          written.
-   * @param header The header of the rule for which the "Load Classes" rule is
-   *          to be created.
+   * @param header The header of the rule for which the "ClassLoaderAgent" rule
+   *          is to be created.
    * @param index The index of the OpenTracing instrumentation JAR in
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
@@ -197,12 +209,12 @@ public class BytemanManager extends Manager {
     if (builder.length() > 0)
       builder.append('\n');
 
-    builder.append(header.substring(0, end)).append(" (Load Classes)");
+    builder.append(header.substring(0, end)).append(" (ClassLoaderAgent)");
     builder.append(header.substring(end));
     builder.append("IF TRUE\n");
     builder.append("DO\n");
-    builder.append("  traceln(\">>>>>>>> Load Classes " + index + "\");\n");
-    builder.append("  ").append(Agent.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
+    builder.append("  traceln(\">>>>>>>> ClassLoaderAgent " + index + "\");\n");
+    builder.append("  ").append(SpecialAgent.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
     builder.append("ENDRULE\n");
   }
 
@@ -246,17 +258,17 @@ public class BytemanManager extends Manager {
   /**
    * This method consumes a Byteman script that is intended for the
    * instrumentation of the OpenTracing API into a 3rd-party library, and
-   * produces a Byteman script that is used to trigger the "load classes"
-   * procedure {@link Agent#linkPlugin(int,Class,Object[])} that loads the
-   * instrumentation and OpenTracing API classes directly into the
+   * produces a Byteman script that is used to trigger the "ClassLoaderAgent"
+   * procedure {@link SpecialAgent#linkPlugin(int,Class,Object[])} that loads
+   * the instrumentation and OpenTracing API classes directly into the
    * {@code ClassLoader} in which the 3rd-party library is loaded.
    *
    * @param script The OpenTracing instrumentation script.
    * @param index The index of the OpenTracing instrumentation JAR in
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
-   * @return The script used to trigger the "Load Classes" procedure
-   *         {@link Agent#linkPlugin(int,Class,Object[])}.
+   * @return The script used to trigger the "ClassLoaderAgent" procedure
+   *         {@link SpecialAgent#linkPlugin(int,Class,Object[])}.
    */
   static String retrofitScript(final String script, final int index) {
     final StringBuilder out = new StringBuilder();
@@ -311,7 +323,7 @@ public class BytemanManager extends Manager {
         if (m > -1) {
           inBind = false;
           i = m;
-          bindClause = "\n  cOmPaTiBlE:boolean = " + Agent.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
+          bindClause = "\n  cOmPaTiBlE:boolean = " + SpecialAgent.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
           continue;
         }
 

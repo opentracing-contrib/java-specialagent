@@ -39,6 +39,7 @@ import java.util.logging.Logger;
  * @author Seva Safris
  */
 class PluginClassLoader extends URLClassLoader {
+  public static final String FINGERPRINT_FILE = "fingerprint.bin";
   private static final Logger logger = Logger.getLogger(PluginClassLoader.class.getName());
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
@@ -87,19 +88,19 @@ class PluginClassLoader extends URLClassLoader {
     if (compatible != null)
       return compatible;
 
-    final URL fpURL = getResource("fingerprint.bin");
+    final URL fpURL = getResource(FINGERPRINT_FILE);
     if (fpURL != null) {
       try {
         final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
         final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
         if (errors != null) {
-          logger.warning("Disallowing instrumentation due to \"fingerprint.bin mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
+          logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
           compatibility.put(classLoader, false);
           return false;
         }
 
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Allowing instrumentation due to \"fingerprint.bin match\" for:\n" + Util.toIndentedString(getURLs()));
+          logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + Util.toIndentedString(getURLs()));
       }
       catch (final IOException e) {
         throw new IllegalStateException(e);
@@ -107,12 +108,12 @@ class PluginClassLoader extends URLClassLoader {
     }
     else {
       if (failOnMissingFingerprint) {
-        logger.warning("Disallowing instrumentation due to \"-DfailOnMissingFingerprint=true\" and \"fingerprint.bin not found\" in:\n" + Util.toIndentedString(getURLs()));
+        logger.warning("Disallowing instrumentation due to \"-DfailOnMissingFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
         return false;
       }
 
-      logger.warning("Allowing instrumentation due to default \"-DfailOnMissingFingerprint=false\" and \"fingerprint.bin not found\" in:\n" + Util.toIndentedString(getURLs()));
+      logger.warning("Allowing instrumentation due to default \"-DfailOnMissingFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
     }
 
     compatibility.put(classLoader, true);

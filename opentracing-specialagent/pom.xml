@@ -685,9 +685,9 @@
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
               <manifestEntries>
-                <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
-                <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
-                <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+                <Main-Class>io.opentracing.contrib.specialagent.SpecialAgent</Main-Class>
+                <Agent-Class>io.opentracing.contrib.specialagent.SpecialAgent</Agent-Class>
+                <Premain-Class>io.opentracing.contrib.specialagent.SpecialAgent</Premain-Class>
                 <Can-Redefine-Classes>true</Can-Redefine-Classes>
                 <Can-Retransform-Classes>true</Can-Retransform-Classes>
               </manifestEntries>
@@ -754,9 +754,9 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
-              <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
-              <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+              <Main-Class>io.opentracing.contrib.specialagent.SpecialAgent</Main-Class>
+              <Agent-Class>io.opentracing.contrib.specialagent.SpecialAgent</Agent-Class>
+              <Premain-Class>io.opentracing.contrib.specialagent.SpecialAgent</Premain-Class>
               <Boot-Class-Path>${project.artifactId}-${project.version}.jar</Boot-Class-Path>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
@@ -789,9 +789,9 @@
           <attach>false</attach>
           <archive>
             <manifestEntries>
-              <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
-              <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
-              <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+              <Main-Class>io.opentracing.contrib.specialagent.SpecialAgent</Main-Class>
+              <Agent-Class>io.opentracing.contrib.specialagent.SpecialAgent</Agent-Class>
+              <Premain-Class>io.opentracing.contrib.specialagent.SpecialAgent</Premain-Class>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
             </manifestEntries>

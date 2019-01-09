@@ -40,12 +40,12 @@ import java.util.zip.ZipInputStream;
 import com.sun.tools.attach.VirtualMachine;
 
 /**
- * The agent and Byteman manager.
+ * The SpecialAgent.
  *
  * @author Seva Safris
  */
-public class Agent {
-  private static final Logger logger = Logger.getLogger(Agent.class.getName());
+public class SpecialAgent {
+  private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
   static final String DISABLE_LC = "io.opentracing.contrib.specialagent.disableLC";
@@ -96,7 +96,7 @@ public class Agent {
     }
 
     final VirtualMachine vm = VirtualMachine.attach(args[0]);
-    final String agentPath = Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    final String agentPath = SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     try {
       vm.loadAgent(agentPath, null);
     }
@@ -106,8 +106,8 @@ public class Agent {
   }
 
   public static void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
-    Agent.agentArgs = agentArgs;
-    Agent.instrumentation = instrumentation;
+    SpecialAgent.agentArgs = agentArgs;
+    SpecialAgent.instrumentation = instrumentation;
     instrumenter.manager.premain(agentArgs, instrumentation);
   }
 
@@ -292,15 +292,15 @@ public class Agent {
   };
 
   /**
-   * Returns {@code true} if the "Load Classes" Byteman rule is disabled for the
+   * Returns {@code true} if the "ClassLoaderAgent" rule is disabled for the
    * specified plugin {@code URL}.
    *
-   * @param pluginUrl The {@code URL} for which to check if "Load Classes" is
-   *          disabled.
-   * @return {@code true} if the "Load Classes" Byteman rule is disabled for the
+   * @param pluginUrl The {@code URL} for which to check if "ClassLoaderAgent"
+   *          is disabled.
+   * @return {@code true} if the "ClassLoaderAgent" rule is disabled for the
    *         specified plugin {@code URL}.
    */
-  private static boolean isLoadClassesDisabled(final URL pluginUrl) {
+  private static boolean isClassLoaderAgentDisabled(final URL pluginUrl) {
     if (disabledLoadClasses == null)
       return false;
 
@@ -415,7 +415,7 @@ public class Agent {
         }
       }
 
-      if (!isLoadClassesDisabled(pluginPath)) {
+      if (!isClassLoaderAgentDisabled(pluginPath)) {
         // Associate the pluginClassLoader with the target class's classLoader
         classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 

@@ -37,7 +37,7 @@ import net.bytebuddy.utility.JavaModule;
 
 /**
  * ByteBuddy agent that intercepts the
- * {@link Agent#findClass(ClassLoader,String)} method to override its returned
+ * {@link SpecialAgent#findClass(ClassLoader,String)} method to override its returned
  * value.
  * <p>
  * This class is used for testing of {@link ClassLoaderAgent}.
@@ -54,7 +54,7 @@ public class AgentAgent {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(is(Agent.class));
+      .type(is(SpecialAgent.class));
 
     builder
       .transform(new Transformer() {

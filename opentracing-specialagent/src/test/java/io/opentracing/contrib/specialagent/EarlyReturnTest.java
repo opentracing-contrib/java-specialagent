@@ -60,10 +60,11 @@ public class EarlyReturnTest {
   }
 
   public static class OnExit {
+    @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(@Advice.Return(readOnly=false, typing=Typing.DYNAMIC) String ret, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) throws IOException {
+    public static void exit(@Advice.Return(readOnly=false, typing=Typing.DYNAMIC) String returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
       System.out.println("<<<<<<<<");
-      ret = "ok!";
+      returned = "ok!";
       thrown = null;
     }
   }

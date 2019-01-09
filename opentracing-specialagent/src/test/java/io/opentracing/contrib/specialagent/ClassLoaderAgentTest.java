@@ -60,16 +60,16 @@ public abstract class ClassLoaderAgentTest {
   public static class BytemanBTest extends ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
-      System.setProperty(Agent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
+      System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
       final Instrumentation instrumentation = ByteBuddyAgent.install();
       AgentAgent.premain(null, instrumentation);
-      Agent.premain(null, instrumentation);
+      SpecialAgent.premain(null, instrumentation);
     }
   }
 
   @Test
   public void testAgentFindClass() throws Exception {
-    assertNotNull(Agent.findClass(null, Span.class.getName()));
+    assertNotNull(SpecialAgent.findClass(null, Span.class.getName()));
   }
 
   @Test
@@ -83,7 +83,7 @@ public abstract class ClassLoaderAgentTest {
 
   @Test
   public void testAgentFindResource() throws Exception {
-    assertNotNull(Agent.findResource(null, Span.class.getName().replace('.', '/').concat(".class")));
+    assertNotNull(SpecialAgent.findResource(null, Span.class.getName().replace('.', '/').concat(".class")));
   }
 
   @Test
@@ -95,7 +95,7 @@ public abstract class ClassLoaderAgentTest {
 
   @Test
   public void testAgentFindResources() throws Exception {
-    final Enumeration<URL> resources = Agent.findResources(null, Span.class.getName().replace('.', '/').concat(".class"));
+    final Enumeration<URL> resources = SpecialAgent.findResources(null, Span.class.getName().replace('.', '/').concat(".class"));
     assertNotNull(resources);
     assertTrue(resources.hasMoreElements());
   }

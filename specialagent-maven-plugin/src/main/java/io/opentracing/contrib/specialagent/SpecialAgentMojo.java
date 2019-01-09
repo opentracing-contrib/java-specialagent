@@ -143,7 +143,7 @@ public final class SpecialAgentMojo extends AbstractMojo {
     try {
       final URL[] optionalDeps = getDependencyPaths(localRepository, true, project.getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with <optional>true</optional> -- fingerprint.bin will not be generated");
+        getLog().warn("No dependencies were found with <optional>true</optional> -- " + PluginClassLoader.FINGERPRINT_FILE + " will not be generated");
         return;
       }
 

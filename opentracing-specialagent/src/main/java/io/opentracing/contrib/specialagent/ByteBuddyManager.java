@@ -47,7 +47,7 @@ public class ByteBuddyManager extends Manager {
   @Override
   void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
     this.instrumentation = instrumentation;
-    Agent.initialize();
+    SpecialAgent.initialize();
   }
 
   /**
@@ -144,7 +144,7 @@ public class ByteBuddyManager extends Manager {
 
     @Override
     public void onTransformation(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final DynamicType dynamicType) {
-      if (!Agent.linkPlugin(index, classLoader))
+      if (!SpecialAgent.linkPlugin(index, classLoader))
         throw new IllegalStateException("Disallowing transformation due to incompatibility");
     }
 

@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -44,7 +43,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true, isolateClassLoader=false, disableLoadClasses=true, instrumenter=Instrumenter.BYTEBUDDY)
+@AgentRunner.Config(debug=true, verbose=true, isolateClassLoader=false, dissableClassLoaderAgent=true)
 public class TomcatServletTest {
   private int serverPort = 9786;
   private Tomcat tomcatServer;

@@ -5,30 +5,30 @@ CLASS ^java.lang.ClassLoader
 METHOD findClass
 AT ENTRY
 BIND
-  cls1 = foo == true ? io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
-  $cls2 : java.lang.Class = bar >= false ? io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
+  cls1 = foo == true ? io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
+  $cls2 : java.lang.Class = bar >= false ? io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
   cls3 = foo == true ?
-    io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
+    io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
   $cls4:
   java.lang.Class = bar >= false ?
-    io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
+    io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
   cls3 =
     foo == true ?
-    io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
+    io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
   $cls4:java.lang.Class =
     bar >= false ?
-    io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
+    io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
 
   cls3
     =
     foo == true ?
-    io.opentracing.contrib.specialagent.Agent.findClass($this, $1);
+    io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1);
 
   $cls4
   :java.lang.Class
     =
     bar >= false ?
-    io.opentracing.contrib.specialagent.Agent.findClass($this, $1)
+    io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1)
 IF cls != null
 DO
   traceln(">>>>>>>> defineClass(" + $1 + ")");
@@ -40,7 +40,7 @@ RULE OpenTracing SpecialAgent ClassLoader Injection
 INTERFACE ^java.lang.ClassLoader
 
 METHOD findClass
-BIND cls:java.lang.Class = io.opentracing.contrib.specialagent.Agent.findClass($this, $1)
+BIND cls:java.lang.Class = io.opentracing.contrib.specialagent.SpecialAgent.findClass($this, $1)
 AT ENTRY
 IF TRUE
 DO

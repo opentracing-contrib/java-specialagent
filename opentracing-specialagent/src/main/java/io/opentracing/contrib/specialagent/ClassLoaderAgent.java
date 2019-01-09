@@ -25,7 +25,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.opentracing.contrib.specialagent.Agent.AllPluginsClassLoader;
+import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -100,7 +100,7 @@ public class ClassLoaderAgent {
         return;
 
       try {
-        final byte[] bytecode = Agent.findClass(thiz, arg);
+        final byte[] bytecode = SpecialAgent.findClass(thiz, arg);
         if (bytecode == null)
           return;
 
@@ -128,7 +128,7 @@ public class ClassLoaderAgent {
         return;
 
       try {
-        final URL resource = Agent.findResource(thiz, arg);
+        final URL resource = SpecialAgent.findResource(thiz, arg);
         if (resource != null)
           returned = resource;
       }
@@ -151,7 +151,7 @@ public class ClassLoaderAgent {
         return;
 
       try {
-        final Enumeration<URL> resources = Agent.findResources(thiz, arg);
+        final Enumeration<URL> resources = SpecialAgent.findResources(thiz, arg);
         if (resources == null)
           return;
 

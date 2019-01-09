@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,7 +41,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
+@AgentRunner.Config(debug=true, verbose=true)
 public class JettyServletTest {
   // jetty starts on random port
   private int serverPort;

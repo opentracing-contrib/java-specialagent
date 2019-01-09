@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
@@ -26,7 +25,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
+@AgentRunner.Config(debug=true, verbose=true)
 public class OkHttpTest {
 //public static MockTracer tracer = new MockTracer();
 //

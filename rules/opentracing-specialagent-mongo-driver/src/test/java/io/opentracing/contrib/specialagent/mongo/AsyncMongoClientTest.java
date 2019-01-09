@@ -40,7 +40,6 @@ import com.mongodb.connection.ClusterSettings;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
@@ -49,7 +48,7 @@ import io.opentracing.mock.MockTracer;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true, instrumenter=Instrumenter.BYTEBUDDY)
+@AgentRunner.Config(debug=true, verbose=true)
 public class AsyncMongoClientTest {
   @Test
   public void testAsyncMongoClient(final MockTracer tracer) throws InterruptedException {
