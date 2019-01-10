@@ -65,7 +65,6 @@ import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.noop.NoopTracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
@@ -126,18 +125,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: {@code true}.
      */
     boolean isolateClassLoader() default true;
-
-    /**
-     * // FIXME: Should this be removed?
-     *
-     * @return Whether the "ClassLoaderAgent" functionality should be disabled.
-     *         The "ClassLoaderAgent" functionality in SpecialAgent is
-     *         responsible for force-loading bytecode into the ClassLoader to
-     *         which the trigger object belongs.
-     *         <p>
-     *         Default: {@code false}.
-     */
-    boolean dissableClassLoaderAgent() default false;
 
     /**
      * @return Which {@link Instrumenter} to use for the tests.
@@ -666,13 +653,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       pluginPaths = null;
     }
 
-    // These classes will be present in the Boot-Path...
-    final Set<String> bootPaths = Util.getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, SpecialAgent.class, AgentRunner.class);
-
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
-    // Exclude JARs containing the classes in the Boot-Path.
-    final String classpath = buildClassPath(javaClassPath, bootPaths);
+    // The JARs with classes in the Boot-Path are already excluded due to their
+    // provided scope.
+    final String classpath = buildClassPath(javaClassPath, null);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
@@ -680,7 +665,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
 
     int i = -1;
-    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (config.dissableClassLoaderAgent() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-cp";
     args[++i] = classpath;
@@ -690,9 +675,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     args[++i] = "-D" + SpecialAgent.INSTRUMENTER + "=" + config.instrumenter();
     if (config.verbose())
       args[++i] = "-Dorg.jboss.byteman.verbose";
-
-    if (config.dissableClassLoaderAgent())
-      args[++i] = "-D" + SpecialAgent.DISABLE_LC + "=*";
 
     if (loggingConfigFile != null)
       args[++i] = "-Djava.util.logging.config.file=" + ("file".equals(loggingConfigFile.getProtocol()) ? loggingConfigFile.getPath() : loggingConfigFile.toString());

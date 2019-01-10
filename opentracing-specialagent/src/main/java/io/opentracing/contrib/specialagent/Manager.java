@@ -27,6 +27,7 @@ import java.util.Map;
  * @author Seva Safris
  */
 public abstract class Manager {
+  /** The configuration file name. **/
   final String file;
 
   /**
@@ -36,13 +37,6 @@ public abstract class Manager {
    */
   Manager(final String file) {
     this.file = file;
-  }
-
-  /**
-   * @return The configuration file name.
-   */
-  final String getFile() {
-    return this.file;
   }
 
   /**

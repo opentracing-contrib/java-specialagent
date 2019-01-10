@@ -71,6 +71,10 @@ public class ByteBuddyManager extends Manager {
 
       final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()));
       for (String line; (line = reader.readLine()) != null;) {
+        line = line.trim();
+        if (line.length() == 0 || line.charAt(0) == '#')
+          continue;
+
         if (logger.isLoggable(Level.FINE))
           logger.fine("Installing plugin: " + line);
 

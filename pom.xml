@@ -231,7 +231,7 @@
       <dependency>
         <groupId>org.jboss.byteman</groupId>
         <artifactId>byteman</artifactId>
-        <version>4.0.5</version>
+        <version>4.0.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>

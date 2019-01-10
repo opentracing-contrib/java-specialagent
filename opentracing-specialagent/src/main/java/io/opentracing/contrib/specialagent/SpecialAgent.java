@@ -48,7 +48,6 @@ public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
-  static final String DISABLE_LC = "io.opentracing.contrib.specialagent.disableLC";
   static final String INSTRUMENTER = "io.opentracing.contrib.specialagent.instrumenter";
 
   private static final String DEPENDENCIES = "dependencies.tgf";
@@ -58,7 +57,6 @@ public class SpecialAgent {
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
 
-  private static final Set<String> disabledLoadClasses;
   private static final Instrumenter instrumenter;
 
   static {
@@ -70,17 +68,6 @@ public class SpecialAgent {
       catch (final IOException e) {
         throw new ExceptionInInitializerError(e);
       }
-    }
-
-    final String disableLc = System.getProperty(DISABLE_LC);
-    if (disableLc != null) {
-      final String[] jarNames = disableLc.split(":");
-      disabledLoadClasses = new HashSet<>(jarNames.length);
-      for (final String jarName : jarNames)
-        disabledLoadClasses.add(jarName);
-    }
-    else {
-      disabledLoadClasses = null;
     }
 
     final String instrumenterProperty = System.getProperty(INSTRUMENTER);
@@ -128,7 +115,7 @@ public class SpecialAgent {
       try {
         final Enumeration<URL> resources = instrumenter.manager.getResources();
         while (resources.hasMoreElements())
-          pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), instrumenter.manager.getFile())));
+          pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), instrumenter.manager.file)));
       }
       catch (final IOException e) {
         throw new IllegalStateException(e);
@@ -151,13 +138,8 @@ public class SpecialAgent {
     if (runningFromTest)
       count += loadDependencies(ClassLoader.getSystemClassLoader());
 
-    if (count == 0) {
-      final String error = "Could not find " + DEPENDENCIES + " in any plugin JARs";
-      if (runningFromTest)
-        logger.warning(error);
-      else
-        throw new IllegalStateException(error);
-    }
+    if (count == 0)
+      logger.log(runningFromTest ? Level.WARNING : Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
 
     loadRules();
   }
@@ -167,7 +149,7 @@ public class SpecialAgent {
 
     public AllPluginsClassLoader(final Set<URL> urls) {
       super(urls.toArray(new URL[urls.size()]), new ClassLoader(null) {
-        // This is overridden to ensure resources are not discovered in BootClassLoader
+        // Overridden to ensure resources are not discovered in bootstrap class loader
         @Override
         public Enumeration<URL> getResources(final String name) throws IOException {
           return null;
@@ -223,7 +205,7 @@ public class SpecialAgent {
             }
 
             if (logger.isLoggable(Level.FINEST))
-              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":" + Util.toIndentedString(dependencies));
+              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":\n" + Util.toIndentedString(dependencies));
 
             ++count;
             pluginToDependencies.put(jarUrl, dependencies);
@@ -283,31 +265,13 @@ public class SpecialAgent {
           Class.forName(path.substring(0, path.length() - 6).replace('/', '.'), false, classLoader);
         }
         catch (final ClassNotFoundException e) {
-          logger.log(Level.SEVERE, "Failed to load class", e);
+          logger.log(Level.SEVERE, "Failed to load class in " + classLoader, e);
         }
       }
 
       return true;
     }
   };
-
-  /**
-   * Returns {@code true} if the "ClassLoaderAgent" rule is disabled for the
-   * specified plugin {@code URL}.
-   *
-   * @param pluginUrl The {@code URL} for which to check if "ClassLoaderAgent"
-   *          is disabled.
-   * @return {@code true} if the "ClassLoaderAgent" rule is disabled for the
-   *         specified plugin {@code URL}.
-   */
-  private static boolean isClassLoaderAgentDisabled(final URL pluginUrl) {
-    if (disabledLoadClasses == null)
-      return false;
-
-    final String path = pluginUrl.toString();
-    final String jarName = path.substring(path.lastIndexOf('/') + 1);
-    return disabledLoadClasses.contains("*") || disabledLoadClasses.contains(jarName);
-  }
 
   /**
    * Links the instrumentation plugin at the specified index. This method is
@@ -415,39 +379,34 @@ public class SpecialAgent {
         }
       }
 
-      if (!isClassLoaderAgentDisabled(pluginPath)) {
-        // Associate the pluginClassLoader with the target class's classLoader
-        classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+      // Associate the pluginClassLoader with the target class's classLoader
+      classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
 
-        // Enable triggers to the classloader.btm script can execute
-        instrumenter.manager.enableTriggers();
+      // Enable triggers to the classloader.btm script can execute
+      instrumenter.manager.enableTriggers();
 
-        // Call Class.forName(...) for each class in pluginClassLoader to load in
-        // the caller's class loader
-        for (final URL pathUrl : pluginClassLoader.getURLs()) {
-          if (pathUrl.toString().endsWith(".jar")) {
-            try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
-              for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
-            }
-            catch (final IOException e) {
-              logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
-            }
+      // Call Class.forName(...) for each class in pluginClassLoader to load in
+      // the caller's class loader
+      for (final URL pathUrl : pluginClassLoader.getURLs()) {
+        if (pathUrl.toString().endsWith(".jar")) {
+          try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
+            for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
           }
-          else {
-            final File dir = new File(URI.create(pathUrl.toString()));
-            final Path path = dir.toPath();
-            Util.recurseDir(dir, new Predicate<File>() {
-              @Override
-              public boolean test(final File file) {
-                loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
-                return true;
-              }
-            });
+          catch (final IOException e) {
+            logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
           }
         }
-      }
-      else if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("  LoadClasses is disabled for: " + pluginPath);
+        else {
+          final File dir = new File(URI.create(pathUrl.toString()));
+          final Path path = dir.toPath();
+          Util.recurseDir(dir, new Predicate<File>() {
+            @Override
+            public boolean test(final File file) {
+              loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
+              return true;
+            }
+          });
+        }
       }
 
       return true;
