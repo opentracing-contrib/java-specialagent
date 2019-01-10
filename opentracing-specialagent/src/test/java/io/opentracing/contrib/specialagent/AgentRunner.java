@@ -38,13 +38,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.jboss.byteman.agent.Transformer;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.internal.runners.model.ReflectiveCallable;
@@ -57,10 +57,15 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
+import io.opentracing.Scope;
+import io.opentracing.ScopeManager;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.noop.NoopTracer;
+import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
 /**
@@ -97,7 +102,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
-  public static @interface Config {
+  public @interface Config {
     /**
      * @return Whether to set Java logging level to {@link Level#FINEST}.
      *         <p>
@@ -107,7 +112,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
     /**
      * @return Whether to activate Byteman verbose logging via
-     *         {@link Transformer#VERBOSE}.
+     *         {@code -Dorg.jboss.byteman.verbose}.
      *         <p>
      *         Default: {@code false}.
      */
@@ -122,14 +127,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     boolean isolateClassLoader() default true;
 
     /**
-     * @return Whether the "Load Classes" functionality should be disabled. The
-     *         "Load Classes" functionality in SpecialAgent is responsible for
-     *         force-loading bytecode into the ClassLoader to which the trigger
-     *         object belongs.
+     * @return Which {@link Instrumenter} to use for the tests.
      *         <p>
-     *         Default: {@code false}.
+     *         Default: {@link Instrumenter#BYTEBUDDY}.
      */
-    boolean disableLoadClasses() default false;
+    Instrumenter instrumenter() default Instrumenter.BYTEBUDDY;
   }
 
   /**
@@ -159,13 +161,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * FIXME: Rewrite this...
-   * Initializes the OpenTracing {@link Tracer} to be used for the duration
-   * of this test process, if the process is running with the Java agent
-   * argument. If the {@code "-javaagent"} argument is not specified for the
-   * current process, this function will return {@code null}.
+   * Returns the OpenTracing {@link Tracer} to be used for the duration of the
+   * test process. The {@link Tracer} is initialized on first invocation to this
+   * method in a synchronized, thread-safe manner. If the {@code "-javaagent"}
+   * argument is not specified for the current process, this function will
+   * return {@code null}.
    *
-   * @return The OpenTracing {@code Tracer} to be used for the duration of this
+   * @return The OpenTracing {@link Tracer} to be used for the duration of the
    *         test process, or {@code null} if the {@code "-javaagent"} argument
    *         is not specified for the current process.
    */
@@ -182,7 +184,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         tracer = new MockTracer();
 
       if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("Registering tracer in forked InstrumentRunner: " + tracer);
+        logger.finest("Registering tracer in forked " + AgentRunner.class.getSimpleName() + ": " + tracer);
         logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
         logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
         logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
@@ -190,7 +192,130 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
 
       GlobalTracer.register(tracer);
-      return AgentRunner.tracer = tracer;
+      return AgentRunner.tracer = tracer instanceof MockTracer ? tracer : new ProxyTracer(tracer);
+    }
+  }
+
+  /**
+   * Proxy tracer used for one purpose - to enable the rules to define a ChildOf
+   * relationship without being concerned whether the supplied Span is null. If
+   * the spec (and Tracer implementations) are updated to indicate a null should
+   * be ignored, then this proxy can be removed.
+   */
+  public static class ProxyTracer implements Tracer {
+    private final Tracer tracer;
+
+    public ProxyTracer(final Tracer tracer) {
+      if (logger.isLoggable(Level.FINEST)) {
+        logger.finest("new " + ProxyTracer.class.getSimpleName() + "(" + tracer + ")");
+        logger.finest("  ClassLoader: " + tracer.getClass().getClassLoader());
+        logger.finest("  Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+      }
+
+      this.tracer = Objects.requireNonNull(tracer);
+    }
+
+    @Override
+    public SpanBuilder buildSpan(final String operation) {
+      return new AgentSpanBuilder(tracer.buildSpan(operation));
+    }
+
+    @Override
+    public <C>SpanContext extract(final Format<C> format, final C carrier) {
+      return tracer.extract(format, carrier);
+    }
+
+    @Override
+    public <C>void inject(final SpanContext spanContext, final Format<C> format, final C carrier) {
+      tracer.inject(spanContext, format, carrier);
+    }
+
+    @Override
+    public Span activeSpan() {
+      return tracer.activeSpan();
+    }
+
+    @Override
+    public ScopeManager scopeManager() {
+      return tracer.scopeManager();
+    }
+  }
+
+  public static class AgentSpanBuilder implements SpanBuilder {
+    private final SpanBuilder spanBuilder;
+
+    public AgentSpanBuilder(final SpanBuilder spanBuilder) {
+      this.spanBuilder = Objects.requireNonNull(spanBuilder);
+    }
+
+    @Override
+    public SpanBuilder addReference(final String referenceType, final SpanContext referencedContext) {
+      if (referencedContext != null)
+        spanBuilder.addReference(referenceType, referencedContext);
+
+      return this;
+    }
+
+    @Override
+    public SpanBuilder asChildOf(final SpanContext parent) {
+      if (parent != null)
+        spanBuilder.asChildOf(parent);
+
+      return this;
+    }
+
+    @Override
+    public SpanBuilder asChildOf(final Span parent) {
+      if (parent != null)
+        spanBuilder.asChildOf(parent);
+
+      return this;
+    }
+
+    @Override
+    public Span start() {
+      return spanBuilder.start();
+    }
+
+    @Override
+    public SpanBuilder withStartTimestamp(final long microseconds) {
+      spanBuilder.withStartTimestamp(microseconds);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder withTag(final String name, final String value) {
+      spanBuilder.withTag(name, value);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder withTag(final String name, final boolean value) {
+      spanBuilder.withTag(name, value);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder withTag(final String name, final Number value) {
+      spanBuilder.withTag(name, value);
+      return this;
+    }
+
+    @Override
+    public SpanBuilder ignoreActiveSpan() {
+      spanBuilder.ignoreActiveSpan();
+      return this;
+    }
+
+    @Override
+    public Scope startActive(final boolean finishOnClose) {
+      return spanBuilder.startActive(finishOnClose);
+    }
+
+    @Override
+    @Deprecated
+    public Span startManual() {
+      return spanBuilder.startManual();
     }
   }
 
@@ -220,7 +345,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final URL[] libs = Util.classPathToURLs(classpath);
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
+      System.err.println(System.getProperty("java.version"));
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      if (parent != null && logger.isLoggable(Level.FINEST))
+        logger.finest("Setting PlatformClassLoader as parent class loader for JVM version: " + System.getProperty("java.version"));
+
       final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader(parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
@@ -488,7 +617,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @return The classpath path of the opentracing-specialagent.
    */
   protected String getAgentPath() {
-    return Agent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+    return SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   }
 
   /**
@@ -524,13 +653,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       pluginPaths = null;
     }
 
-    // These classes will be present in the Boot-Path...
-    final Set<String> bootPaths = Util.getLocations(Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class, Agent.class, AgentRunner.class);
-
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
-    // Exclude JARs containing the classes in the Boot-Path.
-    final String classpath = buildClassPath(javaClassPath, bootPaths);
+    // The JARs with classes in the Boot-Path are already excluded due to their
+    // provided scope.
+    final String classpath = buildClassPath(javaClassPath, null);
     if (logger.isLoggable(Level.FINEST))
       logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
 
@@ -538,18 +665,16 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
 
     int i = -1;
-    final String[] args = new String[8 + (config.verbose() ? 1 : 0) + (config.disableLoadClasses() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
+    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
     args[++i] = "java";
     args[++i] = "-cp";
     args[++i] = classpath;
     args[++i] = "-javaagent:" + getAgentPath();
     args[++i] = "-D" + PORT_ARG + "=" + port;
-    args[++i] = "-D" + Agent.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
+    args[++i] = "-D" + SpecialAgent.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
+    args[++i] = "-D" + SpecialAgent.INSTRUMENTER + "=" + config.instrumenter();
     if (config.verbose())
       args[++i] = "-Dorg.jboss.byteman.verbose";
-
-    if (config.disableLoadClasses())
-      args[++i] = "-D" + Agent.DISABLE_LC + "=*";
 
     if (loggingConfigFile != null)
       args[++i] = "-Djava.util.logging.config.file=" + ("file".equals(loggingConfigFile.getProtocol()) ? loggingConfigFile.getPath() : loggingConfigFile.toString());

@@ -102,6 +102,11 @@
       for OT libs so they make it into both the main and test JARs. -->
     
     <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-specialagent-api</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-api</artifactId>
       <optional>true</optional>
@@ -122,6 +127,16 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.byteman</groupId>
       <artifactId>byteman</artifactId>
       <optional>true</optional>
@@ -132,7 +147,7 @@
       <version>5.0.3</version>
       <optional>true</optional>
     </dependency>
-
+    
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-hazelcast -->
       <groupId>io.opentracing.contrib</groupId>
@@ -670,9 +685,9 @@
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
               <manifestEntries>
-                <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
-                <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
-                <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+                <Main-Class>io.opentracing.contrib.specialagent.SpecialAgent</Main-Class>
+                <Agent-Class>io.opentracing.contrib.specialagent.SpecialAgent</Agent-Class>
+                <Premain-Class>io.opentracing.contrib.specialagent.SpecialAgent</Premain-Class>
                 <Can-Redefine-Classes>true</Can-Redefine-Classes>
                 <Can-Retransform-Classes>true</Can-Retransform-Classes>
               </manifestEntries>
@@ -739,9 +754,9 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
-              <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
-              <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+              <Main-Class>io.opentracing.contrib.specialagent.SpecialAgent</Main-Class>
+              <Agent-Class>io.opentracing.contrib.specialagent.SpecialAgent</Agent-Class>
+              <Premain-Class>io.opentracing.contrib.specialagent.SpecialAgent</Premain-Class>
               <Boot-Class-Path>${project.artifactId}-${project.version}.jar</Boot-Class-Path>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
@@ -774,9 +789,9 @@
           <attach>false</attach>
           <archive>
             <manifestEntries>
-              <Main-Class>io.opentracing.contrib.specialagent.Agent</Main-Class>
-              <Agent-Class>io.opentracing.contrib.specialagent.Agent</Agent-Class>
-              <Premain-Class>io.opentracing.contrib.specialagent.Agent</Premain-Class>
+              <Main-Class>io.opentracing.contrib.specialagent.SpecialAgent</Main-Class>
+              <Agent-Class>io.opentracing.contrib.specialagent.SpecialAgent</Agent-Class>
+              <Premain-Class>io.opentracing.contrib.specialagent.SpecialAgent</Premain-Class>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
             </manifestEntries>
@@ -818,6 +833,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <trimStackTrace>false</trimStackTrace>
           <!-- Have to explicitly define the path of the tests, because when the maven-dependency-plugin
             unpacks JUnit dependencies in the generate-test-resources phase, they end up being picked up
             by maven-surefire-plugin in the test phase. -->
@@ -830,6 +846,10 @@
             <exclude>io/opentracing/contrib/specialagent/**/*ITestCase</exclude>
             <exclude>io/opentracing/contrib/specialagent/**/*IntegrationTest</exclude>
             <exclude>io/opentracing/contrib/specialagent/**/*IntegrationTestCase</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BTest</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BTestCase</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BootstrapTest</exclude>
+            <exclude>io/opentracing/contrib/specialagent/**/*BootstrapTestCase</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -844,6 +864,7 @@
               <goal>verify</goal>
             </goals>
             <configuration>
+              <trimStackTrace>false</trimStackTrace>
               <includes>
                 <include>io/opentracing/contrib/specialagent/**/*ITest</include>
                 <include>io/opentracing/contrib/specialagent/**/*ITestCase</include>
@@ -852,7 +873,34 @@
               </includes>
             </configuration>
           </execution>
+          <execution>
+            <id>bootstrap-test</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <trimStackTrace>false</trimStackTrace>
+              <reuseForks>false</reuseForks>
+              <argLine>
+                -Xbootclasspath/a:${project.build.outputDirectory}
+                -Djava.util.logging.config.file=${basedir}/src/test/resources/logging.properties
+                -Dorg.jboss.byteman.verbose
+              </argLine>
+              <includes>
+                <include>io/opentracing/contrib/specialagent/**/*BTest</include>
+                <include>io/opentracing/contrib/specialagent/**/*BTestCase</include>
+                <include>io/opentracing/contrib/specialagent/**/*BootstrapTest</include>
+                <include>io/opentracing/contrib/specialagent/**/*BootstrapTestCase</include>
+              </includes>
+            </configuration>
+          </execution>
         </executions>
+        <configuration>
+          <excludes>
+            <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>

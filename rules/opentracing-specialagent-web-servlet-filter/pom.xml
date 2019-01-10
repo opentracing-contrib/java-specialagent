@@ -25,6 +25,8 @@
   </parent>
   <artifactId>opentracing-specialagent-web-servlet-filter</artifactId>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.apache.tomcat.embed>8.0.41</version.org.apache.tomcat.embed>
     <version.org.eclipse.jetty>9.3.15.v20161220</version.org.eclipse.jetty>
   </properties>
@@ -49,25 +51,25 @@
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
       <version>${version.org.eclipse.jetty}</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
       <version>${version.org.eclipse.jetty}</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
       <version>${version.org.apache.tomcat.embed}</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
       <version>${version.org.apache.tomcat.embed}</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>

@@ -94,7 +94,7 @@ final class Util {
    */
   static URL[] filterPluginURLs(final URL[] urls, final URL dependencyUrl) throws IOException {
     try (final InputStream in = dependencyUrl.openStream()) {
-      final Set<String> names = Util.selectFromTgf(new String(Util.readBytes(in)), false, new String[] {"compile"}, Tracer.class, NoopTracer.class, GlobalTracer.class, TracerResolver.class);
+      final Set<String> names = Util.selectFromTgf(new String(Util.readBytes(in)), false, new String[] {"compile"});
       return filterUrlFileNames(urls, names, 0, 0);
     }
   }
