@@ -8,12 +8,12 @@ _Java SpecialAgent_ automatically instruments Java applications to produce trace
 
 ## Supported Instrumentation Plugins
 
-1) [OkHttp3](https://github.com/opentracing-contrib/java-okhttp)
-2) [`java.util.Concurrent`](https://github.com/opentracing-contrib/java-concurrent)
-3) [JDBC](https://github.com/opentracing-contrib/java-jdbc)
-4) [Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter)
-5) [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
-6) [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
+1. [OkHttp3](https://github.com/opentracing-contrib/java-okhttp)
+2. [`java.util.Concurrent`](https://github.com/opentracing-contrib/java-concurrent)
+3. [JDBC](https://github.com/opentracing-contrib/java-jdbc)
+4. [Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter)
+5. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
+6. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
 
 ## Operation
 
@@ -23,11 +23,11 @@ Any exception that occurs during the execution of the bootstrap process will not
 
 ## Goals
 
-1) The _Java SpecialAgent_ must allow any Java instrumentation plugin available in `opentracing-contrib` to be automatically installable in applications that utilize a 3rd-party library for which an instrumentation plugin exists.
-2) The _Java SpecialAgent_ must automatically install the instrumentation plugin for each 3rd-party library for which a plugin exists, regardless in which `ClassLoader` the 3rd-party library is loaded.
-3) The _Java SpecialAgent_ must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the _Java SpecialAgent_, and cannot apply to the code of the instrumentation plugins made available in `opentracing-contrib`.
-4) The _Java SpecialAgent_ must support static and dynamic attach to applications running on JVM versions 1.7 to latest.
-5) The _Java SpecialAgent_ must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party plugin. This test must simulate:
+1. The _Java SpecialAgent_ must allow any Java instrumentation plugin available in `opentracing-contrib` to be automatically installable in applications that utilize a 3rd-party library for which an instrumentation plugin exists.
+2. The _Java SpecialAgent_ must automatically install the instrumentation plugin for each 3rd-party library for which a plugin exists, regardless in which `ClassLoader` the 3rd-party library is loaded.
+3. The _Java SpecialAgent_ must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the _Java SpecialAgent_, and cannot apply to the code of the instrumentation plugins made available in `opentracing-contrib`.
+4. The _Java SpecialAgent_ must support static and dynamic attach to applications running on JVM versions 1.7 to latest.
+5. The _Java SpecialAgent_ must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party plugin. This test must simulate:
    1) Launch the test in a process with the `-javaagent` vm argument that points to the _Java SpecialAgent_ (in order to test automatic instrumentation functionality of the `otarules.btm` file).
    2) Elevate the test code to be executed from a custom `ClassLoader` that is disconnected from the system `ClassLoader` (in order to test bytecode injection into an isolated `ClassLoader` that cannot resolve classes on the system classpath).
    3) Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
@@ -35,16 +35,16 @@ The _Java SpecialAgent_ must provide a means by which instrumentation plugins ca
 
 ## Non-Goals
 
-1) The _Java SpecialAgent_ is not designed to modify application code, beyond the installation of OpenTracing instrumentation plugins. For example, there is no facility for dynamically tracing arbitrary code.
+1. The _Java SpecialAgent_ is not designed to modify application code, beyond the installation of OpenTracing instrumentation plugins. For example, there is no facility for dynamically tracing arbitrary code.
 
 ## Installation
 
 The _Java SpecialAgent_ is built with Maven, and produces 2 artifacts:
-1) `opentracing-specialagent-<version>.jar`
+1. `opentracing-specialagent-<version>.jar`
 
     This is the main artifact that contains within it all applicable instrumentation plugins from the `opentracing-contrib` project. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach.
 
-1) `opentracing-specialagent-<version>-tests.jar`
+2. `opentracing-specialagent-<version>-tests.jar`
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of `otarules.btm` files in instrumentation plugins. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation. This JAR can be used in the same manner as the main JAR, both for static and dynamic attach.
 
@@ -76,7 +76,7 @@ Dynamically attaching to a Java application involves the use of a running applic
     java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent.jar <PID>
     ```
 
-2. For jdk9+
+3. For jdk9+
     ```bash
     java -jar opentracing-specialagent.jar <PID>
     ```
@@ -85,9 +85,9 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 The _Java SpecialAgent_ uses the JUnit Runner API to implement a lightweight test methodology that can be easily applied to modules that implement instrumentation for 3rd-party plugins. This runner is named `AgentRunner`, and allows developers to implement tests using vanilla JUnit patterns, transparently providing the following behavior:
 
-1) Launch the test in a process with the `-javaagent` vm argument that points to the _Java SpecialAgent_ (in order to test automatic instrumentation functionality of the `otarules.btm` file).
-2) Elevate the test code to be executed from a custom `ClassLoader` that is disconnected from the system `ClassLoader` (in order to test bytecode injection into an isolated `ClassLoader` that cannot resolve classes on the system classpath).
-3) Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
+1. Launch the test in a process with the `-javaagent` vm argument that points to the _Java SpecialAgent_ (in order to test automatic instrumentation functionality of the `otarules.btm` file).
+2. Elevate the test code to be executed from a custom `ClassLoader` that is disconnected from the system `ClassLoader` (in order to test bytecode injection into an isolated `ClassLoader` that cannot resolve classes on the system classpath).
+3. Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
 
 The `AgentRunner` is available in the test jar of the _Java SpecialAgent_ module. It can be imported with the following dependency spec:
 
@@ -147,9 +147,10 @@ Upon execution of the test class, in either the IDE or with Maven, the `AgentRun
 
 The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotation. The annotation supports the following properties:
 
-1) `debug`: If set to `true`, `FINEST` level root logging will be enabled. Default: `false`.
-2) `verbose`: If set to `true`, Byteman verbose logging will be enabled. Default: `false`.
-3) `isolateClassLoader`: If set to `true`, tests will be run from a `ClassLoader` that is isolated from the system `ClassLoader`. If set to `false`, tests will be run from the system `ClassLoader`. Default: `true`.
+1. `debug`: If set to `true`, `FINEST` level root logging will be enabled. Default: `false`.
+2. `verbose`: If set to `true`, Byteman verbose logging will be enabled. Default: `false`.
+3. `isolateClassLoader`: If set to `true`, tests will be run from a `ClassLoader` that is isolated from the system `ClassLoader`. If set to `false`, tests will be run from the system `ClassLoader`. Default: `true`.
+4. `instrumenter`: The retransformation instrumentation manager (`BYTEMAN` or `BYTEBUDDY`). Default: `BYTEBUDDY`.
 
 ### Developing Instrumentation Plugins for SpecialAgent
 
@@ -165,23 +166,23 @@ The `opentracing-contrib` repository contains instrumentation plugins for a wide
 
 _The SpecialAgent_ uses Byteman to perform bytecode injection for the purpose of auto-instrumentation. Instrumentation scripts mustb e named `otarules.btm`, and be placed as a resource in the default package. Please refer to the following scripts as examples:
 
-1) [otarules.btm for OkHttp3](https://github.com/opentracing-contrib/java-okhttp/src/main/resources/otarules.btm)
-2) [otarules.btm for `java.util.Concurrent`](https://github.com/opentracing-contrib/java-concurrent/src/main/resources/otarules.btm)
-3) [otarules.btm for JDBC](https://github.com/opentracing-contrib/java-jdbc/src/main/resources/otarules.btm)
-4) [otarules.btm for Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter/src/main/resources/otarules.btm)
-5) [otarules.btm for Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver/src/main/resources/otarules.btm)
-6) [otarules.btm for Apache Camel](https://github.com/apache/camel/blob/master/components/camel-opentracing/src/main/resources/otarules.btm)
+1. [otarules.btm for OkHttp3](https://github.com/opentracing-contrib/java-okhttp/src/main/resources/otarules.btm)
+2. [otarules.btm for `java.util.Concurrent`](https://github.com/opentracing-contrib/java-concurrent/src/main/resources/otarules.btm)
+3. [otarules.btm for JDBC](https://github.com/opentracing-contrib/java-jdbc/src/main/resources/otarules.btm)
+4. [otarules.btm for Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter/src/main/resources/otarules.btm)
+5. [otarules.btm for Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver/src/main/resources/otarules.btm)
+6. [otarules.btm for Apache Camel](https://github.com/apache/camel/blob/master/components/camel-opentracing/src/main/resources/otarules.btm)
 
 #### Packaging
 
 _The SpecialAgent_ has specific requirements for packaging of instrumentation plugins:
 
-1) If the library being instrumented is 3rd-party (i.e. it does not belong to the standard Java APIs), then the dependency artifacts for the library must be non-transitive (i.e. declared with `<scope>test</scope>`, or with `<scope>provided</scope>`).
+1. If the library being instrumented is 3rd-party (i.e. it does not belong to the standard Java APIs), then the dependency artifacts for the library must be non-transitive (i.e. declared with `<scope>test</scope>`, or with `<scope>provided</scope>`).
     * The dependencies for the 3rd-party libraries are not necessary when the plugin is applied to a target application, as the application must already have these dependencies for the plugin to be used.
     * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the SpecialAgent package, as all of the instrumentation plugins as contained within it.
     * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
     * Many of the currently implemented instrumentation plugins _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the instrumentation plugin artifact. An example of this can be seen with the instrumentation plugin for the Mongo Driver [here](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-mongo-driver/pom.xml#L37-L44).
-2) The package must contain a `fingerprint.bin` file. This file provides the SpecialAgent with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the SpecialAgent to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
+2. The package must contain a `fingerprint.bin` file. This file provides the SpecialAgent with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the SpecialAgent to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
     1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-okhttp/pom.xml) as an example.
     2. Next, include the following plugin in the project's POM:
         ```xml
@@ -202,7 +203,7 @@ _The SpecialAgent_ has specific requirements for packaging of instrumentation pl
           </executions>
         </plugin>
         ```
-3) The package must contain a `dependencies.tgf` file. This file allows the SpecialAgent to distinguish instrumentation plugin dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
+3. The package must contain a `dependencies.tgf` file. This file allows the SpecialAgent to distinguish instrumentation plugin dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
     ```xml
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
