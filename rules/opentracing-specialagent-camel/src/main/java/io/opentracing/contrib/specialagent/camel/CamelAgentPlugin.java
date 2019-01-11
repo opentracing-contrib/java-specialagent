@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.mongo;
+package io.opentracing.contrib.specialagent.camel;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -15,7 +15,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class ClientAgentPlugin implements AgentPlugin {
+public class CamelAgentPlugin implements AgentPlugin {
   @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
@@ -23,17 +23,17 @@ public class ClientAgentPlugin implements AgentPlugin {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(hasSuperType(named("com.mongodb.MongoClientSettings")))
+      .type(named("org.apache.camel.impl.DefaultCamelContext"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ClientAgentPlugin.class).on(named("builder")));
+          return builder.visit(Advice.to(CamelAgentPlugin.class).on(named("startRouteDefinitions")));
         }});
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin Method method, final @Advice.Return Object returned) {
+  @Advice.OnMethodEnter
+  public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) {
     System.out.println(">>>>>> " + method);
-    ClientAgentIntercept.exit(returned);
+    CamelAgentIntercept.enter(thiz);
   }
 }

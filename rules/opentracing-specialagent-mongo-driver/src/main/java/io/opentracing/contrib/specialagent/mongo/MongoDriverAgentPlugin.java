@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.okhttp;
+package io.opentracing.contrib.specialagent.mongo;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -15,7 +15,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class BuilderAgentPlugin implements AgentPlugin {
+public class MongoDriverAgentPlugin implements AgentPlugin {
   @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
@@ -23,17 +23,17 @@ public class BuilderAgentPlugin implements AgentPlugin {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(named("okhttp3.OkHttpClient$Builder"))
+      .type(hasSuperType(named("com.mongodb.MongoClientSettings")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(BuilderAgentPlugin.class).on(named("build")));
+          return builder.visit(Advice.to(MongoDriverAgentPlugin.class).on(named("builder")));
         }});
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) {
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.Origin Method method, final @Advice.Return Object returned) {
     System.out.println(">>>>>> " + method);
-    BuilderAgentIntercept.enter(thiz);
+    MongoDriverAgentIntercept.exit(returned);
   }
 }

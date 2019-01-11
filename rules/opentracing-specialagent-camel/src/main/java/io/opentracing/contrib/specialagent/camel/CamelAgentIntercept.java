@@ -7,7 +7,7 @@ import java.util.WeakHashMap;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.opentracing.OpenTracingTracer;
 
-public class ContextAgentIntercept {
+public class CamelAgentIntercept {
   public static final Map<DefaultCamelContext,Object> state = Collections.synchronizedMap(new WeakHashMap<DefaultCamelContext,Object>());
 
   public static void enter(final Object thiz) {

@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.camel;
+package io.opentracing.contrib.specialagent.okhttp;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -15,7 +15,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class ContextAgentPlugin implements AgentPlugin {
+public class OkHttpAgentPlugin implements AgentPlugin {
   @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
@@ -23,17 +23,17 @@ public class ContextAgentPlugin implements AgentPlugin {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(named("org.apache.camel.impl.DefaultCamelContext"))
+      .type(named("okhttp3.OkHttpClient$Builder"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ContextAgentPlugin.class).on(named("startRouteDefinitions")));
+          return builder.visit(Advice.to(OkHttpAgentPlugin.class).on(named("build")));
         }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) {
     System.out.println(">>>>>> " + method);
-    ContextAgentIntercept.enter(thiz);
+    OkHttpAgentIntercept.enter(thiz);
   }
 }

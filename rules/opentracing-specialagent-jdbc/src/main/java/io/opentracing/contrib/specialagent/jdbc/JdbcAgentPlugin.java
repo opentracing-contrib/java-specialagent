@@ -2,7 +2,6 @@ package io.opentracing.contrib.specialagent.jdbc;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
@@ -16,14 +15,9 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
-import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
 
 public class JdbcAgentPlugin implements AgentPlugin {
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-//  buildAgent(agentArgs).installOn(inst);
-  }
-
   @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
@@ -35,7 +29,7 @@ public class JdbcAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(JdbcAgentPlugin.class).on(not(isAbstract()).and(named("connect").and(ElementMatchers.takesArguments(String.class, Properties.class)))));
+          return builder.visit(Advice.to(JdbcAgentPlugin.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
         }});
   }
 
