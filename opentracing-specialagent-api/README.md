@@ -107,6 +107,8 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
 
     Multiple `AgentPlugin` implementations can be specified in the `otaplugins.txt` file, each of which will be loaded by _SpecialAgent_ during startup.
 
+    Put the file in `src/main/resources` for it to be found by _SpecialAgent_.
+
 5. **Implement a JUnit test that uses `AgentRunner`**
 
     Please refer to the [Test Usage](https://github.com/opentracing-contrib/java-specialagent/#test-usage) section in the SpecialAgent.
