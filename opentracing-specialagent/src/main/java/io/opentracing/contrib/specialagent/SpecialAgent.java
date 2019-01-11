@@ -184,10 +184,10 @@ public class SpecialAgent {
 
         dependencyUrls.add(dependencyUrl.toString());
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + DEPENDENCIES + ": " + dependencyUrl + " " + Util.getIdentityCode(dependencyUrl));
+          logger.finest("Found " + DEPENDENCIES + ": <" + Util.getIdentityCode(dependencyUrl) + ">" + dependencyUrl);
 
         final URL jarUrl = new URL(Util.getSourceLocation(dependencyUrl, DEPENDENCIES));
-        final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependencyUrl);
+        final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependencyUrl, false, "compile");
         boolean foundReference = false;
         for (final URL dependency : dependencies) {
           if (allPluginsClassLoader.containsPath(dependency)) {

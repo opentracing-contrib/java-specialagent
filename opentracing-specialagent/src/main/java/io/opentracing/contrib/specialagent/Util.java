@@ -15,8 +15,10 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -25,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,11 +40,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import io.opentracing.Tracer;
-import io.opentracing.contrib.tracerresolver.TracerResolver;
-import io.opentracing.noop.NoopTracer;
-import io.opentracing.util.GlobalTracer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -57,7 +57,7 @@ final class Util {
    * Filters the specified array of URL objects by checking if the file name of
    * the URL is included in the specified {@code Set} of string names.
    *
-   * @param urls The specified array of URL objects to filter.
+   * @param urls The array of URL objects to filter.
    * @param names The {@code Set} of string names to be matched by the specified
    *          array of URL objects.
    * @param index The index value for stack tracking (must be called with 0).
@@ -92,11 +92,42 @@ final class Util {
    * @return An array of URL objects representing Instrumentation Plugin URLs
    * @throws IOException If an I/O error has occurred.
    */
-  static URL[] filterPluginURLs(final URL[] urls, final URL dependencyUrl) throws IOException {
+  static URL[] filterPluginURLs(final URL[] urls, final URL dependencyUrl, final boolean includeOptional, final String ... scopes) throws IOException {
     try (final InputStream in = dependencyUrl.openStream()) {
-      final Set<String> names = Util.selectFromTgf(new String(Util.readBytes(in)), false, new String[] {"compile"});
+      final Set<String> names = Util.selectFromTgf(new String(Util.readBytes(in)), includeOptional, scopes);
       return filterUrlFileNames(urls, names, 0, 0);
     }
+  }
+
+  static File zip(final File dir) throws IOException {
+    final Path path = dir.toPath();
+    final Path file = Files.createTempFile("bootstrap", "jar");
+    try (
+      final FileOutputStream fos = new FileOutputStream(file.toFile());
+      final ZipOutputStream zos = new ZipOutputStream(fos);
+    ) {
+      recurseDir(dir, new Predicate<File>() {
+        @Override
+        public boolean test(final File t) {
+          if (t.isFile()) {
+            final Path x = t.toPath();
+            final String name = path.relativize(x).toString();
+            try {
+              zos.putNextEntry(new ZipEntry(name));
+              zos.write(Files.readAllBytes(x));
+              zos.closeEntry();
+            }
+            catch (final IOException e) {
+              throw new IllegalStateException(e);
+            }
+          }
+
+          return true;
+        }
+      });
+    }
+
+    return file.toFile();
   }
 
   /**

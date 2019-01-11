@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Instrumenter;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
@@ -49,7 +48,7 @@ public class OkHttpTest {
       logger.fine("  ClassLoader: " + tracer.getClass().getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
       logger.fine("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
       logger.fine(MockWebServer.class.getClassLoader() + " " + MockWebServer.class.getProtectionDomain().getCodeSource().getLocation());
-      logger.fine(okhttp3.Interceptor.class.getClassLoader() + " " + okhttp3.Interceptor.class.getProtectionDomain().getCodeSource().getLocation());
+      logger.fine(Interceptor.class.getClassLoader() + " " + Interceptor.class.getProtectionDomain().getCodeSource().getLocation());
     }
 
     assertEquals(URLClassLoader.class, MockWebServer.class.getClassLoader().getClass());
@@ -62,8 +61,6 @@ public class OkHttpTest {
       assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
       assertEquals(URLClassLoader.class, OkHttpClient.Builder.class.getClassLoader().getClass());
       assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
-
-      System.out.println(Arrays.toString(((URLClassLoader)Interceptor.class.getClassLoader()).getURLs()));
 
       // TODO: Rule does not currently work when just using the OkHttpClient
       // default constructor

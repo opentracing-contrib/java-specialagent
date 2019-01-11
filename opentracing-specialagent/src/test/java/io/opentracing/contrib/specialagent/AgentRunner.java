@@ -17,56 +17,39 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.InvocationTargetException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.internal.runners.model.ReflectiveCallable;
 import org.junit.rules.TestRule;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
-import io.opentracing.Scope;
-import io.opentracing.ScopeManager;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.tracerresolver.TracerResolver;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.propagation.Format;
-import io.opentracing.util.GlobalTracer;
+import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
  * A JUnit runner that is designed to run tests for instrumentation plugins that
@@ -95,7 +78,21 @@ import io.opentracing.util.GlobalTracer;
  */
 public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(AgentRunner.class.getName());
-  private static final String PORT_ARG = "io.opentracing.contrib.specialagent.port";
+  private static final Instrumentation inst;
+
+  static {
+    inst = ByteBuddyAgent.install();
+    final URL url = Thread.currentThread().getContextClassLoader().getResource("/META-INF/opentracing-specialagent");
+    System.out.println(url);
+    try {
+      final File zip = Util.zip(new File("/Users/seva/Work/opentracing/src/java-specialagent/opentracing-specialagent/target/classes/"));
+      zip.deleteOnExit();
+      inst.appendToBootstrapClassLoaderSearch(new JarFile(zip));
+    }
+    catch (final IOException e) {
+      throw new ExceptionInInitializerError(e);
+    }
+  }
 
   /**
    * Annotation to specify configuration parameters for {@code AgentRunner}.
@@ -161,165 +158,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Returns the OpenTracing {@link Tracer} to be used for the duration of the
-   * test process. The {@link Tracer} is initialized on first invocation to this
-   * method in a synchronized, thread-safe manner. If the {@code "-javaagent"}
-   * argument is not specified for the current process, this function will
-   * return {@code null}.
-   *
-   * @return The OpenTracing {@link Tracer} to be used for the duration of the
-   *         test process, or {@code null} if the {@code "-javaagent"} argument
-   *         is not specified for the current process.
-   */
-  private static Tracer getTracer() {
-    if (!isInFork || tracer != null)
-      return tracer;
-
-    synchronized (tracerMutex) {
-      if (tracer != null)
-        return tracer;
-
-      Tracer tracer = TracerResolver.resolveTracer();
-      if (tracer == null)
-        tracer = new MockTracer();
-
-      if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("Registering tracer in forked " + AgentRunner.class.getSimpleName() + ": " + tracer);
-        logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
-        logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
-        logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
-        logger.finest("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
-      }
-
-      GlobalTracer.register(tracer);
-      return AgentRunner.tracer = tracer instanceof MockTracer ? tracer : new ProxyTracer(tracer);
-    }
-  }
-
-  /**
-   * Proxy tracer used for one purpose - to enable the rules to define a ChildOf
-   * relationship without being concerned whether the supplied Span is null. If
-   * the spec (and Tracer implementations) are updated to indicate a null should
-   * be ignored, then this proxy can be removed.
-   */
-  public static class ProxyTracer implements Tracer {
-    private final Tracer tracer;
-
-    public ProxyTracer(final Tracer tracer) {
-      if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("new " + ProxyTracer.class.getSimpleName() + "(" + tracer + ")");
-        logger.finest("  ClassLoader: " + tracer.getClass().getClassLoader());
-        logger.finest("  Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
-      }
-
-      this.tracer = Objects.requireNonNull(tracer);
-    }
-
-    @Override
-    public SpanBuilder buildSpan(final String operation) {
-      return new AgentSpanBuilder(tracer.buildSpan(operation));
-    }
-
-    @Override
-    public <C>SpanContext extract(final Format<C> format, final C carrier) {
-      return tracer.extract(format, carrier);
-    }
-
-    @Override
-    public <C>void inject(final SpanContext spanContext, final Format<C> format, final C carrier) {
-      tracer.inject(spanContext, format, carrier);
-    }
-
-    @Override
-    public Span activeSpan() {
-      return tracer.activeSpan();
-    }
-
-    @Override
-    public ScopeManager scopeManager() {
-      return tracer.scopeManager();
-    }
-  }
-
-  public static class AgentSpanBuilder implements SpanBuilder {
-    private final SpanBuilder spanBuilder;
-
-    public AgentSpanBuilder(final SpanBuilder spanBuilder) {
-      this.spanBuilder = Objects.requireNonNull(spanBuilder);
-    }
-
-    @Override
-    public SpanBuilder addReference(final String referenceType, final SpanContext referencedContext) {
-      if (referencedContext != null)
-        spanBuilder.addReference(referenceType, referencedContext);
-
-      return this;
-    }
-
-    @Override
-    public SpanBuilder asChildOf(final SpanContext parent) {
-      if (parent != null)
-        spanBuilder.asChildOf(parent);
-
-      return this;
-    }
-
-    @Override
-    public SpanBuilder asChildOf(final Span parent) {
-      if (parent != null)
-        spanBuilder.asChildOf(parent);
-
-      return this;
-    }
-
-    @Override
-    public Span start() {
-      return spanBuilder.start();
-    }
-
-    @Override
-    public SpanBuilder withStartTimestamp(final long microseconds) {
-      spanBuilder.withStartTimestamp(microseconds);
-      return this;
-    }
-
-    @Override
-    public SpanBuilder withTag(final String name, final String value) {
-      spanBuilder.withTag(name, value);
-      return this;
-    }
-
-    @Override
-    public SpanBuilder withTag(final String name, final boolean value) {
-      spanBuilder.withTag(name, value);
-      return this;
-    }
-
-    @Override
-    public SpanBuilder withTag(final String name, final Number value) {
-      spanBuilder.withTag(name, value);
-      return this;
-    }
-
-    @Override
-    public SpanBuilder ignoreActiveSpan() {
-      spanBuilder.ignoreActiveSpan();
-      return this;
-    }
-
-    @Override
-    public Scope startActive(final boolean finishOnClose) {
-      return spanBuilder.startActive(finishOnClose);
-    }
-
-    @Override
-    @Deprecated
-    public Span startManual() {
-      return spanBuilder.startManual();
-    }
-  }
-
-  /**
    * Loads the specified class in an isolated {@code URLClassLoader}. The class
    * loader will be initialized with the process classpath, and will be detached
    * from the System {@code ClassLoader}. This construct guarantees that any
@@ -338,56 +176,111 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   private static Class<?> loadClassInURLClassLoader(final Class<?> cls) throws InitializationError {
     try {
-      final String classpath = System.getProperty("java.class.path");
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("ClassPath of URLClassLoader:\n  " + classpath.replace(File.pathSeparator, "\n  "));
+      final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
+      final List<String> pluginPaths;
+      if (dependenciesUrl != null) {
+        final URL[] pluginUrls = Util.filterPluginURLs(Util.classPathToURLs(System.getProperty("java.class.path")), dependenciesUrl, false, "compile");
+        pluginPaths = new ArrayList<>(pluginUrls.length);
+        for (int i = 0; i < pluginUrls.length; ++i)
+          pluginPaths.add(pluginUrls[i].getFile());
+      }
+      else {
+        logger.warning("dependencies.tgf was not found! `mvn generate-resources` phase must be run for this file to be generated!");
+        pluginPaths = null;
+      }
 
-      final URL[] libs = Util.classPathToURLs(classpath);
+      final Set<String> javaClassPath = Util.getJavaClassPath();
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("java.class.path:\n" + Util.toIndentedString(javaClassPath));
+
+      // Use the whole java.class.path for the forked process, because any class
+      // on the classpath may be used in the implementation of the test method.
+      // The JARs with classes in the Boot-Path are already excluded due to their
+      // provided scope.
+      final String classpath = buildClassPath(javaClassPath, null);
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, ",\n  "));
+
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
+
+      System.setProperty(SpecialAgent.PLUGIN_ARG, Util.toString(pluginPaths.toArray(), ":"));
+      final URL[] testDependencies = Util.filterPluginURLs(Util.classPathToURLs(System.getProperty("java.class.path")), dependenciesUrl, true, "test", "provided");
+      for (final URL testDependency : testDependencies)
+        pluginPaths.add(testDependency.getPath());
+
+      final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
+      final String classesPath = testClassesPath.endsWith(".jar") ? testClassesPath.replace(".jar", "-tests.jar") : testClassesPath.replace("/test-classes/", "/classes/");
+      pluginPaths.add(testClassesPath);
+      pluginPaths.add(classesPath);
+      final Set<String> xxx = getAllFiles(pluginPaths, new Predicate<String>() {
+        @Override
+        public boolean test(final String t) {
+          return t.endsWith(".class") && !t.contains("junit");
+        }
+      });
+
+      xxx.add("io/opentracing/contrib/specialagent/AgentRunnerUtil.class");
+      System.out.println(Util.toIndentedString(xxx));
+
+      final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
-      System.err.println(System.getProperty("java.version"));
-      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-      if (parent != null && logger.isLoggable(Level.FINEST))
-        logger.finest("Setting PlatformClassLoader as parent class loader for JVM version: " + System.getProperty("java.version"));
+      final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
-      final URLClassLoader classLoader = new URLClassLoader(libs, cls != AgentRunnerITest.class ? parent : new ClassLoader(parent) {
+      final URLClassLoader classLoader = new URLClassLoader(libs, new ClassLoader(parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-          return name.equals(cls.getName()) ? null : super.loadClass(name, resolve);
+          return xxx.contains(name.replace('.', '/').concat(".class")) ? null : super.loadClass(name, resolve);
         }
       });
       final Class<?> classInClassLoader = Class.forName(cls.getName(), false, classLoader);
-      Assert.assertNotNull("Test class not resolvable in URLClassLoader: " + cls.getName(), classInClassLoader);
-      Assert.assertNotNull("Test class must not be resolvable in BootClassLoader: " + cls.getName(), classInClassLoader.getClassLoader());
+      Assert.assertNotNull("Test class is not resolvable in URLClassLoader: " + cls.getName(), classInClassLoader);
+      Assert.assertNotNull("Test class must not be resolvable in bootstrap class loader: " + cls.getName(), classInClassLoader.getClassLoader());
       Assert.assertEquals(URLClassLoader.class, classInClassLoader.getClassLoader().getClass());
-      Assert.assertNull(Rule.class.getClassLoader());
+//      Assert.assertNull(Rule.class.getClassLoader());
       return classInClassLoader;
     }
-    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+    catch (final ClassNotFoundException | IOException e) {
       throw new InitializationError(e);
     }
   }
 
-  private static Tracer tracer = null;
-  private static final Object tracerMutex = new Object();
-  private static boolean isInFork = false;
+  private static Set<String> getAllFiles(final List<String> pluginPaths, final Predicate<String> predicate) throws IOException {
+    final Set<String> set = new HashSet<>();
+    for (final String pluginPath : pluginPaths) {
+      final File file = new File(pluginPath);
+      if (pluginPath.endsWith(".jar")) {
+        try (final JarFile jarFile = new JarFile(file)) {
+          final Enumeration<JarEntry> entries = jarFile.entries();
+          while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            if (predicate.test(entry.getName()))
+              set.add(entry.getName());
+          }
+        }
+      }
+      else {
+        final Path path = file.toPath();
+        Util.recurseDir(file, new Predicate<File>() {
+          @Override
+          public boolean test(final File t) {
+            final String name = path.relativize(t.toPath()).toString();
+            if (predicate.test(name))
+              set.add(name);
 
-  static {
-    final RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-    final List<String> arguments = runtimeMxBean.getInputArguments();
-    for (final String argument : arguments) {
-      if (argument.startsWith("-javaagent")) {
-        isInFork = true;
-        break;
+            return true;
+          }
+        });
       }
     }
+
+    return set;
   }
+
 
   private final Config config;
   private final URL loggingConfigFile;
-  private final ObjectInputStream in;
-  private final ObjectOutputStream out;
-  private final Process process;
 
   /**
    * Creates a new {@code AgentRunner} for the specified test class.
@@ -398,98 +291,22 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    *           forked process.
    */
   public AgentRunner(final Class<?> cls) throws InitializationError {
-    super(isInFork && (cls.getAnnotation(Config.class) == null || cls.getAnnotation(Config.class).isolateClassLoader()) ? loadClassInURLClassLoader(cls) : cls);
+    super(cls.getAnnotation(Config.class) == null || cls.getAnnotation(Config.class).isolateClassLoader() ? loadClassInURLClassLoader(cls) : cls);
     this.config = cls.getAnnotation(Config.class);
     this.loggingConfigFile = config != null && config.debug() ? getClass().getResource("/logging.properties") : null;
-    if (loggingConfigFile != null) {
-      try {
-        LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
-      }
-      catch (final IOException e) {
-        throw new InitializationError(e);
-      }
-    }
-
-    Thread shutdownHook = null;
     try {
-      if (isInFork) {
-        final int port = Integer.parseInt(System.getProperty(PORT_ARG));
-        final Socket socket = new Socket("127.0.0.1", port);
-        shutdownHook = new Thread() {
-          @Override
-          public void run() {
-            try {
-              socket.close();
-            }
-            catch (final IOException e) {
-            }
-          }
-        };
+      if (loggingConfigFile != null)
+          LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
 
-        this.process = null;
-        this.out = new ObjectOutputStream(socket.getOutputStream());
-        this.in = null;
-      }
-      else {
-        final ServerSocket serverSocket = new ServerSocket(0);
-        final int port = serverSocket.getLocalPort();
-        this.process = fork(cls, port);
-        shutdownHook = new Thread() {
-          @Override
-          public void run() {
-            try {
-              serverSocket.close();
-            }
-            catch (final Exception e) {
-            }
+      System.setProperty(SpecialAgent.INSTRUMENTER, config.instrumenter().name());
 
-            try {
-              process.exitValue();
-              return;
-            }
-            catch (final IllegalThreadStateException e) {
-            }
+      if (config.verbose())
+        System.setProperty("org.jboss.byteman.verbose", "true");
 
-            if (logger.isLoggable(Level.FINEST))
-              logger.finest("Destroying forked process...");
-
-            process.destroy();
-          }
-        };
-
-        final AtomicBoolean initialized = new AtomicBoolean(false);
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              process.waitFor();
-            }
-            catch (final InterruptedException e) {
-            }
-
-            if (initialized.get())
-              return;
-
-            try {
-              serverSocket.close();
-            }
-            catch (final IOException e) {
-            }
-          }
-        }.start();
-
-        final Socket socket = serverSocket.accept();
-        this.out = null;
-        this.in = new ObjectInputStream(socket.getInputStream());
-        initialized.set(true);
-      }
+      SpecialAgent.premain(null, inst);
     }
-    catch (final IOException e) {
-      throw new InitializationError(e);
-    }
-    finally {
-      if (shutdownHook != null)
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+    catch (final Throwable e) {
+      e.printStackTrace();
     }
   }
 
@@ -509,20 +326,20 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     return new TestClass(testClass) {
       @Override
       public List<FrameworkMethod> getAnnotatedMethods(final Class<? extends Annotation> annotationClass) {
-        final List<FrameworkMethod> augmented = new ArrayList<>();
+        final List<FrameworkMethod> retrofitted = new ArrayList<>();
         for (final FrameworkMethod method : super.getAnnotatedMethods(annotationClass))
-          augmented.add(retrofitMethod(method));
+          retrofitted.add(retrofitMethod(method, testClass.getClassLoader()));
 
-        return Collections.unmodifiableList(augmented);
+        return Collections.unmodifiableList(retrofitted);
       }
 
       @Override
       protected void scanAnnotatedMembers(final Map<Class<? extends Annotation>,List<FrameworkMethod>> methodsForAnnotations, final Map<Class<? extends Annotation>,List<FrameworkField>> fieldsForAnnotations) {
         super.scanAnnotatedMembers(methodsForAnnotations, fieldsForAnnotations);
-        for (final List<FrameworkMethod> methods : methodsForAnnotations.values()) {
-          final ListIterator<FrameworkMethod> iterator = methods.listIterator();
+        for (final Map.Entry<Class<? extends Annotation>,List<FrameworkMethod>> entry : methodsForAnnotations.entrySet()) {
+          final ListIterator<FrameworkMethod> iterator = entry.getValue().listIterator();
           while (iterator.hasNext())
-            iterator.set(retrofitMethod(iterator.next()));
+            iterator.set(retrofitMethod(iterator.next(), testClass.getClassLoader()));
         }
       }
     };
@@ -535,13 +352,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @param method The {@code FrameworkMethod} to retrofit.
    * @return The retrofitted {@code FrameworkMethod}.
    */
-  private FrameworkMethod retrofitMethod(final FrameworkMethod method) {
+  private FrameworkMethod retrofitMethod(final FrameworkMethod method, final ClassLoader classLoader) {
     return new FrameworkMethod(method.getMethod()) {
       @Override
       public void validatePublicVoidNoArg(final boolean isStatic, final List<Throwable> errors) {
         validatePublicVoid(isStatic, errors);
         if (method.getMethod().getParameterTypes().length > 1)
-          errors.add(new Exception("Method " + method.getName() + " can declare no parameters, or one parameter of type: " + Tracer.class.getName()));
+          errors.add(new Exception("Method " + method.getName() + " can declare no parameters, or one parameter of type: io.opentracing.mock.MockTracer"));
       }
 
       @Override
@@ -549,53 +366,15 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         if (logger.isLoggable(Level.FINEST))
           logger.finest("invokeExplosively [" + getName() + "](" + target + ")");
 
-        if (isInFork) {
-          if (config.isolateClassLoader()) {
-            final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
-            Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
-          }
-
-          try {
-            final Object result = method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, getTracer()) : super.invokeExplosively(target);
-            write(new TestResult(getName(), null));
-            return result;
-          }
-          catch (final Throwable t) {
-            if (logger.isLoggable(Level.FINEST))
-              logger.finest("Throwing: " + t.getClass().getName());
-
-            write(new TestResult(getName(), t));
-            throw t;
-          }
+        if (config.isolateClassLoader()) {
+          final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
+          Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
         }
 
-        final TestResult testResult = read();
-        // Test execution order is guaranteed to be deterministic
-        // https://github.com/junit-team/junit4/wiki/test-execution-order#test-execution-order
-        Assert.assertEquals(getName(), testResult.getMethodName());
-        if (testResult.getTargetException() != null)
-          throw testResult.getTargetException();
-
-        return new ReflectiveCallable() {
-          @Override
-          protected Object runReflectiveCall() throws Throwable {
-            return null;
-          }
-        }.run();
+        final Class<?> cls = classLoader.loadClass("io.opentracing.contrib.specialagent.AgentRunnerUtil");
+        return method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, cls.getMethod("getTracer").invoke(null)) : super.invokeExplosively(target);
       }
     };
-  }
-
-  @Override
-  public void run(final RunNotifier notifier) {
-    super.run(notifier);
-    if (!isInFork) {
-      try {
-        process.waitFor();
-      }
-      catch (final InterruptedException e) {
-      }
-    }
   }
 
   /**
@@ -618,111 +397,5 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   protected String getAgentPath() {
     return SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-  }
-
-  /**
-   * Fork a process for the specified JUnit test class with the
-   * {@code -javaagent} argument as well as the socket port for IPC.
-   *
-   * @param mainClass The main class to invoke with JUnit.
-   * @param port The socket port on which the parent process is waiting for
-   *          connection.
-   * @return The {@code Process} reference of the forked process.
-   * @throws IOException If an I/O error has occurred.
-   * @throws IllegalStateException If this method is itself called from a forked
-   *           process.
-   */
-  private Process fork(final Class<?> mainClass, final int port) throws IOException {
-    if (isInFork)
-      throw new IllegalStateException("Attempting to fork from a fork");
-
-    final Set<String> javaClassPath = Util.getJavaClassPath();
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("java.class.path:\n" + Util.toIndentedString(javaClassPath));
-
-    final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
-    final String[] pluginPaths;
-    if (dependenciesUrl != null) {
-      final URL[] pluginUrls = Util.filterPluginURLs(Util.classPathToURLs(System.getProperty("java.class.path")), dependenciesUrl);
-      pluginPaths = new String[pluginUrls.length];
-      for (int i = 0; i < pluginUrls.length; ++i)
-        javaClassPath.remove(pluginPaths[i] = pluginUrls[i].getFile());
-    }
-    else {
-      logger.warning("dependencies.tgf was not found! `mvn generate-resources` phase must be run for this file to be generated!");
-      pluginPaths = null;
-    }
-
-    // Use the whole java.class.path for the forked process, because any class
-    // on the classpath may be used in the implementation of the test method.
-    // The JARs with classes in the Boot-Path are already excluded due to their
-    // provided scope.
-    final String classpath = buildClassPath(javaClassPath, null);
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("ClassPath of forked process will be:\n  " + classpath.replace(File.pathSeparator, "\n  "));
-
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
-
-    int i = -1;
-    final String[] args = new String[9 + (config.verbose() ? 1 : 0) + (loggingConfigFile != null ? 1 : 0)];
-    args[++i] = "java";
-    args[++i] = "-cp";
-    args[++i] = classpath;
-    args[++i] = "-javaagent:" + getAgentPath();
-    args[++i] = "-D" + PORT_ARG + "=" + port;
-    args[++i] = "-D" + SpecialAgent.PLUGIN_ARG + "=" + Util.toString(pluginPaths, ":");
-    args[++i] = "-D" + SpecialAgent.INSTRUMENTER + "=" + config.instrumenter();
-    if (config.verbose())
-      args[++i] = "-Dorg.jboss.byteman.verbose";
-
-    if (loggingConfigFile != null)
-      args[++i] = "-Djava.util.logging.config.file=" + ("file".equals(loggingConfigFile.getProtocol()) ? loggingConfigFile.getPath() : loggingConfigFile.toString());
-
-    args[++i] = JUnitCore.class.getName();
-    args[++i] = mainClass.getName();
-
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("Forking process:\n  " + Arrays.toString(args).replace(", ", " "));
-
-    final ProcessBuilder builder = new ProcessBuilder(args);
-    builder.inheritIO();
-    return builder.start();
-  }
-
-  /**
-   * Returns a {@code TestResult} object serialized over the socket. This method
-   * will block until an object is available.
-   *
-   * @return A {@code TestResult} object serialized over the socket.
-   */
-  private TestResult read() {
-    try {
-      final TestResult result = (TestResult)in.readObject();
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("Read: " + result);
-
-      return result;
-    }
-    catch (final ClassNotFoundException | IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * Writes a {@code TestResult} object to the socket.
-   *
-   * @param result The {@code TestResult} object to write.
-   */
-  private void write(final TestResult result) {
-    try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("Write: " + result);
-
-      out.writeObject(result);
-    }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
   }
 }
