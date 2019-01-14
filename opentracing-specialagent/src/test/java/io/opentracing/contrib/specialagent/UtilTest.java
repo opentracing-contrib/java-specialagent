@@ -51,7 +51,7 @@ public class UtilTest {
     expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
     final Set<String> actual = Util.selectFromTgf(test, true, null);
     assertEquals(expected, actual);
   }
@@ -69,7 +69,7 @@ public class UtilTest {
     expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
     final Set<String> actual = Util.selectFromTgf(test, true, new String[] {"test"});
     assertEquals(expected, actual);
   }
@@ -85,7 +85,7 @@ public class UtilTest {
     expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
     final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"test"});
     assertEquals(expected, actual);
   }
@@ -100,7 +100,7 @@ public class UtilTest {
     expected.add("opentracing-noop-0.31.0.jar");
     expected.add("opentracing-api-0.31.0.jar");
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
     final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"});
     assertEquals(expected, actual);
   }
@@ -113,7 +113,7 @@ public class UtilTest {
     expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
     expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
 
-    final String test = Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf"));
+    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
     final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class, Tracer.class);
     assertEquals(expected, actual);
   }

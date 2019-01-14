@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.File;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
@@ -95,12 +94,10 @@ public class AgentAgent {
 
         try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
           final URL resource = pluginClassLoader.findResource(arg.replace('.', '/').concat(".class"));
-          if (resource != null) {
-            try (final InputStream in = resource.openStream()) {
-              returned = Util.readBytes(in);
-            }
-          }
+          if (resource != null)
+            returned = Util.readBytes(resource);
         }
+
         System.err.println("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {

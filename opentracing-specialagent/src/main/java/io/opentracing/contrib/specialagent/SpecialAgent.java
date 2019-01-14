@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.net.URL;
@@ -178,16 +177,17 @@ public class SpecialAgent {
       final Set<String> dependencyUrls = new HashSet<>();
 
       while (enumeration.hasMoreElements()) {
-        final URL dependencyUrl = enumeration.nextElement();
-        if (dependencyUrls.contains(dependencyUrl.toString()))
+        final URL dependenciesUrl = enumeration.nextElement();
+        if (dependencyUrls.contains(dependenciesUrl.toString()))
           continue;
 
-        dependencyUrls.add(dependencyUrl.toString());
+        dependencyUrls.add(dependenciesUrl.toString());
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + DEPENDENCIES + ": <" + Util.getIdentityCode(dependencyUrl) + ">" + dependencyUrl);
+          logger.finest("Found " + DEPENDENCIES + ": <" + Util.getIdentityCode(dependenciesUrl) + ">" + dependenciesUrl);
 
-        final URL jarUrl = new URL(Util.getSourceLocation(dependencyUrl, DEPENDENCIES));
-        final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependencyUrl, false, "compile");
+        final URL jarUrl = new URL(Util.getSourceLocation(dependenciesUrl, DEPENDENCIES));
+        final String dependenciesTgf = new String(Util.readBytes(dependenciesUrl));
+        final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
         boolean foundReference = false;
         for (final URL dependency : dependencies) {
           if (allPluginsClassLoader.containsPath(dependency)) {
@@ -454,13 +454,8 @@ public class SpecialAgent {
 
       // Return the resource's bytes, or null if the resource does not exist in
       // pluginClassLoader
-      try (final InputStream in = pluginClassLoader.getResourceAsStream(resourceName)) {
-        return in == null ? null : Util.readBytes(in);
-      }
-      catch (final IOException e) {
-        logger.log(Level.SEVERE, "Failed to read bytes for " + resourceName, e);
-        return null;
-      }
+      final URL resource = pluginClassLoader.getResource(resourceName);
+      return resource == null ? null : Util.readBytes(resource);
     }
     finally {
       instrumenter.manager.enableTriggers();

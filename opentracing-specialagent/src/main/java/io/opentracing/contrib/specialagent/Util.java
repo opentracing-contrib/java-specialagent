@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,7 +47,7 @@ import java.util.zip.ZipOutputStream;
  *
  * @author Seva Safris
  */
-final class Util {
+public final class Util {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
@@ -87,19 +86,17 @@ final class Util {
    * {@code dependencyUrl}.
    *
    * @param urls The array of URL objects to filter.
-   * @param dependencyUrl The TGF file defining the specification of
+   * @param dependenciesTgf The contents of the TGF file that specify the
    *          dependencies.
    * @return An array of URL objects representing Instrumentation Plugin URLs
    * @throws IOException If an I/O error has occurred.
    */
-  static URL[] filterPluginURLs(final URL[] urls, final URL dependencyUrl, final boolean includeOptional, final String ... scopes) throws IOException {
-    try (final InputStream in = dependencyUrl.openStream()) {
-      final Set<String> names = Util.selectFromTgf(new String(Util.readBytes(in)), includeOptional, scopes);
-      return filterUrlFileNames(urls, names, 0, 0);
-    }
+  public static URL[] filterPluginURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
+    final Set<String> names = Util.selectFromTgf(dependenciesTgf, includeOptional, scopes);
+    return filterUrlFileNames(urls, names, 0, 0);
   }
 
-  static File zip(final File dir) throws IOException {
+  public static File zip(final File dir) throws IOException {
     final Path path = dir.toPath();
     final Path file = Files.createTempFile("bootstrap", "jar");
     try (
@@ -275,22 +272,22 @@ final class Util {
   }
 
   /**
-   * Returns the string content of the specified URL.
+   * Returns the array of bytes read from the specified {@code URL}.
    *
    * @param url The URL from which to read bytes.
-   * @return The string content of the specified URL.
+   * @return The array of bytes read from an {@code InputStream}.
    */
-  static String readBytes(final URL url) {
+  public static byte[] readBytes(final URL url) {
     try {
-      final StringBuilder builder = new StringBuilder();
       try (final InputStream in = url.openStream()) {
-        final byte[] bytes = new byte[1024];
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream(DEFAULT_SOCKET_BUFFER_SIZE);
+        final byte[] bytes = new byte[DEFAULT_SOCKET_BUFFER_SIZE];
         for (int len; (len = in.read(bytes)) != -1;)
           if (len != 0)
-            builder.append(new String(bytes, 0, len));
-      }
+            buffer.write(bytes, 0, len);
 
-      return builder.toString();
+        return buffer.toByteArray();
+      }
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
@@ -327,7 +324,7 @@ final class Util {
    * @return A string representation of the specified array, using the specified
    *         delimiter between the string representation of each element.
    */
-  static String toString(final Object[] a, final String del) {
+  public static String toString(final Object[] a, final String del) {
     if (a == null)
       return "null";
 
@@ -389,7 +386,7 @@ final class Util {
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Collection#toString()}.
    */
-  static String toIndentedString(final Collection<?> l) {
+  public static String toIndentedString(final Collection<?> l) {
     if (l == null)
       return "null";
 
@@ -417,7 +414,7 @@ final class Util {
    * @return An array of {@code URL} objects representing each path entry in the
    *         specified {@code classpath}.
    */
-  static URL[] classPathToURLs(final String classpath) {
+  public static URL[] classPathToURLs(final String classpath) {
     if (classpath == null)
       return null;
 
@@ -432,20 +429,6 @@ final class Util {
     }
 
     return libs;
-  }
-
-  /**
-   * Returns the array of bytes read from an {@code InputStream}.
-   *
-   * @param in The {@code InputStream}.
-   * @return The array of bytes read from an {@code InputStream}.
-   * @throws IOException If an I/O error has occurred.
-   */
-  static byte[] readBytes(final InputStream in) throws IOException {
-    final ByteArrayOutputStream buffer = new ByteArrayOutputStream(DEFAULT_SOCKET_BUFFER_SIZE);
-    final byte[] data = new byte[DEFAULT_SOCKET_BUFFER_SIZE];
-    for (int len; (len = in.read(data)) != -1; buffer.write(data, 0, len));
-    return buffer.toByteArray();
   }
 
   /**
@@ -536,7 +519,7 @@ final class Util {
    * @return {@code true} if the specified predicate returned {@code true} for
    *         each sub-path to which it was applied, otherwise {@code false}.
    */
-  static boolean recurseDir(final File dir, final Predicate<File> predicate) {
+  public static boolean recurseDir(final File dir, final Predicate<File> predicate) {
     final File[] files = dir.listFiles();
     if (files != null)
       for (final File file : files)
