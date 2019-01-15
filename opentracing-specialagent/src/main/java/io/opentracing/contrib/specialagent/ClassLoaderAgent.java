@@ -51,8 +51,7 @@ public class ClassLoaderAgent {
   public static void premain(final String agentArgs, final Instrumentation inst) {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-      .disableClassFormatChanges()
-//    .with(new DebugListener())
+      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
@@ -62,7 +61,7 @@ public class ClassLoaderAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindClass.class).on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
+          return builder.visit(Advice.to(FindClass.class, BootstrapClassLoaderAgent.locatorProxy).on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
         }})
       .installOn(inst);
 
@@ -70,7 +69,7 @@ public class ClassLoaderAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResource.class).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
+          return builder.visit(Advice.to(FindResource.class, BootstrapClassLoaderAgent.locatorProxy).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
         }})
       .installOn(inst);
 
@@ -78,7 +77,7 @@ public class ClassLoaderAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResources.class).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
+          return builder.visit(Advice.to(FindResources.class, BootstrapClassLoaderAgent.locatorProxy).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }})
       .installOn(inst);
   }

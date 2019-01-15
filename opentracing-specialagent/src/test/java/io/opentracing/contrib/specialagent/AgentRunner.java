@@ -71,28 +71,34 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  *
  * @author Seva Safris
  */
+@SuppressWarnings("resource")
 public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(AgentRunner.class.getName());
   private static final Instrumentation inst = ByteBuddyAgent.install();
 
-  static {
+  static Instrumentation init() {
     try {
       final String testClassesPath = AgentRunner.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-      final JarFile jar;
+      final JarFile jarFile;
       if (testClassesPath.endsWith("-tests.jar")) {
-        jar = new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
+        jarFile = new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
       }
       else {
-        final File file = new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/");
-        file.deleteOnExit();
-        jar = new JarFile(Util.zip(file));
+        final File dir = new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/");
+        dir.deleteOnExit();
+        jarFile = Util.createJarFile(dir);
       }
-
-      inst.appendToBootstrapClassLoaderSearch(jar);
+      inst.appendToBootstrapClassLoaderSearch(jarFile);
+      BootstrapClassLoaderAgent.premain(jarFile, inst);
+      return inst;
     }
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
+  }
+
+  static {
+    init();
   }
 
   /**

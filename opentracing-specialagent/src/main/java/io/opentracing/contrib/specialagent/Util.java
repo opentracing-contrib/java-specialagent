@@ -39,8 +39,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -96,23 +96,23 @@ public final class Util {
     return filterUrlFileNames(urls, names, 0, 0);
   }
 
-  public static File zip(final File dir) throws IOException {
-    final Path path = dir.toPath();
-    final Path file = Files.createTempFile("bootstrap", "jar");
+  public static JarFile createJarFile(final File dir) throws IOException {
+    final Path dirPath = dir.toPath();
+    final Path zipPath = Files.createTempFile("bootstrap", "jar");
     try (
-      final FileOutputStream fos = new FileOutputStream(file.toFile());
-      final ZipOutputStream zos = new ZipOutputStream(fos);
+      final FileOutputStream fos = new FileOutputStream(zipPath.toFile());
+      final JarOutputStream jos = new JarOutputStream(fos);
     ) {
       recurseDir(dir, new Predicate<File>() {
         @Override
         public boolean test(final File t) {
           if (t.isFile()) {
-            final Path x = t.toPath();
-            final String name = path.relativize(x).toString();
+            final Path filePath = t.toPath();
+            final String name = dirPath.relativize(filePath).toString();
             try {
-              zos.putNextEntry(new ZipEntry(name));
-              zos.write(Files.readAllBytes(x));
-              zos.closeEntry();
+              jos.putNextEntry(new ZipEntry(name));
+              jos.write(Files.readAllBytes(filePath));
+              jos.closeEntry();
             }
             catch (final IOException e) {
               throw new IllegalStateException(e);
@@ -124,7 +124,7 @@ public final class Util {
       });
     }
 
-    return file.toFile();
+    return new JarFile(zipPath.toFile());
   }
 
   /**

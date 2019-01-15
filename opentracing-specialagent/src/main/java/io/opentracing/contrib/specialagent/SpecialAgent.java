@@ -130,7 +130,7 @@ public class SpecialAgent {
       logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
 
     // Override parent ClassLoader methods to avoid delegation of resource
-    // resolution to BootLoader
+    // resolution to bootstrap class loader
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
     int count = loadDependencies(allPluginsClassLoader);

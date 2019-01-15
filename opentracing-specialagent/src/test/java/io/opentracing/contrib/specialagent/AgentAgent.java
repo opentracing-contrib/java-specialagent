@@ -135,7 +135,6 @@ public class AgentAgent {
   public static class FindResources {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) ClassLoader classLoader, final @Advice.Argument(1) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      System.err.println(returned);
       try {
         String classpath = System.getProperty("java.class.path");
         final int index = classpath.indexOf("/opentracing-api-");
@@ -147,6 +146,7 @@ public class AgentAgent {
 
         try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
           returned = pluginClassLoader.getResources(arg); // Why is findResources(arg) not returning expected results?
+          returned.hasMoreElements(); // For some reason, if I don't call this, the returned value does not have any elements!!!!
         }
 
         System.err.println("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);

@@ -28,30 +28,21 @@ import org.junit.Test;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
  * Test class to validate proper functioning of {@link ClassLoaderAgent} and
  * {@code classloader.btm}.
- * <p>
- * <i><b>Note</b>: This test class is only runnable via SureFire or FailSafe
- * plugins with
- * argLine="-Xbootclasspath/a:${project.build.outputDirectory}".</i>
  *
  * @author Seva Safris
  */
 public abstract class ClassLoaderAgentTest {
-  static {
-    assertNull("This test can only be executed from SureFire or FailSafe plugins with argLine=\"-Xbootclasspath/a:${project.build.outputDirectory}\"", ClassLoaderAgent.class.getClassLoader());
-  }
+  private static final Instrumentation inst = AgentRunner.init();
 
   public static class ByteBuddyBTest extends ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
-      final Instrumentation instrumentation = ByteBuddyAgent.install();
-
-      AgentAgent.premain(null, instrumentation);
-      ClassLoaderAgent.premain(null, instrumentation);
+      AgentAgent.premain(null, inst);
+      ClassLoaderAgent.premain(null, inst);
     }
   }
 
@@ -59,14 +50,13 @@ public abstract class ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
       System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
-      final Instrumentation instrumentation = ByteBuddyAgent.install();
-      AgentAgent.premain(null, instrumentation);
-      SpecialAgent.premain(null, instrumentation);
+      AgentAgent.premain(null, inst);
+      SpecialAgent.premain(null, inst);
     }
   }
 
   @Test
-  public void testAgentFindClass() throws Exception {
+  public void testAgentFindClass() {
     assertNotNull(SpecialAgent.findClass(null, Span.class.getName()));
   }
 
@@ -80,20 +70,20 @@ public abstract class ClassLoaderAgentTest {
   }
 
   @Test
-  public void testAgentFindResource() throws Exception {
+  public void testAgentFindResource() {
     assertNotNull(SpecialAgent.findResource(null, Span.class.getName().replace('.', '/').concat(".class")));
   }
 
   @Test
   public void testClassLoaderFindResource() throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
-      assertNotNull(classLoader.findResource(Tracer.class.getName().replace('.', '/').concat(".class")));
+      assertNotNull(classLoader.findResource(Span.class.getName().replace('.', '/').concat(".class")));
     }
   }
 
   @Test
-  public void testAgentFindResources() throws Exception {
-    final Enumeration<URL> resources = SpecialAgent.findResources(null, Span.class.getName().replace('.', '/').concat(".class"));
+  public void testAgentFindResources() throws IOException {
+    final Enumeration<URL> resources = SpecialAgent.findResources(null, Tracer.class.getName().replace('.', '/').concat(".class"));
     assertNotNull(resources);
     assertTrue(resources.hasMoreElements());
   }

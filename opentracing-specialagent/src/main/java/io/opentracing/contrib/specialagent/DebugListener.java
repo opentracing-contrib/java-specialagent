@@ -39,7 +39,7 @@ public class DebugListener implements AgentBuilder.Listener {
 
   @Override
   public void onIgnored(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
-    // System.out.println("onIgnored:" + typeDescription);
+//     System.out.println("onIgnored:" + typeDescription);
   }
 
   @Override

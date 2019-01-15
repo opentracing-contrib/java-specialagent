@@ -39,8 +39,6 @@ public class AgentRunnerUtil {
       if (tracer != null)
         return tracer;
 
-      final Class<?> tc = Tracer.class;
-      System.out.println(tc.getClassLoader());
       Tracer tracer = TracerResolver.resolveTracer();
       if (tracer == null)
         tracer = new MockTracer();
