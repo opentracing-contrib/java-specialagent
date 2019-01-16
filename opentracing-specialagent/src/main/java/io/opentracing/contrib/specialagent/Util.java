@@ -98,7 +98,7 @@ public final class Util {
 
   public static JarFile createJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();
-    final Path zipPath = Files.createTempFile("bootstrap", "jar");
+    final Path zipPath = Files.createTempFile("bootstrap", ".jar");
     try (
       final FileOutputStream fos = new FileOutputStream(zipPath.toFile());
       final JarOutputStream jos = new JarOutputStream(fos);

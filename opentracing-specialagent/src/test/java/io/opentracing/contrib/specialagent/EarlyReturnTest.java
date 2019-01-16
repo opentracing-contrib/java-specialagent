@@ -43,7 +43,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class EarlyReturnTest {
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+  public static void premain(final Instrumentation inst) throws Exception {
     final Narrowable builder = new AgentBuilder.Default()
       .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
@@ -97,7 +97,7 @@ public class EarlyReturnTest {
 
   @Test
   public void test() throws Exception {
-    premain(null, ByteBuddyAgent.install());
+    premain(ByteBuddyAgent.install());
     assertEquals("ok!", new ControllerImpl().run());
   }
 }

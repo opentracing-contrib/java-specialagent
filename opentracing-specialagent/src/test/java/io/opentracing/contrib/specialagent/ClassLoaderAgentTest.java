@@ -36,21 +36,29 @@ import io.opentracing.Tracer;
  * @author Seva Safris
  */
 public abstract class ClassLoaderAgentTest {
-  private static final Instrumentation inst = AgentRunner.init();
+  private static final Instrumentation inst = AgentRunner.install();
 
-  public static class ByteBuddyBTest extends ClassLoaderAgentTest {
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-      AgentAgent.premain(null, inst);
-      ClassLoaderAgent.premain(null, inst);
+  static {
+    try {
+      SpecialAgentAgent.premain(null, inst);
+    }
+    catch (final Exception e) {
+      throw new ExceptionInInitializerError(e);
     }
   }
 
-  public static class BytemanBTest extends ClassLoaderAgentTest {
+  public static class ByteBuddyTest extends ClassLoaderAgentTest {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+      System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEBUDDY.name());
+      SpecialAgent.premain(null, inst);
+    }
+  }
+
+  public static class BytemanTest extends ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
       System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
-      AgentAgent.premain(null, inst);
       SpecialAgent.premain(null, inst);
     }
   }

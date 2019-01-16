@@ -20,6 +20,13 @@ public class CachedClassFileLocator implements ClassFileLocator {
     }
   }
 
+  public void cache(final Class<?> cls) throws IOException {
+    final String className = cls.getName();
+    final Resolution resolution = map.get(className);
+    if (resolution == null)
+      map.put(className, ClassFileLocator.ForClassLoader.of(cls.getClassLoader()).locate(cls.getName()));
+  }
+
   @Override
   public void close() throws IOException {
   }

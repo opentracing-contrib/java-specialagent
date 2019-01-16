@@ -38,15 +38,15 @@ import net.bytebuddy.utility.JavaModule;
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
 
-  private Instrumentation instrumentation;
+  private Instrumentation inst;
 
   ByteBuddyManager() {
     super("otaplugins.txt");
   }
 
   @Override
-  void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
-    this.instrumentation = instrumentation;
+  void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+    this.inst = inst;
     SpecialAgent.initialize();
   }
 
@@ -57,7 +57,7 @@ public class ByteBuddyManager extends Manager {
   @Override
   void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs) throws IOException {
     // Prepare the ClassLoader rule
-    ClassLoaderAgent.premain(agentArgs, instrumentation);
+    ClassLoaderAgent.premain(agentArgs, inst);
 
     // Prepare the Plugin rules
     final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(file);
@@ -95,7 +95,7 @@ public class ByteBuddyManager extends Manager {
 //          if (agentPlugin.onEn().getOnExit() != null)
 //            installOn(builder, agentPlugin.onEn().getOnExit(), agentPlugin, listener, instrumentation);
 
-          builder.with(listener).installOn(instrumentation);
+          builder.with(listener).installOn(inst);
         }
         catch (final InvocationTargetException e) {
           logger.log(Level.SEVERE, "Error initliaizing plugin", e);

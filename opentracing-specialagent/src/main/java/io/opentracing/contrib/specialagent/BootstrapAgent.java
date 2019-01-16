@@ -23,14 +23,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import io.opentracing.contrib.specialagent.ClassLoaderAgent.FindClass;
-import io.opentracing.contrib.specialagent.ClassLoaderAgent.FindResource;
-import io.opentracing.contrib.specialagent.ClassLoaderAgent.FindResources;
-import io.opentracing.contrib.specialagent.ClassLoaderAgent.Mutex;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -44,29 +46,34 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class BootstrapClassLoaderAgent {
-  private static ClassFileLocator locator;
+public class BootstrapAgent {
+  private static CachedClassFileLocator locator;
 
   static {
     try {
-      locator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(), FindBootstrapResource.class, FindBootstrapResources.class, FindClass.class, FindResource.class, FindResources.class);
+      locator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(), FindBootstrapResource.class, FindBootstrapResources.class, ClassLoaderAgent.FindClass.class, ClassLoaderAgent.FindResource.class, ClassLoaderAgent.FindResources.class, SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
     }
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
   }
 
-  public static final ClassFileLocator locatorProxy = AccessController.doPrivileged(new PrivilegedAction<ClassFileLocator>() {
+  public static final CachedClassFileLocator locatorProxy = AccessController.doPrivileged(new PrivilegedAction<CachedClassFileLocator>() {
     @Override
-    public ClassFileLocator run() {
+    public CachedClassFileLocator run() {
       return locator;
     }
   });
 
-  public static JarFile jarFile;
+  public static List<JarFile> jarFiles;
 
-  public static void premain(final JarFile jarFile, final Instrumentation inst) {
-    BootstrapClassLoaderAgent.jarFile = jarFile;
+  public static void premain(final Instrumentation inst, final JarFile ... jarFiles) {
+    if (jarFiles != null && jarFiles.length > 0) {
+      BootstrapAgent.jarFiles = new ArrayList<>();
+      for (int i = 0; i < jarFiles.length; ++i)
+        BootstrapAgent.jarFiles.add(Objects.requireNonNull(jarFiles[i]));
+    }
+
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
 //    .with(new DebugListener())
@@ -92,21 +99,61 @@ public class BootstrapClassLoaderAgent {
       .installOn(inst);
   }
 
+  public static class Mutex extends ThreadLocal<Set<String>> {
+    @Override
+    protected Set<String> initialValue() {
+      return new HashSet<>();
+    }
+  }
+
   public static URL findBootstrapResource(final String name) {
-    final JarEntry entry = jarFile.getJarEntry(name);
-    if (entry == null) {
-      System.err.println("<<<<<<<< findBootstrapResource(" + name + "): null");
+    if (jarFiles == null)
       return null;
+
+    for (final JarFile jarFile : jarFiles) {
+      final JarEntry entry = jarFile.getJarEntry(name);
+      if (entry == null)
+        continue;
+
+      try {
+        final URL url = new URL("jar:file:" + jarFile.getName() + "!/" + name);
+        System.err.println("<<<<<<<< findBootstrapResource(" + name + "): " + url);
+        return url;
+      }
+      catch (final MalformedURLException e) {
+        throw new UnsupportedOperationException(e);
+      }
     }
 
-    try {
-      final URL url = new URL("file", null, jarFile.getName() + "!/" + name);
-      System.err.println("<<<<<<<< findBootstrapResource(" + name + "): " + url);
-      return url;
+    System.err.println("<<<<<<<< findBootstrapResource(" + name + "): null");
+    return null;
+  }
+
+  public static Enumeration<URL> findBootstrapResources(final String name) {
+    if (jarFiles == null)
+      return null;
+
+    final List<URL> resources = new ArrayList<>();
+    for (final JarFile jarFile : jarFiles) {
+      final JarEntry entry = jarFile.getJarEntry(name);
+      if (entry == null)
+        continue;
+
+      try {
+        final URL url = new URL("jar:file:" + jarFile.getName() + "!/" + name);
+        System.err.println("<<<<<<<< findBootstrapResources(" + name + "): " + url);
+        resources.add(url);
+      }
+      catch (final MalformedURLException e) {
+        throw new UnsupportedOperationException(e);
+      }
     }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
+
+    if (resources.size() > 0)
+      return Collections.enumeration(resources);
+
+    System.err.println("<<<<<<<< findBootstrapResources(" + name + "): null");
+    return null;
   }
 
   public static class FindBootstrapResource {

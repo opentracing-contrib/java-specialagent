@@ -71,25 +71,45 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  *
  * @author Seva Safris
  */
-@SuppressWarnings("resource")
 public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(AgentRunner.class.getName());
-  private static final Instrumentation inst = ByteBuddyAgent.install();
+  private static final Instrumentation inst;
 
-  static Instrumentation init() {
+  private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
+    final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
+    if (testClassesPath.endsWith("-tests.jar"))
+      return new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
+
+    if (testClassesPath.endsWith(".jar"))
+      return new JarFile(new File(testClassesPath));
+
+    if (testClassesPath.endsWith("/test-classes/")) {
+      final File dir = new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/");
+      dir.deleteOnExit();
+      return Util.createJarFile(dir);
+    }
+
+    if (testClassesPath.endsWith("classes/")) {
+      final File dir = new File(testClassesPath.endsWith("/test-classes/") ? testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/" : testClassesPath);
+      dir.deleteOnExit();
+      return Util.createJarFile(dir);
+    }
+
+    throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
+  }
+
+  static Instrumentation install() {
+    if (inst != null)
+      return inst;
+
     try {
-      final String testClassesPath = AgentRunner.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-      final JarFile jarFile;
-      if (testClassesPath.endsWith("-tests.jar")) {
-        jarFile = new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
-      }
-      else {
-        final File dir = new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/");
-        dir.deleteOnExit();
-        jarFile = Util.createJarFile(dir);
-      }
-      inst.appendToBootstrapClassLoaderSearch(jarFile);
-      BootstrapClassLoaderAgent.premain(jarFile, inst);
+      final JarFile jarFile1 = createJarFileOfSource(AgentRunner.class);
+      final JarFile jarFile2 = createJarFileOfSource(AgentPlugin.class);
+      final Instrumentation inst = ByteBuddyAgent.install();
+      inst.appendToBootstrapClassLoaderSearch(jarFile1);
+      inst.appendToBootstrapClassLoaderSearch(jarFile2);
+      System.err.println("\n\n\n===============================================================\n\n\n");
+      BootstrapAgent.premain(inst, jarFile1, jarFile2);
       return inst;
     }
     catch (final IOException e) {
@@ -98,7 +118,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   static {
-    init();
+    inst = install();
   }
 
   /**
@@ -192,6 +212,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       pluginPaths.add(classesPath);
       final Set<String> isolatedClasses = TestUtil.getClassFiles(pluginPaths);
 
+      // FIXME: Is there any way to properly reference this?
       isolatedClasses.add("io/opentracing/contrib/specialagent/AgentRunnerUtil.class");
 
       final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));

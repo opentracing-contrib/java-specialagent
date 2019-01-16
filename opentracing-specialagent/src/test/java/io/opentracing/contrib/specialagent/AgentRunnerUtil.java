@@ -44,7 +44,7 @@ public class AgentRunnerUtil {
         tracer = new MockTracer();
 
       if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("Registering tracer in forked " + AgentRunner.class.getSimpleName() + ": " + tracer);
+        logger.finest("Registering tracer for " + AgentRunner.class.getSimpleName() + ": " + tracer);
         logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
         logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
         logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());

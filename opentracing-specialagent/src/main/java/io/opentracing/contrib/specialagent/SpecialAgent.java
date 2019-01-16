@@ -73,7 +73,7 @@ public class SpecialAgent {
     instrumenter = instrumenterProperty == null ? Instrumenter.BYTEBUDDY : Instrumenter.valueOf(instrumenterProperty.toUpperCase());
   }
 
-  private static Instrumentation instrumentation;
+  private static Instrumentation inst;
 
   public static void main(final String[] args) throws Exception {
     if (args.length != 1) {
@@ -91,10 +91,17 @@ public class SpecialAgent {
     }
   }
 
-  public static void premain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
+  /**
+   * JVM entrypoint that loads SpecialAgent as a Java agent.
+   *
+   * @param agentArgs Agent arguments.
+   * @param inst The {@code Instrumentation}.
+   * @throws Exception If an error has occurred.
+   */
+  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     SpecialAgent.agentArgs = agentArgs;
-    SpecialAgent.instrumentation = instrumentation;
-    instrumenter.manager.premain(agentArgs, instrumentation);
+    SpecialAgent.inst = inst;
+    instrumenter.manager.premain(null, inst);
   }
 
   public static void agentmain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
@@ -358,7 +365,7 @@ public class SpecialAgent {
 
         for (final URL path : pluginPaths) {
           try {
-            instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
+            inst.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
           }
           catch (final IOException e) {
             logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
@@ -371,7 +378,7 @@ public class SpecialAgent {
 
         for (final URL path : pluginPaths) {
           try {
-            instrumentation.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
+            inst.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
           }
           catch (final IOException e) {
             logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);

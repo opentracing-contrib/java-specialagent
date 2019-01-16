@@ -41,10 +41,10 @@ public abstract class Manager {
 
   /**
    * Returns the resources in the system class loader matching the configuration
-   * file name from {@link #getFile()}.
+   * file name from {@link #file}.
    *
    * @return The resources in the system class loader matching the configuration
-   *         file name from {@link #getFile()}.
+   *         file name from {@link #file}.
    * @throws IOException If an I/O error has occurred.
    */
   final Enumeration<URL> getResources() throws IOException {
