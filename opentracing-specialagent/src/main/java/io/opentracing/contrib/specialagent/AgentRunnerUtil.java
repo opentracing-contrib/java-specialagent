@@ -16,7 +16,7 @@ import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
 public class AgentRunnerUtil {
-  private static final Logger logger = Logger.getLogger(AgentRunner.class.getName());
+  private static final Logger logger = Logger.getLogger(AgentRunnerUtil.class.getName());
   private static Tracer tracer = null;
   private static final Object tracerMutex = new Object();
 
@@ -44,14 +44,16 @@ public class AgentRunnerUtil {
         tracer = new MockTracer();
 
       if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("Registering tracer for " + AgentRunner.class.getSimpleName() + ": " + tracer);
+        logger.finest("Registering tracer for AgentRunner: " + tracer);
         logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
         logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
         logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
         logger.finest("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
       }
 
-      GlobalTracer.register(tracer);
+      if (!(tracer instanceof GlobalTracer))
+        GlobalTracer.register(tracer);
+
       return AgentRunnerUtil.tracer = tracer instanceof MockTracer ? tracer : new ProxyTracer(tracer);
     }
   }

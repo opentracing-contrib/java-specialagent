@@ -444,8 +444,8 @@ public class SpecialAgent {
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     instrumenter.manager.disableTriggers();
     try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+//      if (logger.isLoggable(Level.FINEST))
+//        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
@@ -472,8 +472,8 @@ public class SpecialAgent {
   public static URL findResource(final ClassLoader classLoader, final String name) {
     instrumenter.manager.disableTriggers();
     try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+//      if (logger.isLoggable(Level.FINEST))
+//        logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
@@ -487,8 +487,8 @@ public class SpecialAgent {
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
     instrumenter.manager.disableTriggers();
     try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+//      if (logger.isLoggable(Level.FINEST))
+//        logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);

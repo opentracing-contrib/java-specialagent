@@ -95,7 +95,7 @@
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-mock</artifactId>
-      <scope>test</scope>
+      <optional>true</optional>
     </dependency>
 
     <!-- Use <optional>true</optional> instead of <scope>provided</scope>

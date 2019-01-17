@@ -69,7 +69,20 @@ public final class Util {
   private static URL[] filterUrlFileNames(final URL[] urls, final Set<String> names, final int index, final int depth) throws MalformedURLException {
     for (int i = index; i < urls.length; ++i) {
       final String string = urls[i].toString();
-      if (names.contains(string.substring(string.lastIndexOf('/') + 1))) {
+      final boolean isDirectory;
+      final String token = (isDirectory = string.endsWith("/target/classes/")) ? string.substring(0, string.length() - 16) : string;
+      final String artifact = token.substring(token.lastIndexOf('/') + 1);
+      boolean match = false;
+      if (isDirectory) {
+        for (final String name : names)
+          if (match = name.startsWith(artifact))
+            break;
+      }
+      else {
+        match = names.contains(artifact);
+      }
+
+      if (match) {
         final URL result = new URL(string);
         final URL[] results = filterUrlFileNames(urls, names, i + 1, depth + 1);
         results[depth] = result;

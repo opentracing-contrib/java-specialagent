@@ -44,6 +44,11 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
+import io.opentracing.Tracer;
+import io.opentracing.contrib.tracerresolver.TracerResolver;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.noop.NoopTracer;
+import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
@@ -103,6 +108,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       return inst;
 
     try {
+      // FIXME: Can this be done in a better way?
       final JarFile jarFile1 = createJarFileOfSource(AgentRunner.class);
       final JarFile jarFile2 = createJarFileOfSource(AgentPlugin.class);
       final Instrumentation inst = ByteBuddyAgent.install();
@@ -218,12 +224,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
-      final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
-      final URLClassLoader classLoader = new URLClassLoader(libs, new ClassLoader(parent) {
+      final URLClassLoader classLoader = new URLClassLoader(libs, new ClassLoader(ClassLoader.getSystemClassLoader()) {
+        private final ClassLoader bootstrapClassLoader = new URLClassLoader(new URL[0], null);
+
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-          return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? null : super.loadClass(name, resolve);
+          return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? bootstrapClassLoader.loadClass(name) : super.loadClass(name, resolve);
         }
       });
 

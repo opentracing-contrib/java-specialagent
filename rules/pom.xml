@@ -98,6 +98,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
+          <reuseForks>false</reuseForks>
           <includes>
             <include>**/*Test</include>
             <include>**/*TestCase</include>
@@ -122,6 +123,7 @@
             <phase>integration-test</phase>
             <configuration>
               <trimStackTrace>false</trimStackTrace>
+              <reuseForks>false</reuseForks>
               <includes>
                 <include>**/*ITest</include>
                 <include>**/*IntegrationTest</include>

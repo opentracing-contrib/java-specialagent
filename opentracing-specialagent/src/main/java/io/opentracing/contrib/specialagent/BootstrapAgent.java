@@ -116,16 +116,13 @@ public class BootstrapAgent {
         continue;
 
       try {
-        final URL url = new URL("jar:file:" + jarFile.getName() + "!/" + name);
-        System.err.println("<<<<<<<< findBootstrapResource(" + name + "): " + url);
-        return url;
+        return new URL("jar:file:" + jarFile.getName() + "!/" + name);
       }
       catch (final MalformedURLException e) {
         throw new UnsupportedOperationException(e);
       }
     }
 
-    System.err.println("<<<<<<<< findBootstrapResource(" + name + "): null");
     return null;
   }
 
@@ -140,9 +137,7 @@ public class BootstrapAgent {
         continue;
 
       try {
-        final URL url = new URL("jar:file:" + jarFile.getName() + "!/" + name);
-        System.err.println("<<<<<<<< findBootstrapResources(" + name + "): " + url);
-        resources.add(url);
+        resources.add(new URL("jar:file:" + jarFile.getName() + "!/" + name));
       }
       catch (final MalformedURLException e) {
         throw new UnsupportedOperationException(e);
@@ -152,7 +147,6 @@ public class BootstrapAgent {
     if (resources.size() > 0)
       return Collections.enumeration(resources);
 
-    System.err.println("<<<<<<<< findBootstrapResources(" + name + "): null");
     return null;
   }
 
