@@ -8,7 +8,6 @@ import java.util.concurrent.Executor;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedRunnable;
 import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.DebugListener;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -26,7 +25,7 @@ public class ExecutorAgentPlugin implements AgentPlugin {
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
       .ignore(none())
-      .with(new DebugListener())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

@@ -48,13 +48,13 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgent {
-  public static final ClassFileLocator locatorProxy = BootstrapAgent.locatorProxy;
+  public static final ClassFileLocator locatorProxy = BootstrapAgent.bootstrapLocator;
 
   @SuppressWarnings("unused")
   public static void premain(final String agentArgs, final Instrumentation inst, final JarFile ... jarFiles) {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-      .with(new DebugListener())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

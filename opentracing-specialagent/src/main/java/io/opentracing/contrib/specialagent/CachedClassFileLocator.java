@@ -1,3 +1,18 @@
+/* Copyright 2019 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
@@ -5,26 +20,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.bytebuddy.dynamic.ClassFileLocator;
-import net.bytebuddy.dynamic.ClassFileLocator.Resolution.Illegal;
 
 public class CachedClassFileLocator implements ClassFileLocator {
   private final Map<String,Resolution> map = new HashMap<>();
 
   public CachedClassFileLocator(final ClassFileLocator classFileLocator, final Class<?> ... classes) throws IOException {
+    if (classes == null)
+      return;
+
     for (final Class<?> cls : classes) {
       Resolution resolution = classFileLocator.locate(cls.getName());
-      if (resolution instanceof Illegal)
+      if (resolution instanceof ClassFileLocator.Resolution.Illegal)
         resolution = ClassFileLocator.ForClassLoader.of(cls.getClassLoader()).locate(cls.getName());
 
       map.put(cls.getName(), resolution);
     }
-  }
-
-  public void cache(final Class<?> cls) throws IOException {
-    final String className = cls.getName();
-    final Resolution resolution = map.get(className);
-    if (resolution == null)
-      map.put(className, ClassFileLocator.ForClassLoader.of(cls.getClassLoader()).locate(cls.getName()));
   }
 
   @Override

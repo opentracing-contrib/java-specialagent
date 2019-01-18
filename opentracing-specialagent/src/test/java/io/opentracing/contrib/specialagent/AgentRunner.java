@@ -108,13 +108,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     try {
       System.err.println("\n\n\n===============================================================");
       // FIXME: Can this be done in a better way?
-      final JarFile jarFile1 = createJarFileOfSource(AgentRunner.class);
-      final JarFile jarFile2 = createJarFileOfSource(AgentPlugin.class);
+      final JarFile jarFile = createJarFileOfSource(AgentRunner.class);
       final Instrumentation inst = ByteBuddyAgent.install();
-      inst.appendToBootstrapClassLoaderSearch(jarFile1);
-      inst.appendToBootstrapClassLoaderSearch(jarFile2);
+      inst.appendToBootstrapClassLoaderSearch(jarFile);
       System.err.println("===============================================================\n\n\n");
-      BootstrapAgent.premain(inst, jarFile1, jarFile2);
+      BootstrapAgent.premain(inst, jarFile);
       return inst;
     }
     catch (final IOException e) {

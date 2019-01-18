@@ -21,14 +21,11 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -47,33 +44,27 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class BootstrapAgent {
-  private static CachedClassFileLocator locator;
+  public static final CachedClassFileLocator bootstrapLocator;
 
   static {
     try {
-      locator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(), FindBootstrapResource.class, FindBootstrapResources.class, ClassLoaderAgent.FindClass.class, ClassLoaderAgent.FindResource.class, ClassLoaderAgent.FindResources.class, SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
+      bootstrapLocator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(),
+        // BootstrapAgent @Advice classes
+        FindBootstrapResource.class, FindBootstrapResources.class,
+        // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
+        ClassLoaderAgent.FindClass.class, ClassLoaderAgent.FindResource.class, ClassLoaderAgent.FindResources.class,
+        // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
+        SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
     }
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
   }
 
-  public static final CachedClassFileLocator locatorProxy = AccessController.doPrivileged(new PrivilegedAction<CachedClassFileLocator>() {
-    @Override
-    public CachedClassFileLocator run() {
-      return locator;
-    }
-  });
+  public static JarFile jarFile;
 
-  public static List<JarFile> jarFiles;
-
-  public static void premain(final Instrumentation inst, final JarFile ... jarFiles) {
-    if (jarFiles != null && jarFiles.length > 0) {
-      BootstrapAgent.jarFiles = new ArrayList<>();
-      for (int i = 0; i < jarFiles.length; ++i)
-        BootstrapAgent.jarFiles.add(Objects.requireNonNull(jarFiles[i]));
-    }
-
+  public static void premain(final Instrumentation inst, final JarFile jarFile) {
+    BootstrapAgent.jarFile = jarFile;
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
 //    .with(new DebugListener())
@@ -85,14 +76,14 @@ public class BootstrapAgent {
     j8.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResource.class, locatorProxy).on(isPrivate().and(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class)))))));
+          return builder.visit(Advice.to(FindBootstrapResource.class, bootstrapLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
 
     j8.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResources.class, locatorProxy).on(isPrivate().and(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class)))))));
+          return builder.visit(Advice.to(FindBootstrapResources.class, bootstrapLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
 
@@ -100,14 +91,14 @@ public class BootstrapAgent {
     j9.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResource.class, locatorProxy).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
+          return builder.visit(Advice.to(FindBootstrapResource.class, bootstrapLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
 
     j9.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResources.class, locatorProxy).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
+          return builder.visit(Advice.to(FindBootstrapResources.class, bootstrapLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
   }
@@ -120,50 +111,38 @@ public class BootstrapAgent {
   }
 
   public static URL findBootstrapResource(final String name) {
-    if (jarFiles == null)
+    if (jarFile == null)
       return null;
 
-    for (final JarFile jarFile : jarFiles) {
-      final JarEntry entry = jarFile.getJarEntry(name);
-      if (name.contains("opentracing-specialagent"))
-        System.err.println("XXX: " + entry);
+    final JarEntry entry = jarFile.getJarEntry(name);
+    if (entry == null)
+      return null;
 
-      if (entry == null)
-        continue;
-
-      try {
-        return new URL("jar:file:" + jarFile.getName() + "!/" + name);
-      }
-      catch (final MalformedURLException e) {
-        throw new UnsupportedOperationException(e);
-      }
+    try {
+      return new URL("jar:file:" + jarFile.getName() + "!/" + name);
     }
-
-    return null;
+    catch (final MalformedURLException e) {
+      throw new UnsupportedOperationException(e);
+    }
   }
 
   public static Enumeration<URL> findBootstrapResources(final String name) {
-    if (jarFiles == null)
+    if (jarFile == null)
       return null;
 
     final List<URL> resources = new ArrayList<>();
-    for (final JarFile jarFile : jarFiles) {
-      final JarEntry entry = jarFile.getJarEntry(name);
-      if (entry == null)
-        continue;
+    final JarEntry entry = jarFile.getJarEntry(name);
+    if (entry == null)
+      return null;
 
-      try {
-        resources.add(new URL("jar:file:" + jarFile.getName() + "!/" + name));
-      }
-      catch (final MalformedURLException e) {
-        throw new UnsupportedOperationException(e);
-      }
+    try {
+      resources.add(new URL("jar:file:" + jarFile.getName() + "!/" + name));
+    }
+    catch (final MalformedURLException e) {
+      throw new UnsupportedOperationException(e);
     }
 
-    if (resources.size() > 0)
-      return Collections.enumeration(resources);
-
-    return null;
+    return Collections.enumeration(resources);
   }
 
   public static class FindBootstrapResource {

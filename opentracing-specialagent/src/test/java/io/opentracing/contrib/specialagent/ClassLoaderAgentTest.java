@@ -24,6 +24,7 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.opentracing.Span;
@@ -47,6 +48,7 @@ public abstract class ClassLoaderAgentTest {
     }
   }
 
+  @Ignore
   public static class ByteBuddyTest extends ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -55,6 +57,7 @@ public abstract class ClassLoaderAgentTest {
     }
   }
 
+  @Ignore
   public static class BytemanTest extends ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {

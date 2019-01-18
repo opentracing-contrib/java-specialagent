@@ -22,8 +22,8 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
 
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -47,7 +47,7 @@ public class SpecialAgentAgent {
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-      .with(new DebugListener())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
@@ -57,7 +57,7 @@ public class SpecialAgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindClass.class, BootstrapAgent.locatorProxy).on(isStatic().and(named("findClass").and(returns(byte[].class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindClass.class, BootstrapAgent.bootstrapLocator).on(isStatic().and(named("findClass").and(returns(byte[].class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
 
@@ -65,7 +65,7 @@ public class SpecialAgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResource.class, BootstrapAgent.locatorProxy).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindResource.class, BootstrapAgent.bootstrapLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
 
@@ -73,7 +73,7 @@ public class SpecialAgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResources.class, BootstrapAgent.locatorProxy).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindResources.class, BootstrapAgent.bootstrapLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
   }
