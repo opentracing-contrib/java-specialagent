@@ -113,39 +113,31 @@ public class SpecialAgent {
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
-    final boolean runningFromTest = pluginJarUrls.isEmpty();
-    if (runningFromTest) {
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
-      try {
-        final Enumeration<URL> resources = instrumenter.manager.getResources();
-        while (resources.hasMoreElements())
-          pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), instrumenter.manager.file)));
-      }
-      catch (final IOException e) {
-        throw new IllegalStateException(e);
-      }
-
-      final URL[] pluginPaths = Util.classPathToURLs(System.getProperty(PLUGIN_ARG));
-      if (pluginPaths != null)
-        for (final URL pluginPath : pluginPaths)
-          pluginJarUrls.add(pluginPath);
+    try {
+      final Enumeration<URL> resources = instrumenter.manager.getResources();
+      while (resources.hasMoreElements())
+        pluginJarUrls.add(new URL(Util.getSourceLocation(resources.nextElement(), instrumenter.manager.file)));
     }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+    final URL[] pluginPaths = Util.classPathToURLs(System.getProperty(PLUGIN_ARG));
+    if (pluginPaths != null)
+      for (final URL pluginPath : pluginPaths)
+        pluginJarUrls.add(pluginPath);
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
 
-    // Override parent ClassLoader methods to avoid delegation of resource
-    // resolution to bootstrap class loader
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
-    int count = loadDependencies(allPluginsClassLoader);
-    if (runningFromTest)
-      count += loadDependencies(ClassLoader.getSystemClassLoader());
-
+    final int count = loadDependencies(allPluginsClassLoader) + loadDependencies(ClassLoader.getSystemClassLoader());
     if (count == 0)
-      logger.log(runningFromTest ? Level.WARNING : Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
+      logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
 
     loadRules();
   }
@@ -154,6 +146,8 @@ public class SpecialAgent {
     private final Set<URL> urls;
 
     public AllPluginsClassLoader(final Set<URL> urls) {
+      // Override parent ClassLoader methods to avoid delegation of resource
+      // resolution to bootstrap class loader
       super(urls.toArray(new URL[urls.size()]), new ClassLoader(null) {
         // Overridden to ensure resources are not discovered in bootstrap class loader
         @Override

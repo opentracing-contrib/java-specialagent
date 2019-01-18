@@ -40,6 +40,8 @@ import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
 /**
@@ -48,6 +50,8 @@ import java.util.zip.ZipEntry;
  * @author Seva Safris
  */
 public final class Util {
+  private static final Logger logger = Logger.getLogger(Util.class.getName());
+
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
@@ -479,6 +483,9 @@ public final class Util {
         // Only consider resources that are inside JARs
         if (!(connection instanceof JarURLConnection))
           continue;
+
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("SpecialAgent Plugin Path: " + resource);
 
         if (destDir == null)
           destDir = Files.createTempDirectory("opentracing-specialagent").toFile();

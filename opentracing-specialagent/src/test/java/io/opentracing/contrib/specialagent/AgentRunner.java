@@ -44,11 +44,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
-import io.opentracing.Tracer;
-import io.opentracing.contrib.tracerresolver.TracerResolver;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.noop.NoopTracer;
-import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
@@ -82,6 +77,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
     final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
+//    if (logger.isLoggable(Level.FINEST))
+      System.err.println("Source location (\"" + cls.getName() + "\"): " + testClassesPath);
+
     if (testClassesPath.endsWith("-tests.jar"))
       return new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
 
@@ -108,13 +106,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       return inst;
 
     try {
+      System.err.println("\n\n\n===============================================================");
       // FIXME: Can this be done in a better way?
       final JarFile jarFile1 = createJarFileOfSource(AgentRunner.class);
       final JarFile jarFile2 = createJarFileOfSource(AgentPlugin.class);
       final Instrumentation inst = ByteBuddyAgent.install();
       inst.appendToBootstrapClassLoaderSearch(jarFile1);
       inst.appendToBootstrapClassLoaderSearch(jarFile2);
-      System.err.println("\n\n\n===============================================================\n\n\n");
+      System.err.println("===============================================================\n\n\n");
       BootstrapAgent.premain(inst, jarFile1, jarFile2);
       return inst;
     }

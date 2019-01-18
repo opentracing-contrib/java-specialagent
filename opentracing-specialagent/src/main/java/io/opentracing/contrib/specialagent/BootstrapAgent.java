@@ -74,27 +74,40 @@ public class BootstrapAgent {
         BootstrapAgent.jarFiles.add(Objects.requireNonNull(jarFiles[i]));
     }
 
-    final Narrowable builder = new AgentBuilder.Default()
+    final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
 //    .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
-      .type(is(ClassLoader.class));
+      .with(TypeStrategy.Default.REDEFINE);
 
-    builder
-      .transform(new Transformer() {
+    final Narrowable j8 = builder.type(is(ClassLoader.class));
+    j8.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(FindBootstrapResource.class, locatorProxy).on(isPrivate().and(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class)))))));
         }})
       .installOn(inst);
 
-    builder
-      .transform(new Transformer() {
+    j8.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(FindBootstrapResources.class, locatorProxy).on(isPrivate().and(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class)))))));
+        }})
+      .installOn(inst);
+
+    final Narrowable j9 = builder.type(named("jdk.internal.loader.BootLoader"));
+    j9.transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(FindBootstrapResource.class, locatorProxy).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
+        }})
+      .installOn(inst);
+
+    j9.transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(FindBootstrapResources.class, locatorProxy).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
   }
@@ -112,6 +125,9 @@ public class BootstrapAgent {
 
     for (final JarFile jarFile : jarFiles) {
       final JarEntry entry = jarFile.getJarEntry(name);
+      if (name.contains("opentracing-specialagent"))
+        System.err.println("XXX: " + entry);
+
       if (entry == null)
         continue;
 
