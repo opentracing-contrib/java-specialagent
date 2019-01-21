@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -25,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,18 +39,19 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import io.opentracing.Tracer;
-import io.opentracing.contrib.tracerresolver.TracerResolver;
-import io.opentracing.noop.NoopTracer;
-import io.opentracing.util.GlobalTracer;
+import java.util.jar.JarOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 
 /**
  * Utility functions for the SpecialAgent.
  *
  * @author Seva Safris
  */
-final class Util {
+public final class Util {
+  private static final Logger logger = Logger.getLogger(Util.class.getName());
+
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
@@ -57,7 +60,7 @@ final class Util {
    * Filters the specified array of URL objects by checking if the file name of
    * the URL is included in the specified {@code Set} of string names.
    *
-   * @param urls The specified array of URL objects to filter.
+   * @param urls The array of URL objects to filter.
    * @param names The {@code Set} of string names to be matched by the specified
    *          array of URL objects.
    * @param index The index value for stack tracking (must be called with 0).
@@ -70,7 +73,20 @@ final class Util {
   private static URL[] filterUrlFileNames(final URL[] urls, final Set<String> names, final int index, final int depth) throws MalformedURLException {
     for (int i = index; i < urls.length; ++i) {
       final String string = urls[i].toString();
-      if (names.contains(string.substring(string.lastIndexOf('/') + 1))) {
+      final boolean isDirectory;
+      final String token = (isDirectory = string.endsWith("/target/classes/")) ? string.substring(0, string.length() - 16) : string;
+      final String artifact = token.substring(token.lastIndexOf('/') + 1);
+      boolean match = false;
+      if (isDirectory) {
+        for (final String name : names)
+          if (match = name.startsWith(artifact))
+            break;
+      }
+      else {
+        match = names.contains(artifact);
+      }
+
+      if (match) {
         final URL result = new URL(string);
         final URL[] results = filterUrlFileNames(urls, names, i + 1, depth + 1);
         results[depth] = result;
@@ -87,16 +103,47 @@ final class Util {
    * {@code dependencyUrl}.
    *
    * @param urls The array of URL objects to filter.
-   * @param dependencyUrl The TGF file defining the specification of
+   * @param dependenciesTgf The contents of the TGF file that specify the
    *          dependencies.
    * @return An array of URL objects representing Instrumentation Plugin URLs
    * @throws IOException If an I/O error has occurred.
    */
-  static URL[] filterPluginURLs(final URL[] urls, final URL dependencyUrl) throws IOException {
-    try (final InputStream in = dependencyUrl.openStream()) {
-      final Set<String> names = Util.selectFromTgf(new String(Util.readBytes(in)), false, new String[] {"compile"});
-      return filterUrlFileNames(urls, names, 0, 0);
+  public static URL[] filterPluginURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
+    final Set<String> names = Util.selectFromTgf(dependenciesTgf, includeOptional, scopes);
+    return filterUrlFileNames(urls, names, 0, 0);
+  }
+
+  public static JarFile createTempJarFile(final File dir) throws IOException {
+    final Path dirPath = dir.toPath();
+    final Path zipPath = Files.createTempFile("specialagent", ".jar");
+    try (
+      final FileOutputStream fos = new FileOutputStream(zipPath.toFile());
+      final JarOutputStream jos = new JarOutputStream(fos);
+    ) {
+      recurseDir(dir, new Predicate<File>() {
+        @Override
+        public boolean test(final File t) {
+          if (t.isFile()) {
+            final Path filePath = t.toPath();
+            final String name = dirPath.relativize(filePath).toString();
+            try {
+              jos.putNextEntry(new ZipEntry(name));
+              jos.write(Files.readAllBytes(filePath));
+              jos.closeEntry();
+            }
+            catch (final IOException e) {
+              throw new IllegalStateException(e);
+            }
+          }
+
+          return true;
+        }
+      });
     }
+
+    final File file = zipPath.toFile();
+    file.deleteOnExit();
+    return new JarFile(file);
   }
 
   /**
@@ -244,22 +291,22 @@ final class Util {
   }
 
   /**
-   * Returns the string content of the specified URL.
+   * Returns the array of bytes read from the specified {@code URL}.
    *
    * @param url The URL from which to read bytes.
-   * @return The string content of the specified URL.
+   * @return The array of bytes read from an {@code InputStream}.
    */
-  static String readBytes(final URL url) {
+  public static byte[] readBytes(final URL url) {
     try {
-      final StringBuilder builder = new StringBuilder();
       try (final InputStream in = url.openStream()) {
-        final byte[] bytes = new byte[1024];
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream(DEFAULT_SOCKET_BUFFER_SIZE);
+        final byte[] bytes = new byte[DEFAULT_SOCKET_BUFFER_SIZE];
         for (int len; (len = in.read(bytes)) != -1;)
           if (len != 0)
-            builder.append(new String(bytes, 0, len));
-      }
+            buffer.write(bytes, 0, len);
 
-      return builder.toString();
+        return buffer.toByteArray();
+      }
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
@@ -296,7 +343,7 @@ final class Util {
    * @return A string representation of the specified array, using the specified
    *         delimiter between the string representation of each element.
    */
-  static String toString(final Object[] a, final String del) {
+  public static String toString(final Object[] a, final String del) {
     if (a == null)
       return "null";
 
@@ -358,7 +405,7 @@ final class Util {
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Collection#toString()}.
    */
-  static String toIndentedString(final Collection<?> l) {
+  public static String toIndentedString(final Collection<?> l) {
     if (l == null)
       return "null";
 
@@ -386,7 +433,7 @@ final class Util {
    * @return An array of {@code URL} objects representing each path entry in the
    *         specified {@code classpath}.
    */
-  static URL[] classPathToURLs(final String classpath) {
+  public static URL[] classPathToURLs(final String classpath) {
     if (classpath == null)
       return null;
 
@@ -401,20 +448,6 @@ final class Util {
     }
 
     return libs;
-  }
-
-  /**
-   * Returns the array of bytes read from an {@code InputStream}.
-   *
-   * @param in The {@code InputStream}.
-   * @return The array of bytes read from an {@code InputStream}.
-   * @throws IOException If an I/O error has occurred.
-   */
-  static byte[] readBytes(final InputStream in) throws IOException {
-    final ByteArrayOutputStream buffer = new ByteArrayOutputStream(DEFAULT_SOCKET_BUFFER_SIZE);
-    final byte[] data = new byte[DEFAULT_SOCKET_BUFFER_SIZE];
-    for (int len; (len = in.read(data)) != -1; buffer.write(data, 0, len));
-    return buffer.toByteArray();
   }
 
   /**
@@ -452,6 +485,9 @@ final class Util {
         // Only consider resources that are inside JARs
         if (!(connection instanceof JarURLConnection))
           continue;
+
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("SpecialAgent Plugin Path: " + resource);
 
         if (destDir == null)
           destDir = Files.createTempDirectory("opentracing-specialagent").toFile();
@@ -505,7 +541,7 @@ final class Util {
    * @return {@code true} if the specified predicate returned {@code true} for
    *         each sub-path to which it was applied, otherwise {@code false}.
    */
-  static boolean recurseDir(final File dir, final Predicate<File> predicate) {
+  public static boolean recurseDir(final File dir, final Predicate<File> predicate) {
     final File[] files = dir.listFiles();
     if (files != null)
       for (final File file : files)

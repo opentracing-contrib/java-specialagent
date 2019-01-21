@@ -21,7 +21,7 @@ public class JdbcAgentPlugin implements AgentPlugin {
   @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
-//      .with(AgentBuilder.Listener.StreamWriting.toSystemError())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

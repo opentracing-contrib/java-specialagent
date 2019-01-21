@@ -22,9 +22,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.jar.JarFile;
 
+import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -34,6 +34,7 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
@@ -47,12 +48,13 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgent {
+  public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
+
   @SuppressWarnings("unused")
-  public static void premain(final String agentArgs, final Instrumentation inst) {
+  public static void premain(final String agentArgs, final Instrumentation inst, final JarFile ... jarFiles) {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-      .disableClassFormatChanges()
-//    .with(new DebugListener())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
@@ -62,7 +64,8 @@ public class ClassLoaderAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindClass.class).on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
+          final Advice advice = locatorProxy != null ? Advice.to(FindClass.class, locatorProxy) : Advice.to(FindClass.class);
+          return builder.visit(advice.on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
         }})
       .installOn(inst);
 
@@ -70,7 +73,8 @@ public class ClassLoaderAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResource.class).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
+          final Advice advice = locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindClass.class);
+          return builder.visit(advice.on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
         }})
       .installOn(inst);
 
@@ -78,16 +82,10 @@ public class ClassLoaderAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResources.class).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
+          final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindClass.class);
+          return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }})
       .installOn(inst);
-  }
-
-  public static class Mutex extends ThreadLocal<Set<String>> {
-    @Override
-    protected Set<String> initialValue() {
-      return new HashSet<>();
-    }
   }
 
   public static class FindClass {

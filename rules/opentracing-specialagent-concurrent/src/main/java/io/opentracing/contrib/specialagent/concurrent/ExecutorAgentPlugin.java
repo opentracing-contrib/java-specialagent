@@ -24,8 +24,8 @@ public class ExecutorAgentPlugin implements AgentPlugin {
   @Override
   public AgentBuilder buildAgent(final String agentArgs) throws Exception {
     return new AgentBuilder.Default()
-//      .with(AgentBuilder.Listener.StreamWriting.toSystemError())
       .ignore(none())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

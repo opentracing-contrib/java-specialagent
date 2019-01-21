@@ -182,7 +182,7 @@ public class BytemanManager extends Manager {
     if (logger.isLoggable(Level.FINE))
       logger.fine("Digest rule for index " + index + " from URL = " + url);
 
-    final String script = Util.readBytes(url);
+    final String script = new String(Util.readBytes(url));
     scripts.add(index == null ? script : retrofitScript(script, index));
     scriptNames.add(url.toString());
   }

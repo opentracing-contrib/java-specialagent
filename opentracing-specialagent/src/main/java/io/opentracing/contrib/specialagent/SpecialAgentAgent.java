@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.File;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
@@ -44,12 +43,10 @@ import net.bytebuddy.utility.JavaModule;
  *
  * @author Seva Safris
  */
-public class AgentAgent {
+public class SpecialAgentAgent {
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-    System.setProperty("AgentAgent", AgentAgent.class.getProtectionDomain().getCodeSource().getLocation().toString());
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-      .disableClassFormatChanges()
 //      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
@@ -60,7 +57,7 @@ public class AgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindClass.class).on(isStatic().and(named("findClass").and(returns(byte[].class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindClass.class, BootLoaderAgent.cachedLocator).on(isStatic().and(named("findClass").and(returns(byte[].class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
 
@@ -68,7 +65,7 @@ public class AgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResource.class).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindResource.class, BootLoaderAgent.cachedLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
 
@@ -76,7 +73,7 @@ public class AgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResources.class).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindResources.class, BootLoaderAgent.cachedLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
   }
@@ -95,12 +92,10 @@ public class AgentAgent {
 
         try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
           final URL resource = pluginClassLoader.findResource(arg.replace('.', '/').concat(".class"));
-          if (resource != null) {
-            try (final InputStream in = resource.openStream()) {
-              returned = Util.readBytes(in);
-            }
-          }
+          if (resource != null)
+            returned = Util.readBytes(resource);
         }
+
         System.err.println("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
@@ -138,7 +133,6 @@ public class AgentAgent {
   public static class FindResources {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) ClassLoader classLoader, final @Advice.Argument(1) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      System.err.println(returned);
       try {
         String classpath = System.getProperty("java.class.path");
         final int index = classpath.indexOf("/opentracing-api-");
@@ -150,6 +144,7 @@ public class AgentAgent {
 
         try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
           returned = pluginClassLoader.getResources(arg); // Why is findResources(arg) not returning expected results?
+          returned.hasMoreElements(); // For some reason, if I don't call this, the returned value does not have any elements!!!!
         }
 
         System.err.println("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);

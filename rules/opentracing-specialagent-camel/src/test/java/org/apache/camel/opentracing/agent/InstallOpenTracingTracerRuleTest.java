@@ -26,6 +26,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,10 +41,11 @@ import io.opentracing.util.GlobalTracer;
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(debug=true, isolateClassLoader=false, verbose=true)
 public class InstallOpenTracingTracerRuleTest extends CamelTestSupport {
-  private static final MockTracer tracer = new MockTracer(Propagator.TEXT_MAP);
+  private static MockTracer tracer;
 
-  static {
-    GlobalTracer.register(tracer);
+  @BeforeClass
+  public static void beforeClass() {
+    GlobalTracer.register(tracer = new MockTracer(Propagator.TEXT_MAP));
   }
 
   @EndpointInject(uri = "mock:result")
