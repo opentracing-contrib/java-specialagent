@@ -65,6 +65,8 @@ public final class SpecialAgentMojo extends AbstractMojo {
    * @param artifactHandler The {@code ArtifactHandler}.
    * @return A {@code Artifact} representation of {@code dependency}, qualified
    *         by {@code artifactHandler}.
+   * @throws NullPointerException If {@code dependency} or
+   *           {@code artifactHandler} is null.
    */
   public static Artifact toArtifact(final ComponentDependency dependency, final ArtifactHandler artifactHandler) {
     return new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), null, dependency.getType(), null, artifactHandler);
@@ -78,6 +80,8 @@ public final class SpecialAgentMojo extends AbstractMojo {
    * @param artifact The artifact.
    * @return The filesystem path of {@code dependency} located in
    *         {@code localRepository}.
+   * @throws NullPointerException If {@code localRepository} or {@code artifact}
+   *           is null.
    */
   public static URL getPathOf(final ArtifactRepository localRepository, final Artifact artifact) {
     final StringBuilder builder = new StringBuilder();
