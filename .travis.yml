@@ -14,16 +14,19 @@
 
 language: java
 jdk:
-- oraclejdk7
+#- oraclejdk7
 - oraclejdk8
 - oraclejdk9
-- oraclejdk10
+#- oraclejdk10
 - oraclejdk11
 install:
 - cp settings.xml $HOME/.m2/settings.xml
 script:
-- mvn clean install
+- mvn -DrepoToken=$REPO_TOKEN -P report clean install
 - mvn -Ddeploy clean install
 cache:
   directories:
     - ~/.m2/repository
+env:
+  global:
+  - secure: j7plt7hOlzcdoD4yreSZzRKpRYhk542CDPvJn1DedRByB1JTamzTGnyqagvKAwh3P6JjyfPw18CXpvRNPDW3+PVSuXMuyFyXPk8KA8qqxECJ15/D1nIJDGDWzh88kcK0LFG6oT/ZOrgQqeNzFytQUY1/LxCHT7dYHJ9U5jy7oObNVqggD7JMi/yKLxzMIim+3HHN5Nn21gQ80E8kR51K5kIXIuw6gvXJ1wSKmQxbhwo1SYVxz8wRwIOS78tBzQKKknpAxfADP9FJk3LhPpWBg2lYoj9hYvjF90ZqK72Q/t8NZO1xYCbETfl7wZH8kwORZnMTleXdKBjzJAIyEJ/KiolPG15W9A/rPdoEgUWRB4rjlQ0vz5K+6E+hTTrqv6PuyKjL6+h63K7/Nvqsnb5OFDbVUxSajOlwtT+sxwWsz6DYZMl9SucM2Y6/WkDA9aHgVsFk41lgnwfI/UCKqdEVShXM1t+M8NbItrteXpEpI3BO4+LY0ULS1HDq3E4Og0/jQ6zUbAzg0B5T+/TCbe+NFv1pSUwHz4v42lgbMkyuTpP0GJbVC59sbYrBFWGWpP02XRD5islNqgoJmHCYsf/sy/T8Hat1kejbz9PJhj5EdzSzP44SWxwTwUnFv3j6jyt0BTt/zCmOC3LbgyIqjeQRQG25wCLqICZ/MQL0HuZE/Jc=
