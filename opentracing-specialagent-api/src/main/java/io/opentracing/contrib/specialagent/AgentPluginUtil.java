@@ -35,7 +35,7 @@ public final class AgentPluginUtil {
   @SuppressWarnings("unchecked")
   public static <T>T[] subArray(final T[] array, final int beginIndex, final int endIndex) {
     if (endIndex < beginIndex)
-      throw new IllegalArgumentException("endIndex < beginIndex");
+      throw new IllegalArgumentException("endIndex (" + endIndex + ") < beginIndex (" + beginIndex + ")");
 
     final Class<?> componentType = array.getClass().getComponentType();
     final T[] subArray = (T[])Array.newInstance(componentType, endIndex - beginIndex);
