@@ -359,7 +359,8 @@ public class SpecialAgent {
 
         for (final URL path : pluginPaths) {
           try {
-            inst.appendToBootstrapClassLoaderSearch(new JarFile(path.getPath()));
+            final File file = new File(path.getPath());
+            inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
           }
           catch (final IOException e) {
             logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
@@ -372,7 +373,8 @@ public class SpecialAgent {
 
         for (final URL path : pluginPaths) {
           try {
-            inst.appendToSystemClassLoaderSearch(new JarFile(path.getPath()));
+            final File file = new File(path.getPath());
+            inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
           }
           catch (final IOException e) {
             logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);

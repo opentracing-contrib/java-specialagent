@@ -77,8 +77,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
     final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
-//    if (logger.isLoggable(Level.FINEST))
-      System.err.println("Source location (\"" + cls.getName() + "\"): " + testClassesPath);
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("Source location (\"" + cls.getName() + "\"): " + testClassesPath);
 
     if (testClassesPath.endsWith("-tests.jar"))
       return new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
@@ -87,16 +87,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       return new JarFile(new File(testClassesPath));
 
     if (testClassesPath.endsWith("/test-classes/")) {
-      final File dir = new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/");
-      dir.deleteOnExit();
-      return Util.createJarFile(dir);
+      return Util.createTempJarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/"));
     }
 
-    if (testClassesPath.endsWith("classes/")) {
-      final File dir = new File(testClassesPath.endsWith("/test-classes/") ? testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/" : testClassesPath);
-      dir.deleteOnExit();
-      return Util.createJarFile(dir);
-    }
+    if (testClassesPath.endsWith("classes/"))
+      return Util.createTempJarFile(new File(testClassesPath.endsWith("/test-classes/") ? testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/" : testClassesPath));
 
     throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
   }
@@ -112,7 +107,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final Instrumentation inst = ByteBuddyAgent.install();
       inst.appendToBootstrapClassLoaderSearch(jarFile);
       System.err.println("===============================================================\n\n\n");
-      BootstrapAgent.premain(inst, jarFile);
+      BootLoaderAgent.premain(inst, jarFile);
       return inst;
     }
     catch (final IOException e) {

@@ -43,14 +43,14 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class BootstrapAgent {
-  public static final CachedClassFileLocator bootstrapLocator;
+public class BootLoaderAgent {
+  public static final CachedClassFileLocator cachedLocator;
 
   static {
     try {
-      bootstrapLocator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(),
-        // BootstrapAgent @Advice classes
-        FindBootstrapResource.class, FindBootstrapResources.class,
+      cachedLocator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(),
+        // BootLoaderAgent @Advice classes
+        FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         ClassLoaderAgent.FindClass.class, ClassLoaderAgent.FindResource.class, ClassLoaderAgent.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
@@ -61,13 +61,13 @@ public class BootstrapAgent {
     }
   }
 
-  public static JarFile jarFile;
+  public static final List<JarFile> jarFiles = new ArrayList<>();
 
   public static void premain(final Instrumentation inst, final JarFile jarFile) {
-    BootstrapAgent.jarFile = jarFile;
+    jarFiles.add(jarFile);
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
-//    .with(new DebugListener())
+//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE);
@@ -76,14 +76,14 @@ public class BootstrapAgent {
     j8.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResource.class, bootstrapLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class))))));
+          return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
 
     j8.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResources.class, bootstrapLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
+          return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
 
@@ -91,14 +91,22 @@ public class BootstrapAgent {
     j9.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResource.class, bootstrapLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
+          return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
         }})
       .installOn(inst);
 
     j9.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResources.class, bootstrapLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
+          return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
+        }})
+      .installOn(inst);
+
+    final Narrowable instrumentation = builder.type(isSubTypeOf(Instrumentation.class));
+    instrumentation.transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AppendToBootstrap.class, cachedLocator).on(named("appendToBootstrapClassLoaderSearch").and(takesArguments(JarFile.class))));
         }})
       .installOn(inst);
   }
@@ -110,41 +118,6 @@ public class BootstrapAgent {
     }
   }
 
-  public static URL findBootstrapResource(final String name) {
-    if (jarFile == null)
-      return null;
-
-    final JarEntry entry = jarFile.getJarEntry(name);
-    if (entry == null)
-      return null;
-
-    try {
-      return new URL("jar:file:" + jarFile.getName() + "!/" + name);
-    }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
-  }
-
-  public static Enumeration<URL> findBootstrapResources(final String name) {
-    if (jarFile == null)
-      return null;
-
-    final List<URL> resources = new ArrayList<>();
-    final JarEntry entry = jarFile.getJarEntry(name);
-    if (entry == null)
-      return null;
-
-    try {
-      resources.add(new URL("jar:file:" + jarFile.getName() + "!/" + name));
-    }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
-
-    return Collections.enumeration(resources);
-  }
-
   public static class FindBootstrapResource {
     public static final Mutex mutex = new Mutex();
 
@@ -154,12 +127,27 @@ public class BootstrapAgent {
         return;
 
       try {
-        final URL resource = findBootstrapResource(arg);
+        URL resource = null;
+        if (jarFiles.size() > 0) {
+          for (final JarFile jarFile : jarFiles) {
+            final JarEntry entry = jarFile.getJarEntry(arg);
+            if (entry != null) {
+              try {
+                resource = new URL("jar:file:" + jarFile.getName() + "!/" + arg);
+                break;
+              }
+              catch (final MalformedURLException e) {
+                throw new UnsupportedOperationException(e);
+              }
+            }
+          }
+        }
+
         if (resource != null)
           returned = resource;
       }
       catch (final Throwable t) {
-        System.err.println("<><><><> BootstrapClassLoaderAgent.FindBootstrapResource#exit: " + t);
+        System.err.println("<><><><> BootLoaderAgent.FindBootstrapResource#exit: " + t);
         t.printStackTrace();
       }
       finally {
@@ -177,19 +165,48 @@ public class BootstrapAgent {
         return;
 
       try {
-        final URL resource = findBootstrapResource(arg);
-        if (resource == null)
+        if (jarFiles.size() == 0)
           return;
 
-        final Enumeration<URL> enumeration = new SingletonEnumeration<>(resource);
+        final List<URL> resources = new ArrayList<>();
+        for (final JarFile jarFile : jarFiles) {
+          final JarEntry entry = jarFile.getJarEntry(arg);
+          if (entry == null)
+            continue;
+
+          try {
+            resources.add(new URL("jar:file:" + jarFile.getName() + "!/" + arg));
+          }
+          catch (final MalformedURLException e) {
+            throw new UnsupportedOperationException(e);
+          }
+        }
+
+        if (resources.size() == 0)
+          return;
+
+        final Enumeration<URL> enumeration = Collections.enumeration(resources);
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        System.err.println("<><><><> BootstrapClassLoaderAgent.FindBootstrapResources#exit: " + t);
+        System.err.println("<><><><> BootLoaderAgent.FindBootstrapResources#exit: " + t);
         t.printStackTrace();
       }
       finally {
         mutex.get().remove(arg);
+      }
+    }
+  }
+
+  public static class AppendToBootstrap {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Argument(0) JarFile arg) {
+      try {
+        jarFiles.add(arg);
+      }
+      catch (final Throwable t) {
+        System.err.println("<><><><> BootLoaderAgent.AppendToBootstrap#exit: " + t);
+        t.printStackTrace();
       }
     }
   }

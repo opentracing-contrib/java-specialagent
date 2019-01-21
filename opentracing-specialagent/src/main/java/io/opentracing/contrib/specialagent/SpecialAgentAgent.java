@@ -57,7 +57,7 @@ public class SpecialAgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindClass.class, BootstrapAgent.bootstrapLocator).on(isStatic().and(named("findClass").and(returns(byte[].class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindClass.class, BootLoaderAgent.cachedLocator).on(isStatic().and(named("findClass").and(returns(byte[].class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
 
@@ -65,7 +65,7 @@ public class SpecialAgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResource.class, BootstrapAgent.bootstrapLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindResource.class, BootLoaderAgent.cachedLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
 
@@ -73,7 +73,7 @@ public class SpecialAgentAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindResources.class, BootstrapAgent.bootstrapLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(ClassLoader.class, String.class))))));
+          return builder.visit(Advice.to(FindResources.class, BootLoaderAgent.cachedLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(ClassLoader.class, String.class))))));
         }})
       .installOn(inst);
   }

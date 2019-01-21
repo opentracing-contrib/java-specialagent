@@ -113,9 +113,9 @@ public final class Util {
     return filterUrlFileNames(urls, names, 0, 0);
   }
 
-  public static JarFile createJarFile(final File dir) throws IOException {
+  public static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();
-    final Path zipPath = Files.createTempFile("bootstrap", ".jar");
+    final Path zipPath = Files.createTempFile("specialagent", ".jar");
     try (
       final FileOutputStream fos = new FileOutputStream(zipPath.toFile());
       final JarOutputStream jos = new JarOutputStream(fos);
@@ -141,7 +141,9 @@ public final class Util {
       });
     }
 
-    return new JarFile(zipPath.toFile());
+    final File file = zipPath.toFile();
+    file.deleteOnExit();
+    return new JarFile(file);
   }
 
   /**

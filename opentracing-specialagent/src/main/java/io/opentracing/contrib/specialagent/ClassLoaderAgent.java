@@ -24,7 +24,7 @@ import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.jar.JarFile;
 
-import io.opentracing.contrib.specialagent.BootstrapAgent.Mutex;
+import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -48,7 +48,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgent {
-  public static final ClassFileLocator locatorProxy = BootstrapAgent.bootstrapLocator;
+  public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
   @SuppressWarnings("unused")
   public static void premain(final String agentArgs, final Instrumentation inst, final JarFile ... jarFiles) {
