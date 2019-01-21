@@ -41,7 +41,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
+@AgentRunner.Config(verbose=true)
 public class JettyServletTest {
   // jetty starts on random port
   private int serverPort;

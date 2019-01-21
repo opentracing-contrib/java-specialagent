@@ -19,7 +19,7 @@ import io.opentracing.mock.MockTracer;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
+@AgentRunner.Config(verbose=true)
 public class ExecutorTest extends AbstractConcurrentTest {
   @Test
 	public void testExecute(final MockTracer tracer) throws InterruptedException {

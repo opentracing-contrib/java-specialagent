@@ -43,7 +43,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true, isolateClassLoader=false)
+@AgentRunner.Config(verbose=true, isolateClassLoader=false)
 public class TomcatServletTest {
   private int serverPort = 9786;
   private Tomcat tomcatServer;
