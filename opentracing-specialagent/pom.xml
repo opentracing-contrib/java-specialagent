@@ -148,8 +148,9 @@
       <optional>true</optional>
     </dependency>
     
+    <!--
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-hazelcast -->
+      <!- https://github.com/opentracing-contrib/java-hazelcast ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-hazelcast</artifactId>
       <version>0.0.1</version>
@@ -162,7 +163,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-spring-messaging -->
+      <!- https://github.com/opentracing-contrib/java-spring-messaging ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-messaging-starter</artifactId>
       <version>0.0.5</version>
@@ -175,7 +176,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-jdbi -->
+      <!- https://github.com/opentracing-contrib/java-jdbi ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>jdbi-opentracing</artifactId>
       <version>0.4.1</version>
@@ -188,7 +189,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-vertx-web -->
+      <!- https://github.com/opentracing-contrib/java-vertx-web ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-vertx-web</artifactId>
       <version>0.1.0</version>
@@ -209,14 +210,14 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-cdi -->
+      <!- https://github.com/opentracing-contrib/java-cdi ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cdi</artifactId>
       <version>0.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-apache-httpclient -->
+      <!- https://github.com/opentracing-contrib/java-apache-httpclient ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-apache-httpclient</artifactId>
       <version>0.1.0</version>
@@ -229,7 +230,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-hprose -->
+      <!- https://github.com/opentracing-contrib/java-hprose ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-hprose</artifactId>
       <version>1.0.0</version>
@@ -242,7 +243,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-thrift -->
+      <!- https://github.com/opentracing-contrib/java-thrift ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-thrift</artifactId>
       <version>0.0.7</version>
@@ -255,7 +256,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-interceptors -->
+      <!- https://github.com/opentracing-contrib/java-interceptors ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-interceptors</artifactId>
       <version>0.0.4</version>
@@ -272,7 +273,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-p6spy -->
+      <!- https://github.com/opentracing-contrib/java-p6spy ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-p6spy</artifactId>
       <version>0.2.1</version>
@@ -285,7 +286,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-spring-cloud -->
+      <!- https://github.com/opentracing-contrib/java-spring-cloud ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-cloud-starter</artifactId>
       <version>0.1.13</version>
@@ -306,7 +307,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-redis-client -->
+      <!- https://github.com/opentracing-contrib/java-redis-client ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-jedis</artifactId>
       <version>0.0.7</version>
@@ -319,7 +320,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-spring-rabbitmq -->
+      <!- https://github.com/opentracing-contrib/java-spring-rabbitmq ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-rabbitmq-starter</artifactId>
       <version>0.1.0</version>
@@ -338,7 +339,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-jaxrs -->
+      <!- https://github.com/opentracing-contrib/java-jaxrs ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jaxrs2</artifactId>
       <version>0.1.7</version>
@@ -355,7 +356,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-kafka-client -->
+      <!- https://github.com/opentracing-contrib/java-kafka-client ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-client</artifactId>
       <version>0.0.15</version>
@@ -392,7 +393,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-solr-client -->
+      <!- https://github.com/opentracing-contrib/java-solr-client ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-solr-client</artifactId>
       <version>0.0.2</version>
@@ -405,7 +406,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-rxjava --> <!-- !! -->
+      <!- https://github.com/opentracing-contrib/java-rxjava -> <!- !! ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rxjava-1</artifactId>
       <version>0.0.9</version>
@@ -430,7 +431,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-neo4j-driver -->
+      <!- https://github.com/opentracing-contrib/java-neo4j-driver ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-neo4j-driver</artifactId>
       <version>0.0.2</version>
@@ -443,7 +444,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-memcached-client -->
+      <!- https://github.com/opentracing-contrib/java-memcached-client ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spymemcached</artifactId>
       <version>0.0.3</version>
@@ -456,7 +457,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-spring-tracer-configuration -->
+      <!- https://github.com/opentracing-contrib/java-spring-tracer-configuration ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-tracer-configuration-starter</artifactId>
       <version>0.1.0</version>
@@ -473,7 +474,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-aws-sdk --> <!-- !! -->
+      <!- https://github.com/opentracing-contrib/java-aws-sdk -> <!- !! ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-aws-sdk</artifactId>
       <version>0.0.5</version>
@@ -486,7 +487,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-elasticsearch-client --> <!-- !! -->
+      <!- https://github.com/opentracing-contrib/java-elasticsearch-client -> <!- !! ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-elasticsearch5-client</artifactId>
       <version>0.0.6</version>
@@ -511,7 +512,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
+      <!- https://github.com/opentracing-contrib/java-rabbitmq-client ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
       <version>0.0.6</version>
@@ -536,7 +537,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-jms --> <!-- !! -->
+      <!- https://github.com/opentracing-contrib/java-jms -> <!- !! ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-1</artifactId>
       <version>0.0.10</version>
@@ -561,7 +562,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-spring-web -->
+      <!- https://github.com/opentracing-contrib/java-spring-web ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-web-starter</artifactId>
       <version>0.3.3</version>
@@ -574,7 +575,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-grpc -->
+      <!- https://github.com/opentracing-contrib/java-grpc ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grpc</artifactId>
       <version>0.0.8</version>
@@ -587,7 +588,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-spring-zipkin --> <!-- !! -->
+      <!- https://github.com/opentracing-contrib/java-spring-zipkin -> <!- !! ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-spring-zipkin-web-starter</artifactId>
       <version>0.2.0</version>
@@ -610,7 +611,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-akka -->
+      <!- https://github.com/opentracing-contrib/java-akka ->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-akka</artifactId>
       <version>0.0.2</version>
@@ -622,6 +623,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+    -->
     <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
     <dependency>
       <groupId>javax.el</groupId>
