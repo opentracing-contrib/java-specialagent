@@ -210,9 +210,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       pluginPaths.add(classesPath);
       final Set<String> isolatedClasses = TestUtil.getClassFiles(pluginPaths);
 
-      // FIXME: Is there any way to properly reference this?
-      isolatedClasses.add("io/opentracing/contrib/specialagent/AgentRunnerUtil.class");
-
       final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
@@ -329,8 +326,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
         }
 
-        final Class<?> cls = classLoader.loadClass("io.opentracing.contrib.specialagent.AgentRunnerUtil");
-        return method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, cls.getMethod("getTracer").invoke(null)) : super.invokeExplosively(target);
+        return method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, AgentRunnerUtil.getTracer()) : super.invokeExplosively(target);
       }
     };
   }
