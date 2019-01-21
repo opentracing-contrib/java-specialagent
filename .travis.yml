@@ -22,7 +22,12 @@ jdk:
 install:
 - cp settings.xml $HOME/.m2/settings.xml
 script:
-- mvn -DrepoToken=$REPO_TOKEN -P report clean install
+- 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ]; then
+    mvn -DrepoToken=$REPO_TOKEN -P report clean install;
+  else
+    mvn clean install;
+  fi'
+after_success:
 - mvn -Ddeploy clean install
 cache:
   directories:
