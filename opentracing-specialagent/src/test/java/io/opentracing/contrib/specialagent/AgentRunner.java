@@ -177,11 +177,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     try {
       final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
       final String dependenciesTgf = dependenciesUrl == null ? null : new String(Util.readBytes(dependenciesUrl));
-      final List<String> pluginPaths;
+      final List<String> pluginPaths = new ArrayList<>();
       final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
       if (dependenciesTgf != null) {
         final URL[] pluginUrls = Util.filterPluginURLs(classpath, dependenciesTgf, false, "compile");
-        pluginPaths = new ArrayList<>(pluginUrls.length);
         for (int i = 0; i < pluginUrls.length; ++i)
           pluginPaths.add(pluginUrls[i].getFile());
 
@@ -201,7 +200,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
       else {
         logger.warning("dependencies.tgf was not found! `mvn generate-resources` phase must be run for this file to be generated!");
-        pluginPaths = null;
       }
 
       final String testClassesPath = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -209,9 +207,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       pluginPaths.add(testClassesPath);
       pluginPaths.add(classesPath);
       final Set<String> isolatedClasses = TestUtil.getClassFiles(pluginPaths);
-
-      // FIXME: Is there any way to properly reference this?
-      isolatedClasses.add("io/opentracing/contrib/specialagent/AgentRunnerUtil.class");
 
       final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));
       // Special case for AgentRunnerITest, because it belongs to the same
@@ -329,8 +324,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
         }
 
-        final Class<?> cls = classLoader.loadClass("io.opentracing.contrib.specialagent.AgentRunnerUtil");
-        return method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, cls.getMethod("getTracer").invoke(null)) : super.invokeExplosively(target);
+        return method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, AgentRunnerUtil.getTracer()) : super.invokeExplosively(target);
       }
     };
   }
@@ -348,12 +342,5 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         iterator.remove();
 
     return rules;
-  }
-
-  /**
-   * @return The classpath path of the opentracing-specialagent.
-   */
-  protected String getAgentPath() {
-    return SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   }
 }

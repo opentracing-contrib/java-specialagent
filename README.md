@@ -2,6 +2,9 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
+[![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.png)](https://travis-ci.org/opentracing-contrib/java-specialagent)
+[![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg)](https://coveralls.io/github/opentracing-contrib/java-specialagent)
+
 ## Overview
 
 _Java SpecialAgent_ automatically instruments Java applications to produce trace events via the OpenTracing API. This file contains the operational instructions for the use of _Java SpecialAgent_.

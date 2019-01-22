@@ -1,4 +1,4 @@
-/* Copyright 2018 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class BytemanTransformerTest {
+public class SpecialAgentMojoTest {
   @Test
-  public void testRetrofitScript() {
-    final String expected = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("control.btm")));
-    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.btm")));
-    final String actual = BytemanManager.retrofitScript(test, 0);
-    assertEquals(actual, expected, actual);
+  public void test() {
+    try {
+      SpecialAgentMojo.getPathOf(null, null);
+      fail("Expected NullPointerException");
+    }
+    catch (final NullPointerException e) {
+    }
   }
 }

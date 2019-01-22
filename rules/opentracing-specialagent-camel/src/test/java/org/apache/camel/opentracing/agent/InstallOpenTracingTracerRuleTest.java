@@ -39,7 +39,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, isolateClassLoader=false, verbose=true)
+@AgentRunner.Config(isolateClassLoader=false, verbose=true)
 public class InstallOpenTracingTracerRuleTest extends CamelTestSupport {
   private static MockTracer tracer;
 

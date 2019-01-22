@@ -24,7 +24,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(debug=true, verbose=true)
+@AgentRunner.Config(verbose=true)
 public class OkHttpTest {
 //public static MockTracer tracer = new MockTracer();
 //

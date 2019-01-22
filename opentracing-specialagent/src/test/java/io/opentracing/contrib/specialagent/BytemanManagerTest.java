@@ -15,20 +15,16 @@
 
 package io.opentracing.contrib.specialagent;
 
-import org.junit.runners.model.InitializationError;
+import static org.junit.Assert.*;
 
-/**
- * Specialized AgentRunner to be used for testing the AgentRunner itself.
- *
- * @author Seva Safris
- */
-public class TestAgentRunner extends AgentRunner {
-  public TestAgentRunner(final Class<?> cls) throws InitializationError {
-    super(cls);
-  }
+import org.junit.Test;
 
-  @Override
-  protected String getAgentPath() {
-    return "target/opentracing-specialagent-0.0.1-SNAPSHOT-tests.jar";
+public class BytemanManagerTest {
+  @Test
+  public void testRetrofitScript() {
+    final String expected = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("control.btm")));
+    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.btm")));
+    final String actual = BytemanManager.retrofitScript(test, 0);
+    assertEquals(actual, expected, actual);
   }
 }

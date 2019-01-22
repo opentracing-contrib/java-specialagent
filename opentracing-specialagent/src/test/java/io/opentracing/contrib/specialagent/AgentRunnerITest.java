@@ -30,10 +30,9 @@ import org.junit.runner.RunWith;
 
 import io.opentracing.mock.MockTracer;
 
-@RunWith(TestAgentRunner.class)
+@RunWith(AgentRunner.class)
 @AgentRunner.Config(debug=true)
 @SuppressWarnings("unused")
-@Ignore
 public class AgentRunnerITest {
   private static final Logger logger = Logger.getLogger(AgentRunnerITest.class.getName());
 
