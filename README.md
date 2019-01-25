@@ -87,7 +87,7 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 ## Debugging
 
-The `-DSpecialAgentLog` system property can be used to set the logging level for SpecialAgent. Acceptable values are: `SEVERE WARNING INFO CONFIG FINE FINER FINEST`, or any numerical log level value is acecpted also.
+The `-DSpecialAgentLog` system property can be used to set the logging level for SpecialAgent. Acceptable values are: `SEVERE WARNING INFO CONFIG FINE FINER FINEST`, or any numerical log level value is acecpted also. The default logging level is set to `WARNING`.
 
 ## Test Usage
 
