@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.net.URL;
@@ -30,6 +31,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -46,6 +48,7 @@ import com.sun.tools.attach.VirtualMachine;
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
+  static final String LOGGING_PROPERTY = "SpecialAgentLog";
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
   static final String INSTRUMENTER = "io.opentracing.contrib.specialagent.instrumenter";
 
@@ -79,14 +82,19 @@ public class SpecialAgent {
   private static final Instrumenter instrumenter;
 
   static {
-    final String loggingConfig = System.getProperty("java.util.logging.config.file");
-    if (loggingConfig != null) {
-      try {
-        LogManager.getLogManager().readConfiguration((loggingConfig.contains("file:/") ? new URL(loggingConfig) : new URL("file", "", loggingConfig)).openStream());
+    try (final InputStream in = SpecialAgent.class.getResourceAsStream("/logging.properties")) {
+      LogManager.getLogManager().readConfiguration(in);
+      final String loggingProperty = System.getProperty(LOGGING_PROPERTY);
+      if (loggingProperty != null) {
+        final Level level = Level.parse(loggingProperty);
+        final Logger rootLogger = LogManager.getLogManager().getLogger("");
+        rootLogger.setLevel(level);
+        for (final Handler handler : rootLogger.getHandlers())
+          handler.setLevel(level);
       }
-      catch (final IOException e) {
-        throw new ExceptionInInitializerError(e);
-      }
+    }
+    catch (final IOException e) {
+      throw new ExceptionInInitializerError(e);
     }
 
     final String instrumenterProperty = System.getProperty(INSTRUMENTER);
