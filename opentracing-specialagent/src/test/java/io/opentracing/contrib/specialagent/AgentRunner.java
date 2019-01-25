@@ -249,10 +249,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     this.loggingConfigFile = config != null && config.debug() ? getClass().getResource("/logging.properties") : null;
     try {
       if (loggingConfigFile != null)
-          LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
+        LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
 
       System.setProperty(SpecialAgent.INSTRUMENTER, config.instrumenter().name());
-
       if (config.verbose())
         System.setProperty("org.jboss.byteman.verbose", "true");
 

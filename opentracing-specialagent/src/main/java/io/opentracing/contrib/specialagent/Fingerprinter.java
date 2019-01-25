@@ -157,6 +157,12 @@ class Fingerprinter extends ClassVisitor {
       new ClassReader(in).accept(this, 0);
       return className == null ? null : new ClassFingerprint(className, superClass, Util.sort(constructors.size() == 0 ? null : constructors.toArray(new ConstructorFingerprint[constructors.size()])), Util.sort(methods.size() == 0 ? null : methods.toArray(new MethodFingerprint[methods.size()])), Util.sort(fields.size() == 0 ? null : fields.toArray(new FieldFingerprint[fields.size()])));
     }
+    catch (final IOException e) {
+      if (!"Class not found".equals(e.getMessage()))
+        throw e;
+
+      return null;
+    }
     finally {
       className = null;
       superClass = null;

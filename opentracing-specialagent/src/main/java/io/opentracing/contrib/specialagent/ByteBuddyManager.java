@@ -97,8 +97,11 @@ public class ByteBuddyManager extends Manager {
 
           builder.with(listener).installOn(inst);
         }
+        catch (final UnsupportedClassVersionError e) {
+          logger.log(Level.SEVERE, "Error initliaizing plugin: " + line, e);
+        }
         catch (final InvocationTargetException e) {
-          logger.log(Level.SEVERE, "Error initliaizing plugin", e);
+          logger.log(Level.SEVERE, "Error initliaizing plugin: " + line, e);
         }
         catch (final InstantiationException e) {
           logger.log(Level.SEVERE, "Unable to instantiate: " + line, e);

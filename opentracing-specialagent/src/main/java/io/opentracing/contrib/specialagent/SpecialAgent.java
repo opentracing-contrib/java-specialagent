@@ -51,7 +51,27 @@ public class SpecialAgent {
 
   private static final String DEPENDENCIES = "dependencies.tgf";
 
-  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<>();
+  private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<ClassLoader,PluginClassLoader>() {
+    private static final long serialVersionUID = 5515722666603482519L;
+
+    /**
+     * This method is modified to support value lookups where the key is a
+     * "proxy" class loader representing the bootstrap class loader. This
+     * pattern is used by ByteBuddy, whereby the proxy class loader is an
+     * {@code URLClassLoader} that has an empty classpath and a null parent.
+     * <p>
+     * {@inheritDoc}
+     */
+    @Override
+    public PluginClassLoader get(final Object key) {
+      PluginClassLoader value = super.get(key);
+      if (value != null || !(key instanceof URLClassLoader))
+        return value;
+
+      final URLClassLoader urlClassLoader = (URLClassLoader)key;
+      return urlClassLoader.getURLs().length > 0 || urlClassLoader.getParent() != null ? null : super.get(null);
+    }
+  };
 
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
@@ -440,8 +460,8 @@ public class SpecialAgent {
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     instrumenter.manager.disableTriggers();
     try {
-//      if (logger.isLoggable(Level.FINEST))
-//        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
@@ -468,8 +488,8 @@ public class SpecialAgent {
   public static URL findResource(final ClassLoader classLoader, final String name) {
     instrumenter.manager.disableTriggers();
     try {
-//      if (logger.isLoggable(Level.FINEST))
-//        logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
@@ -483,8 +503,8 @@ public class SpecialAgent {
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
     instrumenter.manager.disableTriggers();
     try {
-//      if (logger.isLoggable(Level.FINEST))
-//        logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
       // Check if the class loader matches a pluginClassLoader
       final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
