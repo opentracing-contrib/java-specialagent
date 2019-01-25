@@ -43,6 +43,7 @@ The _Java SpecialAgent_ must provide a means by which instrumentation plugins ca
 ## Installation
 
 The _Java SpecialAgent_ is built with Maven, and produces 2 artifacts:
+
 1. `opentracing-specialagent-<version>.jar`
 
     This is the main artifact that contains within it all applicable instrumentation plugins from the `opentracing-contrib` project. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach.
@@ -83,6 +84,10 @@ Dynamically attaching to a Java application involves the use of a running applic
     ```bash
     java -jar opentracing-specialagent.jar <PID>
     ```
+
+## Debugging
+
+The `-DSpecialAgentLog` system property can be used to set the logging level for SpecialAgent. Acceptable values are: `SEVERE WARNING INFO CONFIG FINE FINER FINEST`, or any numerical log level value is acecpted also.
 
 ## Test Usage
 
