@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.opentracing.contrib</groupId>
-    <artifactId>java-specialagent-rules</artifactId>
+    <artifactId>java-specialagent-plugins</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-jdbc</artifactId>
@@ -29,7 +29,7 @@
       <!-- https://github.com/opentracing-contrib/java-jdbc -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jdbc</artifactId>
-      <version>0.0.8</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
