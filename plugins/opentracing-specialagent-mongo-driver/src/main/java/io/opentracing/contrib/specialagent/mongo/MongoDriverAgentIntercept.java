@@ -13,12 +13,17 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.contrib.specialagent.mongo;
 
-import net.bytebuddy.agent.builder.AgentBuilder;
+import com.mongodb.MongoClientSettings.Builder;
 
-public interface AgentPlugin {
-  abstract Iterable<? extends AgentBuilder> buildAgent(String agentArgs) throws Exception;
-//  ElementMatcher<? super MethodDescription> onMethod();
-//  DynamicAdvice advice();
+import io.opentracing.contrib.mongo.TracingCommandListener;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.util.GlobalTracer;
+
+public class MongoDriverAgentIntercept {
+  public static void exit(final Object returned) {
+    if (!AgentPluginUtil.callerEquals("com.mongodb.async.client.MongoClientSettings.createFromClientSettings", 4))
+      ((Builder)returned).addCommandListener(new TracingCommandListener(GlobalTracer.get()));
+  }
 }

@@ -86,16 +86,18 @@ public class ByteBuddyManager extends Manager {
           }
 
           final AgentPlugin agentPlugin = (AgentPlugin)agentClass.getConstructor().newInstance();
-          final AgentBuilder builder = agentPlugin.buildAgent(agentArgs);
+          final Iterable<? extends AgentBuilder> builders = agentPlugin.buildAgent(agentArgs);
 
+          for (final AgentBuilder builder : builders) {
           final TransformationListener listener = new TransformationListener(index);
-//          if (agentPlugin.onEn().getOnEnter() != null)
-//            installOn(builder, agentPlugin.onEn().getOnEnter(), agentPlugin, listener, instrumentation);
+//            if (agentPlugin.onEn().getOnEnter() != null)
+//              installOn(builder, agentPlugin.onEn().getOnEnter(), agentPlugin, listener, instrumentation);
+//
+//            if (agentPlugin.onEn().getOnExit() != null)
+//              installOn(builder, agentPlugin.onEn().getOnExit(), agentPlugin, listener, instrumentation);
 
-//          if (agentPlugin.onEn().getOnExit() != null)
-//            installOn(builder, agentPlugin.onEn().getOnExit(), agentPlugin, listener, instrumentation);
-
-          builder.with(listener).installOn(inst);
+            builder.with(listener).installOn(inst);
+          }
         }
         catch (final UnsupportedClassVersionError e) {
           logger.log(Level.SEVERE, "Error initliaizing plugin: " + line, e);
