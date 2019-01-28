@@ -20,24 +20,37 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.opentracing.contrib</groupId>
-    <artifactId>java-specialagent</artifactId>
+    <artifactId>java-specialagent-plugins</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-api</artifactId>
+  <properties>
+    <version.okhttp3>3.6.0</version.okhttp3>
+  </properties>
+  <artifactId>opentracing-specialagent-okhttp</artifactId>
   <dependencies>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy</artifactId>
+      <!-- https://github.com/opentracing-contrib/java-okhttp -->
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-okhttp3</artifactId>
+      <version>0.1.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>okhttp</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${version.okhttp3}</version>
+      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy-agent</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>${version.okhttp3}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

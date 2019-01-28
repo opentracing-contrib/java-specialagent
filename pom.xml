@@ -47,7 +47,7 @@
   <modules>
     <module>opentracing-specialagent-api</module>
     <module>opentracing-specialagent</module>
-    <module>rules</module>
+    <module>plugins</module>
   </modules>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
