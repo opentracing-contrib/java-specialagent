@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.opentracing.contrib.specialagent.ReferralScanner.Manifest;
+
 /**
  * A {@link Fingerprint} that represents the fingerprint of a library.
  *
@@ -55,6 +57,7 @@ class LibraryFingerprint extends Fingerprint {
   }
 
   private final ClassFingerprint[] classes;
+  private final Manifest referrals;
 
   /**
    * Creates a new {@code LibraryFingerprint} with the specified {@code URL}
@@ -65,12 +68,13 @@ class LibraryFingerprint extends Fingerprint {
    * @param urls The {@code URL} objects referencing JAR files.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final ClassLoader parent, final URL ... urls) throws IOException {
+  LibraryFingerprint(final ClassLoader parent, final Manifest referrals, final URL ... urls) throws IOException {
     if (urls.length == 0)
       throw new IllegalArgumentException("Number of arguments must be greater than 0");
 
+    this.referrals = referrals;
     try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
-      this.classes = new Fingerprinter().fingerprint(classLoader);
+      this.classes = new Fingerprinter(referrals).fingerprint(classLoader);
     }
   }
 
@@ -104,12 +108,12 @@ class LibraryFingerprint extends Fingerprint {
    *
    * @param classLoader The {@code ClassLoader} representing the runtime to test
    *          for compatibility.
-   * @return An array of @{@code FingerprintError} objects representing all
+   * @return An array of {@code FingerprintError} objects representing all
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */
   public FingerprintError[] isCompatible(final ClassLoader classLoader) {
-    return isCompatible(classLoader, new Fingerprinter(), 0, 0);
+    return isCompatible(classLoader, new Fingerprinter(referrals), 0, 0);
   }
 
   /**
@@ -122,7 +126,7 @@ class LibraryFingerprint extends Fingerprint {
    *          fingerprinting.
    * @param index The index of the iteration (should be 0 when called).
    * @param depth The depth of the iteration (should be 0 when called).
-   * @return An array of @{@code FingerprintError} objects representing all
+   * @return An array of {@code FingerprintError} objects representing all
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */

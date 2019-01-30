@@ -38,6 +38,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.repository.ComponentDependency;
 
+import io.opentracing.contrib.specialagent.ReferralScanner.Manifest;
+
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
  * instrumentation plugins. The implementation uses introspection to record the
@@ -152,7 +154,12 @@ public final class SpecialAgentMojo extends AbstractMojo {
       }
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, false, project.getArtifacts().iterator(), 0);
-      final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), optionalDeps);
+
+      final Manifest referrals = new Manifest();
+      final ReferralScanner scanner = new ReferralScanner(referrals);
+      scanner.scanReferrals(nonOptionalDeps);
+
+      final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), referrals, optionalDeps);
       destFile.getParentFile().mkdirs();
       System.err.println(Arrays.toString(optionalDeps));
       libraryDigest.toFile(destFile);

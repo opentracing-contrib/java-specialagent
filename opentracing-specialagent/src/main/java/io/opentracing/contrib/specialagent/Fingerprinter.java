@@ -15,11 +15,13 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +37,9 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+
+import io.opentracing.contrib.specialagent.ReferralScanner.Manifest;
+import io.opentracing.contrib.specialagent.ReferralScanner.Referral;
 
 /**
  * An ASM {@link ClassVisitor} that creates {@link Fingerprint} objects for
@@ -94,11 +99,14 @@ class Fingerprinter extends ClassVisitor {
     return (mod & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
+  private final Manifest referrals;
+
   /**
    * Creates a new {@code Fingerprinter}.
    */
-  Fingerprinter() {
+  Fingerprinter(final Manifest referrals) {
     super(Opcodes.ASM4);
+    this.referrals = referrals;
   }
 
   private String className;
@@ -125,15 +133,42 @@ class Fingerprinter extends ClassVisitor {
    */
   ClassFingerprint[] fingerprint(final URLClassLoader classLoader) throws IOException {
     for (final URL url : classLoader.getURLs()) {
-      try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
-        for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
-          final String name = entry.getName();
-          if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
-            final ClassFingerprint classFingerprint = fingerprint(classLoader, name);
-            if (classFingerprint != null)
-              classNameToFingerprint.put(classFingerprint.getName(), classFingerprint);
+      if (url.getPath().endsWith(".jar")) {
+        try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
+          for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
+            final String name = entry.getName();
+            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
+              final ClassFingerprint classFingerprint = fingerprint(classLoader, name);
+              if (classFingerprint != null)
+                classNameToFingerprint.put(classFingerprint.getName(), classFingerprint);
+            }
           }
         }
+      }
+      else {
+        final File file = new File(url.getPath());
+        final Path path = file.toPath();
+        Util.recurseDir(file, new Predicate<File>() {
+          @Override
+          public boolean test(final File t) {
+            if (t.isDirectory())
+              return true;
+
+            final String name = path.relativize(t.toPath()).toString();
+            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
+              try {
+                final ClassFingerprint classFingerprint = fingerprint(classLoader, name);
+                if (classFingerprint != null)
+                  classNameToFingerprint.put(classFingerprint.getName(), classFingerprint);
+              }
+              catch (final IOException e) {
+                throw new IllegalStateException(e);
+              }
+            }
+
+            return true;
+          }
+        });
       }
     }
 
@@ -153,6 +188,11 @@ class Fingerprinter extends ClassVisitor {
    * @throws IOException If an I/O error has occurred.
    */
   ClassFingerprint fingerprint(final ClassLoader classLoader, final String resourcePath) throws IOException {
+    final String name = resourcePath.substring(0, resourcePath.length() - 6).replace('/', '.');
+    final Referral referral = referrals.getReferral(name);
+    if (referral == null)
+      return null;
+
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);
       return className == null ? null : new ClassFingerprint(className, superClass, Util.sort(constructors.size() == 0 ? null : constructors.toArray(new ConstructorFingerprint[constructors.size()])), Util.sort(methods.size() == 0 ? null : methods.toArray(new MethodFingerprint[methods.size()])), Util.sort(fields.size() == 0 ? null : fields.toArray(new FieldFingerprint[fields.size()])));
@@ -175,8 +215,11 @@ class Fingerprinter extends ClassVisitor {
   @Override
   public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
     if (!Modifier.isInterface(access) && !isSynthetic(access) && !Modifier.isPrivate(access)) {
-      className = Type.getObjectType(name).getClassName();
-      superClass = "java/lang/Object".equals(superName) ? null : Type.getObjectType(superName).getClassName();
+      final String className = Type.getObjectType(name).getClassName();
+      if (referrals.getReferral(className) != null) {
+        this.className = className;
+        superClass = "java/lang/Object".equals(superName) ? null : Type.getObjectType(superName).getClassName();
+      }
     }
 
     super.visit(version, access, name, signature, superName, interfaces);
@@ -197,18 +240,21 @@ class Fingerprinter extends ClassVisitor {
     for (int i = 0; i < argumentTypes.length; ++i)
       parameterTypes[i] = argumentTypes[i].getClassName();
 
-    final String[] exceptionTypes = exceptions == null || exceptions.length == 0 ? null : new String[exceptions.length];
-    if (exceptions != null)
-      for (int i = 0; i < exceptions.length; ++i)
-        exceptionTypes[i] = Type.getObjectType(exceptions[i]).getClassName();
+    final Referral referral = referrals.getReferral(className);
+    if (referral != null && referral.hasMethod(name, parameterTypes)) {
+      final String[] exceptionTypes = exceptions == null || exceptions.length == 0 ? null : new String[exceptions.length];
+      if (exceptions != null)
+        for (int i = 0; i < exceptions.length; ++i)
+          exceptionTypes[i] = Type.getObjectType(exceptions[i]).getClassName();
 
-    if (Visibility.get(access) != Visibility.PRIVATE && !isSynthetic(access)) {
-      if ("<init>".equals(name)) {
-        constructors.add(new ConstructorFingerprint(parameterTypes, Util.sort(exceptionTypes)));
-      }
-      else if (!"<clinit>".equals(name)) {
-        final String returnType = Type.getMethodType(desc).getReturnType().getClassName();
-        methods.add(new MethodFingerprint(name, "void".equals(returnType) ? null : returnType, parameterTypes, Util.sort(exceptionTypes)));
+      if (Visibility.get(access) != Visibility.PRIVATE && !isSynthetic(access)) {
+        if ("<init>".equals(name)) {
+          constructors.add(new ConstructorFingerprint(parameterTypes, Util.sort(exceptionTypes)));
+        }
+        else if (!"<clinit>".equals(name)) {
+          final String returnType = Type.getMethodType(desc).getReturnType().getClassName();
+          methods.add(new MethodFingerprint(name, "void".equals(returnType) ? null : returnType, parameterTypes, Util.sort(exceptionTypes)));
+        }
       }
     }
 
@@ -217,8 +263,11 @@ class Fingerprinter extends ClassVisitor {
 
   @Override
   public FieldVisitor visitField(final int access, final String name, final String desc, final String signature, final Object value) {
-    if (Visibility.get(access) != Visibility.PRIVATE && !isSynthetic(access))
-      fields.add(new FieldFingerprint(name, Type.getType(desc).getClassName()));
+    if (Visibility.get(access) != Visibility.PRIVATE && !isSynthetic(access)) {
+      final Referral referral = referrals.getReferral(className);
+      if (referral != null && referral.hasField(name))
+        fields.add(new FieldFingerprint(name, Type.getType(desc).getClassName()));
+    }
 
     return super.visitField(access, name, desc, signature, value);
   }
