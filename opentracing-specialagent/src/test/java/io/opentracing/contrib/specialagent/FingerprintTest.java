@@ -24,8 +24,7 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 
-import io.opentracing.contrib.specialagent.ReferralScanner.Manifest;
-import io.opentracing.contrib.specialagent.ReferralScanner.Referral;
+import io.opentracing.contrib.specialagent.Link.Manifest;
 
 public class FingerprintTest {
   private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
@@ -44,9 +43,9 @@ public class FingerprintTest {
       fail("Could not find JAR resource");
 
     final LibraryFingerprint lib = new LibraryFingerprint(ClassLoader.getSystemClassLoader(), new Manifest() {
-      private static final long serialVersionUID = 1L;
-      private final Referral referral = new Referral(null) {
-        private static final long serialVersionUID = 1L;
+      private static final long serialVersionUID = -8947838103862897479L;
+      private final Link link = new Link(null) {
+        private static final long serialVersionUID = -8216092614984432920L;
 
         @Override
         boolean hasField(final String name) {
@@ -60,8 +59,8 @@ public class FingerprintTest {
       };
 
       @Override
-      public Referral getReferral(final String className) {
-        return referral;
+      public Link getLink(final String className) {
+        return link;
       }
     }, jarURL);
     logger.fine(lib.toString());

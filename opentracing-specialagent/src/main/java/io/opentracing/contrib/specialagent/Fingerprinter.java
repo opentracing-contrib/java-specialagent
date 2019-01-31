@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -38,8 +39,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import io.opentracing.contrib.specialagent.ReferralScanner.Manifest;
-import io.opentracing.contrib.specialagent.ReferralScanner.Referral;
+import io.opentracing.contrib.specialagent.Link.Manifest;
 
 /**
  * An ASM {@link ClassVisitor} that creates {@link Fingerprint} objects for
@@ -99,14 +99,17 @@ class Fingerprinter extends ClassVisitor {
     return (mod & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-  private final Manifest referrals;
+  private final Manifest manifest;
 
   /**
    * Creates a new {@code Fingerprinter}.
+   * @param manifest The {@link Link.Manifest} specifying which classes, methods
+   *          and fields are to be fingerprinted.
+   * @throws NullPointerException If {@code manifest} is null.
    */
-  Fingerprinter(final Manifest referrals) {
+  Fingerprinter(final Manifest manifest) {
     super(Opcodes.ASM4);
-    this.referrals = referrals;
+    this.manifest = Objects.requireNonNull(manifest);
   }
 
   private String className;
@@ -189,8 +192,8 @@ class Fingerprinter extends ClassVisitor {
    */
   ClassFingerprint fingerprint(final ClassLoader classLoader, final String resourcePath) throws IOException {
     final String name = resourcePath.substring(0, resourcePath.length() - 6).replace('/', '.');
-    final Referral referral = referrals.getReferral(name);
-    if (referral == null)
+    final Link link = manifest.getLink(name);
+    if (link == null)
       return null;
 
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
@@ -216,7 +219,7 @@ class Fingerprinter extends ClassVisitor {
   public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
     if (!Modifier.isInterface(access) && !isSynthetic(access) && !Modifier.isPrivate(access)) {
       final String className = Type.getObjectType(name).getClassName();
-      if (referrals.getReferral(className) != null) {
+      if (manifest.getLink(className) != null) {
         this.className = className;
         superClass = "java/lang/Object".equals(superName) ? null : Type.getObjectType(superName).getClassName();
       }
@@ -240,8 +243,8 @@ class Fingerprinter extends ClassVisitor {
     for (int i = 0; i < argumentTypes.length; ++i)
       parameterTypes[i] = argumentTypes[i].getClassName();
 
-    final Referral referral = referrals.getReferral(className);
-    if (referral != null && referral.hasMethod(name, parameterTypes)) {
+    final Link link = manifest.getLink(className);
+    if (link != null && link.hasMethod(name, parameterTypes)) {
       final String[] exceptionTypes = exceptions == null || exceptions.length == 0 ? null : new String[exceptions.length];
       if (exceptions != null)
         for (int i = 0; i < exceptions.length; ++i)
@@ -264,7 +267,7 @@ class Fingerprinter extends ClassVisitor {
   @Override
   public FieldVisitor visitField(final int access, final String name, final String desc, final String signature, final Object value) {
     if (Visibility.get(access) != Visibility.PRIVATE && !isSynthetic(access)) {
-      final Referral referral = referrals.getReferral(className);
+      final Link referral = manifest.getLink(className);
       if (referral != null && referral.hasField(name))
         fields.add(new FieldFingerprint(name, Type.getType(desc).getClassName()));
     }

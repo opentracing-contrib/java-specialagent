@@ -38,7 +38,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.repository.ComponentDependency;
 
-import io.opentracing.contrib.specialagent.ReferralScanner.Manifest;
+import io.opentracing.contrib.specialagent.Link.Manifest;
 
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
@@ -119,12 +119,12 @@ public final class SpecialAgentMojo extends AbstractMojo {
    * @param depth The depth value for stack tracking (must be called with 0).
    * @return A list of dependency paths in the specified {@code iterator}.
    */
-  private static URL[] getDependencyPaths(final ArtifactRepository localRepository, final boolean optional, final Iterator<Artifact> iterator, final int depth) {
+  private static URL[] getDependencyPaths(final ArtifactRepository localRepository, final String scope, final boolean optional, final Iterator<Artifact> iterator, final int depth) {
     while (iterator.hasNext()) {
       final Artifact dependency = iterator.next();
-      if (optional == dependency.isOptional()) {
+      if (optional == dependency.isOptional() && (scope == null || scope.equals(dependency.getScope()))) {
         final URL url = getPathOf(localRepository, dependency);
-        final URL[] urls = getDependencyPaths(localRepository, optional, iterator, depth + 1);
+        final URL[] urls = getDependencyPaths(localRepository, scope, optional, iterator, depth + 1);
         if (urls != null && url != null)
           urls[depth] = url;
 
@@ -147,21 +147,18 @@ public final class SpecialAgentMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     try {
-      final URL[] optionalDeps = getDependencyPaths(localRepository, true, project.getArtifacts().iterator(), 0);
+      final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, project.getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
         getLog().warn("No dependencies were found with <optional>true</optional> -- " + PluginClassLoader.FINGERPRINT_FILE + " will not be generated");
         return;
       }
 
-      final URL[] nonOptionalDeps = getDependencyPaths(localRepository, false, project.getArtifacts().iterator(), 0);
+      final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, project.getArtifacts().iterator(), 0);
+      final Manifest manifest = Link.createManifest(compileDeps);
 
-      final Manifest referrals = new Manifest();
-      final ReferralScanner scanner = new ReferralScanner(referrals);
-      scanner.scanReferrals(nonOptionalDeps);
-
-      final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), referrals, optionalDeps);
+      final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, project.getArtifacts().iterator(), 0);
+      final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), manifest, optionalDeps);
       destFile.getParentFile().mkdirs();
-      System.err.println(Arrays.toString(optionalDeps));
       libraryDigest.toFile(destFile);
     }
     catch (final IOException e) {

@@ -657,7 +657,7 @@ public final class Util {
   }
 
   /**
-   * Tests whether the first specifies array contains all {@link Comparable}
+   * Tests whether the first specified array contains all {@link Comparable}
    * elements in the second specified array.
    *
    * @param <T> Type parameter of array, which must extend {@link Comparable}.
