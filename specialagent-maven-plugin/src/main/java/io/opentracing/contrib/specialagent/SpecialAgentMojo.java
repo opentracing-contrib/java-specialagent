@@ -96,8 +96,10 @@ public final class SpecialAgentMojo extends AbstractMojo {
     builder.append(artifact.getVersion());
     builder.append(File.separatorChar);
     builder.append(artifact.getArtifactId());
-    builder.append('-');
-    builder.append(artifact.getVersion());
+    builder.append('-').append(artifact.getVersion());
+    if (artifact.getClassifier() != null)
+      builder.append('-').append(artifact.getClassifier());
+
     if ("test-jar".equals(artifact.getType()))
       builder.append("-tests");
 
