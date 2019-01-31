@@ -23,8 +23,11 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import io.opentracing.contrib.specialagent.Link.Manifest;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a library.
@@ -55,6 +58,7 @@ class LibraryFingerprint extends Fingerprint {
   }
 
   private final ClassFingerprint[] classes;
+  private final Manifest manifest;
 
   /**
    * Creates a new {@code LibraryFingerprint} with the specified {@code URL}
@@ -62,15 +66,21 @@ class LibraryFingerprint extends Fingerprint {
    *
    * @param parent The parent {@code ClassLoader} to use for resolution of
    *          classes that should not be part of the fingerprint.
+   * @param manifest The {@link Link.Manifest} specifying which classes, methods
+   *          and fields are to be fingerprinted.
    * @param urls The {@code URL} objects referencing JAR files.
+   * @throws NullPointerException If {@code manifest} or {@code urls} is null.
+   * @throws IllegalArgumentException If the number of members in {@code urls}
+   *           is zero.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final ClassLoader parent, final URL ... urls) throws IOException {
+  LibraryFingerprint(final ClassLoader parent, final Manifest manifest, final URL ... urls) throws IOException {
     if (urls.length == 0)
       throw new IllegalArgumentException("Number of arguments must be greater than 0");
 
+    this.manifest = Objects.requireNonNull(manifest);
     try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
-      this.classes = new Fingerprinter().fingerprint(classLoader);
+      this.classes = new Fingerprinter(manifest).fingerprint(classLoader);
     }
   }
 
@@ -99,17 +109,26 @@ class LibraryFingerprint extends Fingerprint {
   }
 
   /**
+   * Returns the {@code Manifest} of this {@code LibraryFingerprint}.
+   *
+   * @return The {@code Manifest} of this {@code LibraryFingerprint}.
+   */
+  public Manifest getManifest() {
+    return this.manifest;
+  }
+
+  /**
    * Tests whether the runtime represented by the specified {@code ClassLoader}
    * is compatible with this fingerprint.
    *
    * @param classLoader The {@code ClassLoader} representing the runtime to test
    *          for compatibility.
-   * @return An array of @{@code FingerprintError} objects representing all
+   * @return An array of {@code FingerprintError} objects representing all
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */
   public FingerprintError[] isCompatible(final ClassLoader classLoader) {
-    return isCompatible(classLoader, new Fingerprinter(), 0, 0);
+    return isCompatible(classLoader, new Fingerprinter(manifest), 0, 0);
   }
 
   /**
@@ -122,7 +141,7 @@ class LibraryFingerprint extends Fingerprint {
    *          fingerprinting.
    * @param index The index of the iteration (should be 0 when called).
    * @param depth The depth of the iteration (should be 0 when called).
-   * @return An array of @{@code FingerprintError} objects representing all
+   * @return An array of {@code FingerprintError} objects representing all
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */

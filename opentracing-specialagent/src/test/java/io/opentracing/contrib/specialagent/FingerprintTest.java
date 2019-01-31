@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 
+import io.opentracing.contrib.specialagent.Link.Manifest;
+
 public class FingerprintTest {
   private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
 
@@ -40,7 +42,27 @@ public class FingerprintTest {
     if (jarURL == null)
       fail("Could not find JAR resource");
 
-    final LibraryFingerprint lib = new LibraryFingerprint(ClassLoader.getSystemClassLoader(), jarURL);
+    final LibraryFingerprint lib = new LibraryFingerprint(ClassLoader.getSystemClassLoader(), new Manifest() {
+      private static final long serialVersionUID = -8947838103862897479L;
+      private final Link link = new Link(null) {
+        private static final long serialVersionUID = -8216092614984432920L;
+
+        @Override
+        boolean hasField(final String name) {
+          return true;
+        }
+
+        @Override
+        boolean hasMethod(final String name, final String[] parameters) {
+          return true;
+        }
+      };
+
+      @Override
+      public Link getLink(final String className) {
+        return link;
+      }
+    }, jarURL);
     logger.fine(lib.toString());
     assertEquals(37, lib.getClasses().length);
 
