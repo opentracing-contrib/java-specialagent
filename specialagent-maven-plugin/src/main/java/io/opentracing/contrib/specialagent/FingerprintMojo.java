@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.maven.artifact.Artifact;
@@ -58,7 +57,7 @@ import io.opentracing.contrib.specialagent.Link.Manifest;
  */
 @Mojo(name="fingerprint", defaultPhase=LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(goal="fingerprint")
-public final class SpecialAgentMojo extends AbstractMojo {
+public final class FingerprintMojo extends AbstractMojo {
   /**
    * Returns an {@code Artifact} representation of {@code dependency}, qualified
    * by {@code artifactHandler}.
@@ -141,7 +140,7 @@ public final class SpecialAgentMojo extends AbstractMojo {
   private File destFile;
 
   @Parameter(defaultValue="${project}", required=true, readonly=true)
-  protected MavenProject project;
+  private MavenProject project;
 
   @Parameter(defaultValue="${localRepository}")
   private ArtifactRepository localRepository;
@@ -149,9 +148,11 @@ public final class SpecialAgentMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     try {
+      destFile.getParentFile().mkdirs();
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, project.getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with <optional>true</optional> -- " + PluginClassLoader.FINGERPRINT_FILE + " will not be generated");
+        getLog().warn("No dependencies were found with <optional>true</optional> -- " + PluginClassLoader.FINGERPRINT_FILE + " will be empty");
+        new LibraryFingerprint().toFile(destFile);
         return;
       }
 
@@ -159,9 +160,8 @@ public final class SpecialAgentMojo extends AbstractMojo {
       final Manifest manifest = Link.createManifest(compileDeps);
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, project.getArtifacts().iterator(), 0);
-      final LibraryFingerprint libraryDigest = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), manifest, optionalDeps);
-      destFile.getParentFile().mkdirs();
-      libraryDigest.toFile(destFile);
+      final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), manifest, optionalDeps);
+      fingerprint.toFile(destFile);
     }
     catch (final IOException e) {
       throw new MojoFailureException(null, e);

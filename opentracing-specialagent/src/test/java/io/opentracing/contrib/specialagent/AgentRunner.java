@@ -25,12 +25,18 @@ import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -38,6 +44,7 @@ import java.util.logging.Logger;
 
 import org.junit.Assert;
 import org.junit.rules.TestRule;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
@@ -101,12 +108,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       return inst;
 
     try {
-      System.err.println("\n\n\n===============================================================");
+      System.err.println("\n\n\n");
+      System.err.println(">>>>>>>>>>>>>>>>>>>>>>> Installing Agent >>>>>>>>>>>>>>>>>>>>>>>");
       // FIXME: Can this be done in a better way?
       final JarFile jarFile = createJarFileOfSource(AgentRunner.class);
       final Instrumentation inst = ByteBuddyAgent.install();
       inst.appendToBootstrapClassLoaderSearch(jarFile);
-      System.err.println("===============================================================\n\n\n");
+      System.err.println("================== Installing BootLoaderAgent ==================");
       BootLoaderAgent.premain(inst, jarFile);
       return inst;
     }
@@ -114,6 +122,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       throw new ExceptionInInitializerError(e);
     }
   }
+
+  private static final Path CWD = FileSystems.getDefault().getPath("").toAbsolutePath();
 
   static {
     inst = install();
@@ -262,6 +272,29 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  private int delta = Integer.MAX_VALUE;
+
+  static File getManifestFile() {
+    return new File(CWD.toFile(), "target/classes/META-INF/opentracing-specialagent/TEST-MANIFEST.MF");
+  }
+
+  @Override
+  public void run(final RunNotifier notifier) {
+    super.run(notifier);
+    if (delta == 0) {
+      try {
+        final File manifestFile = getManifestFile();
+        manifestFile.getParentFile().mkdirs();
+        final Path path = manifestFile.toPath();
+        if (!Files.exists(path))
+          Files.createFile(path);
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
   /**
    * Creates the {@code TestClass} object for this JUnit runner with the
    * specified test class.
@@ -280,7 +313,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       public List<FrameworkMethod> getAnnotatedMethods(final Class<? extends Annotation> annotationClass) {
         final List<FrameworkMethod> retrofitted = new ArrayList<>();
         for (final FrameworkMethod method : super.getAnnotatedMethods(annotationClass))
-          retrofitted.add(retrofitMethod(method, testClass.getClassLoader()));
+          retrofitted.add(retrofitMethod(method));
 
         return Collections.unmodifiableList(retrofitted);
       }
@@ -291,7 +324,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         for (final Map.Entry<Class<? extends Annotation>,List<FrameworkMethod>> entry : methodsForAnnotations.entrySet()) {
           final ListIterator<FrameworkMethod> iterator = entry.getValue().listIterator();
           while (iterator.hasNext())
-            iterator.set(retrofitMethod(iterator.next(), testClass.getClassLoader()));
+            iterator.set(retrofitMethod(iterator.next()));
         }
       }
     };
@@ -304,7 +337,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @param method The {@code FrameworkMethod} to retrofit.
    * @return The retrofitted {@code FrameworkMethod}.
    */
-  private FrameworkMethod retrofitMethod(final FrameworkMethod method, final ClassLoader classLoader) {
+  private FrameworkMethod retrofitMethod(final FrameworkMethod method) {
     return new FrameworkMethod(method.getMethod()) {
       @Override
       public void validatePublicVoidNoArg(final boolean isStatic, final List<Throwable> errors) {
@@ -315,6 +348,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
       @Override
       public Object invokeExplosively(final Object target, final Object ... params) throws Throwable {
+        if (delta == Integer.MAX_VALUE)
+          delta = 0;
+
+        ++delta;
         if (logger.isLoggable(Level.FINEST))
           logger.finest("invokeExplosively [" + getName() + "](" + target + ")");
 
@@ -323,7 +360,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
         }
 
-        return method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, AgentRunnerUtil.getTracer()) : super.invokeExplosively(target);
+        final Object object = method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, AgentRunnerUtil.getTracer()) : super.invokeExplosively(target);
+        --delta;
+        return object;
       }
     };
   }

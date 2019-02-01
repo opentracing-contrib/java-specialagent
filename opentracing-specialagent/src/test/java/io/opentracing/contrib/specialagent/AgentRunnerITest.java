@@ -36,6 +36,10 @@ import io.opentracing.mock.MockTracer;
 public class AgentRunnerITest {
   private static final Logger logger = Logger.getLogger(AgentRunnerITest.class.getName());
 
+  static {
+    AgentRunner.getManifestFile().deleteOnExit();
+  }
+
   private static void assertClassLoader() {
     logger.fine("  " + new Exception().getStackTrace()[1]);
     assertEquals(URLClassLoader.class, AgentRunnerITest.class.getClassLoader().getClass());
