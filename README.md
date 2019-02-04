@@ -17,6 +17,7 @@ _Java SpecialAgent_ automatically instruments Java applications to produce trace
 4. [Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter)
 5. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
 6. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
+7. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
 
 ## Operation
 
