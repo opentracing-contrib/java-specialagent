@@ -32,6 +32,23 @@
           <name>deploy</name>
         </property>
       </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>specialagent-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>verify</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
       <dependencies>
         <dependency>
           <groupId>io.opentracing.contrib</groupId>

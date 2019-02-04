@@ -28,7 +28,7 @@ script:
     mvn clean install;
   fi'
 after_success:
-- mvn -Ddeploy clean install
+- mvn -Ddeploy install
 cache:
   directories:
     - ~/.m2/repository

@@ -50,7 +50,8 @@ class LibraryFingerprint extends Fingerprint {
    */
   static LibraryFingerprint fromFile(final URL url) throws IOException {
     try (final ObjectInputStream in = new ObjectInputStream(url.openStream())) {
-      return (LibraryFingerprint)in.readObject();
+      final LibraryFingerprint libraryFingerprint = (LibraryFingerprint)in.readObject();
+      return libraryFingerprint == null || libraryFingerprint.manifest == null ? null : libraryFingerprint;
     }
     catch (final ClassNotFoundException e) {
       throw new UnsupportedOperationException(e);
@@ -82,6 +83,14 @@ class LibraryFingerprint extends Fingerprint {
     try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
       this.classes = new Fingerprinter(manifest).fingerprint(classLoader);
     }
+  }
+
+  /**
+   * Creates a new {@code LibraryFingerprint} that is empty.
+   */
+  LibraryFingerprint() {
+    this.manifest = null;
+    this.classes = null;
   }
 
   /**

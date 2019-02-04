@@ -23,7 +23,7 @@ public class SpecialAgentMojoTest {
   @Test
   public void test() {
     try {
-      SpecialAgentMojo.getPathOf(null, null);
+      FingerprintMojo.getPathOf(null, null);
       fail("Expected NullPointerException");
     }
     catch (final NullPointerException e) {

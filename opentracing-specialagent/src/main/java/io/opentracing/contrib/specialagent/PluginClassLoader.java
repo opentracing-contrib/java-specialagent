@@ -45,11 +45,11 @@ class PluginClassLoader extends URLClassLoader {
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
   private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
 
-  private static final boolean failOnMissingFingerprint;
+  private static final boolean failOnEmptyFingerprint;
 
   static {
-    final String property = System.getProperty("failOnMissingFingerprint");
-    failOnMissingFingerprint = property != null && !"false".equalsIgnoreCase(property);
+    final String property = System.getProperty("failOnEmptyFingerprint");
+    failOnEmptyFingerprint = property != null && !"false".equalsIgnoreCase(property);
   }
 
   /**
@@ -88,10 +88,10 @@ class PluginClassLoader extends URLClassLoader {
     if (compatible != null)
       return compatible;
 
-    final URL fpURL = getResource(FINGERPRINT_FILE);
-    if (fpURL != null) {
-      try {
-        final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
+    try {
+      final URL fpURL = getResource(FINGERPRINT_FILE);
+      final LibraryFingerprint fingerprint = fpURL == null ? null : LibraryFingerprint.fromFile(fpURL);
+      if (fingerprint != null) {
         final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
         if (errors != null) {
           logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
@@ -102,18 +102,18 @@ class PluginClassLoader extends URLClassLoader {
         if (logger.isLoggable(Level.FINE))
           logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + Util.toIndentedString(getURLs()));
       }
-      catch (final IOException e) {
-        throw new IllegalStateException(e);
+      else {
+        if (failOnEmptyFingerprint) {
+          logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
+          compatibility.put(classLoader, false);
+          return false;
+        }
+
+        logger.warning("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
       }
     }
-    else {
-      if (failOnMissingFingerprint) {
-        logger.warning("Disallowing instrumentation due to \"-DfailOnMissingFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
-        compatibility.put(classLoader, false);
-        return false;
-      }
-
-      logger.warning("Allowing instrumentation due to default \"-DfailOnMissingFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
     }
 
     compatibility.put(classLoader, true);

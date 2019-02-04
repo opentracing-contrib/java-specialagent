@@ -52,6 +52,7 @@ public class ClassLoaderAgent {
 
   @SuppressWarnings("unused")
   public static void premain(final String agentArgs, final Instrumentation inst, final JarFile ... jarFiles) {
+    System.err.println("<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n\n\n");
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
 //      .with(new DebugListener())
