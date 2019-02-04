@@ -48,20 +48,20 @@ public final class VerifyMojo extends AbstractMojo {
         if (!file.getName().endsWith(".jar"))
           throw new IllegalStateException("Unexpected file: " + file.getAbsolutePath());
 
-        boolean hasDependenciesTgf = false;
-        boolean hasFingerprintBin = false;
         boolean hasOtaPluginsTxt = false;
+        boolean hasFingerprintBin = false;
+        boolean hasDependenciesTgf = false;
         boolean hasTestManifest = false;
         try (final JarFile jarFile = new JarFile(file)) {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
             final String entry = entries.nextElement().getName();
-            if ("fingerprint.bin".equals(entry))
+            if ("otaplugins.txt".equals(entry))
+              hasOtaPluginsTxt = true;
+            else if ("fingerprint.bin".equals(entry))
               hasFingerprintBin = true;
             else if ("dependencies.tgf".equals(entry))
               hasDependenciesTgf = true;
-            else if ("otaplugins.txt".equals(entry))
-              hasOtaPluginsTxt = true;
             else if ("META-INF/opentracing-specialagent/TEST-MANIFEST.MF".equals(entry))
               hasTestManifest = true;
           }
@@ -70,11 +70,11 @@ public final class VerifyMojo extends AbstractMojo {
         if (!hasOtaPluginsTxt)
           continue;
 
-        if (!hasDependenciesTgf)
-          throw new MojoExecutionException(file.getName() + " does not have dependencies.tgf");
-
         if (!hasFingerprintBin)
           throw new MojoExecutionException(file.getName() + " does not have fingerprint.bin");
+
+        if (!hasDependenciesTgf)
+          throw new MojoExecutionException(file.getName() + " does not have dependencies.tgf");
 
         if (!hasTestManifest)
           throw new MojoExecutionException(file.getName() + " does not have AgentRunner tests");

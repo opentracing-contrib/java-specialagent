@@ -51,7 +51,7 @@ public class AgentRunnerITest {
   }
 
   @BeforeClass
-  public static void beforeClass2(final MockTracer tracer) {
+  public static void beforeClass2() {
     assertClassLoader();
   }
 
@@ -61,7 +61,7 @@ public class AgentRunnerITest {
   }
 
   @AfterClass
-  public static void afterClass2(final MockTracer tracer) {
+  public static void afterClass2() {
     assertClassLoader();
 //    throw new RuntimeException();
   }
@@ -72,7 +72,7 @@ public class AgentRunnerITest {
   }
 
   @Before
-  public void before2(final MockTracer tracer) {
+  public void before2() {
     assertClassLoader();
   }
 
@@ -82,7 +82,7 @@ public class AgentRunnerITest {
   }
 
   @After
-  public void after2(final MockTracer tracer) {
+  public void after2() {
     assertClassLoader();
   }
 
@@ -92,7 +92,7 @@ public class AgentRunnerITest {
   }
 
   @Test
-  public void test2(final MockTracer tracer) {
+  public void test2() {
     assertClassLoader();
   }
 
@@ -103,7 +103,13 @@ public class AgentRunnerITest {
 
   @Test
   @Ignore
-  public void ignored(final MockTracer tracer) {
+  public void ignored1(final MockTracer tracer) {
+    assertClassLoader();
+  }
+
+  @Test
+  @Ignore
+  public void ignored2() {
     assertClassLoader();
   }
 }
