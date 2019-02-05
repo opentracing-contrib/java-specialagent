@@ -40,6 +40,10 @@ import java.util.zip.ZipInputStream;
 
 import com.sun.tools.attach.VirtualMachine;
 
+import io.opentracing.Tracer;
+import io.opentracing.contrib.tracerresolver.TracerResolver;
+import io.opentracing.util.GlobalTracer;
+
 /**
  * The SpecialAgent.
  *
@@ -136,6 +140,10 @@ public class SpecialAgent {
     premain(agentArgs, instrumentation);
   }
 
+  /**
+   * Main initialization method for the {@code SpecialAgent}. This method is
+   * called by the re/transformation {@link Manager} instance.
+   */
   public static void initialize() {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
@@ -168,6 +176,7 @@ public class SpecialAgent {
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
 
     loadRules();
+    connectTracer();
   }
 
   static class AllPluginsClassLoader extends URLClassLoader {
@@ -280,6 +289,26 @@ public class SpecialAgent {
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("OpenTracing Agent rules loaded");
+  }
+
+  private static void connectTracer() {
+    System.err.println("======================= Connecting Tracer ======================\n\n\n");
+    if (GlobalTracer.isRegistered()) {
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Tracer instance already registered with GlobalTracer");
+
+      return;
+    }
+
+    final Tracer tracer = TracerResolver.resolveTracer();
+    if (tracer != null) {
+      GlobalTracer.register(tracer);
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Tracer instance resolved and registered with GlobalTracer: " + tracer.getClass().getName());
+    }
+    else if (logger.isLoggable(Level.FINE)) {
+      logger.fine("Tracer instance NOT resolved");
+    }
   }
 
   /**

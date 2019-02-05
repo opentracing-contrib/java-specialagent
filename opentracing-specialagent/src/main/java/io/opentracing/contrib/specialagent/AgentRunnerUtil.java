@@ -25,7 +25,6 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
@@ -61,10 +60,7 @@ public class AgentRunnerUtil {
       if (tracer != null)
         return tracer;
 
-      Tracer tracer = TracerResolver.resolveTracer();
-      if (tracer == null)
-        tracer = new MockTracer();
-
+      final Tracer tracer = GlobalTracer.isRegistered() ? GlobalTracer.get() : new MockTracer();
       if (logger.isLoggable(Level.FINEST)) {
         logger.finest("Registering tracer for AgentRunner: " + tracer);
         logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
