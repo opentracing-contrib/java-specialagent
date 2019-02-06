@@ -12,6 +12,7 @@
             <xs:any/>
           </xs:sequence>
           <xs:attribute name="name" type="xs:string" use="required"/>
+          <xs:attribute name="enabled" type="xs:boolean" default="true"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
