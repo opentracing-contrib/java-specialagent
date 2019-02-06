@@ -13,22 +13,18 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <artifactId>opentracing-specialagent-aws-sdk</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-
   <parent>
     <groupId>io.opentracing.contrib</groupId>
     <artifactId>java-specialagent-plugins</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-
+  <artifactId>opentracing-specialagent-aws-sdk</artifactId>
   <dependencies>
-
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-aws-sdk</artifactId>
@@ -40,7 +36,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
@@ -48,7 +43,5 @@
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
-
   </dependencies>
-
 </project>

@@ -14,12 +14,12 @@
  */
 package io.opentracing.contrib.specialagent.aws;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+
+import io.opentracing.contrib.specialagent.AgentPlugin;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -34,19 +34,16 @@ public class AwsAgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
-//      .with(new DebugListener())
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
-        .type(hasSuperType(named("com.amazonaws.client.builder.AwsClientBuilder")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription, final ClassLoader classLoader,
-              final JavaModule module) {
-            return builder.visit(Advice.to(AwsAgentPlugin.class).on(named("build")));
-          }
-        }));
+//    .with(new DebugListener())
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .type(hasSuperType(named("com.amazonaws.client.builder.AwsClientBuilder")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AwsAgentPlugin.class).on(named("build")));
+        }}));
   }
 
   @Advice.OnMethodEnter

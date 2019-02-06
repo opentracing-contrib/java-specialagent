@@ -28,15 +28,12 @@ import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -256,14 +253,20 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> testClass) throws InitializationError {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
-    this.loggingConfigFile = config != null && config.debug() ? getClass().getResource("/logging.properties") : null;
-    try {
-      if (loggingConfigFile != null)
-        LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
+    if (config != null) {
+      this.loggingConfigFile = config.debug() ? getClass().getResource("/logging.properties") : null;
 
       System.setProperty(SpecialAgent.INSTRUMENTER, config.instrumenter().name());
       if (config.verbose())
         System.setProperty("org.jboss.byteman.verbose", "true");
+    }
+    else {
+      this.loggingConfigFile = null;
+    }
+
+    try {
+      if (loggingConfigFile != null)
+        LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
 
       SpecialAgent.premain(null, inst);
     }
@@ -355,7 +358,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         if (logger.isLoggable(Level.FINEST))
           logger.finest("invokeExplosively [" + getName() + "](" + target + ")");
 
-        if (config.isolateClassLoader()) {
+        if (config == null || config.isolateClassLoader()) {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
           Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
         }

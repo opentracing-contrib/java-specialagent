@@ -14,7 +14,16 @@
  */
 package io.opentracing.contrib.specialagent.aws;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -31,121 +40,99 @@ import com.amazonaws.services.dynamodbv2.model.CreateTableResult;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
+
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(verbose = true)
 public class AwsTest {
+  private static final Logger logger = Logger.getLogger(AwsTest.class.getName());
 
   @Test
   public void testSyncClient(final MockTracer tracer) {
     tracer.reset();
+    final AmazonDynamoDB dbClient = buildClient();
     try {
-      AmazonDynamoDB dbClient = buildClient();
       createTable(dbClient, "table-1");
-    } catch (Exception ignore) {
+    }
+    catch (final Exception e) {
+      logger.log(Level.WARNING, e.getMessage(), e);
     }
 
-    List<MockSpan> spans = tracer.finishedSpans();
+    final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals("CreateTableRequest", spans.get(0).operationName());
   }
 
   @Test
-  public void testAsyncClient(final MockTracer tracer) {
+  public void testAsyncClient(final MockTracer tracer) throws Exception {
     tracer.reset();
 
+    final AmazonDynamoDBAsync dbClient = buildAsyncClient();
+    final Future<CreateTableResult> createTableResultFuture = createTableAsync(dbClient, "asyncRequest");
     try {
-      AmazonDynamoDBAsync dbClient = buildAsyncClient();
-      Future<CreateTableResult> createTableResultFuture = createTableAsync(dbClient,
-          "asyncRequest");
-      CreateTableResult result = createTableResultFuture.get(10, TimeUnit.SECONDS);
-      assertEquals("asyncRequest", result.getTableDescription().getTableName());
-    } catch (Exception ignore) {
+      final CreateTableResult result = createTableResultFuture.get(10, TimeUnit.SECONDS);
+      assertEquals("asyncRequest", result.getTableDescription().getTableName()); // FIXME: This assertion is not happening due to the exception thrown from the previous line
+    }
+    catch (final Exception e) {
+      logger.log(Level.WARNING, e.getMessage(), e);
     }
 
-    List<MockSpan> spans = tracer.finishedSpans();
+    final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals("CreateTableRequest", spans.get(0).operationName());
   }
 
-  private AmazonDynamoDB buildClient() {
-    AwsClientBuilder.EndpointConfiguration endpointConfiguration =
-        new AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-west-2");
-
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id");
-
-    return AmazonDynamoDBClientBuilder.standard()
-        .withEndpointConfiguration(endpointConfiguration)
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(1))
-        .build();
+  private static AmazonDynamoDB buildClient() {
+    final AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-west-2");
+    final BasicAWSCredentials awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id");
+    return AmazonDynamoDBClientBuilder
+      .standard()
+      .withEndpointConfiguration(endpointConfiguration)
+      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+      .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(1))
+      .build();
   }
 
-  private AmazonDynamoDBAsync buildAsyncClient() {
-    AwsClientBuilder.EndpointConfiguration endpointConfiguration =
-        new AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-west-2");
-
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id");
-
-    return AmazonDynamoDBAsyncClientBuilder.standard()
-        .withEndpointConfiguration(endpointConfiguration).withRequestHandlers()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(1))
-        .build();
+  private static AmazonDynamoDBAsync buildAsyncClient() {
+    final AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-west-2");
+    final BasicAWSCredentials awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id");
+    return AmazonDynamoDBAsyncClientBuilder
+      .standard()
+      .withEndpointConfiguration(endpointConfiguration)
+      .withRequestHandlers()
+      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+      .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(1))
+      .build();
   }
 
-  private void createTable(AmazonDynamoDB dbClient, String tableName) {
-    String partitionKeyName = tableName + "Id";
+  private static void createTable(final AmazonDynamoDB dbClient, final String tableName) {
+    final String partitionKeyName = tableName + "Id";
+    final CreateTableRequest createTableRequest = new CreateTableRequest()
+      .withTableName(tableName)
+      .withKeySchema(new KeySchemaElement().withAttributeName(partitionKeyName).withKeyType(KeyType.HASH))
+      .withAttributeDefinitions(new AttributeDefinition().withAttributeName(partitionKeyName).withAttributeType("S"))
+      .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(10L).withWriteCapacityUnits(5L));
 
-    try {
-      CreateTableRequest createTableRequest = new CreateTableRequest()
-          .withTableName(tableName)
-          .withKeySchema(new KeySchemaElement()
-              .withAttributeName(partitionKeyName)
-              .withKeyType(KeyType.HASH))
-          .withAttributeDefinitions(new AttributeDefinition()
-              .withAttributeName(partitionKeyName).withAttributeType("S"))
-          .withProvisionedThroughput(new ProvisionedThroughput()
-              .withReadCapacityUnits(10L)
-              .withWriteCapacityUnits(5L));
-
-      dbClient.createTable(createTableRequest);
-    } catch (Exception ignore) {
-    }
+    dbClient.createTable(createTableRequest);
   }
 
-  private Future<CreateTableResult> createTableAsync(AmazonDynamoDBAsync dbClient,
-      String tableName) {
-    String partitionKeyName = tableName + "Id";
+  private static Future<CreateTableResult> createTableAsync(final AmazonDynamoDBAsync dbClient, final String tableName) {
+    final String partitionKeyName = tableName + "Id";
+    final CreateTableRequest createTableRequest = new CreateTableRequest()
+      .withTableName(tableName).withKeySchema(new KeySchemaElement().withAttributeName(partitionKeyName).withKeyType(KeyType.HASH))
+      .withAttributeDefinitions(new AttributeDefinition().withAttributeName(partitionKeyName).withAttributeType("S"))
+      .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(10L).withWriteCapacityUnits(5L));
 
-    CreateTableRequest createTableRequest = new CreateTableRequest()
-        .withTableName(tableName)
-        .withKeySchema(new KeySchemaElement()
-            .withAttributeName(partitionKeyName)
-            .withKeyType(KeyType.HASH))
-        .withAttributeDefinitions(new AttributeDefinition()
-            .withAttributeName(partitionKeyName).withAttributeType("S"))
-        .withProvisionedThroughput(new ProvisionedThroughput()
-            .withReadCapacityUnits(10L)
-            .withWriteCapacityUnits(5L));
+    return dbClient.createTableAsync(createTableRequest, new AsyncHandler<CreateTableRequest,CreateTableResult>() {
+      @Override
+      public void onError(final Exception exception) {
+      }
 
-    return dbClient.createTableAsync(createTableRequest,
-        new AsyncHandler<CreateTableRequest, CreateTableResult>() {
-          @Override
-          public void onError(Exception ignore) {
-          }
-
-          @Override
-          public void onSuccess(CreateTableRequest request, CreateTableResult createTableResult) {
-          }
-        });
+      @Override
+      public void onSuccess(final CreateTableRequest request, final CreateTableResult createTableResult) {
+      }
+    });
   }
 }

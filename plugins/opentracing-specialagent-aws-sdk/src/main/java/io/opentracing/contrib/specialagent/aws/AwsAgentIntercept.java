@@ -14,14 +14,13 @@
  */
 package io.opentracing.contrib.specialagent.aws;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 
 import io.opentracing.contrib.aws.TracingRequestHandler;
 
 public class AwsAgentIntercept {
   public static void enter(final Object thiz) {
-    final com.amazonaws.client.builder.AwsClientBuilder builder =
-        (com.amazonaws.client.builder.AwsClientBuilder) thiz;
     final TracingRequestHandler requestHandler = new TracingRequestHandler();
-    builder.withRequestHandlers(requestHandler);
+    ((AwsClientBuilder<?,?>)thiz).withRequestHandlers(requestHandler);
   }
 }
