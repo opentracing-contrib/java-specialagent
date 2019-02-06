@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,9 +50,13 @@ import io.opentracing.mock.MockTracer;
 public class AwsTest {
   private static final Logger logger = Logger.getLogger(AwsTest.class.getName());
 
+  @Before
+  public void before(final MockTracer tracer) {
+    tracer.reset();
+  }
+
   @Test
   public void testSyncClient(final MockTracer tracer) {
-    tracer.reset();
     final AmazonDynamoDB dbClient = buildClient();
     try {
       createTable(dbClient, "table-1");
@@ -67,13 +72,13 @@ public class AwsTest {
 
   @Test
   public void testAsyncClient(final MockTracer tracer) throws Exception {
-    tracer.reset();
-
     final AmazonDynamoDBAsync dbClient = buildAsyncClient();
     final Future<CreateTableResult> createTableResultFuture = createTableAsync(dbClient, "asyncRequest");
     try {
       final CreateTableResult result = createTableResultFuture.get(10, TimeUnit.SECONDS);
-      assertEquals("asyncRequest", result.getTableDescription().getTableName()); // FIXME: This assertion is not happening due to the exception thrown from the previous line
+      // The following assertion is only relevant when a local instance of dynamodb is present.
+      // If a local instance of dynamodb is NOT present, an exception is thrown.
+      assertEquals("asyncRequest", result.getTableDescription().getTableName());
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
