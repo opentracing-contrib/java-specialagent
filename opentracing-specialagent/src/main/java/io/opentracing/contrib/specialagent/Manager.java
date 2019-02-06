@@ -71,7 +71,7 @@ public abstract class Manager {
    * @param agentArgs The agent arguments.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allPluginsClassLoader, Map<String,Integer> pluginJarToIndex, String agentArgs) throws IOException;
+  abstract void loadPlugins(ClassLoader allPluginsClassLoader, Map<String,Integer> pluginJarToIndex, String agentArgs) throws IOException;
 
   /**
    * Disables triggering of rules inside the current thread.

@@ -55,7 +55,7 @@ public class ByteBuddyManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs) throws IOException {
+  void loadPlugins(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs) throws IOException {
     // Prepare the ClassLoader rule
     ClassLoaderAgent.premain(agentArgs, inst);
 

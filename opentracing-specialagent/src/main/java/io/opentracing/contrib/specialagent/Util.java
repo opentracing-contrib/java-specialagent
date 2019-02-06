@@ -466,12 +466,13 @@ public final class Util {
    * temporary directory and file resources it created.
    *
    * @param path The prefix path to match when finding resources.
+   * @param excludes A set of plugin names to exclude.
    * @return A {@code List} of {@code URL} objects having a prefix path that
    *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path) {
+  static Set<URL> findJarResources(final String path, final Set<String> excludes) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       final Set<URL> urls = new HashSet<>();
@@ -498,6 +499,10 @@ public final class Util {
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           final String entry = entries.nextElement().getName();
+          final String name = entry.substring(0, entry.lastIndexOf('.'));
+          if (excludes.contains(name))
+            continue;
+
           if (entry.length() > path.length() && entry.startsWith(path)) {
             final int slash = entry.lastIndexOf('/');
             final File subDir = new File(destDir, entry.substring(0, slash));

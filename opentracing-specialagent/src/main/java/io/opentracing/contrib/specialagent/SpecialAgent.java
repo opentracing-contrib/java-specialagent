@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -148,7 +147,16 @@ public class SpecialAgent {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
+    final Set<String> excludes = new HashSet<>();
+    for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
+      final String key = (String)property.getKey();
+      final String value = (String)property.getValue();
+      if (key.endsWith(".enable") && !Boolean.parseBoolean(value)) {
+        excludes.add(key.substring(0, key.length() - 7));
+      }
+    }
+
+    final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/", excludes);
     if (logger.isLoggable(Level.FINE))
       logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
@@ -175,7 +183,7 @@ public class SpecialAgent {
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
 
-    loadRules();
+    loadPlugins();
     connectTracer();
   }
 
@@ -265,12 +273,12 @@ public class SpecialAgent {
   private static final Map<URL,URL[]> pluginToDependencies = new HashMap<>();
 
   /**
-   * This method loads any OpenTracing Agent rules (otarules.btm) found as
-   * resources within the supplied class loader.
+   * This method loads any OpenTracing Agent plugins, delegated to the
+   * instrumentation {@link Manager} in the runtime.
    */
-  private static void loadRules() {
+  private static void loadPlugins() {
     if (allPluginsClassLoader == null) {
-      logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
+      logger.severe("Attempt to load OpenTracing agent plugins before allPluginsClassLoader initialized");
       return;
     }
 
@@ -281,14 +289,14 @@ public class SpecialAgent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs);
+      instrumenter.manager.loadPlugins(allPluginsClassLoader, pluginJarToIndex, agentArgs);
     }
     catch (final IOException e) {
-      logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
+      logger.log(Level.SEVERE, "Failed to load OpenTracing agent plugins", e);
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("OpenTracing Agent rules loaded");
+      logger.fine("OpenTracing Agent plugins loaded");
   }
 
   private static void connectTracer() {
@@ -330,55 +338,6 @@ public class SpecialAgent {
       return true;
     }
   };
-
-  /**
-   * Links the instrumentation plugin at the specified index. This method is
-   * called by Byteman upon trigger of a rule from a otarules.btm script, and
-   * its purpose is:
-   * <ol>
-   * <li>To link a plugin JAR to the {@code ClassLoader} in which the
-   * instrumentation plugin is relevant (i.e. a {@code ClassLoader} which
-   * contains the target classes of instrumentation).</li>
-   * <li>To check if the instrumentation code is compatible with the classes
-   * that are to be instrumented in the {@code ClassLoader}.</li>
-   * <li>To return the value of the compatibility test, in order to allow the
-   * rule to skip its logic in case the test does not pass.</li>
-   * </ol>
-   * The {@code index} is a reference to the array index of the plugin JAR's
-   * {@code URL} in {@link #allPluginsClassLoader}, which is statically declared
-   * during the script retrofit in
-   * {@link BytemanManager#retrofitScript(String,int)}.
-   * <p>
-   * The {@code args} parameter is used to obtain the caller object, which is
-   * itself used to determine the {@code ClassLoader} in which the classes
-   * relevant for instrumentation are being invoked, and are thus loaded. If the
-   * caller object is null (meaning the triggered method is static), the
-   * {@code cls} parameter is used to determine the target {@code ClassLoader}.
-   * This method thereafter associates (in
-   * {@link #classLoaderToPluginClassLoader}) a {@link PluginClassLoader} for
-   * the instrumentation plugin at {@code index}. The association thereafter
-   * allows the {@link #findClass(ClassLoader,String)} method to directly inject
-   * the bytecode of the instrumentation classes into the target
-   * {@code ClassLoader}.
-   *
-   * @param index The index of the plugin JAR's {@code URL} in
-   *          {@link #allPluginsClassLoader}.
-   * @param cls The class on which the trigger event occurred.
-   * @param args The arguments used for the triggered method call.
-   * @return {@code true} if the plugin at the specified index is compatible
-   *         with its target classes in the invoking class's
-   *         {@code ClassLoader}.
-   * @see BytemanManager#retrofitScript(String,int)
-   */
-  public static boolean linkPlugin(final int index, final Class<?> cls, final Object[] args) {
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("linkPlugin(" + index + ", " + (cls != null ? cls.getName() + ".class" : "null") + ", " + Arrays.toString(args) + ")");
-
-    // Get the class loader of the target class
-    final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
-    final ClassLoader classLoader = targetClass.getClassLoader();
-    return linkPlugin(index, classLoader);
-  }
 
   @SuppressWarnings("resource")
   public static boolean linkPlugin(final int index, final ClassLoader classLoader) {
