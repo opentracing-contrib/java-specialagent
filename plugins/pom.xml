@@ -33,6 +33,7 @@
     <module>opentracing-specialagent-web-servlet-filter</module>
     <module>opentracing-specialagent-camel</module>
     <module>opentracing-specialagent-aws-sdk</module>
+    <module>opentracing-specialagent-cassandra-driver</module>
   </modules>
   <profiles>
     <profile>
