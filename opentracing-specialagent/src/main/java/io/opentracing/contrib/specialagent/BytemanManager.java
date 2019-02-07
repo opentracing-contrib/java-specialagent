@@ -33,6 +33,11 @@ import org.jboss.byteman.agent.Main;
 import org.jboss.byteman.agent.Retransformer;
 import org.jboss.byteman.rule.Rule;
 
+/**
+ * The Byteman re/transformation manager.
+ *
+ * @author Seva Safris
+ */
 public class BytemanManager extends Manager {
   private static final Logger logger = Logger.getLogger(BytemanManager.class.getName());
   private static Retransformer retransformer;
@@ -84,7 +89,7 @@ public class BytemanManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadPlugins(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String arg) throws IOException {
+  void loadPlugins(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String arg, final Event[] events) throws IOException {
     final List<String> scripts = new ArrayList<>();
     final List<String> scriptNames = new ArrayList<>();
 
@@ -180,8 +185,8 @@ public class BytemanManager extends Manager {
    * @param scriptNames The list into which the script name will be added.
    */
   private static void digestRule(final URL url, final Integer index, final List<String> scripts, final List<String> scriptNames) {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Digest rule for index " + index + " from URL = " + url);
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Digest rule for index " + index + " from URL = " + url);
 
     final String script = new String(Util.readBytes(url));
     scripts.add(index == null ? script : retrofitScript(script, index));

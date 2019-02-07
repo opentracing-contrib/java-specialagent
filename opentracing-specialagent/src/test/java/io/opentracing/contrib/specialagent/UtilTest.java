@@ -24,6 +24,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.noop.NoopTracer;
 
 /**
@@ -270,5 +271,34 @@ public class UtilTest {
     a = new String[] {"a", "b"};
     b = new String[] {"c", "d"};
     assertFalse(Util.containsAll(a, b));
+  }
+
+  @Test
+  public void testDigestEventsProperty() {
+    Event[] events = Util.digestEventsProperty(null);
+    for (final Event event : events)
+      assertNull(event);
+
+    events = Util.digestEventsProperty("DISCOVERY,TRANSFORMATION,IGNORED,ERROR,COMPLETE");
+    for (final Event event : events)
+      assertNotNull(event);
+
+    events = Util.digestEventsProperty("");
+    for (final Event event : events)
+      assertNull(event);
+
+    events = Util.digestEventsProperty("DISCOVERY");
+    assertNotNull(events[Event.DISCOVERY.ordinal()]);
+    assertNull(events[Event.COMPLETE.ordinal()]);
+    assertNull(events[Event.TRANSFORMATION.ordinal()]);
+    assertNull(events[Event.ERROR.ordinal()]);
+    assertNull(events[Event.IGNORED.ordinal()]);
+
+    events = Util.digestEventsProperty("TRANSFORMATION,COMPLETE");
+    assertNotNull(events[Event.TRANSFORMATION.ordinal()]);
+    assertNotNull(events[Event.COMPLETE.ordinal()]);
+    assertNull(events[Event.DISCOVERY.ordinal()]);
+    assertNull(events[Event.ERROR.ordinal()]);
+    assertNull(events[Event.IGNORED.ordinal()]);
   }
 }

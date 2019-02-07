@@ -88,7 +88,9 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 ## Debugging
 
-The `-DSpecialAgentLog` system property can be used to set the logging level for SpecialAgent. Acceptable values are: `SEVERE WARNING INFO CONFIG FINE FINER FINEST`, or any numerical log level value is acecpted also. The default logging level is set to `WARNING`.
+The `-Dspecialagent.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
+
+The `-Dspecialagent.log.events` system property can be used to set the re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, no events are logged.
 
 ## Test Usage
 
@@ -158,16 +160,16 @@ Upon execution of the test class, in either the IDE or with Maven, the `AgentRun
 
 The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotation. The annotation supports the following properties:
 
-1. `debug`: If set to `true`, `FINEST` level root logging will be enabled. Default: `false`.
-2. `verbose`: If set to `true`, ByteBuddy re/transformer verbose logging will be enabled. Default: `false`.
-3. `isolateClassLoader`: If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader. Default: `true`.
-4. `instrumenter`: The retransformation instrumentation manager (`BYTEMAN` or `BYTEBUDDY`). Default: `BYTEBUDDY`.
+1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>Default: `WARNING`.
+2. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>Default: `{}`.
+3. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>Default: `true`.
+4. `instrumenter`<br>The retransformation instrumentation manager (`BYTEMAN` or `BYTEBUDDY`).<br>Default: `BYTEBUDDY`.
 
-### Developing Instrumentation Plugins for SpecialAgent
+### Developing Instrumentation Plugins for <ins>SpecialAgent</ins>
 
 The [opentracing-contrib][opentracing-contrib] repository contains 40+ OpenTracing instrumentation plugins for Java. Only a handful of these plugins are currently [supported by SpecialAgent](#supported-instrumentation-plugins).
 
-If you are interested in contributing to the SpecialAgent project by integrating support for existing plugins in the [opentracing-contrib][opentracing-contrib] repository, or by implementing a new plugin with support for SpecialAgent, the following guide is for you:...
+If you are interested in contributing to the <ins>SpecialAgent</ins> project by integrating support for existing plugins in the [opentracing-contrib][opentracing-contrib] repository, or by implementing a new plugin with support for <ins>SpecialAgent</ins>, the following guide is for you:...
 
 #### Implementing the Instrumentation Logic
 
@@ -198,10 +200,10 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of instrumen
 
 1. If the library being instrumented is 3rd-party (i.e. it does not belong to the standard Java APIs), then the dependency artifacts for the library must be non-transitive (i.e. declared with `<scope>test</scope>`, or with `<scope>provided</scope>`).
     * The dependencies for the 3rd-party libraries are not necessary when the plugin is applied to a target application, as the application must already have these dependencies for the plugin to be used.
-    * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the SpecialAgent package, as all of the instrumentation plugins as contained within it.
+    * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the <ins>SpecialAgent</ins> package, as all of the instrumentation plugins as contained within it.
     * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
     * Many of the currently implemented instrumentation plugins _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the instrumentation plugin artifact. An example of this can be seen with the instrumentation plugin for the Mongo Driver [here](https://github.com/opentracing-contrib/java-specialagent/blob/master/plugins/opentracing-specialagent-mongo-driver/pom.xml#L37-L44).
-2. The package must contain a `fingerprint.bin` file. This file provides the SpecialAgent with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the SpecialAgent to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
+2. The package must contain a `fingerprint.bin` file. This file provides the <ins>SpecialAgent</ins> with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the <ins>SpecialAgent</ins> to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
     1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-specialagent/blob/master/plugins/opentracing-specialagent-okhttp/pom.xml) as an example.
     2. Next, include the following plugin in the project's POM:
         ```xml
@@ -222,7 +224,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of instrumen
           </executions>
         </plugin>
         ```
-3. The package must contain a `dependencies.tgf` file. This file allows the SpecialAgent to distinguish instrumentation plugin dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
+3. The package must contain a `dependencies.tgf` file. This file allows the <ins>SpecialAgent</ins> to distinguish instrumentation plugin dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
     ```xml
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
@@ -244,15 +246,15 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of instrumen
 
 #### Testing
 
-The SpecialAgent provides a convenient methodolofy for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#test-usage) for instructions.
+The <ins>SpecialAgent</ins> provides a convenient methodolofy for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#test-usage) for instructions.
 
-#### Including the Instrumentation Plugin in the SpecialAgent
+#### Including the Instrumentation Plugin in the <ins>SpecialAgent</ins>
 
-Instrumentation plugins must be explicitly packaged into the main JAR of the SpecialAgent. Please refer to the `<id>deploy</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
+Instrumentation plugins must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>deploy</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
 
 ### Building
 
-The SpecialAgent is built in 2 profiles:
+The <ins>SpecialAgent</ins> is built in 2 profiles:
 
 1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in `opentracing-specialagent-<version>.jar`
 

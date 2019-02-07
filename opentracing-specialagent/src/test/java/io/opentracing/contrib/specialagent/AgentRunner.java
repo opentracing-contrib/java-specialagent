@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.junit.Assert;
@@ -48,6 +47,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
+import io.opentracing.contrib.specialagent.Manager.Event;
 import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
@@ -70,7 +70,7 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  * {@code ClassLoader} that is not the System or Bootstrap {@code ClassLoader}.
  * <p>
  * The {@code AgentRunner} also has a facility to aide in debugging of the
- * runner's runtime, as well as Byteman's runtime (see {@link Config#debug()}
+ * runner's runtime, as well as Byteman's runtime (see {@link Config#log()}
  * and {@link Config#verbose()}).
  *
  * @author Seva Safris
@@ -105,13 +105,16 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       return inst;
 
     try {
-      System.err.println("\n\n\n");
-      System.err.println(">>>>>>>>>>>>>>>>>>>>>>> Installing Agent >>>>>>>>>>>>>>>>>>>>>>>");
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
+
       // FIXME: Can this be done in a better way?
       final JarFile jarFile = createJarFileOfSource(AgentRunner.class);
       final Instrumentation inst = ByteBuddyAgent.install();
       inst.appendToBootstrapClassLoaderSearch(jarFile);
-      System.err.println("================== Installing BootLoaderAgent ==================");
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("\n================== Installing BootLoaderAgent ==================\n");
+
       BootLoaderAgent.premain(inst, jarFile);
       return inst;
     }
@@ -132,20 +135,35 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Config {
-    /**
-     * @return Whether to set Java logging level to {@link Level#FINEST}.
-     *         <p>
-     *         Default: {@code false}.
-     */
-    boolean debug() default false;
+    public enum Log {
+      SEVERE(Level.SEVERE),
+      WARNING(Level.WARNING),
+      INFO(Level.INFO),
+      CONFIG(Level.CONFIG),
+      FINE(Level.FINE),
+      FINER(Level.FINER),
+      FINEST(Level.FINEST);
+
+      final Level level;
+
+      Log(final Level level) {
+        this.level = level;
+      }
+    }
 
     /**
-     * @return Whether to activate Byteman verbose logging via
-     *         {@code -Dorg.jboss.byteman.verbose}.
+     * @return Logging level.
      *         <p>
-     *         Default: {@code false}.
+     *         Default: {@link Log#WARNING}.
      */
-    boolean verbose() default false;
+    Log log() default Log.WARNING;
+
+    /**
+     * @return Output re/transformer events.
+     *         <p>
+     *         Default: <code>{}</code>.
+     */
+    Event[] events() default {};
 
     /**
      * @return Whether the tests should be run in a {@code ClassLoader} that is
@@ -240,7 +258,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private final Config config;
-  private final URL loggingConfigFile;
 
   /**
    * Creates a new {@code AgentRunner} for the specified test class.
@@ -254,20 +271,33 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
     if (config != null) {
-      this.loggingConfigFile = config.debug() ? getClass().getResource("/logging.properties") : null;
+      if (config.log() != Config.Log.INFO) {
+        final String logLevelProperty = System.getProperty(SpecialAgent.LOGGING_PROPERTY);
+        if (logLevelProperty != null)
+          logger.warning(SpecialAgent.LOGGING_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log is specified in " + testClass.getName());
+        else
+          System.setProperty(SpecialAgent.LOGGING_PROPERTY, String.valueOf(config.log()));
+      }
 
       System.setProperty(SpecialAgent.INSTRUMENTER, config.instrumenter().name());
-      if (config.verbose())
-        System.setProperty("org.jboss.byteman.verbose", "true");
-    }
-    else {
-      this.loggingConfigFile = null;
+      final Event[] events = config.events();
+      if (events.length > 0) {
+        final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
+        if (eventsProperty != null) {
+          logger.warning(SpecialAgent.EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
+        }
+        else {
+          final StringBuilder builder = new StringBuilder();
+          for (final Event event : events)
+            builder.append(event).append(",");
+
+          builder.setLength(builder.length() - 1);
+          System.setProperty(SpecialAgent.EVENTS_PROPERTY, builder.toString());
+        }
+      }
     }
 
     try {
-      if (loggingConfigFile != null)
-        LogManager.getLogManager().readConfiguration(loggingConfigFile.openStream());
-
       SpecialAgent.premain(null, inst);
     }
     catch (final Throwable e) {

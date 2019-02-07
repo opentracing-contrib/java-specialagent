@@ -44,6 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
+import io.opentracing.contrib.specialagent.Manager.Event;
+
 /**
  * Utility functions for the SpecialAgent.
  *
@@ -772,6 +774,33 @@ public final class Util {
     }
 
     return a.length - b.length;
+  }
+
+  private static final Event[] EMPTY_EVENTS = new Event[5];
+
+  static Event[] digestEventsProperty(final String eventsProperty) {
+    if (eventsProperty == null)
+      return EMPTY_EVENTS;
+
+    final String[] parts = eventsProperty.split(",");
+    Arrays.sort(parts);
+    final Event[] events = Event.values();
+    for (int i = 0, j = 0; i < events.length;) {
+      final int comparison = j < parts.length ? events[i].name().compareTo(parts[j]) : -1;
+      if (comparison < 0) {
+        events[i] = null;
+        ++i;
+      }
+      else if (comparison > 0) {
+        ++j;
+      }
+      else {
+        ++i;
+        ++j;
+      }
+    }
+
+    return events;
   }
 
   private Util() {

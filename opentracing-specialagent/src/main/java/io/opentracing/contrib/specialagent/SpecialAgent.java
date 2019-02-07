@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Handler;
@@ -40,6 +42,7 @@ import java.util.zip.ZipInputStream;
 import com.sun.tools.attach.VirtualMachine;
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.util.GlobalTracer;
 
@@ -51,7 +54,8 @@ import io.opentracing.util.GlobalTracer;
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
-  static final String LOGGING_PROPERTY = "SpecialAgentLog";
+  static final String EVENTS_PROPERTY = "specialagent.log.events";
+  static final String LOGGING_PROPERTY = "specialagent.log.level";
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
   static final String INSTRUMENTER = "io.opentracing.contrib.specialagent.instrumenter";
 
@@ -83,10 +87,33 @@ public class SpecialAgent {
   private static AllPluginsClassLoader allPluginsClassLoader;
 
   private static final Instrumenter instrumenter;
+  private static Event[] events;
 
   static {
-    try (final InputStream in = SpecialAgent.class.getResourceAsStream("/logging.properties")) {
-      LogManager.getLogManager().readConfiguration(in);
+    final String configProperty = System.getProperty("config");
+    try (
+      final InputStream configInputStream = SpecialAgent.class.getResourceAsStream("/default.properties");
+      final FileReader reader = configProperty == null ? null : new FileReader(new File(configProperty));
+      final InputStream loggingInputStream = SpecialAgent.class.getResourceAsStream("/logging.properties");
+    ) {
+      final Properties properties = new Properties();
+
+      // Load default config properties
+      properties.load(configInputStream);
+
+      // Load user config properties
+      if (reader != null)
+        properties.load(reader);
+
+      // Set config properties as system properties
+      for (final Map.Entry<Object,Object> entry : properties.entrySet())
+        if (System.getProperty((String)entry.getKey()) == null)
+          System.setProperty((String)entry.getKey(), (String)entry.getValue());
+
+      // Load default logging properties
+      LogManager.getLogManager().readConfiguration(loggingInputStream);
+
+      // Load user logging properties
       final String loggingProperty = System.getProperty(LOGGING_PROPERTY);
       if (loggingProperty != null) {
         final Level level = Level.parse(loggingProperty);
@@ -157,8 +184,8 @@ public class SpecialAgent {
     }
 
     final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/", excludes);
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
     try {
       final Enumeration<URL> resources = instrumenter.manager.getResources();
@@ -174,8 +201,8 @@ public class SpecialAgent {
       for (final URL pluginPath : pluginPaths)
         pluginJarUrls.add(pluginPath);
 
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
 
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
@@ -289,18 +316,20 @@ public class SpecialAgent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      instrumenter.manager.loadPlugins(allPluginsClassLoader, pluginJarToIndex, agentArgs);
+      instrumenter.manager.loadPlugins(allPluginsClassLoader, pluginJarToIndex, agentArgs, Util.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent plugins", e);
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("OpenTracing Agent plugins loaded");
+      logger.fine("OpenTracing Agent Plugins loaded");
   }
 
   private static void connectTracer() {
-    System.err.println("======================= Connecting Tracer ======================\n\n\n");
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n======================= Connecting Tracer ======================\n");
+
     if (GlobalTracer.isRegistered()) {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Tracer instance already registered with GlobalTracer");
@@ -370,8 +399,8 @@ public class SpecialAgent {
       }
 
       if (classLoader == null) {
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
 
         for (final URL path : pluginPaths) {
           try {
@@ -384,8 +413,8 @@ public class SpecialAgent {
         }
       }
       else if (classLoader == ClassLoader.getSystemClassLoader()) {
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Target class loader is system, so adding plugin JARs to the system class loader directly");
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("Target class loader is system, so adding plugin JARs to the system class loader directly");
 
         for (final URL path : pluginPaths) {
           try {
