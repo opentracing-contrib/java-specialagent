@@ -60,7 +60,6 @@ public class ClassLoaderAgent {
 
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

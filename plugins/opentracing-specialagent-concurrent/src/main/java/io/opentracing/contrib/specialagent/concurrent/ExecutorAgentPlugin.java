@@ -41,7 +41,6 @@ public class ExecutorAgentPlugin implements AgentPlugin {
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
       .ignore(none())
-//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
