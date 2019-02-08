@@ -18,6 +18,7 @@
 5. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
 6. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
 7. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
+8. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
 
 ## Operation
 
