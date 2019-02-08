@@ -14,9 +14,12 @@
  */
 package io.opentracing.contrib.specialagent.cassandra;
 
+import static net.bytebuddy.matcher.ElementMatchers.isStatic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -26,11 +29,12 @@ import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class CassandraAgentPlugin implements AgentPlugin {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
         .with(RedefinitionStrategy.RETRANSFORMATION)
         .with(InitializationStrategy.NoOp.INSTANCE)
@@ -43,18 +47,19 @@ public class CassandraAgentPlugin implements AgentPlugin {
               final TypeDescription typeDescription, final ClassLoader classLoader,
               final JavaModule module) {
 
-            return builder.visit(Advice.to(CassandraAgentPlugin.class).on(named("buildFrom")));
-            //.and(takesArguments(Cluster.Initializer.class))));
+            return builder.visit(Advice.to(CassandraAgentPlugin.class)
+                .on(isStatic().and(named("buildFrom")
+                    .and(returns(named("com.datastax.driver.core.Cluster"))))));
           }
         }));
   }
 
-
   @Advice.OnMethodExit
-  public static void exit() {
-    System.out.println(">>>>>> ");
-    //returned = ...;
+  @SuppressWarnings("unused")
+  public static void exit(final @Advice.Origin Method method,
+      @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned,
+      @Advice.Argument(value = 0) Object arg) {
+    System.out.println(">>>>>> " + method);
+    returned = CassandraAgentIntercept.exit(arg);
   }
-
-
 }
