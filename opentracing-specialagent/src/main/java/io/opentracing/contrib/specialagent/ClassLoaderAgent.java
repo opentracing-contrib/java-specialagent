@@ -23,6 +23,8 @@ import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
@@ -48,14 +50,16 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgent {
+  private static final Logger logger = Logger.getLogger(ClassLoaderAgent.class.getName());
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
   @SuppressWarnings("unused")
   public static void premain(final String agentArgs, final Instrumentation inst, final JarFile ... jarFiles) {
-    System.err.println("<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n\n\n");
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n");
+
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
-//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

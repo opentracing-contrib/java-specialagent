@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
@@ -23,12 +24,12 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Handler;
@@ -40,6 +41,11 @@ import java.util.zip.ZipInputStream;
 
 import com.sun.tools.attach.VirtualMachine;
 
+import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.Manager.Event;
+import io.opentracing.contrib.tracerresolver.TracerResolver;
+import io.opentracing.util.GlobalTracer;
+
 /**
  * The SpecialAgent.
  *
@@ -48,7 +54,8 @@ import com.sun.tools.attach.VirtualMachine;
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
-  static final String LOGGING_PROPERTY = "SpecialAgentLog";
+  static final String EVENTS_PROPERTY = "specialagent.log.events";
+  static final String LOGGING_PROPERTY = "specialagent.log.level";
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
   static final String INSTRUMENTER = "io.opentracing.contrib.specialagent.instrumenter";
 
@@ -80,10 +87,33 @@ public class SpecialAgent {
   private static AllPluginsClassLoader allPluginsClassLoader;
 
   private static final Instrumenter instrumenter;
+  private static Event[] events;
 
   static {
-    try (final InputStream in = SpecialAgent.class.getResourceAsStream("/logging.properties")) {
-      LogManager.getLogManager().readConfiguration(in);
+    final String configProperty = System.getProperty("config");
+    try (
+      final InputStream configInputStream = SpecialAgent.class.getResourceAsStream("/default.properties");
+      final FileReader reader = configProperty == null ? null : new FileReader(new File(configProperty));
+      final InputStream loggingInputStream = SpecialAgent.class.getResourceAsStream("/logging.properties");
+    ) {
+      final Properties properties = new Properties();
+
+      // Load default config properties
+      properties.load(configInputStream);
+
+      // Load user config properties
+      if (reader != null)
+        properties.load(reader);
+
+      // Set config properties as system properties
+      for (final Map.Entry<Object,Object> entry : properties.entrySet())
+        if (System.getProperty((String)entry.getKey()) == null)
+          System.setProperty((String)entry.getKey(), (String)entry.getValue());
+
+      // Load default logging properties
+      LogManager.getLogManager().readConfiguration(loggingInputStream);
+
+      // Load user logging properties
       final String loggingProperty = System.getProperty(LOGGING_PROPERTY);
       if (loggingProperty != null) {
         final Level level = Level.parse(loggingProperty);
@@ -136,13 +166,26 @@ public class SpecialAgent {
     premain(agentArgs, instrumentation);
   }
 
+  /**
+   * Main initialization method for the {@code SpecialAgent}. This method is
+   * called by the re/transformation {@link Manager} instance.
+   */
   public static void initialize() {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/");
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
+    final Set<String> excludes = new HashSet<>();
+    for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
+      final String key = (String)property.getKey();
+      final String value = (String)property.getValue();
+      if (key.endsWith(".enable") && !Boolean.parseBoolean(value)) {
+        excludes.add(key.substring(0, key.length() - 7));
+      }
+    }
+
+    final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/", excludes);
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
     try {
       final Enumeration<URL> resources = instrumenter.manager.getResources();
@@ -158,8 +201,8 @@ public class SpecialAgent {
       for (final URL pluginPath : pluginPaths)
         pluginJarUrls.add(pluginPath);
 
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Loading " + pluginJarUrls.size() + " plugin paths:\n" + Util.toIndentedString(pluginJarUrls));
 
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
@@ -167,7 +210,8 @@ public class SpecialAgent {
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
 
-    loadRules();
+    loadPlugins();
+    connectTracer();
   }
 
   static class AllPluginsClassLoader extends URLClassLoader {
@@ -256,12 +300,12 @@ public class SpecialAgent {
   private static final Map<URL,URL[]> pluginToDependencies = new HashMap<>();
 
   /**
-   * This method loads any OpenTracing Agent rules (otarules.btm) found as
-   * resources within the supplied class loader.
+   * This method loads any OpenTracing Agent plugins, delegated to the
+   * instrumentation {@link Manager} in the runtime.
    */
-  private static void loadRules() {
+  private static void loadPlugins() {
     if (allPluginsClassLoader == null) {
-      logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
+      logger.severe("Attempt to load OpenTracing agent plugins before allPluginsClassLoader initialized");
       return;
     }
 
@@ -272,14 +316,36 @@ public class SpecialAgent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         pluginJarToIndex.put(allPluginsClassLoader.getURLs()[i].toString(), i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, pluginJarToIndex, agentArgs);
+      instrumenter.manager.loadPlugins(allPluginsClassLoader, pluginJarToIndex, agentArgs, Util.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
     }
     catch (final IOException e) {
-      logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
+      logger.log(Level.SEVERE, "Failed to load OpenTracing agent plugins", e);
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("OpenTracing Agent rules loaded");
+      logger.fine("OpenTracing Agent Plugins loaded");
+  }
+
+  private static void connectTracer() {
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n======================= Connecting Tracer ======================\n");
+
+    if (GlobalTracer.isRegistered()) {
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Tracer instance already registered with GlobalTracer");
+
+      return;
+    }
+
+    final Tracer tracer = TracerResolver.resolveTracer();
+    if (tracer != null) {
+      GlobalTracer.register(tracer);
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Tracer instance resolved and registered with GlobalTracer: " + tracer.getClass().getName());
+    }
+    else if (logger.isLoggable(Level.FINE)) {
+      logger.fine("Tracer instance NOT resolved");
+    }
   }
 
   /**
@@ -301,55 +367,6 @@ public class SpecialAgent {
       return true;
     }
   };
-
-  /**
-   * Links the instrumentation plugin at the specified index. This method is
-   * called by Byteman upon trigger of a rule from a otarules.btm script, and
-   * its purpose is:
-   * <ol>
-   * <li>To link a plugin JAR to the {@code ClassLoader} in which the
-   * instrumentation plugin is relevant (i.e. a {@code ClassLoader} which
-   * contains the target classes of instrumentation).</li>
-   * <li>To check if the instrumentation code is compatible with the classes
-   * that are to be instrumented in the {@code ClassLoader}.</li>
-   * <li>To return the value of the compatibility test, in order to allow the
-   * rule to skip its logic in case the test does not pass.</li>
-   * </ol>
-   * The {@code index} is a reference to the array index of the plugin JAR's
-   * {@code URL} in {@link #allPluginsClassLoader}, which is statically declared
-   * during the script retrofit in
-   * {@link BytemanManager#retrofitScript(String,int)}.
-   * <p>
-   * The {@code args} parameter is used to obtain the caller object, which is
-   * itself used to determine the {@code ClassLoader} in which the classes
-   * relevant for instrumentation are being invoked, and are thus loaded. If the
-   * caller object is null (meaning the triggered method is static), the
-   * {@code cls} parameter is used to determine the target {@code ClassLoader}.
-   * This method thereafter associates (in
-   * {@link #classLoaderToPluginClassLoader}) a {@link PluginClassLoader} for
-   * the instrumentation plugin at {@code index}. The association thereafter
-   * allows the {@link #findClass(ClassLoader,String)} method to directly inject
-   * the bytecode of the instrumentation classes into the target
-   * {@code ClassLoader}.
-   *
-   * @param index The index of the plugin JAR's {@code URL} in
-   *          {@link #allPluginsClassLoader}.
-   * @param cls The class on which the trigger event occurred.
-   * @param args The arguments used for the triggered method call.
-   * @return {@code true} if the plugin at the specified index is compatible
-   *         with its target classes in the invoking class's
-   *         {@code ClassLoader}.
-   * @see BytemanManager#retrofitScript(String,int)
-   */
-  public static boolean linkPlugin(final int index, final Class<?> cls, final Object[] args) {
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("linkPlugin(" + index + ", " + (cls != null ? cls.getName() + ".class" : "null") + ", " + Arrays.toString(args) + ")");
-
-    // Get the class loader of the target class
-    final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
-    final ClassLoader classLoader = targetClass.getClassLoader();
-    return linkPlugin(index, classLoader);
-  }
 
   @SuppressWarnings("resource")
   public static boolean linkPlugin(final int index, final ClassLoader classLoader) {
@@ -382,8 +399,8 @@ public class SpecialAgent {
       }
 
       if (classLoader == null) {
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
 
         for (final URL path : pluginPaths) {
           try {
@@ -396,8 +413,8 @@ public class SpecialAgent {
         }
       }
       else if (classLoader == ClassLoader.getSystemClassLoader()) {
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Target class loader is system, so adding plugin JARs to the system class loader directly");
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("Target class loader is system, so adding plugin JARs to the system class loader directly");
 
         for (final URL path : pluginPaths) {
           try {

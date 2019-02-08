@@ -35,6 +35,11 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
+/**
+ * The ByteBuddy re/transformation manager.
+ *
+ * @author Seva Safris
+ */
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
 
@@ -55,7 +60,7 @@ public class ByteBuddyManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs) throws IOException {
+  void loadPlugins(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs, final Event[] events) throws IOException {
     // Prepare the ClassLoader rule
     ClassLoaderAgent.premain(agentArgs, inst);
 
@@ -89,7 +94,7 @@ public class ByteBuddyManager extends Manager {
           final Iterable<? extends AgentBuilder> builders = agentPlugin.buildAgent(agentArgs);
 
           for (final AgentBuilder builder : builders) {
-          final TransformationListener listener = new TransformationListener(index);
+          final TransformationListener listener = new TransformationListener(index, events);
 //            if (agentPlugin.onEn().getOnEnter() != null)
 //              installOn(builder, agentPlugin.onEn().getOnEnter(), agentPlugin, listener, instrumentation);
 //
@@ -142,32 +147,44 @@ public class ByteBuddyManager extends Manager {
 
   class TransformationListener implements AgentBuilder.Listener {
     private final int index;
+    private final Event[] events;
 
-    TransformationListener(final int index) {
+    TransformationListener(final int index, final Event[] events) {
       this.index = index;
+      this.events = events;
     }
 
     @Override
     public void onDiscovery(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
+      if (events[Event.DISCOVERY.ordinal()] != null)
+        logger.severe("Event::onDiscovery(" + typeName + ", " + Util.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
     }
 
     @Override
     public void onTransformation(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final DynamicType dynamicType) {
+      if (events[Event.TRANSFORMATION.ordinal()] != null)
+        logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + Util.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
+
       if (!SpecialAgent.linkPlugin(index, classLoader))
         throw new IllegalStateException("Disallowing transformation due to incompatibility");
     }
 
     @Override
     public void onIgnored(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
+      if (events[Event.IGNORED.ordinal()] != null)
+        logger.severe("Event::onIgnored(" + typeDescription.getName() + ", " + Util.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
     }
 
     @Override
     public void onError(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final Throwable throwable) {
-      logger.log(Level.SEVERE, "Error transforming " + typeName, throwable);
+      if (events[Event.ERROR.ordinal()] != null)
+        logger.log(Level.SEVERE, "Event::onError(" + typeName + ", " + Util.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")", throwable);
     }
 
     @Override
     public void onComplete(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
+      if (events[Event.COMPLETE.ordinal()] != null)
+        logger.severe("Event::onComplete(" + typeName + ", " + Util.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
     }
   }
 }

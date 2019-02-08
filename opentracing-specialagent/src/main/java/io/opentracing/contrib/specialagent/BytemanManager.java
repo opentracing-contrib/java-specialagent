@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -32,6 +33,11 @@ import org.jboss.byteman.agent.Main;
 import org.jboss.byteman.agent.Retransformer;
 import org.jboss.byteman.rule.Rule;
 
+/**
+ * The Byteman re/transformation manager.
+ *
+ * @author Seva Safris
+ */
 public class BytemanManager extends Manager {
   private static final Logger logger = Logger.getLogger(BytemanManager.class.getName());
   private static Retransformer retransformer;
@@ -83,7 +89,7 @@ public class BytemanManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String arg) throws IOException {
+  void loadPlugins(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String arg, final Event[] events) throws IOException {
     final List<String> scripts = new ArrayList<>();
     final List<String> scriptNames = new ArrayList<>();
 
@@ -179,8 +185,8 @@ public class BytemanManager extends Manager {
    * @param scriptNames The list into which the script name will be added.
    */
   private static void digestRule(final URL url, final Integer index, final List<String> scripts, final List<String> scriptNames) {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Digest rule for index " + index + " from URL = " + url);
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Digest rule for index " + index + " from URL = " + url);
 
     final String script = new String(Util.readBytes(url));
     scripts.add(index == null ? script : retrofitScript(script, index));
@@ -214,7 +220,7 @@ public class BytemanManager extends Manager {
     builder.append("IF TRUE\n");
     builder.append("DO\n");
     builder.append("  traceln(\">>>>>>>> ClassLoaderAgent " + index + "\");\n");
-    builder.append("  ").append(SpecialAgent.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
+    builder.append("  ").append(BytemanManager.class.getName()).append(".linkPlugin(").append(index).append(", ").append(classRef).append(", $*);\n");
     builder.append("ENDRULE\n");
   }
 
@@ -256,10 +262,59 @@ public class BytemanManager extends Manager {
   }
 
   /**
+   * Links the instrumentation plugin at the specified index. This method is
+   * called by Byteman upon trigger of a rule from a otarules.btm script, and
+   * its purpose is:
+   * <ol>
+   * <li>To link a plugin JAR to the {@code ClassLoader} in which the
+   * instrumentation plugin is relevant (i.e. a {@code ClassLoader} which
+   * contains the target classes of instrumentation).</li>
+   * <li>To check if the instrumentation code is compatible with the classes
+   * that are to be instrumented in the {@code ClassLoader}.</li>
+   * <li>To return the value of the compatibility test, in order to allow the
+   * rule to skip its logic in case the test does not pass.</li>
+   * </ol>
+   * The {@code index} is a reference to the array index of the plugin JAR's
+   * {@code URL} in {@link SpecialAgent#allPluginsClassLoader}, which is statically declared
+   * during the script retrofit in
+   * {@link BytemanManager#retrofitScript(String,int)}.
+   * <p>
+   * The {@code args} parameter is used to obtain the caller object, which is
+   * itself used to determine the {@code ClassLoader} in which the classes
+   * relevant for instrumentation are being invoked, and are thus loaded. If the
+   * caller object is null (meaning the triggered method is static), the
+   * {@code cls} parameter is used to determine the target {@code ClassLoader}.
+   * This method thereafter associates (in
+   * {@link SpecialAgent#classLoaderToPluginClassLoader}) a {@link PluginClassLoader} for
+   * the instrumentation plugin at {@code index}. The association thereafter
+   * allows the {@link SpecialAgent#findClass(ClassLoader,String)} method to directly inject
+   * the bytecode of the instrumentation classes into the target
+   * {@code ClassLoader}.
+   *
+   * @param index The index of the plugin JAR's {@code URL} in
+   *          {@link SpecialAgent#allPluginsClassLoader}.
+   * @param cls The class on which the trigger event occurred.
+   * @param args The arguments used for the triggered method call.
+   * @return {@code true} if the plugin at the specified index is compatible
+   *         with its target classes in the invoking class's
+   *         {@code ClassLoader}.
+   * @see BytemanManager#retrofitScript(String,int)
+   */
+  public static boolean linkPlugin(final int index, final Class<?> cls, final Object[] args) {
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("linkPlugin(" + index + ", " + (cls != null ? cls.getName() + ".class" : "null") + ", " + Arrays.toString(args) + ")");
+
+    // Get the class loader of the target class
+    final Class<?> targetClass = args[0] != null ? args[0].getClass() : cls;
+    final ClassLoader classLoader = targetClass.getClassLoader();
+    return SpecialAgent.linkPlugin(index, classLoader);
+  }
+
+  /**
    * This method consumes a Byteman script that is intended for the
    * instrumentation of the OpenTracing API into a 3rd-party library, and
    * produces a Byteman script that is used to trigger the "ClassLoaderAgent"
-   * procedure {@link SpecialAgent#linkPlugin(int,Class,Object[])} that loads
+   * procedure {@link #linkPlugin(int,Class,Object[])} that loads
    * the instrumentation and OpenTracing API classes directly into the
    * {@code ClassLoader} in which the 3rd-party library is loaded.
    *
@@ -268,7 +323,7 @@ public class BytemanManager extends Manager {
    *          {@code allPluginsClassLoader.getURLs()} which corresponds to
    *          {@code script}.
    * @return The script used to trigger the "ClassLoaderAgent" procedure
-   *         {@link SpecialAgent#linkPlugin(int,Class,Object[])}.
+   *         {@link #linkPlugin(int,Class,Object[])}.
    */
   static String retrofitScript(final String script, final int index) {
     final StringBuilder out = new StringBuilder();
@@ -323,7 +378,7 @@ public class BytemanManager extends Manager {
         if (m > -1) {
           inBind = false;
           i = m;
-          bindClause = "\n  cOmPaTiBlE:boolean = " + SpecialAgent.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
+          bindClause = "\n  cOmPaTiBlE:boolean = " + BytemanManager.class.getName() + ".linkPlugin(" + index + ", " + classRef + ", $*);";
           continue;
         }
 

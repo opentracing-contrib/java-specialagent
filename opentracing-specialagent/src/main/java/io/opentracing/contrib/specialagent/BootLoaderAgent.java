@@ -67,7 +67,6 @@ public class BootLoaderAgent {
     jarFiles.add(jarFile);
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
-//      .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE);

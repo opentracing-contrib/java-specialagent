@@ -14,30 +14,38 @@
  */
 package io.opentracing.contrib.specialagent.cassandra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import io.opentracing.contrib.cassandra.TracingSession;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockTracer;
+import java.util.logging.Logger;
+
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
+
+import io.opentracing.contrib.cassandra.TracingSession;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Manager.Event;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(verbose = true, isolateClassLoader = false)
+@AgentRunner.Config(events = Event.ERROR, isolateClassLoader = false)
 public class CassandraTest {
+  private static final Logger logger = Logger.getLogger(CassandraTest.class.getName());
+
+  // Cassandra doesn't yet support the latest JDK versions. We are still on 1.8
+  private static final boolean isJdkSupported = System.getProperty("java.version").startsWith("1.8.");
 
   @Before
   public void before(final MockTracer tracer) throws Exception {
     tracer.reset();
-    if (isJavaSupported()) {
+    if (isJdkSupported) {
       EmbeddedCassandraServerHelper.startEmbeddedCassandra();
       EmbeddedCassandraServerHelper.getSession();
     }
@@ -45,42 +53,36 @@ public class CassandraTest {
 
   @After
   public void after() {
-    if (isJavaSupported()) {
+    if (isJdkSupported) {
       EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
     }
   }
 
   @Test
   public void test(final MockTracer tracer) {
-    if (!isJavaSupported()) {
+    if (!isJdkSupported) {
+      logger.warning("jdk" + System.getProperty("java.version") + " is not supported by Cassandra.");
       return;
     }
 
-    Session session = createSession();
-    assertTrue(session instanceof TracingSession);
+    try (final Session session = createSession()) {
+      assertTrue(session.getClass().getName(), session instanceof TracingSession);
+      createKeyspace(session);
+      session.close();
+    }
 
-    createKeyspace(session);
-
-    session.close();
-
-    int size = tracer.finishedSpans().size();
+    final int size = tracer.finishedSpans().size();
     assertEquals(1, size);
   }
 
-  private Session createSession() {
-    Cluster cluster = Cluster.builder().addContactPoints("127.0.0.1").withPort(9142).build();
+  private static Session createSession() {
+    final Cluster cluster = Cluster.builder().addContactPoints("127.0.0.1").withPort(9142).build();
     return cluster.connect();
   }
 
-  private void createKeyspace(Session session) {
-    PreparedStatement prepared = session.prepare(
-        "create keyspace test WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};");
-    BoundStatement bound = prepared.bind();
+  private static void createKeyspace(Session session) {
+    final PreparedStatement prepared = session.prepare("CREATE keyspace test WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};");
+    final BoundStatement bound = prepared.bind();
     session.execute(bound);
-  }
-
-  // Cassandra doesn't support yet latest JDK versions. We are still on 1.8
-  private boolean isJavaSupported() {
-    return System.getProperty("java.version").startsWith("1.8.");
   }
 }

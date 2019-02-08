@@ -27,6 +27,14 @@ import java.util.Map;
  * @author Seva Safris
  */
 public abstract class Manager {
+  public enum Event {
+    COMPLETE,
+    DISCOVERY,
+    ERROR,
+    IGNORED,
+    TRANSFORMATION;
+  }
+
   /** The configuration file name. **/
   final String file;
 
@@ -69,9 +77,10 @@ public abstract class Manager {
    * @param pluginJarToIndex A {@code Map} of plugin JAR path to its index in
    *          the {@code allPluginsClassLoader} classpath.
    * @param agentArgs The agent arguments.
+   * @param events Manager events to log.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allPluginsClassLoader, Map<String,Integer> pluginJarToIndex, String agentArgs) throws IOException;
+  abstract void loadPlugins(ClassLoader allPluginsClassLoader, Map<String,Integer> pluginJarToIndex, String agentArgs, final Event[] events) throws IOException;
 
   /**
    * Disables triggering of rules inside the current thread.

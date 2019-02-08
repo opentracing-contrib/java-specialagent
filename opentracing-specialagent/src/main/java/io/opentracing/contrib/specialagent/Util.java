@@ -44,6 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
+import io.opentracing.contrib.specialagent.Manager.Event;
+
 /**
  * Utility functions for the SpecialAgent.
  *
@@ -466,12 +468,13 @@ public final class Util {
    * temporary directory and file resources it created.
    *
    * @param path The prefix path to match when finding resources.
+   * @param excludes A set of plugin names to exclude.
    * @return A {@code List} of {@code URL} objects having a prefix path that
    *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path) {
+  static Set<URL> findJarResources(final String path, final Set<String> excludes) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       final Set<URL> urls = new HashSet<>();
@@ -498,6 +501,10 @@ public final class Util {
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           final String entry = entries.nextElement().getName();
+          final String name = entry.substring(0, entry.lastIndexOf('.'));
+          if (excludes.contains(name))
+            continue;
+
           if (entry.length() > path.length() && entry.startsWith(path)) {
             final int slash = entry.lastIndexOf('/');
             final File subDir = new File(destDir, entry.substring(0, slash));
@@ -767,6 +774,33 @@ public final class Util {
     }
 
     return a.length - b.length;
+  }
+
+  private static final Event[] EMPTY_EVENTS = new Event[5];
+
+  static Event[] digestEventsProperty(final String eventsProperty) {
+    if (eventsProperty == null)
+      return EMPTY_EVENTS;
+
+    final String[] parts = eventsProperty.split(",");
+    Arrays.sort(parts);
+    final Event[] events = Event.values();
+    for (int i = 0, j = 0; i < events.length;) {
+      final int comparison = j < parts.length ? events[i].name().compareTo(parts[j]) : -1;
+      if (comparison < 0) {
+        events[i] = null;
+        ++i;
+      }
+      else if (comparison > 0) {
+        ++j;
+      }
+      else {
+        ++i;
+        ++j;
+      }
+    }
+
+    return events;
   }
 
   private Util() {

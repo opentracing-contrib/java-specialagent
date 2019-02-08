@@ -43,10 +43,12 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
+@AgentRunner.Config(events=Event.ERROR)
 public class AwsTest {
   private static final Logger logger = Logger.getLogger(AwsTest.class.getName());
 
