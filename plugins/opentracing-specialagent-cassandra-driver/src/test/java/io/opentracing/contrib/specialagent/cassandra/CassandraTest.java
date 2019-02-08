@@ -37,17 +37,25 @@ public class CassandraTest {
   @Before
   public void before(final MockTracer tracer) throws Exception {
     tracer.reset();
-    EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-    EmbeddedCassandraServerHelper.getSession();
+    if (isJavaSupported()) {
+      EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+      EmbeddedCassandraServerHelper.getSession();
+    }
   }
 
   @After
   public void after() {
-    EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+    if (isJavaSupported()) {
+      EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+    }
   }
 
   @Test
   public void test(final MockTracer tracer) {
+    if (!isJavaSupported()) {
+      return;
+    }
+
     Session session = createSession();
     assertTrue(session instanceof TracingSession);
 
@@ -69,5 +77,10 @@ public class CassandraTest {
         "create keyspace test WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};");
     BoundStatement bound = prepared.bind();
     session.execute(bound);
+  }
+
+  // Cassandra doesn't support yet latest JDK versions. We are still on 1.8
+  private boolean isJavaSupported() {
+    return System.getProperty("java.version").startsWith("1.8.");
   }
 }
