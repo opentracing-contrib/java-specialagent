@@ -87,6 +87,28 @@ Dynamically attaching to a Java application involves the use of a running applic
     java -jar opentracing-specialagent.jar <PID>
     ```
 
+## Configuration
+
+The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>SpecialAgent</ins>, the instrumentation plugins, as well as tracer plugins. The configuration pattern is based on system properties, which can be defined on the command-line, in a properties file, or in [@AgentRunner.Config](#configuring-agentrunner):
+
+1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in layers below.
+
+2. The [@AgentRunner.Config](#configuring-agentrunner) annotation allows one to define log level and transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in layers below.
+
+3. The `-Dconfig=${PROPERTIES_FILE}` command-line argument can be specified to have the <ins>SpecialAgent</ins> load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below.
+
+4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
+
+### Disabling Plugins
+
+The <ins>SpecialAgent</ins> allows instrumentation plugins to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+
+```
+${PLUGIN_NAME}.enabled=false
+```
+
+The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is included in the <ins>SpecialAgent</ins>, such as `opentracing-specialagent-okhttp` or `opentracing-specialagent-web-servlet-filter`.
+
 ## Debugging
 
 The `-Dspecialagent.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
