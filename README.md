@@ -186,7 +186,6 @@ The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotatio
 1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>Default: `WARNING`.
 2. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>Default: `{}`.
 3. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>Default: `true`.
-4. `instrumenter`<br>The retransformation instrumentation manager (`BYTEMAN` or `BYTEBUDDY`).<br>Default: `BYTEBUDDY`.
 
 ### Developing Instrumentation Plugins for <ins>SpecialAgent</ins>
 
@@ -198,24 +197,9 @@ If you are interested in contributing to the <ins>SpecialAgent</ins> project by 
 
 The [opentracing-contrib][opentracing-contrib] repository contains instrumentation plugins for a wide variety of 3rd-party libraries, as well as Java standard APIs. The plugins instrument a 3rd-party library of interest by implementing custom library-specific hooks that integrate with the OpenTracing API. To see examples, explore projects named with the prefix **java-...** in the [opentracing-contrib][opentracing-contrib] repository.
 
-#### Implementing the Auto-Instrumentation Script
+#### Implementing the Auto-Instrumentation Rules
 
-The <ins>SpecialAgent</ins> supports Byteman and ByteBuddy to perform bytecode injection for the purpose of auto-instrumentation.
-
-##### Byteman
-
-For Byteman auto-instrumentation, scripts must be named `otarules.btm`, and be placed as a resource in the default package. Please refer to the following scripts as examples:
-
-1. [otarules.btm for OkHttp3](https://github.com/opentracing-contrib/java-okhttp/src/main/resources/otarules.btm)
-2. [otarules.btm for `java.util.Concurrent`](https://github.com/opentracing-contrib/java-concurrent/src/main/resources/otarules.btm)
-3. [otarules.btm for JDBC](https://github.com/opentracing-contrib/java-jdbc/src/main/resources/otarules.btm)
-4. [otarules.btm for Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter/src/main/resources/otarules.btm)
-5. [otarules.btm for Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver/src/main/resources/otarules.btm)
-6. [otarules.btm for Apache Camel](https://github.com/apache/camel/blob/master/components/camel-opentracing/src/main/resources/otarules.btm)
-
-##### ByteBuddy
-
-For ByteBuddy, please refer to the [SpecialAgent-API](https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api) project for instructions.
+The <ins>SpecialAgent</ins> uses ByteBuddy as the re/transformation manager for auto-instrumentation. The [SpecialAgent-API](https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api) module defines the API and patterns for implementation of auto-instrumentation rules for OpenTracing Instrumentation Plugins.
 
 #### Packaging
 
@@ -269,7 +253,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of instrumen
 
 #### Testing
 
-The <ins>SpecialAgent</ins> provides a convenient methodolofy for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#test-usage) for instructions.
+The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#test-usage) for instructions.
 
 #### Including the Instrumentation Plugin in the <ins>SpecialAgent</ins>
 

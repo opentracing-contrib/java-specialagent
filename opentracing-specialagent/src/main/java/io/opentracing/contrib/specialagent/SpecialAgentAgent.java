@@ -44,6 +44,13 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class SpecialAgentAgent {
+  /**
+   * Entrypoint to load the {@code SpecialAgentAgent}.
+   *
+   * @param agentArgs Agent arguments.
+   * @param inst The {@code Instrumentation}.
+   * @throws Exception If an error has occurred.
+   */
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
