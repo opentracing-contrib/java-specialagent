@@ -52,26 +52,23 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
  * A JUnit runner that is designed to run tests for instrumentation plugins that
- * have an associated {@code otarules.btm} file for automatic instrumentation
- * via Byteman.
+ * have auto-instrumentation rules implemented as per the {@link AgentPlugin}
+ * API.
  * <p>
- * The {@code AgentRunner} spawns a child process that executes the JUnit test
- * with an argument specifying {@code -javaagent}. The {@code AgentRunner}
- * establishes a socket-based communication with the child process to relay test
- * results. This architecture allows tests with the
+ * The {@code AgentRunner} uses ByteBuddy's self-attach methodology to obtain
+ * the {@code Instrumentation} instance. This architecture allows tests with the
  * {@code @RunWith(AgentRunner.class)} annotation to be run from any environment
  * (i.e. from Maven's Surefire plugin, from an IDE, or directly via JUnit
  * itself).
  * <p>
- * The {@code AgentRunner} also has a facility to "raise" the classes loaded for
- * the purpose of the test into an isolated {@code ClassLoader} (see
+ * The {@code AgentRunner} has a facility to "raise" the classes loaded for the
+ * purpose of the test into an isolated {@code ClassLoader} (see
  * {@link Config#isolateClassLoader()}). This allows the test to ensure that
  * instrumentation is successful for classes that are loaded in a
  * {@code ClassLoader} that is not the System or Bootstrap {@code ClassLoader}.
  * <p>
  * The {@code AgentRunner} also has a facility to aide in debugging of the
- * runner's runtime, as well as Byteman's runtime (see {@link Config#log()}
- * and {@link Config#verbose()}).
+ * runner's runtime Please refer to {@link Config}.
  *
  * @author Seva Safris
  */
@@ -172,13 +169,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: {@code true}.
      */
     boolean isolateClassLoader() default true;
-
-    /**
-     * @return Which {@link Instrumenter} to use for the tests.
-     *         <p>
-     *         Default: {@link Instrumenter#BYTEBUDDY}.
-     */
-    Instrumenter instrumenter() default Instrumenter.BYTEBUDDY;
   }
 
   /**
@@ -279,7 +269,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           System.setProperty(SpecialAgent.LOGGING_PROPERTY, String.valueOf(config.log()));
       }
 
-      System.setProperty(SpecialAgent.INSTRUMENTER, config.instrumenter().name());
       final Event[] events = config.events();
       if (events.length > 0) {
         final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);

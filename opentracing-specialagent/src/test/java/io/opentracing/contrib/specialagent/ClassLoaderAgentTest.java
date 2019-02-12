@@ -57,15 +57,6 @@ public abstract class ClassLoaderAgentTest {
     }
   }
 
-  @Ignore
-  public static class BytemanTest extends ClassLoaderAgentTest {
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-      System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
-      SpecialAgent.premain(null, inst);
-    }
-  }
-
   @Test
   public void testAgentFindClass() {
     assertNotNull(SpecialAgent.findClass(null, Span.class.getName()));
