@@ -313,11 +313,6 @@
         <version>0.1.5</version>
       </dependency>
       <dependency>
-        <groupId>org.jboss.byteman</groupId>
-        <artifactId>byteman</artifactId>
-        <version>4.0.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
         <version>${version.bytebuddy}</version>

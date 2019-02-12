@@ -37,7 +37,9 @@
         <include>io.opentracing:opentracing-api</include>
         <include>io.opentracing:opentracing-util</include>
         <include>io.opentracing:opentracing-noop</include>
-        <include>org.jboss.byteman:byteman</include>
+        <include>net.bytebuddy:byte-buddy</include>
+        <include>net.bytebuddy:byte-buddy-agent</include>
+        <include>org.ow2.asm:asm</include>
       </includes>
     </dependencySet>
     <dependencySet>
