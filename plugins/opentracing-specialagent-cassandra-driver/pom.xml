@@ -30,6 +30,7 @@
   </properties>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cassandra-driver</artifactId>
       <version>0.0.11</version>

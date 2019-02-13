@@ -26,6 +26,7 @@
   <artifactId>opentracing-specialagent-aws-sdk</artifactId>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-aws-sdk -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-aws-sdk</artifactId>
       <version>0.0.6</version>

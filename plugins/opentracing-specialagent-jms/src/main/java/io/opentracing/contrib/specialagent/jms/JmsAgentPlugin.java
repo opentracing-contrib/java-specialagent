@@ -14,13 +14,12 @@
  */
 package io.opentracing.contrib.specialagent.jms;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.returns;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+
+import io.opentracing.contrib.specialagent.AgentPlugin;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -36,50 +35,36 @@ import net.bytebuddy.utility.JavaModule;
 public class JmsAgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    final Narrowable builder = new AgentBuilder.Default()
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
-        .type(hasSuperType(named("javax.jms.Session")));
+    final Narrowable builder = new AgentBuilder.Default().
+      with(RedefinitionStrategy.RETRANSFORMATION).
+      with(InitializationStrategy.NoOp.INSTANCE).
+      with(TypeStrategy.Default.REDEFINE).
+      type(hasSuperType(named("javax.jms.Session")));
 
-    return Arrays.asList(
-        builder.transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription, final ClassLoader classLoader,
-              final JavaModule module) {
-            return builder.visit(Advice.to(JmsAgentPlugin.class).on(named("createProducer")
-                .and(returns(named("javax.jms.MessageProducer")))));
-          }
-        }),
-
-        builder.transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription, final ClassLoader classLoader,
-              final JavaModule module) {
-            return builder.visit(Advice.to(Consumer.class).on(named("createConsumer")
-                .and(returns(named("javax.jms.MessageConsumer")))
-            ));
-          }
-        })
-
-    );
+    return Arrays.asList(builder.transform(new Transformer() {
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(Producer.class).on(named("createProducer").and(returns(named("javax.jms.MessageProducer")))));
+      }
+    }), builder.transform(new Transformer() {
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(Consumer.class).on(named("createConsumer").and(returns(named("javax.jms.MessageConsumer")))));
+      }
+    }));
   }
 
-  @Advice.OnMethodExit
-  @SuppressWarnings("unused")
-  public static void enter(final @Advice.Origin Method method,
-      @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    System.out.println(">>>>>> " + method);
-    returned = JmsAgentIntercept.createProducer(returned);
+  public static class Producer {
+    @Advice.OnMethodExit
+    public static void enter(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      System.out.println(">>>>>> " + method);
+      returned = JmsAgentIntercept.createProducer(returned);
+    }
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
-    @SuppressWarnings("unused")
-    public static void enter(final @Advice.Origin Method method,
-        @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    public static void enter(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       System.out.println(">>>>>> " + method);
       returned = JmsAgentIntercept.createConsumer(returned);
     }
