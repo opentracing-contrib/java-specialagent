@@ -22,18 +22,10 @@ import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 
 public class JmsAgentIntercept {
   public static Object createProducer(final Object thiz) {
-    if (thiz instanceof TracingMessageProducer)
-      return thiz;
-
-    MessageProducer messageProducer = (MessageProducer)thiz;
-    return new TracingMessageProducer(messageProducer);
+    return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz);
   }
 
   public static Object createConsumer(final Object thiz) {
-    if (thiz instanceof TracingMessageConsumer)
-      return thiz;
-
-    MessageConsumer messageConsumer = (MessageConsumer)thiz;
-    return new TracingMessageConsumer(messageConsumer);
+    return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz);
   }
 }
