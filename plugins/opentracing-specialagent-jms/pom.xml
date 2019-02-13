@@ -25,6 +25,8 @@
   </parent>
   <artifactId>opentracing-specialagent-jms</artifactId>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <activemq.version>5.15.5</activemq.version>
     <artemis.version>2.6.4</artemis.version>
   </properties>

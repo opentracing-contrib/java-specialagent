@@ -25,14 +25,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.opentracing.contrib.jms2.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.contrib.jms2.TracingMessageProducer;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
+@AgentRunner.Config
 public class JmsTest {
   private Session session;
   private Connection connection;

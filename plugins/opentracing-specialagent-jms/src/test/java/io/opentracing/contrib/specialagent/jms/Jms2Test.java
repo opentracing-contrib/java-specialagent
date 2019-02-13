@@ -1,17 +1,15 @@
 package io.opentracing.contrib.specialagent.jms;
 
-import static io.opentracing.contrib.specialagent.jms.JmsTest.reportedSpansSize;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static io.opentracing.contrib.specialagent.jms.JmsTest.*;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
@@ -23,7 +21,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -34,8 +34,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
+@AgentRunner.Config
 public class Jms2Test {
   private ActiveMQServer server;
   private Connection connection;
@@ -43,22 +47,24 @@ public class Jms2Test {
   private JMSContext jmsContext;
 
   @Before
-  public void before(MockTracer tracer) throws Exception {
+  @SuppressWarnings("resource")
+  public void before(final MockTracer tracer) throws Exception {
     tracer.reset();
 
-    org.apache.activemq.artemis.core.config.Configuration configuration = new ConfigurationImpl();
-
-    HashSet<TransportConfiguration> transports = new HashSet<>();
+    final HashSet<TransportConfiguration> transports = new HashSet<>();
     transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+
+    final Configuration configuration = new ConfigurationImpl();
     configuration.setAcceptorConfigurations(transports);
     configuration.setSecurityEnabled(false);
 
-    File targetDir = new File(System.getProperty("user.dir") + "/target");
+    final File targetDir = new File(System.getProperty("user.dir") + "/target");
     configuration.setBrokerInstance(targetDir);
 
     server = new ActiveMQServerImpl(configuration);
     server.start();
-    ActiveMQJMSConnectionFactory connectionFactory = new ActiveMQJMSConnectionFactory("vm://0");
+
+    final ActiveMQJMSConnectionFactory connectionFactory = new ActiveMQJMSConnectionFactory("vm://0");
     connection = connectionFactory.createConnection();
     connection.start();
     jmsContext = connectionFactory.createContext();
@@ -74,53 +80,44 @@ public class Jms2Test {
   }
 
   @Test
-  public void sendAndReceive(MockTracer tracer) throws Exception {
-    Queue queue = session.createQueue("TEST.FOO");
-
-    MessageProducer producer = session.createProducer(queue);
-
-    MessageConsumer consumer = session.createConsumer(queue);
-
-    TextMessage message = session.createTextMessage("Hello world");
+  public void sendAndReceive(final MockTracer tracer) throws Exception {
+    final Queue queue = session.createQueue("TEST.FOO");
+    final MessageProducer producer = session.createProducer(queue);
+    final MessageConsumer consumer = session.createConsumer(queue);
+    final TextMessage message = session.createTextMessage("Hello world");
 
     producer.send(message);
 
-    TextMessage received = (TextMessage) consumer.receive(5000);
+    final TextMessage received = (TextMessage)consumer.receive(5000);
     assertEquals("Hello world", received.getText());
 
-    List<MockSpan> mockSpans = tracer.finishedSpans();
+    final List<MockSpan> mockSpans = tracer.finishedSpans();
     System.out.println(mockSpans.size());
     assertEquals(2, mockSpans.size());
   }
 
   @Test
-  public void sendAndReceiveJMSProducer(MockTracer tracer) throws Exception {
-    Destination destination = session.createQueue("TEST.FOO");
-
-    JMSProducer jmsProducer = jmsContext.createProducer();
-
-    MessageConsumer consumer = session.createConsumer(destination);
-
-    TextMessage message = session.createTextMessage("Hello world");
+  public void sendAndReceiveJMSProducer(final MockTracer tracer) throws Exception {
+    final Destination destination = session.createQueue("TEST.FOO");
+    final JMSProducer jmsProducer = jmsContext.createProducer();
+    final MessageConsumer consumer = session.createConsumer(destination);
+    final TextMessage message = session.createTextMessage("Hello world");
 
     jmsProducer.send(destination, message);
 
-    TextMessage received = (TextMessage) consumer.receive(5000);
+    final TextMessage received = (TextMessage) consumer.receive(5000);
     assertEquals("Hello world", received.getText());
 
-    List<MockSpan> mockSpans = tracer.finishedSpans();
+    final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
   }
 
   @Test
   public void sendAndReceiveInListener(final MockTracer tracer) throws Exception {
-    Destination destination = session.createQueue("TEST.FOO");
-
-    MessageProducer producer = session.createProducer(destination);
-
-    MessageConsumer messageConsumer = session.createConsumer(destination);
-
-    MessageListener messageListener = new MessageListener() {
+    final Destination destination = session.createQueue("TEST.FOO");
+    final MessageProducer producer = session.createProducer(destination);
+    final MessageConsumer messageConsumer = session.createConsumer(destination);
+    final MessageListener messageListener = new MessageListener() {
       @Override
       public void onMessage(Message message) {
         System.out.println(tracer.activeSpan());
@@ -130,13 +127,12 @@ public class Jms2Test {
 
     messageConsumer.setMessageListener(messageListener);
 
-    TextMessage message = session.createTextMessage("Hello world");
-
+    final TextMessage message = session.createTextMessage("Hello world");
     producer.send(message);
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
 
-    List<MockSpan> mockSpans = tracer.finishedSpans();
+    final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
   }
 }
