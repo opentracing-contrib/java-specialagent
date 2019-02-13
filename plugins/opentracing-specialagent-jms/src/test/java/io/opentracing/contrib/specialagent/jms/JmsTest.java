@@ -32,7 +32,7 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config
+@AgentRunner.Config(isolateClassLoader = false)
 public class JmsTest {
   private Session session;
   private Connection connection;
