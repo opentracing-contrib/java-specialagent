@@ -26,24 +26,25 @@
   <artifactId>opentracing-specialagent-jms</artifactId>
   <properties>
     <activemq.version>5.15.5</activemq.version>
+    <artemis.version>2.6.4</artemis.version>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jms -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jms-1</artifactId>
+      <artifactId>opentracing-jms-2</artifactId>
       <version>0.0.11</version>
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
-          <artifactId>jms-api</artifactId>
+          <artifactId>javax.jms-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
-      <artifactId>jms-api</artifactId>
-      <version>1.1-rev-1</version>
+      <artifactId>javax.jms-api</artifactId>
+      <version>2.0.1</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -57,6 +58,18 @@
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-kahadb-store</artifactId>
       <version>${activemq.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-server</artifactId>
+      <version>${artemis.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-jms-client</artifactId>
+      <version>${artemis.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
