@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.opentracing.contrib.jms.TracingMessageProducer;
+import io.opentracing.contrib.jms2.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
@@ -100,7 +100,7 @@ public class JmsTest {
     assertEquals(2, mockSpans.size());
   }
 
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
+  public static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
     return new Callable<Integer>() {
       @Override
       public Integer call() {

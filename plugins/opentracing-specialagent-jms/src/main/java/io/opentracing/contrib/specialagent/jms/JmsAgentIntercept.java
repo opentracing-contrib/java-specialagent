@@ -17,7 +17,7 @@ package io.opentracing.contrib.specialagent.jms;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 
-import io.opentracing.contrib.jms.TracingMessageProducer;
+import io.opentracing.contrib.jms2.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 
 public class JmsAgentIntercept {
