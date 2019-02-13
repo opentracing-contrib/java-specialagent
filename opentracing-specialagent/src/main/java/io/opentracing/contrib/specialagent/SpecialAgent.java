@@ -42,7 +42,6 @@ import java.util.zip.ZipInputStream;
 import com.sun.tools.attach.VirtualMachine;
 
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.util.GlobalTracer;
 
@@ -51,13 +50,13 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
+@SuppressWarnings("restriction")
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
   static final String EVENTS_PROPERTY = "specialagent.log.events";
   static final String LOGGING_PROPERTY = "specialagent.log.level";
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
-  static final String INSTRUMENTER = "io.opentracing.contrib.specialagent.instrumenter";
 
   private static final String DEPENDENCIES = "dependencies.tgf";
 
@@ -73,6 +72,7 @@ public class SpecialAgent {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("unlikely-arg-type")
     public PluginClassLoader get(final Object key) {
       PluginClassLoader value = super.get(key);
       if (value != null || !(key instanceof URLClassLoader))
@@ -86,8 +86,8 @@ public class SpecialAgent {
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
 
-  private static final Instrumenter instrumenter;
-  private static Event[] events;
+  // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
+  private static final Instrumenter instrumenter = Instrumenter.BYTEBUDDY;
 
   static {
     final String configProperty = System.getProperty("config");
@@ -126,9 +126,6 @@ public class SpecialAgent {
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
-
-    final String instrumenterProperty = System.getProperty(INSTRUMENTER);
-    instrumenter = instrumenterProperty == null ? Instrumenter.BYTEBUDDY : Instrumenter.valueOf(instrumenterProperty.toUpperCase());
   }
 
   private static Instrumentation inst;
@@ -150,7 +147,7 @@ public class SpecialAgent {
   }
 
   /**
-   * JVM entrypoint that loads SpecialAgent as a Java agent.
+   * Entrypoint to load {@code SpecialAgent}.
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
@@ -468,11 +465,10 @@ public class SpecialAgent {
    * Returns the bytecode of the {@code Class} by the name of {@code name}, if
    * the {@code classLoader} matched a plugin {@code ClassLoader} that contains
    * OpenTracing instrumentation classes intended to be loaded into
-   * {@code classLoader}. This method is called by the "OpenTracing ClassLoader
-   * Injection" Byteman script that is triggered by
-   * {@link ClassLoader#findClass(String)}. This method returns {@code null} if
-   * it cannot locate the bytecode for the requested {@code Class}, or if it has
-   * already been called for {@code classLoader} and {@code name}.
+   * {@code classLoader}. This method is called by the {@link ClassLoaderAgent}.
+   * This method returns {@code null} if it cannot locate the bytecode for the
+   * requested {@code Class}, or if it has already been called for
+   * {@code classLoader} and {@code name}.
    *
    * @param classLoader The {@code ClassLoader} to match to a plugin
    *          {@code ClassLoader} that contains OpenTracing instrumentation

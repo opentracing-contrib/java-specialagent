@@ -107,6 +107,10 @@ public final class Util {
    * @param urls The array of URL objects to filter.
    * @param dependenciesTgf The contents of the TGF file that specify the
    *          dependencies.
+   * @param includeOptional Whether to include dependencies marked as
+   *          {@code (optional)}.
+   * @param scopes An array of Maven scopes to include in the returned set, or
+   *          {@code null} to include all scopes.
    * @return An array of URL objects representing Instrumentation Plugin URLs
    * @throws IOException If an I/O error has occurred.
    */

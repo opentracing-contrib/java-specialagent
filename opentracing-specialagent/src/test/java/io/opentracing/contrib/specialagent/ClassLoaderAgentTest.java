@@ -52,16 +52,6 @@ public abstract class ClassLoaderAgentTest {
   public static class ByteBuddyTest extends ClassLoaderAgentTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
-      System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEBUDDY.name());
-      SpecialAgent.premain(null, inst);
-    }
-  }
-
-  @Ignore
-  public static class BytemanTest extends ClassLoaderAgentTest {
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-      System.setProperty(SpecialAgent.INSTRUMENTER, Instrumenter.BYTEMAN.name());
       SpecialAgent.premain(null, inst);
     }
   }
