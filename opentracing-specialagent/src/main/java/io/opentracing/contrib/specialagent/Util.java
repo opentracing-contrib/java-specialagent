@@ -505,15 +505,16 @@ public final class Util {
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           final String entry = entries.nextElement().getName();
-          final String name = entry.substring(0, entry.lastIndexOf('.'));
-          if (excludes.contains(name))
-            continue;
-
           if (entry.length() > path.length() && entry.startsWith(path)) {
             final int slash = entry.lastIndexOf('/');
+            final String jarFileName = entry.substring(slash + 1);
+            if (excludes.contains(jarFileName.substring(0, jarFileName.lastIndexOf('.'))))
+              continue;
+
             final File subDir = new File(destDir, entry.substring(0, slash));
             subDir.mkdirs();
-            final File file = new File(subDir, entry.substring(slash + 1));
+            final File file = new File(subDir, jarFileName);
+
             final URL url = new URL(resource, entry.substring(path.length()));
             Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
             urls.add(file.toURI().toURL());
