@@ -1,4 +1,4 @@
-# Java Agent for OpenTracing,<br>with automatic instrumentation
+# Java Agent for OpenTracing,<br>with auto-instrumentation
 
 > Automatically instruments 3rd-party libraries in Java applications
 
@@ -34,7 +34,7 @@ Any exception that occurs during the execution of the bootstrap process will not
 3. The <ins>SpecialAgent</ins> must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the <ins>SpecialAgent</ins>, and cannot apply to the code of the instrumentation plugins made available in [opentracing-contrib][opentracing-contrib].
 4. The <ins>SpecialAgent</ins> must support static and dynamic attach to applications running on JVM versions 1.7, 1.8, 9, and 11.
 5. The <ins>SpecialAgent</ins> must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party plugin. This test must simulate:
-   1) Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test automatic instrumentation functionality of the `otarules.btm` file).
+   1) Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
    2) Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
    3) Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
 The <ins>SpecialAgent</ins> must provide a means by which instrumentation plugins can be configured before use on a target application. 
@@ -53,7 +53,7 @@ The <ins>SpecialAgent</ins> is built with Maven, and produces 2 artifacts:
 
 2. `opentracing-specialagent-<version>-tests.jar`
 
-    This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of `otarules.btm` files in instrumentation plugins. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation. This JAR can be used in the same manner as the main JAR, both for static and dynamic attach.
+    This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation.
 
 ## Usage
 
@@ -120,7 +120,7 @@ The `-Dspecialagent.log.events` system property can be used to set the re/transf
 
 The <ins>SpecialAgent</ins> uses the JUnit Runner API to implement a lightweight test methodology that can be easily applied to modules that implement instrumentation for 3rd-party plugins. This runner is named `AgentRunner`, and allows developers to implement tests using vanilla JUnit patterns, transparently providing the following behavior:
 
-1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test automatic instrumentation functionality of the `otarules.btm` file).
+1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
 2. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
 3. Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
 
