@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.maven.cli.MavenCli;
 import org.junit.Assert;
 import org.junit.rules.TestRule;
 import org.junit.runner.notification.RunNotifier;
@@ -120,7 +120,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private static final Path CWD = FileSystems.getDefault().getPath("").toAbsolutePath();
+  private static final File CWD = new File("").getAbsoluteFile();
 
   static {
     inst = install();
@@ -187,38 +187,30 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @return The class loaded in the {@code URLClassLoader}.
    * @throws InitializationError If the specified class cannot be located by the
    *           {@code URLClassLoader}.
+   * @throws InterruptedException If a required Maven subprocess is interrupted.
    */
-  private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError {
+  private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
     try {
-      final URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource("dependencies.tgf");
-      final String dependenciesTgf = dependenciesUrl == null ? null : new String(Util.readBytes(dependenciesUrl));
-      final List<String> pluginPaths = new ArrayList<>();
-      final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
-      if (dependenciesTgf != null) {
-        final URL[] pluginUrls = Util.filterPluginURLs(classpath, dependenciesTgf, false, "compile");
-        for (int i = 0; i < pluginUrls.length; ++i)
-          pluginPaths.add(pluginUrls[i].getFile());
-
-        // Use the whole java.class.path for the forked process, because any class
-        // on the classpath may be used in the implementation of the test method.
-        // The JARs with classes in the Boot-Path are already excluded due to their
-        // provided scope.
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
-
-        System.setProperty(SpecialAgent.PLUGIN_ARG, Util.toString(pluginPaths.toArray(), ":"));
-
-        // Add scope={"test", "provided"}, optional=true to pluginPaths
-        final URL[] testDependencies = Util.filterPluginURLs(classpath, dependenciesTgf, true, "test", "provided");
-        for (final URL testDependency : testDependencies)
-          pluginPaths.add(testDependency.getPath());
-      }
-      else {
-        logger.warning("dependencies.tgf was not found! `mvn generate-resources` phase must be run for this file to be generated!");
-      }
-
       final String testClassesPath = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
       final String classesPath = testClassesPath.endsWith(".jar") ? testClassesPath.replace(".jar", "-tests.jar") : testClassesPath.replace("/test-classes/", "/classes/");
+      URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
+      if (dependenciesUrl == null) {
+        logger.warning(SpecialAgent.DEPENDENCIES_TGF + " was not found: invoking `mvn generate-resources`");
+        System.setProperty("maven.multiModuleProjectDirectory", CWD.getParentFile().getParentFile().getAbsolutePath());
+        new MavenCli().doMain(new String[] {"generate-resources"}, CWD.getAbsolutePath(), System.out, System.err);
+        final File dependenciesTgf = new File(CWD, "target/generated-resources/" + SpecialAgent.DEPENDENCIES_TGF);
+        if (dependenciesTgf.exists())
+          Files.copy(dependenciesTgf.toPath(), new File(CWD, "target/classes/" + SpecialAgent.DEPENDENCIES_TGF).toPath());
+
+        dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
+        if (dependenciesUrl == null) {
+          logger.severe(SpecialAgent.DEPENDENCIES_TGF + " was not found: Please assert that `mvn generate-resources` executes successfully");
+          return Object.class;
+        }
+      }
+
+      final List<String> pluginPaths = findPluginPaths(dependenciesUrl);
+
       pluginPaths.add(testClassesPath);
       pluginPaths.add(classesPath);
       final Set<String> isolatedClasses = TestUtil.getClassFiles(pluginPaths);
@@ -247,6 +239,41 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * Find the plugin paths using the specified dependencies TGF {@code URL}.
+   *
+   * @param dependenciesUrl The {@code URL} pointing to the dependencies TGF
+   *          file.
+   * @return A list of the plugin paths.
+   * @throws IOException If an I/O error has occurred.
+   */
+  private static List<String> findPluginPaths(final URL dependenciesUrl) throws IOException {
+    final String dependenciesTgf = dependenciesUrl == null ? null : new String(Util.readBytes(dependenciesUrl));
+
+    final List<String> pluginPaths = new ArrayList<>();
+    final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
+
+    final URL[] pluginUrls = Util.filterPluginURLs(classpath, dependenciesTgf, false, "compile");
+    for (int i = 0; i < pluginUrls.length; ++i)
+      pluginPaths.add(pluginUrls[i].getFile());
+
+    // Use the whole java.class.path for the forked process, because any class
+    // on the classpath may be used in the implementation of the test method.
+    // The JARs with classes in the Boot-Path are already excluded due to their
+    // provided scope.
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
+
+    System.setProperty(SpecialAgent.PLUGIN_ARG, Util.toString(pluginPaths.toArray(), ":"));
+
+    // Add scope={"test", "provided"}, optional=true to pluginPaths
+    final URL[] testDependencies = Util.filterPluginURLs(classpath, dependenciesTgf, true, "test", "provided");
+    for (final URL testDependency : testDependencies)
+      pluginPaths.add(testDependency.getPath());
+
+    return pluginPaths;
+  }
+
   private final Config config;
 
   /**
@@ -256,8 +283,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @throws InitializationError If the test class is malformed, or if the
    *           specified class cannot be located by the URLClassLoader in the
    *           forked process.
+   * @throws InterruptedException If a required Maven subprocess is interrupted.
    */
-  public AgentRunner(final Class<?> testClass) throws InitializationError {
+  public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
     if (config != null) {
@@ -297,7 +325,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private int delta = Integer.MAX_VALUE;
 
   static File getManifestFile() {
-    return new File(CWD.toFile(), "target/classes/META-INF/opentracing-specialagent/TEST-MANIFEST.MF");
+    return new File(CWD, "target/classes/META-INF/opentracing-specialagent/TEST-MANIFEST.MF");
   }
 
   @Override

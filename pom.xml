@@ -312,6 +312,7 @@
         <artifactId>opentracing-tracerresolver</artifactId>
         <version>0.1.5</version>
       </dependency>
+      
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
@@ -322,11 +323,27 @@
         <artifactId>byte-buddy-agent</artifactId>
         <version>${version.bytebuddy}</version>
       </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-embedder</artifactId>
+        <version>3.6.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>20.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-compat</artifactId>
+        <version>3.6.0</version>
+      </dependency>
+      
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.12</version>
-        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

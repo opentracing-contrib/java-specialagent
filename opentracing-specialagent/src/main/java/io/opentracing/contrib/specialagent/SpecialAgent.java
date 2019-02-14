@@ -58,7 +58,7 @@ public class SpecialAgent {
   static final String LOGGING_PROPERTY = "specialagent.log.level";
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
 
-  private static final String DEPENDENCIES = "dependencies.tgf";
+  static final String DEPENDENCIES_TGF = "dependencies.tgf";
 
   private static final Map<ClassLoader,PluginClassLoader> classLoaderToPluginClassLoader = new IdentityHashMap<ClassLoader,PluginClassLoader>() {
     private static final long serialVersionUID = 5515722666603482519L;
@@ -205,7 +205,7 @@ public class SpecialAgent {
 
     final int count = loadDependencies(allPluginsClassLoader) + loadDependencies(ClassLoader.getSystemClassLoader());
     if (count == 0)
-      logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES + " in any plugin JARs");
+      logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any plugin JARs");
 
     loadPlugins();
     connectTracer();
@@ -243,7 +243,7 @@ public class SpecialAgent {
   private static int loadDependencies(final ClassLoader classLoader) {
     int count = 0;
     try {
-      final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES);
+      final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES_TGF);
       final Set<String> dependencyUrls = new HashSet<>();
 
       while (enumeration.hasMoreElements()) {
@@ -253,9 +253,9 @@ public class SpecialAgent {
 
         dependencyUrls.add(dependenciesUrl.toString());
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + DEPENDENCIES + ": <" + Util.getIdentityCode(dependenciesUrl) + ">" + dependenciesUrl);
+          logger.finest("Found " + DEPENDENCIES_TGF + ": <" + Util.getIdentityCode(dependenciesUrl) + ">" + dependenciesUrl);
 
-        final URL jarUrl = new URL(Util.getSourceLocation(dependenciesUrl, DEPENDENCIES));
+        final URL jarUrl = new URL(Util.getSourceLocation(dependenciesUrl, DEPENDENCIES_TGF));
         final String dependenciesTgf = new String(Util.readBytes(dependenciesUrl));
         final URL[] dependencies = Util.filterPluginURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
         boolean foundReference = false;
@@ -271,7 +271,7 @@ public class SpecialAgent {
               if (registered == pluginToDependencies.get(jarUrl))
                 continue;
 
-              throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple plugin JARs with " + DEPENDENCIES + " referencing the same plugin JAR? Offending JAR: " + jarUrl);
+              throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple plugin JARs with " + DEPENDENCIES_TGF + " referencing the same plugin JAR? Offending JAR: " + jarUrl);
             }
 
             if (logger.isLoggable(Level.FINEST))
@@ -284,7 +284,7 @@ public class SpecialAgent {
         }
 
         if (!foundReference)
-          throw new IllegalStateException("Could not find a plugin JAR referenced in " + jarUrl + DEPENDENCIES + " from: \n" + Util.toIndentedString(dependencies));
+          throw new IllegalStateException("Could not find a plugin JAR referenced in " + jarUrl + DEPENDENCIES_TGF + " from: \n" + Util.toIndentedString(dependencies));
       }
     }
     catch (final IOException e) {
@@ -377,7 +377,7 @@ public class SpecialAgent {
       // Now find all the paths that pluginPath depends on, by reading dependencies.tgf
       final URL[] pluginPaths = pluginToDependencies.get(pluginPath);
       if (pluginPaths == null)
-        throw new IllegalStateException("No " + DEPENDENCIES + " was registered for: " + pluginPath);
+        throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + pluginPath);
 
       if (logger.isLoggable(Level.FINEST))
         logger.finest("new " + PluginClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
