@@ -38,18 +38,18 @@ public class CassandraAgentPlugin implements AgentPlugin {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(named("com.datastax.driver.core.Cluster"))
+      .type(named("com.datastax.driver.core.Cluster$Manager"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(CassandraAgentPlugin.class).on(isStatic().and(named("buildFrom").and(returns(named("com.datastax.driver.core.Cluster"))))));
+          return builder.visit(Advice.to(CassandraAgentPlugin.class).on(named("newSession").and(returns(named("com.datastax.driver.core.Session")))));
         }}));
   }
 
   @Advice.OnMethodExit
   @SuppressWarnings("unused")
-  public static void exit(final @Advice.Origin Method method, @Advice.Argument(value = 0) final Object arg, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+  public static void exit(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
     System.out.println(">>>>>> " + method);
-    returned = CassandraAgentIntercept.exit(arg);
+    returned = CassandraAgentIntercept.exit(returned);
   }
 }
