@@ -37,7 +37,7 @@ Any exception that occurs during the execution of the bootstrap process will not
    1) Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
    2) Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
    3) Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
-The <ins>SpecialAgent</ins> must provide a means by which instrumentation plugins can be configured before use on a target application. 
+The <ins>SpecialAgent</ins> must provide a means by which instrumentation plugins can be configured before use on a target application.
 
 ## Non-Goals
 
@@ -75,7 +75,7 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 1. Call this to obtain the `PID` of the target application:
     ```bash
-    jps 
+    jps
     ```
 
 2. For jdk1.8
