@@ -58,7 +58,7 @@
   </properties>
   <profiles>
     <profile>
-      <id>default</id>
+      <id>deploy</id>
       <activation>
         <property>
           <name>deploy</name>
