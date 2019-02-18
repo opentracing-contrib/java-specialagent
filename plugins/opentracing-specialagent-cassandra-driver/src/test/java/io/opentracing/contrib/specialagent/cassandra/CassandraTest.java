@@ -35,7 +35,7 @@ import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(events=Event.ERROR)
+@AgentRunner.Config(events = Event.ERROR)
 public class CassandraTest {
   private static final Logger logger = Logger.getLogger(CassandraTest.class.getName());
 
@@ -80,7 +80,7 @@ public class CassandraTest {
     return cluster.connect();
   }
 
-  private static void createKeyspace(Session session) {
+  private static void createKeyspace(final Session session) {
     final PreparedStatement prepared = session.prepare("CREATE keyspace test WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};");
     final BoundStatement bound = prepared.bind();
     session.execute(bound);

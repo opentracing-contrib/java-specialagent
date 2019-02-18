@@ -47,7 +47,6 @@ public class CassandraAgentPlugin implements AgentPlugin {
   }
 
   @Advice.OnMethodExit
-  @SuppressWarnings("unused")
   public static void exit(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
     System.out.println(">>>>>> " + method);
     returned = CassandraAgentIntercept.exit(returned);
