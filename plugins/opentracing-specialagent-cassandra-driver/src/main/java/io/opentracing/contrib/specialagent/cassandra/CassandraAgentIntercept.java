@@ -14,12 +14,12 @@
  */
 package io.opentracing.contrib.specialagent.cassandra;
 
-import com.datastax.driver.core.Cluster.Initializer;
-
-import io.opentracing.contrib.cassandra.TracingCluster;
+import com.datastax.driver.core.Session;
+import io.opentracing.contrib.cassandra.TracingSession;
+import io.opentracing.util.GlobalTracer;
 
 public class CassandraAgentIntercept {
-  public static TracingCluster exit(final Object thiz) {
-    return new TracingCluster((Initializer)thiz);
+  public static TracingSession exit(final Object thiz) {
+    return new TracingSession((Session) thiz, GlobalTracer.get());
   }
 }
