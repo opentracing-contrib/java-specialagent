@@ -166,6 +166,23 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      * @return Whether the tests should be run in a {@code ClassLoader} that is
      *         isolated from the system {@code ClassLoader}.
      *         <p>
+     *         It is important to note that this option should only be set to
+     *         {@code false} in special situations, such as if a test relies on
+     *         an integrated module that does not function properly if the class
+     *         loader of its classes is isolated.
+     *         <p>
+     *         If this property is set to {@code false}, the {@code AgentRunner}
+     *         runtime disables all testing to assert proper functionality of
+     *         the plugin when the 3rd-party library it is instrumenting is
+     *         loaded in a class loader that is _not_ the system class loader.
+     *         <p>
+     *         <ins>All attempts should be taken to avoid setting this property
+     *         to {@code false}.</ins>
+     *         <p>
+     *         <b>Note</b>: If this property is set to {@code false}, the build
+     *         will print a <b>WARN</b>-level log message, to warn the developer
+     *         that {@code isolateClassLoader=false}.
+     *         <p>
      *         Default: {@code true}.
      */
     boolean isolateClassLoader() default true;
@@ -313,6 +330,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           System.setProperty(SpecialAgent.EVENTS_PROPERTY, builder.toString());
         }
       }
+
+      if (!config.isolateClassLoader())
+        logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
 
     try {
