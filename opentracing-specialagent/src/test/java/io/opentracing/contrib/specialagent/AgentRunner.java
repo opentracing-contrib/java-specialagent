@@ -65,7 +65,7 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  * purpose of the test into an isolated {@code ClassLoader} (see
  * {@link Config#isolateClassLoader()}). This allows the test to ensure that
  * instrumentation is successful for classes that are loaded in a
- * {@code ClassLoader} that is not the System or Bootstrap {@code ClassLoader}.
+ * class loader that is not the System or Bootstrap class loader.
  * <p>
  * The {@code AgentRunner} also has a facility to aide in debugging of the
  * runner's runtime Please refer to {@link Config}.
@@ -163,8 +163,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     Event[] events() default {};
 
     /**
-     * @return Whether the tests should be run in a {@code ClassLoader} that is
-     *         isolated from the system {@code ClassLoader}.
+     * @return Whether the tests should be run in a class loader that is
+     *         isolated from the system class loader (i.e. a {@code ClassLoader}
+     *         with a {@code null} parent). <blockquote> <i><b>Important</b>:
+     *         All attempts should be taken to avoid setting this property to
+     *         {@code false}.
      *         <p>
      *         It is important to note that this option should only be set to
      *         {@code false} in special situations, such as if a test relies on
@@ -172,18 +175,18 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         loader of its classes is isolated.
      *         <p>
      *         If this property is set to {@code false}, the {@code AgentRunner}
-     *         runtime disables all testing to assert proper functionality of
+     *         runtime disables all testing that asserts proper functionality of
      *         the plugin when the 3rd-party library it is instrumenting is
      *         loaded in a class loader that is _not_ the system class loader.
      *         <p>
-     *         <ins>All attempts should be taken to avoid setting this property
-     *         to {@code false}.</ins>
+     *         <ins>By disabling this facet of the {@code AgentRunner}, the test
+     *         may pass, but the plugin may fail in real-world
+     *         application.</ins>
      *         <p>
-     *         <b>Note</b>: If this property is set to {@code false}, the build
-     *         will print a <b>WARN</b>-level log message, to warn the developer
-     *         that {@code isolateClassLoader=false}.
-     *         <p>
-     *         Default: {@code true}.
+     *         If this property is set to {@code false}, the build will print a
+     *         <b>WARN</b>-level log message, to warn the developer that
+     *         {@code isolateClassLoader=false}.</i> </blockquote> Default:
+     *         {@code true}.
      */
     boolean isolateClassLoader() default true;
   }
