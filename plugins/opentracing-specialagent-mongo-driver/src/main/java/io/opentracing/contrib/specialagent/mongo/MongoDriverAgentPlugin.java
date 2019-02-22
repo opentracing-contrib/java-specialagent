@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.mongo;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
@@ -47,8 +46,7 @@ public class MongoDriverAgentPlugin implements AgentPlugin {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin Method method, final @Advice.Return Object returned) {
-    System.out.println(">>>>>> " + method);
+  public static void exit(final @Advice.Return Object returned) {
     MongoDriverAgentIntercept.exit(returned);
   }
 }

@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.jdbc;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Properties;
@@ -61,8 +60,7 @@ public class JdbcAgentPlugin implements AgentPlugin {
 
   public static class OnEnter {
     @Advice.OnMethodEnter
-    public static void enter(@Advice.Origin Method method, @Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
-      System.out.println(">>>>>> " + method);
+    public static void enter(@Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
       final Connection connection = JdbcAgentIntercept.enter(url, info);
       if (connection != null)
         throw new EarlyReturnException(connection);
@@ -72,8 +70,7 @@ public class JdbcAgentPlugin implements AgentPlugin {
   public static class OnExit {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) throws Exception {
-      System.out.println("<<<<<< " + method);
+    public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) throws Exception {
       if (thrown instanceof EarlyReturnException) {
         returned = ((EarlyReturnException)thrown).getReturnValue();
         thrown = null;
