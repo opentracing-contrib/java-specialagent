@@ -109,7 +109,7 @@ class PluginClassLoader extends URLClassLoader {
           return false;
         }
 
-        logger.warning("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
+        logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
       }
     }
     catch (final IOException e) {

@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.concurrent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -55,8 +54,7 @@ public class FixedDelayAgentPlugin implements AgentPlugin {
   }
 
   @Advice.OnMethodEnter
-  public static void exit(@Advice.Origin Method method, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    System.out.println(">>>>>> " + method);
+  public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
     final Tracer tracer = GlobalTracer.get();
     if (tracer.activeSpan() != null)
       arg = new TracedRunnable(arg, tracer);

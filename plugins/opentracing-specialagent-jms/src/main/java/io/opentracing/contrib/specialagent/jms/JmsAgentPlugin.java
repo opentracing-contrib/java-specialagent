@@ -16,7 +16,6 @@ package io.opentracing.contrib.specialagent.jms;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
@@ -56,16 +55,14 @@ public class JmsAgentPlugin implements AgentPlugin {
 
   public static class Producer {
     @Advice.OnMethodExit
-    public static void enter(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      System.out.println(">>>>>> " + method);
+    public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       returned = JmsAgentIntercept.createProducer(returned);
     }
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void enter(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      System.out.println(">>>>>> " + method);
+    public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       returned = JmsAgentIntercept.createConsumer(returned);
     }
   }

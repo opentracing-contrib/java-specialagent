@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -146,8 +147,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        System.err.println("<><><><> BootLoaderAgent.FindBootstrapResource#exit: " + t);
-        t.printStackTrace();
+        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
       }
       finally {
         mutex.get().remove(arg);
@@ -188,8 +188,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        System.err.println("<><><><> BootLoaderAgent.FindBootstrapResources#exit: " + t);
-        t.printStackTrace();
+        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
       }
       finally {
         mutex.get().remove(arg);
@@ -204,8 +203,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        System.err.println("<><><><> BootLoaderAgent.AppendToBootstrap#exit: " + t);
-        t.printStackTrace();
+        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
       }
     }
   }
