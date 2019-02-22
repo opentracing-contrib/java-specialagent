@@ -60,6 +60,12 @@
       <version>${opentracing.jms.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
