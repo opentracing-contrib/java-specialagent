@@ -19,6 +19,7 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -56,14 +57,16 @@ public class JmsAgentPlugin implements AgentPlugin {
   public static class Producer {
     @Advice.OnMethodExit
     public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      returned = JmsAgentIntercept.createProducer(returned);
+      if (AgentPluginUtil.isEnabled())
+        returned = JmsAgentIntercept.createProducer(returned);
     }
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
     public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      returned = JmsAgentIntercept.createConsumer(returned);
+      if (AgentPluginUtil.isEnabled())
+        returned = JmsAgentIntercept.createConsumer(returned);
     }
   }
 }

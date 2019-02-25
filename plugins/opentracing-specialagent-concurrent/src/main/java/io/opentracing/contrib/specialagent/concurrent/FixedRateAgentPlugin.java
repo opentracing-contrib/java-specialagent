@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedRunnable;
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -40,7 +41,6 @@ public class FixedRateAgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
-//      .with(AgentBuilder.Listener.StreamWriting.toSystemError())
       .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
@@ -55,6 +55,9 @@ public class FixedRateAgentPlugin implements AgentPlugin {
 
   @Advice.OnMethodEnter
   public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
+    if (!AgentPluginUtil.isEnabled())
+      return;
+
     final Tracer tracer = GlobalTracer.get();
     if (tracer.activeSpan() != null)
       arg = new TracedRunnable(arg, tracer);

@@ -20,6 +20,7 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -47,6 +48,7 @@ public class JettyAgentPlugin implements AgentPlugin {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.This Object thiz) {
-    JettyAgentIntercept.exit(thiz);
+    if (AgentPluginUtil.isEnabled())
+      JettyAgentIntercept.exit(thiz);
   }
 }

@@ -81,20 +81,4 @@ public abstract class Manager {
    * @throws IOException If an I/O error has occurred.
    */
   abstract void loadPlugins(ClassLoader allPluginsClassLoader, Map<String,Integer> pluginJarToIndex, String agentArgs, final Event[] events) throws IOException;
-
-  /**
-   * Disables triggering of rules inside the current thread.
-   *
-   * @return {@code true} if triggering was previously enabled, and
-   *         {@code false} if it was already disabled.
-   */
-  abstract boolean disableTriggers();
-
-  /**
-   * Enables triggering of rules inside the current thread.
-   *
-   * @return {@code true} if triggering was previously disabled, and
-   *         {@code false} if it was already enabled.
-   */
-  abstract boolean enableTriggers();
 }

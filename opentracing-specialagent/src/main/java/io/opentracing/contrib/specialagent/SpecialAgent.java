@@ -54,6 +54,7 @@ import io.opentracing.util.GlobalTracer;
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
+  static final String TRACER_PROPERTY = "specialagent.tracer";
   static final String EVENTS_PROPERTY = "specialagent.log.events";
   static final String LOGGING_PROPERTY = "specialagent.log.level";
   static final String PLUGIN_ARG = "io.opentracing.contrib.specialagent.plugins";
@@ -334,6 +335,17 @@ public class SpecialAgent {
       return;
     }
 
+    final String tracerProperty = System.getProperty(TRACER_PROPERTY);
+    if (tracerProperty != null) {
+      try {
+        final JarFile tracerJar = new JarFile(new File(tracerProperty));
+        inst.appendToBootstrapClassLoaderSearch(tracerJar);
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
     final Tracer tracer = TracerResolver.resolveTracer();
     if (tracer != null) {
       GlobalTracer.register(tracer);
@@ -367,98 +379,89 @@ public class SpecialAgent {
 
   @SuppressWarnings("resource")
   public static boolean linkPlugin(final int index, final ClassLoader classLoader) {
-    instrumenter.manager.disableTriggers();
-    try {
-      // Find the Plugin Path (identified by index passed to this method)
-      final URL pluginPath = allPluginsClassLoader.getURLs()[index];
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("  Plugin Path: " + pluginPath);
+    // Find the Plugin Path (identified by index passed to this method)
+    final URL pluginPath = allPluginsClassLoader.getURLs()[index];
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("  Plugin Path: " + pluginPath);
 
-      // Now find all the paths that pluginPath depends on, by reading dependencies.tgf
-      final URL[] pluginPaths = pluginToDependencies.get(pluginPath);
-      if (pluginPaths == null)
-        throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + pluginPath);
+    // Now find all the paths that pluginPath depends on, by reading dependencies.tgf
+    final URL[] pluginPaths = pluginToDependencies.get(pluginPath);
+    if (pluginPaths == null)
+      throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + pluginPath);
 
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("new " + PluginClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest("new " + PluginClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(pluginPaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
 
-      // Create an isolated (no parent class loader) URLClassLoader with the pluginPaths
-      final PluginClassLoader pluginClassLoader = new PluginClassLoader(pluginPaths, classLoader);
-      if (!pluginClassLoader.isCompatible(classLoader)) {
+    // Create an isolated (no parent class loader) URLClassLoader with the pluginPaths
+    final PluginClassLoader pluginClassLoader = new PluginClassLoader(pluginPaths, classLoader);
+    if (!pluginClassLoader.isCompatible(classLoader)) {
+      try {
+        pluginClassLoader.close();
+      }
+      catch (final IOException e) {
+        logger.log(Level.WARNING, "Failed to close " + PluginClassLoader.class.getSimpleName() + ": " + Util.getIdentityCode(pluginClassLoader), e);
+      }
+
+      return false;
+    }
+
+    if (classLoader == null) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
+
+      for (final URL path : pluginPaths) {
         try {
-          pluginClassLoader.close();
+          final File file = new File(path.getPath());
+          inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
         }
         catch (final IOException e) {
-          logger.log(Level.WARNING, "Failed to close " + PluginClassLoader.class.getSimpleName() + ": " + Util.getIdentityCode(pluginClassLoader), e);
-        }
-
-        return false;
-      }
-
-      if (classLoader == null) {
-        if (logger.isLoggable(Level.FINER))
-          logger.finer("Target class loader is bootstrap, so adding plugin JARs to the bootstrap class loader directly");
-
-        for (final URL path : pluginPaths) {
-          try {
-            final File file = new File(path.getPath());
-            inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
-          }
-          catch (final IOException e) {
-            logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
-          }
+          logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
         }
       }
-      else if (classLoader == ClassLoader.getSystemClassLoader()) {
-        if (logger.isLoggable(Level.FINER))
-          logger.finer("Target class loader is system, so adding plugin JARs to the system class loader directly");
-
-        for (final URL path : pluginPaths) {
-          try {
-            final File file = new File(path.getPath());
-            inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
-          }
-          catch (final IOException e) {
-            logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);
-          }
-        }
-      }
-
-      // Associate the pluginClassLoader with the target class's classLoader
-      classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
-
-      // Enable triggers to the classloader.btm script can execute
-      instrumenter.manager.enableTriggers();
-
-      // Call Class.forName(...) for each class in pluginClassLoader to load in
-      // the caller's class loader
-      for (final URL pathUrl : pluginClassLoader.getURLs()) {
-        if (pathUrl.toString().endsWith(".jar")) {
-          try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
-            for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
-          }
-          catch (final IOException e) {
-            logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
-          }
-        }
-        else {
-          final File dir = new File(URI.create(pathUrl.toString()));
-          final Path path = dir.toPath();
-          Util.recurseDir(dir, new Predicate<File>() {
-            @Override
-            public boolean test(final File file) {
-              loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
-              return true;
-            }
-          });
-        }
-      }
-
-      return true;
     }
-    finally {
-      instrumenter.manager.enableTriggers();
+    else if (classLoader == ClassLoader.getSystemClassLoader()) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("Target class loader is system, so adding plugin JARs to the system class loader directly");
+
+      for (final URL path : pluginPaths) {
+        try {
+          final File file = new File(path.getPath());
+          inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
+        }
+        catch (final IOException e) {
+          logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);
+        }
+      }
     }
+
+    // Associate the pluginClassLoader with the target class's classLoader
+    classLoaderToPluginClassLoader.put(classLoader, pluginClassLoader);
+
+    // Call Class.forName(...) for each class in pluginClassLoader to load in
+    // the caller's class loader
+    for (final URL pathUrl : pluginClassLoader.getURLs()) {
+      if (pathUrl.toString().endsWith(".jar")) {
+        try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
+          for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
+        }
+        catch (final IOException e) {
+          logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
+        }
+      }
+      else {
+        final File dir = new File(URI.create(pathUrl.toString()));
+        final Path path = dir.toPath();
+        Util.recurseDir(dir, new Predicate<File>() {
+          @Override
+          public boolean test(final File file) {
+            loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
+            return true;
+          }
+        });
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -479,64 +482,46 @@ public class SpecialAgent {
    *         {@code classLoader} and {@code name}.
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
-    instrumenter.manager.disableTriggers();
-    try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-      // Check if the class loader matches a pluginClassLoader
-      final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
-      if (pluginClassLoader == null)
-        return null;
+    // Check if the class loader matches a pluginClassLoader
+    final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+    if (pluginClassLoader == null)
+      return null;
 
-      // Check that the resourceName has not already been retrieved by this method
-      // (this may be a moot check, because the JVM won't call findClass() twice
-      // for the same class)
-      final String resourceName = name.replace('.', '/').concat(".class");
-      if (pluginClassLoader.markFindResource(classLoader, resourceName))
-        return null;
+    // Check that the resourceName has not already been retrieved by this method
+    // (this may be a moot check, because the JVM won't call findClass() twice
+    // for the same class)
+    final String resourceName = name.replace('.', '/').concat(".class");
+    if (pluginClassLoader.markFindResource(classLoader, resourceName))
+      return null;
 
-      // Return the resource's bytes, or null if the resource does not exist in
-      // pluginClassLoader
-      final URL resource = pluginClassLoader.getResource(resourceName);
-      return resource == null ? null : Util.readBytes(resource);
-    }
-    finally {
-      instrumenter.manager.enableTriggers();
-    }
+    // Return the resource's bytes, or null if the resource does not exist in
+    // pluginClassLoader
+    final URL resource = pluginClassLoader.getResource(resourceName);
+    return resource == null ? null : Util.readBytes(resource);
   }
 
   public static URL findResource(final ClassLoader classLoader, final String name) {
-    instrumenter.manager.disableTriggers();
-    try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-      // Check if the class loader matches a pluginClassLoader
-      final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
-      return pluginClassLoader == null ? null : pluginClassLoader.findResource(name);
-    }
-    finally {
-      instrumenter.manager.enableTriggers();
-    }
+    // Check if the class loader matches a pluginClassLoader
+    final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+    return pluginClassLoader == null ? null : pluginClassLoader.findResource(name);
   }
 
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
-    instrumenter.manager.disableTriggers();
-    try {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
-      // Check if the class loader matches a pluginClassLoader
-      final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
-      if (pluginClassLoader == null)
-        return null;
+    // Check if the class loader matches a pluginClassLoader
+    final PluginClassLoader pluginClassLoader = classLoaderToPluginClassLoader.get(classLoader);
+    if (pluginClassLoader == null)
+      return null;
 
-      final Enumeration<URL> resources = pluginClassLoader.findResources(name);
-      return resources != null && resources.hasMoreElements() ? resources : null;
-    }
-    finally {
-      instrumenter.manager.enableTriggers();
-    }
+    final Enumeration<URL> resources = pluginClassLoader.findResources(name);
+    return resources != null && resources.hasMoreElements() ? resources : null;
   }
 }

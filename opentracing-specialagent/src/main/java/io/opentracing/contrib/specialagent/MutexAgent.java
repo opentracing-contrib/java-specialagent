@@ -1,4 +1,4 @@
-/* Copyright 2018 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,20 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.concurrent;
+package io.opentracing.contrib.specialagent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-import java.util.concurrent.Executor;
+import java.lang.instrument.Instrumentation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import io.opentracing.Scope;
+import io.opentracing.ScopeManager;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.concurrent.TracedRunnable;
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
-import io.opentracing.util.GlobalTracer;
+import io.opentracing.Tracer.SpanBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -33,32 +35,38 @@ import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ExecutorAgentPlugin implements AgentPlugin {
-  @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
-    return Arrays.asList(new AgentBuilder.Default()
+public class MutexAgent {
+  private static final Logger logger = Logger.getLogger(MutexAgent.class.getName());
+
+  public static void premain(final String agentArgs, final Instrumentation inst) {
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<<<< Installing AgentRunnerUtil >>>>>>>>>>>>>>>>>>>\n");
+
+    new AgentBuilder.Default()
       .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(isSubTypeOf(Executor.class))
+      .type(isSubTypeOf(Tracer.class).or(isSubTypeOf(Scope.class)).or(isSubTypeOf(ScopeManager.class)).or(isSubTypeOf(Span.class)).or(isSubTypeOf(SpanBuilder.class)).or(isSubTypeOf(SpanContext.class)))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ExecutorAgentPlugin.class).on(named("execute").and(takesArguments(Runnable.class))));
-        }}));
+          return builder.visit(Advice.to(MutexAgent.class).on(isPublic().and(any())));
+        }})
+      .installOn(inst);
   }
 
   @Advice.OnMethodEnter
-  public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!AgentPluginUtil.isEnabled())
-      return;
+  public static void enter() {
+    final ThreadLocal<Integer> latch = AgentPluginUtil.latch;
+    latch.set(latch.get() + 1);
+  }
 
-    final Tracer tracer = GlobalTracer.get();
-    if (tracer.activeSpan() != null)
-      arg = new TracedRunnable(arg, tracer);
+  @Advice.OnMethodExit
+  public static void exit() {
+    final ThreadLocal<Integer> latch = AgentPluginUtil.latch;
+    latch.set(latch.get() - 1);
   }
 }
