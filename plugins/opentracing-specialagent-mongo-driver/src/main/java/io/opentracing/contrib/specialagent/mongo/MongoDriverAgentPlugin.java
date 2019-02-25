@@ -20,6 +20,7 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -47,6 +48,7 @@ public class MongoDriverAgentPlugin implements AgentPlugin {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Return Object returned) {
-    MongoDriverAgentIntercept.exit(returned);
+    if (AgentPluginUtil.isEnabled())
+      MongoDriverAgentIntercept.exit(returned);
   }
 }

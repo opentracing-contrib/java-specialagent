@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -61,6 +62,9 @@ public class JdbcAgentPlugin implements AgentPlugin {
   public static class OnEnter {
     @Advice.OnMethodEnter
     public static void enter(@Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
+      if (!AgentPluginUtil.isEnabled())
+        return;
+
       final Connection connection = JdbcAgentIntercept.enter(url, info);
       if (connection != null)
         throw new EarlyReturnException(connection);

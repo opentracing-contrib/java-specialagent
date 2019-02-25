@@ -26,6 +26,17 @@ import java.util.logging.Logger;
 public final class AgentPluginUtil {
   public static final Logger logger = Logger.getLogger(AgentPlugin.class.getName());
 
+  public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
+    @Override
+    protected Integer initialValue() {
+      return 0;
+    }
+  };
+
+  public static boolean isEnabled() {
+    return true;
+  }
+
   /**
    * Returns an array that is the subArray of the provided array.
    *
