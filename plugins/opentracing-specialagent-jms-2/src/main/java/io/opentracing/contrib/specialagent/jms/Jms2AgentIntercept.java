@@ -14,38 +14,36 @@
  */
 package io.opentracing.contrib.specialagent.jms;
 
-import io.opentracing.contrib.jms.common.TracingMessageConsumer;
-import io.opentracing.contrib.jms2.TracingMessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 
-public class Jms2AgentIntercept {
-  private static Boolean isJms2;
+import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.contrib.jms2.TracingMessageProducer;
 
-  private static boolean isJms2() {
-    if(isJms2 != null) {
-      return isJms2;
-    }
+public class Jms2AgentIntercept {
+  private static boolean isJms2;
+
+  static {
     try {
       Class.forName("javax.jms.JMSContext");
       isJms2 = true;
-    } catch (ClassNotFoundException ignore) {
+    }
+    catch (final ClassNotFoundException ignore) {
       isJms2 = false;
     }
-    return isJms2;
   }
 
   public static Object createProducer(final Object thiz) {
-    if(!isJms2()) {
+    if(!isJms2)
       return thiz;
-    }
+
     return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz);
   }
 
   public static Object createConsumer(final Object thiz) {
-    if(!isJms2()) {
+    if(!isJms2)
       return thiz;
-    }
+
     return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz);
   }
 }
