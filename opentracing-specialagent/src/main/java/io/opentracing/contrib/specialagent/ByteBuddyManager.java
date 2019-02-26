@@ -64,6 +64,8 @@ public class ByteBuddyManager extends Manager {
     // Prepare the ClassLoader rule
     ClassLoaderAgent.premain(agentArgs, inst);
 
+    MutexAgent.premain(agentArgs, inst);
+
     // Prepare the Plugin rules
     final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(file);
     while (enumeration.hasMoreElements()) {
@@ -104,10 +106,7 @@ public class ByteBuddyManager extends Manager {
             builder.with(listener).installOn(inst);
           }
         }
-        catch (final UnsupportedClassVersionError e) {
-          logger.log(Level.SEVERE, "Error initliaizing plugin: " + line, e);
-        }
-        catch (final InvocationTargetException e) {
+        catch (final UnsupportedClassVersionError | InvocationTargetException e) {
           logger.log(Level.SEVERE, "Error initliaizing plugin: " + line, e);
         }
         catch (final InstantiationException e) {
@@ -133,16 +132,6 @@ public class ByteBuddyManager extends Manager {
       })
       .with(listener)
       .installOn(instrumentation);
-  }
-
-  @Override
-  boolean disableTriggers() {
-    return false;
-  }
-
-  @Override
-  boolean enableTriggers() {
-    return false;
   }
 
   class TransformationListener implements AgentBuilder.Listener {

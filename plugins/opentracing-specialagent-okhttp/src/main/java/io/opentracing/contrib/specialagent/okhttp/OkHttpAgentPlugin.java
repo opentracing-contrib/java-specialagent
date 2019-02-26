@@ -17,10 +17,10 @@ package io.opentracing.contrib.specialagent.okhttp;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -47,8 +47,8 @@ public class OkHttpAgentPlugin implements AgentPlugin {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin Method method, final @Advice.This Object thiz) {
-    System.out.println(">>>>>> " + method);
-    OkHttpAgentIntercept.enter(thiz);
+  public static void enter(final @Advice.This Object thiz) {
+    if (AgentPluginUtil.isEnabled())
+      OkHttpAgentIntercept.enter(thiz);
   }
 }

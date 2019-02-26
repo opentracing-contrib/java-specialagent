@@ -21,6 +21,7 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.logging.Level;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -102,11 +103,11 @@ public class SpecialAgentAgent {
             returned = Util.readBytes(resource);
         }
 
-        System.err.println("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (AgentPluginUtil.logger.isLoggable(Level.FINEST))
+          AgentPluginUtil.logger.finest("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        System.err.println("AgentAgent.FindClass#exit: " + t);
-        t.printStackTrace();
+        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindClass#exit", t);
       }
     }
   }
@@ -127,11 +128,11 @@ public class SpecialAgentAgent {
           returned = pluginClassLoader.findResource(arg);
         }
 
-        System.err.println("<<<<<<< Agent#findResource(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (AgentPluginUtil.logger.isLoggable(Level.FINEST))
+          AgentPluginUtil.logger.finest("<<<<<<< Agent#findResource(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        System.err.println("AgentAgent.FindResource#exit: " + t);
-        t.printStackTrace();
+        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResource#exit", t);
       }
     }
   }
@@ -153,11 +154,11 @@ public class SpecialAgentAgent {
           returned.hasMoreElements(); // For some reason, if I don't call this, the returned value does not have any elements!!!!
         }
 
-        System.err.println("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (AgentPluginUtil.logger.isLoggable(Level.FINEST))
+          AgentPluginUtil.logger.finest("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        System.err.println("AgentAgent.FindResources#exit: " + t);
-        t.printStackTrace();
+        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResources#exit", t);
       }
     }
   }

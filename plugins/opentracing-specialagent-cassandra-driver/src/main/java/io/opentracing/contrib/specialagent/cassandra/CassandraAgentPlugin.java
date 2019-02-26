@@ -16,10 +16,10 @@ package io.opentracing.contrib.specialagent.cassandra;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
+import io.opentracing.contrib.specialagent.AgentPluginUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -47,8 +47,8 @@ public class CassandraAgentPlugin implements AgentPlugin {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    System.out.println(">>>>>> " + method);
-    returned = CassandraAgentIntercept.exit(returned);
+  public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (AgentPluginUtil.isEnabled())
+      returned = CassandraAgentIntercept.exit(returned);
   }
 }

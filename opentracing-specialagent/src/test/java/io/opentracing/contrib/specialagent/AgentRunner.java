@@ -97,6 +97,25 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
   }
 
+  private static void absorbProperties() {
+    final String sunJavaCommand = System.getProperty("sun.java.command");
+    if (sunJavaCommand == null)
+      return;
+
+    final String[] parts = sunJavaCommand.split("\\s+-");
+    for (int i = 0; i < parts.length; ++i) {
+      final String part = parts[i];
+      if (part.charAt(0) != 'D')
+        continue;
+
+      final int index = part.indexOf('=');
+      if (index == -1)
+        System.setProperty(part.substring(1), "");
+      else
+        System.setProperty(part.substring(1, index), part.substring(index + 1));
+    }
+  }
+
   static Instrumentation install() {
     if (inst != null)
       return inst;
@@ -123,6 +142,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final File CWD = new File("").getAbsoluteFile();
 
   static {
+    absorbProperties();
     inst = install();
   }
 

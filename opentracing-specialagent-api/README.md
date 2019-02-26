@@ -56,16 +56,15 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
     The `AgentPlugin` interface defines one method:
 
     ```java
-    AgentBuilder buildAgent(String agentArgs) throws Exception;
+    Iterable<? extends AgentBuilder> buildAgent(String agentArgs) throws Exception;
     ```
 
     An example implementation for an instrumentation plugin that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
 
     ```java
       public class TargetAgentPlugin implements AgentPlugin {
-        public AgentBuilder buildAgent(final String agentArgs) throws Exception {
-          return new AgentBuilder.Default()
-            // .with(new DebugListener())                 // DebugListener to debug ByteBuddy's transformations.
+        public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
+          return Arrays.asList(new AgentBuilder.Default()
             .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
             .with(InitializationStrategy.NoOp.INSTANCE)   // Singleton instantiation of loaded type initializers.
             .with(TypeStrategy.Default.REDEFINE)          // Allows loaded classes to be redefined.
@@ -85,7 +84,7 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
                   .to(TargetAgentPlugin.class)            // A class literal reference to this class.
                   .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
                     .and(takesArguments(String.class)))); // Additional specification for the method intercept.
-              }});
+              }}));
           }
 
           // The @Advice method that defines the intercept callback. It is important this method does not require any
@@ -94,7 +93,6 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
           // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
           @Advice.OnMethodExit
           public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-            System.out.println(">>>>>> " + method);
             returned = TargetAgentIntercept.exit(returned);
           }
         }
@@ -115,7 +113,7 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
 
     The `otaplugins.txt` file for this example will be:
 
-    ```
+    ```java
     io.opentracing.contrib.example.TargetAgentPlugin
     ```
 
