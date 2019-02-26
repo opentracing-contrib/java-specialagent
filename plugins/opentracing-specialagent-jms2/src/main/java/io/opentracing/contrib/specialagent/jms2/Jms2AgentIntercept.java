@@ -20,11 +20,32 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 
 public class Jms2AgentIntercept {
+  private static Boolean isJms2;
+
+  private static boolean isJms2() {
+    if(isJms2 != null) {
+      return isJms2;
+    }
+    try {
+      Class.forName("javax.jms.JMSContext");
+      isJms2 = true;
+    } catch (ClassNotFoundException ignore) {
+      isJms2 = false;
+    }
+    return isJms2;
+  }
+
   public static Object createProducer(final Object thiz) {
+    if(!isJms2()) {
+      return thiz;
+    }
     return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz);
   }
 
   public static Object createConsumer(final Object thiz) {
+    if(!isJms2()) {
+      return thiz;
+    }
     return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz);
   }
 }
