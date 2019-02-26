@@ -23,36 +23,60 @@
     <artifactId>java-specialagent-plugins</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-jms</artifactId>
+  <artifactId>opentracing-specialagent-jms2</artifactId>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <activemq.version>5.15.5</activemq.version>
+    <artemis.version>2.6.4</artemis.version>
+    <opentracing.jms.version>0.0.11</opentracing.jms.version>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jms -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jms-1</artifactId>
-      <version>0.0.11</version>
+      <artifactId>opentracing-jms-2</artifactId>
+      <version>${opentracing.jms.version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
-          <artifactId>jms-api</artifactId>
+          <artifactId>javax.jms-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-jms-common</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
-      <artifactId>jms-api</artifactId>
-      <version>1.1-rev-1</version>
+      <artifactId>javax.jms-api</artifactId>
+      <version>2.0.1</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-jms-common</artifactId>
+      <version>${opentracing.jms.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-broker</artifactId>
-      <version>${activemq.version}</version>
+      <artifactId>artemis-server</artifactId>
+      <version>${artemis.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-jms-client</artifactId>
+      <version>${artemis.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
