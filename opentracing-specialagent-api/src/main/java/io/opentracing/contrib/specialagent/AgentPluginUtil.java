@@ -34,7 +34,7 @@ public final class AgentPluginUtil {
   };
 
   public static boolean isEnabled() {
-    return true;
+    return latch.get() == 0;
   }
 
   /**
