@@ -34,8 +34,8 @@
     <module>opentracing-specialagent-camel</module>
     <module>opentracing-specialagent-aws-sdk</module>
     <module>opentracing-specialagent-cassandra-driver</module>
-    <module>opentracing-specialagent-jms</module>
-    <module>opentracing-specialagent-jms2</module>
+    <module>opentracing-specialagent-jms-1</module>
+    <module>opentracing-specialagent-jms-2</module>
   </modules>
   <profiles>
     <profile>

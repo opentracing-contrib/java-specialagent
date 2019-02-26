@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.specialagent.jms2;
+package io.opentracing.contrib.specialagent.jms;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -38,6 +38,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import org.junit.Test;
 
+// NOTE: This class is copied from opentracing-specialagent-jms-1.
+// NOTE: It should be a 100% duplicate!
 public abstract class JmsTest {
   static final Logger logger = Logger.getLogger(JmsTest.class.getName());
 

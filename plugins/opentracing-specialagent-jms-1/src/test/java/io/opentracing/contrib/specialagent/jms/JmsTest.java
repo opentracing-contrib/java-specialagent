@@ -40,6 +40,8 @@ import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
+//NOTE: This class is copied from opentracing-specialagent-jms-2.
+//NOTE: It should be a 100% duplicate!
 public abstract class JmsTest {
   static final Logger logger = Logger.getLogger(JmsTest.class.getName());
 

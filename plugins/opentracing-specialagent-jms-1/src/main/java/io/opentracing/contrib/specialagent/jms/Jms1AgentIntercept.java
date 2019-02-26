@@ -20,33 +20,30 @@ import javax.jms.MessageProducer;
 import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 
-public class JmsAgentIntercept {
-  private static Boolean isJms2;
+public class Jms1AgentIntercept {
+  private static boolean isJms2;
 
-  private static boolean isJms2() {
-    if(isJms2 != null) {
-      return isJms2;
-    }
+  static {
     try {
       Class.forName("javax.jms.JMSContext");
       isJms2 = true;
-    } catch (ClassNotFoundException ignore) {
+    }
+    catch (final ClassNotFoundException ignore) {
       isJms2 = false;
     }
-    return isJms2;
   }
 
   public static Object createProducer(final Object thiz) {
-    if(isJms2()) {
+    if (isJms2)
       return thiz;
-    }
+
     return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz);
   }
 
   public static Object createConsumer(final Object thiz) {
-    if(isJms2()) {
+    if (isJms2)
       return thiz;
-    }
+
     return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz);
   }
 }

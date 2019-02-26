@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.specialagent.jms2;
+package io.opentracing.contrib.specialagent.jms;
 
 import static org.junit.Assert.assertEquals;
 

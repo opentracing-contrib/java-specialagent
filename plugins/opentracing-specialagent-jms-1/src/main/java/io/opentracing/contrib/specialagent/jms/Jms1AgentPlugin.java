@@ -32,7 +32,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class JmsAgentPlugin implements AgentPlugin {
+public class Jms1AgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     final Narrowable builder = new AgentBuilder.Default().
@@ -58,7 +58,7 @@ public class JmsAgentPlugin implements AgentPlugin {
     @Advice.OnMethodExit
     public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (AgentPluginUtil.isEnabled())
-        returned = JmsAgentIntercept.createProducer(returned);
+        returned = Jms1AgentIntercept.createProducer(returned);
     }
   }
 
@@ -66,7 +66,7 @@ public class JmsAgentPlugin implements AgentPlugin {
     @Advice.OnMethodExit
     public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (AgentPluginUtil.isEnabled())
-        returned = JmsAgentIntercept.createConsumer(returned);
+        returned = Jms1AgentIntercept.createConsumer(returned);
     }
   }
 }

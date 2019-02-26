@@ -23,7 +23,7 @@
     <artifactId>java-specialagent-plugins</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-jms</artifactId>
+  <artifactId>opentracing-specialagent-jms-1</artifactId>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
