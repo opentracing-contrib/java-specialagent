@@ -100,13 +100,13 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-specialagent-jms</artifactId>
+          <artifactId>opentracing-specialagent-jms-1</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-specialagent-jms2</artifactId>
+          <artifactId>opentracing-specialagent-jms-2</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
