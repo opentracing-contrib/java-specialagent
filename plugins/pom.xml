@@ -26,6 +26,8 @@
   <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
   <artifactId>plugins</artifactId>
   <packaging>pom</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins</url>
   <modules>
     <module>opentracing-specialagent-okhttp</module>
     <module>opentracing-specialagent-jdbc</module>

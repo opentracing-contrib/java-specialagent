@@ -24,6 +24,8 @@
     <version>0.9.0</version>
   </parent>
   <artifactId>opentracing-specialagent-web-servlet-filter</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-web-servlet-filter</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

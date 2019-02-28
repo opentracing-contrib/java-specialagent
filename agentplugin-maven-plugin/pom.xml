@@ -26,6 +26,8 @@
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>agentplugin-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/agentplugin-maven-plugin</url>
   <build>
     <plugins>
       <plugin>

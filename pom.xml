@@ -22,7 +22,9 @@
   <artifactId>specialagent</artifactId>
   <version>0.9.0</version>
   <packaging>pom</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
+  <url>https://github.com/opentracing-contrib/java-specialagent</url>
   <scm>
     <url>https://github.com/opentracing-contrib/java-specialagent</url>
     <connection>scm:git:https://github.com/opentracing-contrib/java-specialagent.git</connection>

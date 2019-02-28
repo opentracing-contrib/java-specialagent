@@ -25,6 +25,8 @@
   </parent>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api</url>
   <dependencies>
     <dependency>
       <groupId>net.bytebuddy</groupId>
