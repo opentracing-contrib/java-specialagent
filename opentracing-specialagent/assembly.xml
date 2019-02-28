@@ -32,7 +32,7 @@
       <unpack>true</unpack>
       <scope>provided</scope>
       <includes>
-        <include>io.opentracing.contrib:opentracing-specialagent</include>
+        <include>io.opentracing.contrib.specialagent:opentracing-specialagent</include>
         <include>io.opentracing.contrib:opentracing-tracerresolver</include>
         <include>io.opentracing:opentracing-api</include>
         <include>io.opentracing:opentracing-util</include>
@@ -47,7 +47,7 @@
       <outputDirectory>/META-INF/opentracing</outputDirectory>
       <useProjectArtifact>false</useProjectArtifact>
       <excludes>
-        <exclude>io.opentracing.contrib:opentracing-specialagent</exclude>
+        <exclude>io.opentracing.contrib.specialagent:opentracing-specialagent</exclude>
         <exclude>io.opentracing.contrib:opentracing-tracerresolver</exclude>
         <exclude>io.opentracing:opentracing-api</exclude>
         <exclude>io.opentracing:opentracing-util</exclude>

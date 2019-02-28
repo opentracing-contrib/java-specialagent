@@ -47,9 +47,9 @@ public class UtilTest {
     expected.add("opentracing-mock-0.31.0.jar");
     expected.add("opentracing-noop-0.31.0.jar");
     expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
-    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
-    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent-okhttp-0.0.0-SNAPSHOT.jar");
+    expected.add("opentracing-specialagent1-0.0.0-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
     final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
@@ -67,7 +67,7 @@ public class UtilTest {
     expected.add("okhttp-3.6.0.jar");
     expected.add("okio-1.11.0.jar");
     expected.add("opentracing-mock-0.31.0.jar");
-    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent1-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
     final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
@@ -83,7 +83,7 @@ public class UtilTest {
     expected.add("junit-4.12.jar");
     expected.add("mockwebserver-3.6.0.jar");
     expected.add("opentracing-mock-0.31.0.jar");
-    expected.add("opentracing-specialagent1-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent1-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
     final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
@@ -96,8 +96,8 @@ public class UtilTest {
     final Set<String> expected = new HashSet<>();
     expected.add("opentracing-concurrent-0.1.0.jar");
     expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
-    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent-okhttp-0.0.0-SNAPSHOT.jar");
+    expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-noop-0.31.0.jar");
     expected.add("opentracing-api-0.31.0.jar");
 
@@ -111,8 +111,8 @@ public class UtilTest {
     final Set<String> expected = new HashSet<>();
     expected.add("opentracing-concurrent-0.1.0.jar");
     expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("opentracing-specialagent-okhttp-0.0.1-SNAPSHOT.jar");
-    expected.add("opentracing-specialagent2-0.0.1-SNAPSHOT-tests.jar");
+    expected.add("opentracing-specialagent-okhttp-0.0.0-SNAPSHOT.jar");
+    expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
 
     final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
     final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class, Tracer.class);

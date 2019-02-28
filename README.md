@@ -47,13 +47,13 @@ The <ins>SpecialAgent</ins> must provide a means by which instrumentation plugin
 
 The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be created by cloning this repository and following the [Building](#building) instructions. These artifacts can also be downloaded directly from Maven's Central Repository.
 
-1. &nbsp;&nbsp;&nbsp;RELEASE: `opentracing-specialagent-0.0.1.jar`<br>
-   SNAPSHOT: [`opentracing-specialagent-0.0.1-SNAPSHOT.jar`][main-snapshot]
+1. &nbsp;&nbsp;&nbsp;RELEASE: `opentracing-specialagent-0.9.0.jar`<br>
+   SNAPSHOT: [`opentracing-specialagent-0.9.0-SNAPSHOT.jar`][main-snapshot]
 
     This is the main artifact that contains within it all applicable instrumentation plugins from the [opentracing-contrib][opentracing-contrib] organization. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
-1. &nbsp;&nbsp;&nbsp;RELEASE: `opentracing-specialagent-0.0.1-tests.jar`<br>
-   SNAPSHOT: [`opentracing-specialagent-0.0.1-SNAPSHOT-tests.jar`][test-snapshot]
+1. &nbsp;&nbsp;&nbsp;RELEASE: `opentracing-specialagent-0.9.0-tests.jar`<br>
+   SNAPSHOT: [`opentracing-specialagent-0.9.0-SNAPSHOT-tests.jar`][test-snapshot]
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
@@ -66,7 +66,7 @@ The <ins>SpecialAgent</ins> uses Java’s Instrumentation interface to transform
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-0.0.1.jar -jar myapp.jar
+java -javaagent:opentracing-specialagent-0.9.0.jar -jar myapp.jar
 ```
 
 This command statically attaches <ins>SpecialAgent</ins> into the application in `myapp.jar`.
@@ -82,12 +82,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 2. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-0.0.1.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-0.9.0.jar <PID>
     ```
 
 3. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-0.0.1.jar <PID>
+    java -jar opentracing-specialagent-0.9.0.jar <PID>
     ```
 
 ## Configuration
@@ -116,22 +116,22 @@ The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is include
 
 The <ins>SpecialAgent</ins> is built in 2 profiles:
 
-1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in `opentracing-specialagent-0.0.1.jar`
+1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in `opentracing-specialagent-0.9.0.jar`
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-2. The `deploy` profile is used for packaging of plugins into the `opentracing-specialagent-0.0.1.jar`. It builds each plugin, but does not run their tests. Once the build is finished, the `opentracing-specialagent-0.0.1.jar` will contain the built plugins inside it.
+2. The `assemble` profile is used for packaging of plugins into the `opentracing-specialagent-0.9.0.jar`. It builds each plugin, but does not run their tests. Once the build is finished, the `opentracing-specialagent-0.9.0.jar` will contain the built plugins inside it.
 
-    _**Note**: If you do not run this step, the `opentracing-specialagent-0.0.1.jar` from the previous step will not contain any instrumentation plugins within it!_
+    _**Note**: If you do not run this step, the `opentracing-specialagent-0.9.0.jar` from the previous step will not contain any instrumentation plugins within it!_
 
-    _**Note**: It is important to _not_ run Maven's `clean` lifecycle when creating the `deploy` package._
+    _**Note**: It is important to _not_ run Maven's `clean` lifecycle when creating the `assemble` package._
 
     To run this profile:
     ```bash
-    mvn -Ddeploy install
+    mvn -Dassemble install
     ```
 
 ## Contributing
@@ -146,7 +146,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api
-[main-release]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.0.1-SNAPSHOT/opentracing-specialagent-0.0.1-20190219.111717-1.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.0.1-SNAPSHOT/opentracing-specialagent-0.0.1-20190219.111717-1.jar
-[test-release]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.0.1-SNAPSHOT/opentracing-specialagent-0.0.1-20190219.111717-1-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.0.1-SNAPSHOT/opentracing-specialagent-0.0.1-20190219.111717-1-tests.jar
+[main-release]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1.jar
+[test-release]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1-tests.jar
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1-tests.jar

@@ -19,24 +19,25 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib</groupId>
-    <artifactId>java-specialagent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>io.opentracing.contrib.specialagent</groupId>
+    <artifactId>specialagent</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
+  <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
   <profiles>
     <profile>
-      <id>deploy</id>
+      <id>assemble</id>
       <activation>
         <property>
-          <name>deploy</name>
+          <name>assemble</name>
         </property>
       </activation>
       <build>
         <plugins>
           <plugin>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>specialagent-maven-plugin</artifactId>
+            <groupId>io.opentracing.contrib.specialagent</groupId>
+            <artifactId>agentplugin-maven-plugin</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -51,61 +52,61 @@
       </build>
       <dependencies>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-okhttp</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-jdbc</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-concurrent</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-mongo-driver</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-web-servlet-filter</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-camel</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-aws-sdk</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-cassandra-driver</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-jms-1</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-jms-2</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
@@ -160,7 +161,7 @@
       for OT libs so they make it into both the main and test JARs. -->
     
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>
       <optional>true</optional>
     </dependency>
@@ -200,433 +201,7 @@
       <version>5.0.3</version>
       <optional>true</optional>
     </dependency>
-    
-    <!--
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-hazelcast ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-hazelcast</artifactId>
-      <version>0.0.1</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.hazelcast</groupId>
-          <artifactId>hazelcast</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-spring-messaging ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-messaging-starter</artifactId>
-      <version>0.0.5</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-messaging</artifactId>
-      <version>0.0.5</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-jdbi ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>jdbi-opentracing</artifactId>
-      <version>0.4.1</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jdbi</groupId>
-          <artifactId>jdbi</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-vertx-web ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-vertx-web</artifactId>
-      <version>0.1.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.vertx</groupId>
-          <artifactId>vertx-auth-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.vertx</groupId>
-          <artifactId>vertx-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.vertx</groupId>
-          <artifactId>vertx-web</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-cdi ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-cdi</artifactId>
-      <version>0.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-apache-httpclient ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-apache-httpclient</artifactId>
-      <version>0.1.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-hprose ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-hprose</artifactId>
-      <version>1.0.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-thrift ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-thrift</artifactId>
-      <version>0.0.7</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.thrift</groupId>
-          <artifactId>libthrift</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-interceptors ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-interceptors</artifactId>
-      <version>0.0.4</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.microprofile.opentracing</groupId>
-          <artifactId>microprofile-opentracing-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax</groupId>
-          <artifactId>javaee-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-p6spy ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-p6spy</artifactId>
-      <version>0.2.1</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>p6spy</groupId>
-          <artifactId>p6spy</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-spring-cloud ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-cloud-starter</artifactId>
-      <version>0.1.13</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-aop</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-autoconfigure</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-jms</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-redis-client ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-redis-jedis</artifactId>
-      <version>0.0.7</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>redis.clients</groupId>
-          <artifactId>jedis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-spring-rabbitmq ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-rabbitmq-starter</artifactId>
-      <version>0.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-rabbitmq</artifactId>
-      <version>0.1.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-aop</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-jaxrs ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jaxrs2</artifactId>
-      <version>0.1.7</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.osgi</groupId>
-          <artifactId>org.osgi.annotation.versioning</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.geronimo.specs</groupId>
-          <artifactId>geronimo-atinject_1.0_spec</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-kafka-client ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-kafka-client</artifactId>
-      <version>0.0.15</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka-clients</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-kafka-streams</artifactId>
-      <version>0.0.15</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka-streams</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-kafka-spring</artifactId>
-      <version>0.0.15</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.kafka</groupId>
-          <artifactId>spring-kafka</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-solr-client ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-solr-client</artifactId>
-      <version>0.0.2</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.solr</groupId>
-          <artifactId>solr-solrj</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-rxjava -> <!- !! ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-rxjava-1</artifactId>
-      <version>0.0.9</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.reactivex</groupId>
-          <artifactId>rxjava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-rxjava-2</artifactId>
-      <version>0.0.9</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.reactivex.rxjava2</groupId>
-          <artifactId>rxjava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-neo4j-driver ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-neo4j-driver</artifactId>
-      <version>0.0.2</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.neo4j.driver</groupId>
-          <artifactId>neo4j-java-driver</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-memcached-client ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spymemcached</artifactId>
-      <version>0.0.3</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>net.spy</groupId>
-          <artifactId>spymemcached</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-spring-tracer-configuration ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-tracer-configuration-starter</artifactId>
-      <version>0.1.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-autoconfigure</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-elasticsearch-client -> <!- !! ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-elasticsearch5-client</artifactId>
-      <version>0.0.6</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.elasticsearch.client</groupId>
-          <artifactId>transport</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-elasticsearch6-client</artifactId>
-      <version>0.0.6</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.elasticsearch.client</groupId>
-          <artifactId>transport</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-rabbitmq-client ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-rabbitmq-client</artifactId>
-      <version>0.0.6</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.rabbitmq</groupId>
-          <artifactId>amqp-client</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-spring-web ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-web-starter</artifactId>
-      <version>0.3.3</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-autoconfigure</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-grpc ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-grpc</artifactId>
-      <version>0.0.8</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.grpc</groupId>
-          <artifactId>grpc-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-spring-zipkin -> <!- !! ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-zipkin-web-starter</artifactId>
-      <version>0.2.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.zipkin.brave</groupId>
-          <artifactId>brave</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.zipkin.reporter2</groupId>
-          <artifactId>zipkin-sender-okhttp3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-spring-zipkin-cloud-starter</artifactId>
-      <version>0.2.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <!- https://github.com/opentracing-contrib/java-akka ->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-akka</artifactId>
-      <version>0.0.2</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-actor_2.12</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    -->
+
     <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
     <dependency>
       <groupId>javax.el</groupId>

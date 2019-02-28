@@ -19,11 +19,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib</groupId>
-    <artifactId>java-specialagent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>io.opentracing.contrib.specialagent</groupId>
+    <artifactId>specialagent</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
-  <artifactId>java-specialagent-plugins</artifactId>
+  <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+  <artifactId>plugins</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>opentracing-specialagent-okhttp</module>
@@ -39,10 +40,10 @@
   </modules>
   <profiles>
     <profile>
-      <id>deploy</id>
+      <id>assemble</id>
       <activation>
         <property>
-          <name>deploy</name>
+          <name>assemble</name>
         </property>
       </activation>
       <build>
@@ -78,12 +79,12 @@
       <id>default</id>
       <activation>
         <property>
-          <name>!deploy</name>
+          <name>!assemble</name>
         </property>
       </activation>
       <dependencies>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent</groupId>
           <artifactId>opentracing-specialagent</artifactId>
           <version>${project.version}</version>
           <type>test-jar</type>
@@ -177,8 +178,8 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>specialagent-maven-plugin</artifactId>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>agentplugin-maven-plugin</artifactId>
         <version>${project.version}</version>
         <executions>
           <execution>
@@ -206,7 +207,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>
       <scope>provided</scope>
     </dependency>

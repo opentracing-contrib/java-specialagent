@@ -32,7 +32,7 @@
       <scope>provided</scope>
       <unpack>true</unpack>
       <includes>
-        <include>io.opentracing.contrib:opentracing-specialagent</include>
+        <include>io.opentracing.contrib.specialagent:opentracing-specialagent</include>
         <include>io.opentracing.contrib:opentracing-tracerresolver</include>
         <include>io.opentracing:opentracing-api</include>
         <include>io.opentracing:opentracing-util</include>

@@ -22,7 +22,7 @@
       <configuration>
         <id>fingerprint</id>
         <default-phases>
-          <generate-resources>io.opentracing.contrib:specialagent-maven-plugin:fingerprint</generate-resources>
+          <generate-resources>io.opentracing.contrib.specialagent:agentplugin-maven-plugin:fingerprint</generate-resources>
         </default-phases>
       </configuration>
     </component>
@@ -36,7 +36,7 @@
           <phase>fingerprint</phase>
         </phases>
         <default-phases>
-          <fingerprint>io.opentracing.contrib:specialagent-maven-plugin:fingerprint</fingerprint>
+          <fingerprint>io.opentracing.contrib.specialagent:agentplugin-maven-plugin:fingerprint</fingerprint>
         </default-phases>
       </configuration>
     </component>
