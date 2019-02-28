@@ -20,6 +20,7 @@
 7. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
 8. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
 9. [JMS](https://github.com/opentracing-contrib/java-jms)
+10. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
 
 ## Operation
 
