@@ -112,7 +112,7 @@
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
+          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
           <artifactId>opentracing-specialagent-elasticsearch-client-6</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
