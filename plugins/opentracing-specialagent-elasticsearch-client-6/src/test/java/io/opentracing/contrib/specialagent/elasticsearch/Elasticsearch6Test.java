@@ -1,14 +1,18 @@
 package io.opentracing.contrib.specialagent.elasticsearch;
 
 import static org.awaitility.Awaitility.await;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -16,20 +20,25 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.transport.Netty4Plugin;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.hamcrest.core.IsEqual.equalTo;
 import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
@@ -107,6 +116,45 @@ public class Elasticsearch6Test {
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
     restClient.close();
+
+    List<MockSpan> finishedSpans = tracer.finishedSpans();
+    assertEquals(2, finishedSpans.size());
+  }
+
+  @Test
+  public void transportClient(MockTracer tracer) throws Exception {
+
+    Settings settings = Settings.builder()
+        .put("cluster.name", clusterName).build();
+
+    TransportClient client = new PreBuiltTransportClient(settings)
+        .addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"),
+            Integer.parseInt(HTTP_TRANSPORT_PORT)));
+
+    IndexRequest indexRequest = new IndexRequest("twitter").type("tweet").id("1").
+        source(jsonBuilder()
+            .startObject()
+            .field("user", "kimchy")
+            .field("postDate", new Date())
+            .field("message", "trying out Elasticsearch")
+            .endObject()
+        );
+
+    IndexResponse indexResponse = client.index(indexRequest).actionGet();
+    assertNotNull(indexResponse);
+
+    client.index(indexRequest, new ActionListener<IndexResponse>() {
+      @Override
+      public void onResponse(IndexResponse indexResponse) {
+      }
+
+      @Override
+      public void onFailure(Exception e) {
+      }
+    });
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    client.close();
 
     List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());

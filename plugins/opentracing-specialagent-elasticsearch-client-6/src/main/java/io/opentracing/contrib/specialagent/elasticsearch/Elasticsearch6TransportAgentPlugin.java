@@ -14,7 +14,9 @@
  */
 package io.opentracing.contrib.specialagent.elasticsearch;
 
+import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
 import io.opentracing.contrib.specialagent.AgentPluginUtil;
@@ -27,30 +29,35 @@ import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class Elasticsearch6RestAgentPlugin implements AgentPlugin {
+public class Elasticsearch6TransportAgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
         .with(RedefinitionStrategy.RETRANSFORMATION)
         .with(InitializationStrategy.NoOp.INSTANCE)
         .with(TypeStrategy.Default.REDEFINE)
-        .type(named("org.elasticsearch.client.RestClientBuilder"))
+        .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder,
               final TypeDescription typeDescription, final ClassLoader classLoader,
               final JavaModule module) {
-            return builder.visit(Advice.to(Elasticsearch6RestAgentPlugin.class).on(named("build")));
+            return builder.visit(
+                Advice.to(Elasticsearch6TransportAgentPlugin.class).on(named("doExecute")
+                    .and(takesArguments(3))));
           }
         }));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.This Object thiz) {
+  public static void enter(
+      @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request,
+      @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
     if (AgentPluginUtil.isEnabled()) {
-      Elasticsearch6RestAgentIntercept.enter(thiz);
+      listener = Elasticsearch6TransportAgentIntercept.enter(request, listener);
     }
   }
 }

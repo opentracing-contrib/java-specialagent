@@ -17,9 +17,9 @@ package io.opentracing.contrib.specialagent.elasticsearch;
 import io.opentracing.contrib.elasticsearch.common.TracingHttpClientConfigCallback;
 import org.elasticsearch.client.RestClientBuilder;
 
-public class Elasticsearch6AgentIntercept {
+public class Elasticsearch6RestAgentIntercept {
   public static void enter(final Object thiz) {
     final TracingHttpClientConfigCallback callback = new TracingHttpClientConfigCallback();
-    ((RestClientBuilder)thiz).setHttpClientConfigCallback(callback);
+    ((RestClientBuilder) thiz).setHttpClientConfigCallback(callback);
   }
 }

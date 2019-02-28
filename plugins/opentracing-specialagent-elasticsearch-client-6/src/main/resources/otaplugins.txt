@@ -13,3 +13,4 @@
 # limitations under the License.
 
 io.opentracing.contrib.specialagent.elasticsearch.Elasticsearch6RestAgentPlugin
+io.opentracing.contrib.specialagent.elasticsearch.Elasticsearch6TransportAgentPlugin
