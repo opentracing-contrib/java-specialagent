@@ -18,11 +18,10 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.opentracing.contrib</groupId>
-  <artifactId>java-specialagent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <groupId>io.opentracing.contrib.specialagent</groupId>
+  <artifactId>specialagent</artifactId>
+  <version>0.9.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>OpenTracing Special Agent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
   <scm>
     <url>https://github.com/opentracing-contrib/java-specialagent</url>
@@ -59,11 +58,6 @@
   <profiles>
     <profile>
       <id>deploy</id>
-      <activation>
-        <property>
-          <name>deploy</name>
-        </property>
-      </activation>
       <build>
         <plugins>
           <plugin>
@@ -129,6 +123,17 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>sonatype-staging</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -136,11 +141,11 @@
       <id>default</id>
       <activation>
         <property>
-          <name>!deploy</name>
+          <name>!assemble</name>
         </property>
       </activation>
       <modules>
-        <module>specialagent-maven-plugin</module>
+        <module>agentplugin-maven-plugin</module>
       </modules>
     </profile>
     <profile>
@@ -318,7 +323,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.opentracing.contrib</groupId>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
         <artifactId>opentracing-specialagent-api</artifactId>
         <version>${project.version}</version>
       </dependency>

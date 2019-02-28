@@ -1,3 +1,18 @@
+/* Copyright 2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent.okhttp;
 
 import static org.junit.Assert.*;
@@ -5,8 +20,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +28,6 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.util.GlobalTracer;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -27,31 +39,8 @@ import okhttp3.mockwebserver.MockWebServer;
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(events=Event.ERROR)
 public class OkHttpTest {
-//public static MockTracer tracer = new MockTracer();
-//
-//static {
-//  try {
-//    GlobalTracer.register(tracer);
-//    AgentPlugin.premain(null, ByteBuddyAgent.install());
-//  }
-//  catch (final Exception e) {
-//    throw new ExceptionInInitializerError(e);
-//  }
-//}
-
-  private static final Logger logger = Logger.getLogger(OkHttpTest.class.getName());
-
   @Test
   public void test(final MockTracer tracer) throws IOException {
-    if (logger.isLoggable(Level.FINE)) {
-      logger.fine("getTracer(): " + tracer.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(tracer)));
-      logger.fine("  ClassLoader: " + tracer.getClass().getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
-      logger.fine("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader() + " " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
-      logger.fine(MockWebServer.class.getClassLoader() + " " + MockWebServer.class.getProtectionDomain().getCodeSource().getLocation());
-      logger.fine(Interceptor.class.getClassLoader() + " " + Interceptor.class.getProtectionDomain().getCodeSource().getLocation());
-    }
-
-    assertEquals(URLClassLoader.class, MockWebServer.class.getClassLoader().getClass());
     try (final MockWebServer server = new MockWebServer()) {
       server.enqueue(new MockResponse().setBody("hello, world!").setResponseCode(200));
 
@@ -62,8 +51,8 @@ public class OkHttpTest {
       assertEquals(URLClassLoader.class, OkHttpClient.Builder.class.getClassLoader().getClass());
       assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
 
-      // TODO: Rule does not currently work when just using the OkHttpClient
-      // default constructor
+      // FIXME: Rule does not currently work when just using the `OkHttpClient`
+      // FIXME: default constructor.
       final OkHttpClient client = new OkHttpClient.Builder().build();
 
       final Request request = new Request.Builder().url(httpUrl).build();

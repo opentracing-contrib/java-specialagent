@@ -214,7 +214,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of instrumen
         <plugin>
           <groupId>io.opentracing.contrib</groupId>
           <artifactId>specialagent-maven-plugin</artifactId>
-          <version>0.0.1-SNAPSHOT</version>
+          <version>0.9.0-SNAPSHOT</version>
           <executions>
             <execution>
               <goals>
