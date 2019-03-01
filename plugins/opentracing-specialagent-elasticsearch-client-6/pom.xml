@@ -27,7 +27,7 @@
   <dependencies>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-elasticsearch6-client</artifactId>
+      <artifactId>opentracing-elasticsearch-client-common</artifactId>
       <version>0.0.7</version>
       <exclusions>
         <exclusion>

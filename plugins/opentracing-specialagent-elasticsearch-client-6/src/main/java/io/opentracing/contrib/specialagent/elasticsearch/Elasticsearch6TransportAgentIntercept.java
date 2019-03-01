@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.elasticsearch;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
-import io.opentracing.contrib.elasticsearch6.TracingResponseListener;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.elasticsearch.action.ActionListener;
