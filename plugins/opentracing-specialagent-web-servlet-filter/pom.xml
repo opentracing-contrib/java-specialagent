@@ -21,9 +21,11 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
     <artifactId>plugins</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
   </parent>
   <artifactId>opentracing-specialagent-web-servlet-filter</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-web-servlet-filter</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -35,7 +37,7 @@
       <!-- https://github.com/opentracing-contrib/java-web-servlet-filter -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-web-servlet-filter</artifactId>
-      <version>0.2.2</version>
+      <version>0.2.3</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

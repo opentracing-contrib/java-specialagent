@@ -21,9 +21,11 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
     <artifactId>plugins</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
   </parent>
   <artifactId>opentracing-specialagent-jms-1</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-jms-1</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

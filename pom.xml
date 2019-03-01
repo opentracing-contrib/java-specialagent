@@ -20,9 +20,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0</version>
   <packaging>pom</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
+  <url>https://github.com/opentracing-contrib/java-specialagent</url>
   <scm>
     <url>https://github.com/opentracing-contrib/java-specialagent</url>
     <connection>scm:git:https://github.com/opentracing-contrib/java-specialagent.git</connection>
@@ -70,26 +72,6 @@
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
-            <executions>
-              <execution>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <!-- Necessary for GPG v2.2+ -->
-                <!--configuration>
-                  <gpgArguments>
-                    <arg>- -pinentry-mode</arg>
-                    <arg>loopback</arg>
-                  </gpgArguments>
-                </configuration-->
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
             <version>3.0.1</version>
             <executions>
@@ -120,6 +102,26 @@
                 <goals>
                   <goal>jar</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <!-- Necessary for GPG v2.2+ -->
+                <!--configuration>
+                  <gpgArguments>
+                    <arg>- -pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration-->
               </execution>
             </executions>
           </plugin>
