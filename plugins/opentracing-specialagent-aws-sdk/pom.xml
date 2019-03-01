@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
     <artifactId>plugins</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-aws-sdk</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>

@@ -4,6 +4,7 @@
 
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.png)](https://travis-ci.org/opentracing-contrib/java-specialagent)
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg)](https://coveralls.io/github/opentracing-contrib/java-specialagent)
+[![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg?maxAge=2592000)](https://search.maven.org/search?q=a:opentracing-specialagent)
 
 ## Overview
 
@@ -48,13 +49,13 @@ The <ins>SpecialAgent</ins> must provide a means by which instrumentation plugin
 
 The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be created by cloning this repository and following the [Building](#building) instructions. These artifacts can also be downloaded directly from Maven's Central Repository.
 
-1. &nbsp;&nbsp;&nbsp;RELEASE: `opentracing-specialagent-0.9.0.jar`<br>
-   SNAPSHOT: [`opentracing-specialagent-0.9.0-SNAPSHOT.jar`][main-snapshot]
+1. &nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0.jar`][main-release]<br>
+   SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT.jar`][main-snapshot]
 
     This is the main artifact that contains within it all applicable instrumentation plugins from the [opentracing-contrib][opentracing-contrib] organization. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
-1. &nbsp;&nbsp;&nbsp;RELEASE: `opentracing-specialagent-0.9.0-tests.jar`<br>
-   SNAPSHOT: [`opentracing-specialagent-0.9.0-SNAPSHOT-tests.jar`][test-snapshot]
+1. &nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0-tests.jar`][test-release]<br>
+   SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT-tests.jar`][test-snapshot]
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any instrumentation plugins themselves, and is only intended to be applied to the test phase of the build lifecycle of a single instrumentation plugin implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
@@ -147,7 +148,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api
-[main-release]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1.jar
-[test-release]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.0-SNAPSHOT/opentracing-specialagent-0.9.0-20190219.111717-1-tests.jar
+[main-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/0.9.0/opentracing-specialagent-0.9.0.jar
+[test-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/0.9.0/opentracing-specialagent-0.9.0-tests.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.1-SNAPSHOT
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.1-SNAPSHOT

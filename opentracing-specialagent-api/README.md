@@ -30,7 +30,7 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
 
     ```xml
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -93,7 +93,8 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
           // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
           @Advice.OnMethodExit
           public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-            returned = TargetAgentIntercept.exit(returned);
+            if (AgentPluginUtil.isEnabled())              // Prevents the SpecialAgent from instrumenting the tracer itself.
+              returned = TargetAgentIntercept.exit(returned);
           }
         }
 
@@ -138,7 +139,7 @@ The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> mo
 
 ```xml
 <dependency>
-  <groupId>io.opentracing.contrib</groupId>
+  <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
   <version>${project.version}</version>
   <type>test-jar</type>
@@ -212,8 +213,8 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of instrumen
     2. Next, include the following plugin in the project's POM:
         ```xml
         <plugin>
-          <groupId>io.opentracing.contrib</groupId>
-          <artifactId>specialagent-maven-plugin</artifactId>
+          <groupId>io.opentracing.contrib.specialagent</groupId>
+          <artifactId>agentplugin-maven-plugin</artifactId>
           <version>0.9.0</version>
           <executions>
             <execution>
