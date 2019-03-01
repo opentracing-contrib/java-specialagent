@@ -13,8 +13,8 @@
 ## Supported Instrumentation Plugins
 
 1. [OkHttp3](https://github.com/opentracing-contrib/java-okhttp)
-2. [Concurrent API (`java.util.Concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
-3. [JDBC API (`java.sql`)](https://github.com/opentracing-contrib/java-jdbc)
+2. [JDBC API (`java.sql`)](https://github.com/opentracing-contrib/java-jdbc)
+3. [Concurrent API (`java.util.concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
 4. [Java Web Servlet API (`javax.servlet`)](https://github.com/opentracing-contrib/java-web-servlet-filter)
 5. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
 6. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
@@ -118,22 +118,28 @@ The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is include
 
 The <ins>SpecialAgent</ins> is built in 2 profiles:
 
-1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in [`opentracing-specialagent-0.9.0.jar`][main-release]
+1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not put the plugins_ in [`opentracing-specialagent-0.9.0.jar`][main-release]
 
     To run this profile:
     ```bash
-    mvn clean install
+    mvn clean package
     ```
 
-2. The `assemble` profile is used for packaging of plugins into the [`opentracing-specialagent-0.9.0.jar`][main-release]. It builds each plugin, but does not run their tests. Once the build is finished, the [`opentracing-specialagent-0.9.0.jar`][main-release] will contain the built plugins inside it.
+2. The `assemble` profile is used for packaging of plugins into the [`opentracing-specialagent-0.9.0.jar`][main-release]. It builds each plugin, but does not run their tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-0.9.0.jar`][main-release] will contain the built plugins inside it.
 
     _**Note**: If you do not run this step, the [`opentracing-specialagent-0.9.0.jar`][main-release] from the previous step will not contain any instrumentation plugins within it!_
 
-    _**Note**: It is important to _not_ run Maven's `clean` lifecycle when creating the `assemble` package._
+    _**Note**: It is important to **not** run Maven's `clean` lifecycle when creating the `assemble` package._
 
     To run this profile:
     ```bash
-    mvn -Dassemble install
+    mvn -Dassemble package
+    ```
+
+* For a one-line build command to build <ins>SpecialAgent</ins>, its plugins, run all tests, and create the `assemble` package:
+
+    ```bash
+    mvn clean package && mvn -Dassemble package
     ```
 
 ## Contributing
