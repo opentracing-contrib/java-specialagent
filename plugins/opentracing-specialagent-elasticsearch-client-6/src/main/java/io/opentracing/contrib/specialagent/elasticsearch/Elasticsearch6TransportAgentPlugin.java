@@ -14,13 +14,12 @@
  */
 package io.opentracing.contrib.specialagent.elasticsearch;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
 import io.opentracing.contrib.specialagent.AgentPluginUtil;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -36,28 +35,21 @@ public class Elasticsearch6TransportAgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
-        .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription, final ClassLoader classLoader,
-              final JavaModule module) {
-            return builder.visit(
-                Advice.to(Elasticsearch6TransportAgentPlugin.class).on(named("doExecute")
-                    .and(takesArguments(3))));
-          }
-        }));
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Elasticsearch6TransportAgentPlugin.class).on(named("doExecute").and(takesArguments(3))));
+        }
+      }));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(
-      @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request,
-      @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-    if (AgentPluginUtil.isEnabled()) {
+  public static void enter(final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
+    if (AgentPluginUtil.isEnabled())
       listener = Elasticsearch6TransportAgentIntercept.enter(request, listener);
-    }
   }
 }

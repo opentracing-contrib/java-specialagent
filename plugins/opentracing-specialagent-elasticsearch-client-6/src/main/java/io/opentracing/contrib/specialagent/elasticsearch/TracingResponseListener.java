@@ -14,27 +14,28 @@
  */
 package io.opentracing.contrib.specialagent.elasticsearch;
 
-import io.opentracing.Span;
-import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
-import io.opentracing.tag.Tags;
 import java.net.InetSocketAddress;
+
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
 
-class TracingResponseListener<T extends ActionResponse> implements ActionListener<T> {
+import io.opentracing.Span;
+import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
+import io.opentracing.tag.Tags;
 
+class TracingResponseListener<T extends ActionResponse> implements ActionListener<T> {
   private final ActionListener<T> listener;
   private final Span span;
 
-  TracingResponseListener(ActionListener<T> listener, Span span) {
+  TracingResponseListener(final ActionListener<T> listener, final Span span) {
     this.listener = listener;
     this.span = span;
   }
 
   @Override
-  public void onResponse(T t) {
+  public void onResponse(final T t) {
     if (t.remoteAddress() != null) {
-      InetSocketAddress address = t.remoteAddress().address();
+      final InetSocketAddress address = t.remoteAddress().address();
       if (address != null) {
         Tags.PEER_HOSTNAME.set(span, address.getHostName());
         Tags.PEER_PORT.set(span, address.getPort());
@@ -43,18 +44,20 @@ class TracingResponseListener<T extends ActionResponse> implements ActionListene
 
     try {
       listener.onResponse(t);
-    } finally {
+    }
+    finally {
       span.finish();
     }
   }
 
   @Override
-  public void onFailure(Exception e) {
+  public void onFailure(final Exception e) {
     SpanDecorator.onError(e, span);
 
     try {
       listener.onFailure(e);
-    } finally {
+    }
+    finally {
       span.finish();
     }
   }

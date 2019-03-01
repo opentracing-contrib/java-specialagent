@@ -14,11 +14,12 @@
  */
 package io.opentracing.contrib.specialagent.elasticsearch;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentPlugin;
 import io.opentracing.contrib.specialagent.AgentPluginUtil;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -33,24 +34,21 @@ public class Elasticsearch6RestAgentPlugin implements AgentPlugin {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
-        .type(named("org.elasticsearch.client.RestClientBuilder"))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription, final ClassLoader classLoader,
-              final JavaModule module) {
-            return builder.visit(Advice.to(Elasticsearch6RestAgentPlugin.class).on(named("build")));
-          }
-        }));
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .type(named("org.elasticsearch.client.RestClientBuilder"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Elasticsearch6RestAgentPlugin.class).on(named("build")));
+        }
+      }));
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.This Object thiz) {
-    if (AgentPluginUtil.isEnabled()) {
+    if (AgentPluginUtil.isEnabled())
       Elasticsearch6RestAgentIntercept.enter(thiz);
-    }
   }
 }

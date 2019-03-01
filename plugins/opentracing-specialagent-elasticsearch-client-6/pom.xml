@@ -24,6 +24,12 @@
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-elasticsearch-client-6</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-elasticsearch-client-6</url>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
@@ -36,7 +42,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>transport</artifactId>
@@ -44,27 +49,23 @@
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <version>3.1.2</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
       <version>2.11.1</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>2.11.1</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 </project>

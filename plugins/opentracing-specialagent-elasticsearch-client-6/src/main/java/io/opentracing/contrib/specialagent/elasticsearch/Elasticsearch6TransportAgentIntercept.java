@@ -14,23 +14,23 @@
  */
 package io.opentracing.contrib.specialagent.elasticsearch;
 
+import org.elasticsearch.action.ActionListener;
+
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import org.elasticsearch.action.ActionListener;
 
 public class Elasticsearch6TransportAgentIntercept {
-  @SuppressWarnings("unchecked")
-  public static ActionListener<?> enter(Object request, Object listener) {
-    Tracer.SpanBuilder spanBuilder = GlobalTracer.get()
-        .buildSpan(request.getClass().getSimpleName())
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  public static ActionListener<?> enter(final Object request, final Object listener) {
+    final Tracer.SpanBuilder spanBuilder = GlobalTracer.get()
+      .buildSpan(request.getClass().getSimpleName())
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
-    Span span = spanBuilder.start();
+    final Span span = spanBuilder.start();
     SpanDecorator.onRequest(span);
-
-    return new TracingResponseListener<>((ActionListener) listener, span);
+    return new TracingResponseListener<>((ActionListener)listener, span);
   }
 }
