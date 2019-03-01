@@ -13,14 +13,14 @@
 ## Supported Instrumentation Plugins
 
 1. [OkHttp3](https://github.com/opentracing-contrib/java-okhttp)
-2. [`java.util.Concurrent`](https://github.com/opentracing-contrib/java-concurrent)
-3. [JDBC](https://github.com/opentracing-contrib/java-jdbc)
-4. [Java Web Servlet Filter](https://github.com/opentracing-contrib/java-web-servlet-filter)
+2. [Concurrent API (`java.util.Concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
+3. [JDBC API (`java.sql`)](https://github.com/opentracing-contrib/java-jdbc)
+4. [Java Web Servlet API (`javax.servlet`)](https://github.com/opentracing-contrib/java-web-servlet-filter)
 5. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
 6. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
 7. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
 8. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
-9. [JMS](https://github.com/opentracing-contrib/java-jms)
+9. [JMS API (`javax.jms` v1 & v2)](https://github.com/opentracing-contrib/java-jms)
 
 ## Operation
 
@@ -117,16 +117,16 @@ The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is include
 
 The <ins>SpecialAgent</ins> is built in 2 profiles:
 
-1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in `opentracing-specialagent-0.9.0.jar`
+1. The `default` profile is used for development of plugins. It builds and runs tests for each plugin, but _does not include the plugins_ in [`opentracing-specialagent-0.9.0.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-2. The `assemble` profile is used for packaging of plugins into the `opentracing-specialagent-0.9.0.jar`. It builds each plugin, but does not run their tests. Once the build is finished, the `opentracing-specialagent-0.9.0.jar` will contain the built plugins inside it.
+2. The `assemble` profile is used for packaging of plugins into the [`opentracing-specialagent-0.9.0.jar`][main-release]. It builds each plugin, but does not run their tests. Once the build is finished, the [`opentracing-specialagent-0.9.0.jar`][main-release] will contain the built plugins inside it.
 
-    _**Note**: If you do not run this step, the `opentracing-specialagent-0.9.0.jar` from the previous step will not contain any instrumentation plugins within it!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-0.9.0.jar`][main-release] from the previous step will not contain any instrumentation plugins within it!_
 
     _**Note**: It is important to _not_ run Maven's `clean` lifecycle when creating the `assemble` package._
 
