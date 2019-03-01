@@ -30,8 +30,6 @@ script:
   else
     mvn install;
   fi'
-after_success:
-- mvn -Ddeploy install
 cache:
   directories:
     - ~/.m2/repository
