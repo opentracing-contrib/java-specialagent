@@ -255,7 +255,7 @@ The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the
 
 #### Including the Instrumentation Plugin in the <ins>SpecialAgent</ins>
 
-Instrumentation plugins must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>deploy</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
+Instrumentation plugins must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
 
 ## Debugging
 
