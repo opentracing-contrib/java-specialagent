@@ -32,7 +32,7 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>
-      <version>${project.version}</version>
+      <version>0.9.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -141,7 +141,7 @@ The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> mo
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>${project.version}</version>
+  <version>0.9.0</version>
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
