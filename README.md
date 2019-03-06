@@ -70,12 +70,6 @@ This file contains the operational instructions for the use and development of <
 9. [JMS API (`javax.jms` v1 & v2)][java-jms]
 10. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
 
-## Operation
-
-When <ins>SpecialAgent</ins> attaches to an application, either statically or dynamically, it will automatically load the <ins>Instrumentation Plugins</ins> explicitly specified as dependencies in its POM.
-
-Any exception that occurs during the execution of the bootstrap process will not adversely affect the stability of the target application. It is, however, possible that the <ins>Instrumentation Module</ins> code may result in exceptions that are not properly handled, and could destabilize the target application.
-
 ## Goals
 
 1. The <ins>SpecialAgent</ins> must allow any <ins>Instrumentation Module</ins> available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an <ins>Instrumentation Module</ins> exists.
@@ -91,6 +85,12 @@ The <ins>SpecialAgent</ins> must provide a means by which <ins>Instrumentation M
 ## Non-Goals
 
 1. The <ins>SpecialAgent</ins> is not designed to modify application code, beyond the installation of <ins>Instrumentation Modules</ins>. For example, there is no facility for dynamically tracing arbitrary code.
+
+## Operation
+
+When <ins>SpecialAgent</ins> attaches to an application, either statically or dynamically, it will automatically load the <ins>Instrumentation Plugins</ins> explicitly specified as dependencies in its POM.
+
+Any exception that occurs during the execution of the bootstrap process will not adversely affect the stability of the target application. It is, however, possible that the <ins>Instrumentation Module</ins> code may result in exceptions that are not properly handled, and could destabilize the target application.
 
 ## Installation
 
