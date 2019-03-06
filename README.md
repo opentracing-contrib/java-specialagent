@@ -12,50 +12,50 @@ This file contains the operational instructions for the use and development of <
 
 ## Definitions
 
-* <ins>SpecialAgent</ins>
+##### <ins>SpecialAgent</ins>
 
-    A Java agent that automatically instruments distinct 3rd-party libraries in Java applications via the OpenTracing API.
+A Java agent that automatically instruments distinct 3rd-party libraries in Java applications via the OpenTracing API.
 
-* <ins>Tracer</ins>
+##### <ins>Tracer</ins>
 
-    Vendor implementation of the `io.opentracing.Tracer` interface.
+Vendor implementation of the `io.opentracing.Tracer` interface.
 
-    Examples:
-    * [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
-    * [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
-    * [DataDog Tracer](https://github.com/DataDog/dd-trace-java)
-    * [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
+Examples:
+* [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
+* [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
+* [DataDog Tracer](https://github.com/DataDog/dd-trace-java)
+* [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
-    _Tracers **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
+_<ins>Tracers</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
 
-* <ins>Tracer Module</ins>
+##### <ins>Tracer Module</ins>
 
-    A bridge providing automatic discovery of <ins>Tracers</ins> in a runtime instrumented with the OpenTracing API. This bridge implements the `TracerFactory` interface of [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver/blob/master/opentracing-tracerresolver/), and is distributed as a single "fat JAR" that can be conveniently added to the classpath of a Java process.
+A bridge providing automatic discovery of <ins>Tracers</ins> in a runtime instrumented with the OpenTracing API. This bridge implements the `TracerFactory` interface of [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver/blob/master/opentracing-tracerresolver/), and is distributed as a single "fat JAR" that can be conveniently added to the classpath of a Java process.
 
-    _Tracer Modules **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
+_<ins>Tracer Modules</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
 
-* <ins>Instrumentation Module</ins>
+##### <ins>Instrumentation Module</ins>
 
-    An OpenTracing Instrumentation project that exist as individual repositories under [opentracing-contrib][opentracing-contrib].
+An OpenTracing Instrumentation project that exist as individual repositories under [opentracing-contrib][opentracing-contrib].
 
-    Examples:
-    * [`opentracing-contrib/java-okhttp`][java-okhttp]
-    * [`opentracing-contrib/java-jdbc`][java-jdbc]
-    * [`opentracing-contrib/java-jms`][java-jms]
+Examples:
+* [`opentracing-contrib/java-okhttp`][java-okhttp]
+* [`opentracing-contrib/java-jdbc`][java-jdbc]
+* [`opentracing-contrib/java-jms`][java-jms]
 
-    _Instrumentation Modules **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
+_<ins>Instrumentation Modules</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
 
-* <ins>Instrumentation Plugin</ins>
+##### <ins>Instrumentation Plugin</ins>
 
-    A maven submodule that implements the auto-instrumentation rules for <ins>Instrumentation Modules</ins> via the [`opentracing-specialagent-api`][api].
+A maven submodule that implements the auto-instrumentation rules for <ins>Instrumentation Modules</ins> via the [`opentracing-specialagent-api`][api].
 
-    Examples:
-    * [`plugins/opentracing-specialagent-okhttp`][specialagent-okhttp]
-    * [`plugins/opentracing-specialagent-jdbc`][specialagent-jdbc]
-    * [`plugins/opentracing-specialagent-jms-1`][specialagent-jms-1]
-    * [`plugins/opentracing-specialagent-jms-2`][specialagent-jms-2]
+Examples:
+* [`plugins/opentracing-specialagent-okhttp`][specialagent-okhttp]
+* [`plugins/opentracing-specialagent-jdbc`][specialagent-jdbc]
+* [`plugins/opentracing-specialagent-jms-1`][specialagent-jms-1]
+* [`plugins/opentracing-specialagent-jms-2`][specialagent-jms-2]
 
-    _Instrumentation Plugins **ARE** coupled to the <ins>SpecialAgent</ins>._
+_<ins>Instrumentation Plugins</ins> **ARE** coupled to the <ins>SpecialAgent</ins>._
 
 ## Supported Plugins for <ins>Instrumentation Modules</ins>
 
