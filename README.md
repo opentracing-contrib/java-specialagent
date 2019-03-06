@@ -47,7 +47,7 @@ _<ins>Instrumentation Modules</ins> **ARE NOT** coupled to the <ins>SpecialAgent
 
 #### <ins>Instrumentation Plugin</ins>
 
-A maven submodule that implements the auto-instrumentation rules for <ins>Instrumentation Modules</ins> via the [`opentracing-specialagent-api`][api].
+A submodule of the <ins>SpecialAgent</ins> that implements the auto-instrumentation rules for <ins>Instrumentation Modules</ins> via the [`opentracing-specialagent-api`][api].
 
 Examples:
 * [`plugins/opentracing-specialagent-okhttp`][specialagent-okhttp]
