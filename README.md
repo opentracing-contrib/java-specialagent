@@ -108,7 +108,7 @@ The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are 
 
 ## Usage
 
-The <ins>SpecialAgent</ins> uses Java’s Instrumentation interface to transform the behavior of a target application. The entrypoint into the target application is performed via Java’s Agent convention. <ins>SpecialAgent</ins> supports both static and dynamic attach.
+The <ins>SpecialAgent</ins> uses [Java’s Instrumentation mechanism](https://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html) to transform the behavior of a target application. The entrypoint into the target application is performed via Java’s Agent convention. <ins>SpecialAgent</ins> supports both static and dynamic attach.
 
 ### Static Attach
 
