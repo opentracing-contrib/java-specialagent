@@ -96,12 +96,12 @@ Any exception that occurs during the execution of the bootstrap process will not
 
 The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be created by cloning this repository and following the [Building](#building) instructions. These artifacts can also be downloaded directly from Maven's Central Repository.
 
-1. &nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0.jar`][main-release]<br>
+1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0.jar`][main-release]<br>
    SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT.jar`][main-snapshot]
 
     This is the main artifact that contains within it all applicable <ins>Instrumentation Modules</ins> from the [opentracing-contrib][opentracing-contrib] organization. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
-1. &nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0-tests.jar`][test-release]<br>
+1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0-tests.jar`][test-release]<br>
    SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT-tests.jar`][test-snapshot]
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any <ins>Instrumentation Modules</ins> themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an <ins>Instrumentation Module</ins> implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
