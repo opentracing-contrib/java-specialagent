@@ -12,11 +12,11 @@ This file contains the operational instructions for the use and development of <
 
 ## Definitions
 
-##### <ins>SpecialAgent</ins>
+#### <ins>SpecialAgent</ins>
 
 A Java agent that automatically instruments distinct 3rd-party libraries in Java applications via the OpenTracing API.
 
-##### <ins>Tracer</ins>
+#### <ins>Tracer</ins>
 
 Vendor implementation of the `io.opentracing.Tracer` interface.
 
@@ -28,13 +28,13 @@ Examples:
 
 _<ins>Tracers</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
 
-##### <ins>Tracer Module</ins>
+#### <ins>Tracer Module</ins>
 
 A bridge providing automatic discovery of <ins>Tracers</ins> in a runtime instrumented with the OpenTracing API. This bridge implements the `TracerFactory` interface of [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver/blob/master/opentracing-tracerresolver/), and is distributed as a single "fat JAR" that can be conveniently added to the classpath of a Java process.
 
 _<ins>Tracer Modules</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
 
-##### <ins>Instrumentation Module</ins>
+#### <ins>Instrumentation Module</ins>
 
 An OpenTracing Instrumentation project that exist as individual repositories under [opentracing-contrib][opentracing-contrib].
 
@@ -45,7 +45,7 @@ Examples:
 
 _<ins>Instrumentation Modules</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
 
-##### <ins>Instrumentation Plugin</ins>
+#### <ins>Instrumentation Plugin</ins>
 
 A maven submodule that implements the auto-instrumentation rules for <ins>Instrumentation Modules</ins> via the [`opentracing-specialagent-api`][api].
 
