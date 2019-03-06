@@ -22,6 +22,7 @@
 8. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
 9. [JMS API (`javax.jms` v1 & v2)](https://github.com/opentracing-contrib/java-jms)
 10. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
+11. [RxJava2](https://github.com/opentracing-contrib/java-rxjava)
 
 ## Operation
 
