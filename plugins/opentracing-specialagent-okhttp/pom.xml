@@ -27,8 +27,6 @@
   <name>${project.groupId}:${project.artifactId}</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-okhttp</url>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.okhttp3>3.6.0</version.okhttp3>
   </properties>
   <dependencies>
