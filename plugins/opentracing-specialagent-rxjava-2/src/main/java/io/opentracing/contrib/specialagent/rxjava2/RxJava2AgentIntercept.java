@@ -12,8 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.specialagent.rxjava;
-
+package io.opentracing.contrib.specialagent.rxjava2;
 
 import io.opentracing.rxjava2.TracingConsumer;
 import io.opentracing.rxjava2.TracingObserver;
@@ -26,64 +25,52 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 
 public class RxJava2AgentIntercept {
+  public static final Object NULL = new Object();
   private static boolean isTracingEnabled;
 
   @SuppressWarnings("unchecked")
-  public static Object[] enter(Object thiz, Object... arg) {
-    if (arg == null || arg[0] == null || arg[0].getClass().getPackage().getName()
-        .startsWith("io.reactivex.internal")) {
-      return null;
-    }
-    if (arg[0] instanceof TracingConsumer) {
-      return null;
-    }
+  public static Object enter(final Object thiz, final int argc, final Object arg0, final Object arg1, final Object arg2, final Object arg3) {
+    if (arg0 == null || arg0.getClass().getPackage().getName().startsWith("io.reactivex.internal"))
+      return NULL;
+
+    if (arg0 instanceof TracingConsumer)
+      return NULL;
+
     if (!isTracingEnabled) {
       isTracingEnabled = true;
       TracingRxJava2Utils.enableTracing();
     }
-    if (arg[0] instanceof Observer) {
-      return new Object[]{new TracingObserver((Observer) arg[0], "observer", GlobalTracer.get())};
-    } else if (arg[0] instanceof Consumer) {
-      Observable observable = (Observable) thiz;
 
-      TracingConsumer tracingConsumer = null;
-      if (arg.length == 1) {
-        tracingConsumer = new TracingConsumer<>((Consumer<? super Object>) arg[0],
-            "consumer", GlobalTracer.get());
-      } else if (arg.length == 2) {
-        tracingConsumer = new TracingConsumer<>((Consumer<? super Object>) arg[0],
-            (Consumer<? super Throwable>) arg[1],
-            "consumer", GlobalTracer.get());
-      } else if (arg.length == 3) {
-        tracingConsumer = new TracingConsumer<>((Consumer<? super Object>) arg[0],
-            (Consumer<? super Throwable>) arg[1],
-            (Action) arg[2],
-            "consumer", GlobalTracer.get());
-      } else if (arg.length == 4) {
-        tracingConsumer = new TracingConsumer<>((Consumer<? super Object>) arg[0],
-            (Consumer<? super Throwable>) arg[1],
-            (Action) arg[2],
-            (Consumer<? super Disposable>) arg[3],
-            "consumer", GlobalTracer.get());
-      }
+    if (arg0 instanceof Observer)
+      return new TracingObserver<>((Observer<?>)arg0, "observer", GlobalTracer.get());
 
-      if(tracingConsumer != null) {
-        observable.subscribe(tracingConsumer);
-      }
+    if (!(arg0 instanceof Consumer))
+      return NULL;
 
-      return new Object[]{null};
+    final Observable<Object> observable = (Observable<Object>)thiz;
 
+    final TracingConsumer<Object> tracingConsumer;
+    if (argc == 1)
+      tracingConsumer = new TracingConsumer<>((Consumer<Object>)arg0, "consumer", GlobalTracer.get());
+    else if (argc == 2)
+      tracingConsumer = new TracingConsumer<>((Consumer<Object>)arg0, (Consumer<Throwable>)arg1, "consumer", GlobalTracer.get());
+    else if (argc == 3)
+      tracingConsumer = new TracingConsumer<>((Consumer<Object>)arg0, (Consumer<Throwable>)arg1, (Action)arg2, "consumer", GlobalTracer.get());
+    else if (argc == 4)
+      tracingConsumer = new TracingConsumer<>((Consumer<Object>)arg0, (Consumer<Throwable>)arg1, (Action)arg2, (Consumer<Disposable>)arg3, "consumer", GlobalTracer.get());
+    else
+      tracingConsumer = null;
 
-    }
+    if (tracingConsumer != null)
+      observable.subscribe(tracingConsumer);
+
     return null;
   }
 
   public static Object disposable() {
     return new Disposable() {
-
       @Override
       public void dispose() {
-
       }
 
       @Override
