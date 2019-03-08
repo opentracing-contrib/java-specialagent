@@ -59,7 +59,7 @@ public class RxJava2AgentPlugin implements AgentPlugin {
     }), builder.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(OnEnter3.class, OnExit.class).on(named("subscribe").and(takesArguments(4))));
+        return builder.visit(Advice.to(OnEnter4.class, OnExit.class).on(named("subscribe").and(takesArguments(4))));
       }
     }));
   }
@@ -113,7 +113,7 @@ public class RxJava2AgentPlugin implements AgentPlugin {
 
   public static class OnEnter4 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onSubscribe) {
+    public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete, @Advice.Argument(value = 3, readOnly = false, typing = Typing.DYNAMIC) Object onSubscribe) {
       if (!AgentPluginUtil.isEnabled())
         return;
 
