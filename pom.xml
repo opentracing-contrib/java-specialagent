@@ -54,7 +54,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.bytebuddy>1.9.6</version.bytebuddy>
+    <version.bytebuddy>1.9.10</version.bytebuddy>
     <version.opentracing>0.31.0</version.opentracing>
   </properties>
   <profiles>

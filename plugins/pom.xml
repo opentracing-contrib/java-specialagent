@@ -40,6 +40,7 @@
     <module>opentracing-specialagent-jms-1</module>
     <module>opentracing-specialagent-jms-2</module>
     <module>opentracing-specialagent-elasticsearch-client-6</module>
+    <module>opentracing-specialagent-rxjava-2</module>
   </modules>
   <profiles>
     <profile>

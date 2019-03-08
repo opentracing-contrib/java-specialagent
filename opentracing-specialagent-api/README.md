@@ -10,7 +10,7 @@ If you are interested in contributing to the <ins>SpecialAgent</ins> project by 
 
 ## Overview
 
-This project provides the API for instrumentation plugins to integrate into _SpecialAgent_'s auto-instrumentation hooks. The API is a light wrapper on top of [ByteBuddy](http://bytebuddy.net/), which enables a plugin developer to use the full breadth of ByteBuddy's @Advice intercept API.
+This project provides the API for instrumentation plugins to integrate into <ins>SpecialAgent</ins>'s auto-instrumentation hooks. The API is a light wrapper on top of [ByteBuddy](http://bytebuddy.net/), which enables a plugin developer to use the full breadth of ByteBuddy's @Advice intercept API.
 
 #### Implementing the Instrumentation Logic
 
@@ -32,7 +32,7 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>
-      <version>${project.version}</version>
+      <version>0.9.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -110,7 +110,7 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
 
 4. **Create a `otaplugins.txt` file**
 
-    The `otaplugins.txt` file identifies the classes that implement `AgentPlugin`, so that the _SpecialAgent_ knows to load them during startup.
+    The `otaplugins.txt` file identifies the classes that implement `AgentPlugin`, so that the <ins>SpecialAgent</ins> knows to load them during startup.
 
     The `otaplugins.txt` file for this example will be:
 
@@ -118,13 +118,13 @@ The _SpecialAgent Plugin API_ is intended to be integrated into an OpenTracing i
     io.opentracing.contrib.example.TargetAgentPlugin
     ```
 
-    Multiple `AgentPlugin` implementations can be specified in the `otaplugins.txt` file, each of which will be loaded by _SpecialAgent_ during startup.
+    Multiple `AgentPlugin` implementations can be specified in the `otaplugins.txt` file, each of which will be loaded by <ins>SpecialAgent</ins> during startup.
 
-    Put the file in `src/main/resources` for it to be found by _SpecialAgent_.
+    Put the file in `src/main/resources` for it to be found by <ins>SpecialAgent</ins>.
 
 5. **Implement a JUnit test that uses `AgentRunner`**
 
-    Please refer to the [Test Usage](https://github.com/opentracing-contrib/java-specialagent/#test-usage) section in the SpecialAgent.
+    Please refer to the [Test Usage](https://github.com/opentracing-contrib/java-specialagent/#test-usage) section in the <ins>SpecialAgent</ins>.
 
 
 ## `AgentRunner` Usage
@@ -141,7 +141,7 @@ The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> mo
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>${project.version}</version>
+  <version>0.9.0</version>
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -255,7 +255,7 @@ The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the
 
 #### Including the Instrumentation Plugin in the <ins>SpecialAgent</ins>
 
-Instrumentation plugins must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>deploy</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
+Instrumentation plugins must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
 
 ## Debugging
 
