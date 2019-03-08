@@ -83,12 +83,15 @@ public class RxJava2Test {
     final Observable<Integer> observable = createSequentialObservable(tracer, false);
     final List<Integer> result = new ArrayList<>();
     final Consumer<Integer> onNext = consumer(result);
-    observable.subscribe(onNext, onError(new ArrayList<String>()));
+    final List<String> errorList = new ArrayList<>();
+    observable.subscribe(onNext, onError(errorList));
 
     assertEquals(5, result.size());
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
+
+    assertTrue(errorList.isEmpty());
 
     assertNull(tracer.scopeManager().active());
   }
@@ -99,11 +102,13 @@ public class RxJava2Test {
     final List<Integer> result = new ArrayList<>();
     final Consumer<Integer> onNext = consumer(result);
     final List<String> completeList = new ArrayList<>();
-    observable.subscribe(onNext, onError(new ArrayList<String>()), onComplete(completeList, tracer));
+    final List<String> errorList = new ArrayList<>();
+    observable.subscribe(onNext, onError(errorList), onComplete(completeList, tracer));
 
     assertEquals(5, result.size());
     assertTrue(completeList.contains(COMPLETED));
     assertEquals(1, completeList.size());
+    assertTrue(errorList.isEmpty());
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
