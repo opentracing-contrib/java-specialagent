@@ -37,7 +37,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(events=Event.ERROR)
+@AgentRunner.Config(events = Event.ERROR)
 public class RxJava2Test {
   private static final Logger logger = Logger.getLogger(RxJava2Test.class.getName());
   private static final String COMPLETED = "completed";
@@ -220,7 +220,7 @@ public class RxJava2Test {
     return new Action() {
       @Override
       public void run() {
-        System.out.println("On Complete");
+        logger.fine("onComplete()");
         assertNotNull(tracer.scopeManager().active());
         completeList.add(COMPLETED);
       }
@@ -234,25 +234,23 @@ public class RxJava2Test {
   }
 
   private static Observable<Integer> createSequentialObservable(final MockTracer tracer, final boolean withError) {
-    return Observable.range(1, 10)
-      .map(new Function<Integer,Integer>() {
-        @Override
-        public Integer apply(final Integer t) {
-          logger.fine(tracer.scopeManager().active() + ": " + t);
-          assertNotNull(tracer.scopeManager().active());
-          return t * 3;
-        }
-      })
-      .filter(new Predicate<Integer>() {
-        @Override
-        public boolean test(final Integer t) {
-          assertNotNull(tracer.scopeManager().active());
-          if(withError) {
-            throw new RuntimeException("error");
-          }
-          return t % 2 == 0;
-        }
-      });
+    return Observable.range(1, 10).map(new Function<Integer,Integer>() {
+      @Override
+      public Integer apply(final Integer t) {
+        logger.fine(tracer.scopeManager().active() + ": " + t);
+        assertNotNull(tracer.scopeManager().active());
+        return t * 3;
+      }
+    }).filter(new Predicate<Integer>() {
+      @Override
+      public boolean test(final Integer t) {
+        assertNotNull(tracer.scopeManager().active());
+        if (withError)
+          throw new IllegalStateException();
+
+        return t % 2 == 0;
+      }
+    });
   }
 
   private static <T> Observer<T> observer(final String name, final List<T> result) {
