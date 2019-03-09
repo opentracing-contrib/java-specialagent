@@ -48,7 +48,7 @@ public final class VerifyMojo extends AbstractMojo {
         if (!file.getName().endsWith(".jar"))
           throw new IllegalStateException("Unexpected file: " + file.getAbsolutePath());
 
-        boolean hasOtaPluginsTxt = false;
+        boolean hasOtaRulesMf = false;
         boolean hasFingerprintBin = false;
         boolean hasDependenciesTgf = false;
         boolean hasTestManifest = false;
@@ -56,8 +56,8 @@ public final class VerifyMojo extends AbstractMojo {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
             final String entry = entries.nextElement().getName();
-            if ("otaplugins.txt".equals(entry))
-              hasOtaPluginsTxt = true;
+            if (ByteBuddyManager.RULES_FILE.equals(entry))
+              hasOtaRulesMf = true;
             else if ("fingerprint.bin".equals(entry))
               hasFingerprintBin = true;
             else if ("dependencies.tgf".equals(entry))
@@ -67,7 +67,7 @@ public final class VerifyMojo extends AbstractMojo {
           }
         }
 
-        if (!hasOtaPluginsTxt)
+        if (!hasOtaRulesMf)
           continue;
 
         if (!hasFingerprintBin)

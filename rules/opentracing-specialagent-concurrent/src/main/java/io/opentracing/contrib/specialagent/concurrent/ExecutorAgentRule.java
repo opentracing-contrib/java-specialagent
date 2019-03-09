@@ -22,8 +22,8 @@ import java.util.concurrent.Executor;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedRunnable;
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -36,7 +36,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ExecutorAgentPlugin implements AgentPlugin {
+public class ExecutorAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
@@ -48,13 +48,13 @@ public class ExecutorAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ExecutorAgentPlugin.class).on(named("execute").and(takesArguments(Runnable.class))));
+          return builder.visit(Advice.to(ExecutorAgentRule.class).on(named("execute").and(takesArguments(Runnable.class))));
         }}));
   }
 
   @Advice.OnMethodEnter
   public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!AgentPluginUtil.isEnabled())
+    if (!AgentRuleUtil.isEnabled())
       return;
 
     final Tracer tracer = GlobalTracer.get();

@@ -147,7 +147,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
       }
       finally {
         mutex.get().remove(arg);
@@ -188,7 +188,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
       }
       finally {
         mutex.get().remove(arg);
@@ -203,7 +203,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
       }
     }
   }

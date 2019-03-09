@@ -101,8 +101,7 @@ public final class Util {
 
   /**
    * Filter the specified array of URL objects to return the Instrumentation
-   * Plugin URLs as specified by the Dependency TGF file at
-   * {@code dependencyUrl}.
+   * Rule URLs as specified by the Dependency TGF file at {@code dependencyUrl}.
    *
    * @param urls The array of URL objects to filter.
    * @param dependenciesTgf The contents of the TGF file that specify the
@@ -111,10 +110,10 @@ public final class Util {
    *          {@code (optional)}.
    * @param scopes An array of Maven scopes to include in the returned set, or
    *          {@code null} to include all scopes.
-   * @return An array of URL objects representing Instrumentation Plugin URLs
+   * @return An array of URL objects representing Instrumentation Rule URLs
    * @throws IOException If an I/O error has occurred.
    */
-  public static URL[] filterPluginURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
+  public static URL[] filterRuleURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
     final Set<String> names = Util.selectFromTgf(dependenciesTgf, includeOptional, scopes);
     return filterUrlFileNames(urls, names, 0, 0);
   }
@@ -472,7 +471,7 @@ public final class Util {
    * temporary directory and file resources it created.
    *
    * @param path The prefix path to match when finding resources.
-   * @param excludes A set of plugin names to exclude.
+   * @param excludes A set of rule names to exclude.
    * @return A {@code List} of {@code URL} objects having a prefix path that
    *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
@@ -494,7 +493,7 @@ public final class Util {
           continue;
 
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("SpecialAgent Plugin Path: " + resource);
+          logger.finest("SpecialAgent Rule Path: " + resource);
 
         if (destDir == null)
           destDir = Files.createTempDirectory("opentracing-specialagent").toFile();

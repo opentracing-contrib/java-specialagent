@@ -18,8 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -31,7 +31,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class CassandraAgentPlugin implements AgentPlugin {
+public class CassandraAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
@@ -42,13 +42,13 @@ public class CassandraAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(CassandraAgentPlugin.class).on(named("newSession").and(returns(named("com.datastax.driver.core.Session")))));
+          return builder.visit(Advice.to(CassandraAgentRule.class).on(named("newSession").and(returns(named("com.datastax.driver.core.Session")))));
         }}));
   }
 
   @Advice.OnMethodExit
   public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (AgentPluginUtil.isEnabled())
+    if (AgentRuleUtil.isEnabled())
       returned = CassandraAgentIntercept.exit(returned);
   }
 }

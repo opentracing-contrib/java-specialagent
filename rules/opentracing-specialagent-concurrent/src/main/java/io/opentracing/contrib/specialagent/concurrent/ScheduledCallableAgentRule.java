@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedCallable;
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -38,7 +38,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ScheduledCallableAgentPlugin implements AgentPlugin {
+public class ScheduledCallableAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
@@ -50,13 +50,13 @@ public class ScheduledCallableAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ScheduledCallableAgentPlugin.class).on(named("schedule").and(takesArguments(Callable.class, long.class, TimeUnit.class))));
+          return builder.visit(Advice.to(ScheduledCallableAgentRule.class).on(named("schedule").and(takesArguments(Callable.class, long.class, TimeUnit.class))));
         }}));
   }
 
   @Advice.OnMethodEnter
   public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Callable<?> arg) throws Exception {
-    if (!AgentPluginUtil.isEnabled())
+    if (!AgentRuleUtil.isEnabled())
       return;
 
     final Tracer tracer = GlobalTracer.get();

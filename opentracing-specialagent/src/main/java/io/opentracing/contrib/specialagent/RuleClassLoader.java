@@ -26,11 +26,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An {@link URLClassLoader} that encloses an instrumentation plugin, and
- * provides the following functionalities:
+ * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
+ * the following functionalities:
  * <ol>
  * <li>{@link #isCompatible(ClassLoader)}: Determines whether the
- * instrumentation plugin it repserents is compatible with a specified
+ * instrumentation rule it repserents is compatible with a specified
  * {@code ClassLoader}.</li>
  * <li>{@link #markFindResource(ClassLoader,String)}: Keeps track of the names
  * of classes that have been loaded into a specified {@code ClassLoader}.</li>
@@ -38,9 +38,9 @@ import java.util.logging.Logger;
  *
  * @author Seva Safris
  */
-class PluginClassLoader extends URLClassLoader {
+class RuleClassLoader extends URLClassLoader {
   public static final String FINGERPRINT_FILE = "fingerprint.bin";
-  private static final Logger logger = Logger.getLogger(PluginClassLoader.class.getName());
+  private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
   private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
@@ -53,18 +53,18 @@ class PluginClassLoader extends URLClassLoader {
   }
 
   /**
-   * Creates a new {@code PluginClassLoader} with the specified classpath URLs
+   * Creates a new {@code RuleClassLoader} with the specified classpath URLs
    * and parent {@code ClassLoader}.
    *
    * @param urls The classpath URLs.
    * @param parent The parent {@code ClassLoader}.
    */
-  PluginClassLoader(final URL[] urls, final ClassLoader parent) {
+  RuleClassLoader(final URL[] urls, final ClassLoader parent) {
     super(urls, parent);
   }
 
   /**
-   * Returns {@code true} if the instrumentation plugin represented by this
+   * Returns {@code true} if the instrumentation rule represented by this
    * instance is compatible with its target classes that are loaded in the
    * specified {@code ClassLoader}.
    * <p>
@@ -76,11 +76,11 @@ class PluginClassLoader extends URLClassLoader {
    * a cache.
    *
    * @param classLoader The {@code ClassLoader} for which the instrumentation
-   *          plugin represented by this {@code PluginClassLoader} is to be
-   *          checked for compatibility.
+   *          rule represented by this {@code RuleClassLoader} is to be checked
+   *          for compatibility.
    * @return {@code true} if the target classes in the specified
-   *         {@code ClassLoader} are compatible with the instrumentation plugin
-   *         represented by this {@code PluginClassLoader}, and {@code false} if
+   *         {@code ClassLoader} are compatible with the instrumentation rule
+   *         represented by this {@code RuleClassLoader}, and {@code false} if
    *         the specified {@code ClassLoader} is incompatible.
    */
   boolean isCompatible(final ClassLoader classLoader) {

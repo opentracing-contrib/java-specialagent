@@ -34,7 +34,7 @@ import io.opentracing.noop.NoopTracer;
  */
 public class UtilTest {
   @Test
-  public void testGetPluginPathsAll() throws IOException {
+  public void testGetRulePathsAll() throws IOException {
     final Set<String> expected = new HashSet<>();
     expected.add("bcprov-jdk15on-1.50.jar");
     expected.add("hamcrest-core-1.3.jar");
@@ -58,7 +58,7 @@ public class UtilTest {
   }
 
   @Test
-  public void testGetPluginPathsOptionalTest() throws IOException {
+  public void testGetRulePathsOptionalTest() throws IOException {
     final Set<String> expected = new HashSet<>();
     expected.add("bcprov-jdk15on-1.50.jar");
     expected.add("hamcrest-core-1.3.jar");
@@ -76,7 +76,7 @@ public class UtilTest {
   }
 
   @Test
-  public void testGetPluginPathsTest() throws IOException {
+  public void testGetRulePathsTest() throws IOException {
     final Set<String> expected = new HashSet<>();
     expected.add("bcprov-jdk15on-1.50.jar");
     expected.add("hamcrest-core-1.3.jar");
@@ -92,7 +92,7 @@ public class UtilTest {
   }
 
   @Test
-  public void testGetPluginPathsCompile() throws IOException {
+  public void testGetRulePathsCompile() throws IOException {
     final Set<String> expected = new HashSet<>();
     expected.add("opentracing-concurrent-0.1.0.jar");
     expected.add("opentracing-okhttp3-0.1.0.jar");
@@ -107,7 +107,7 @@ public class UtilTest {
   }
 
   @Test
-  public void testGetPluginPathsCompileExclude() throws IOException {
+  public void testGetRulePathsCompileExclude() throws IOException {
     final Set<String> expected = new HashSet<>();
     expected.add("opentracing-concurrent-0.1.0.jar");
     expected.add("opentracing-okhttp3-0.1.0.jar");

@@ -151,7 +151,7 @@ public final class FingerprintMojo extends AbstractMojo {
       destFile.getParentFile().mkdirs();
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, project.getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with <optional>true</optional> -- " + PluginClassLoader.FINGERPRINT_FILE + " will be empty");
+        getLog().warn("No dependencies were found with <optional>true</optional> -- " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
         new LibraryFingerprint().toFile(destFile);
         return;
       }

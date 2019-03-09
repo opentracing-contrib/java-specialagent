@@ -19,12 +19,12 @@ import java.lang.reflect.Array;
 import java.util.logging.Logger;
 
 /**
- * Utility functions for subclasses of {@link AgentPlugin}.
+ * Utility functions for subclasses of {@link AgentRule}.
  *
  * @author Seva Safris
  */
-public final class AgentPluginUtil {
-  public static final Logger logger = Logger.getLogger(AgentPlugin.class.getName());
+public final class AgentRuleUtil {
+  public static final Logger logger = Logger.getLogger(AgentRule.class.getName());
 
   public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
     @Override
@@ -131,6 +131,6 @@ public final class AgentPluginUtil {
     return (stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName()).equals(name);
   }
 
-  private AgentPluginUtil() {
+  private AgentRuleUtil() {
   }
 }

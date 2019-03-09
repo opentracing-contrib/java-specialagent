@@ -18,8 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -30,7 +30,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class AwsAgentPlugin implements AgentPlugin {
+public class AwsAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
@@ -41,13 +41,13 @@ public class AwsAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AwsAgentPlugin.class).on(named("build")));
+          return builder.visit(Advice.to(AwsAgentRule.class).on(named("build")));
         }}));
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.This Object thiz) {
-    if (AgentPluginUtil.isEnabled())
+    if (AgentRuleUtil.isEnabled())
       AwsAgentIntercept.enter(thiz);
   }
 }

@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedRunnable;
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -37,7 +37,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class FixedDelayAgentPlugin implements AgentPlugin {
+public class FixedDelayAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
@@ -49,13 +49,13 @@ public class FixedDelayAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FixedDelayAgentPlugin.class).on(named("scheduleWithFixedDelay").and(takesArguments(Runnable.class, long.class, long.class, TimeUnit.class))));
+          return builder.visit(Advice.to(FixedDelayAgentRule.class).on(named("scheduleWithFixedDelay").and(takesArguments(Runnable.class, long.class, long.class, TimeUnit.class))));
         }}));
   }
 
   @Advice.OnMethodEnter
   public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!AgentPluginUtil.isEnabled())
+    if (!AgentRuleUtil.isEnabled())
       return;
 
     final Tracer tracer = GlobalTracer.get();

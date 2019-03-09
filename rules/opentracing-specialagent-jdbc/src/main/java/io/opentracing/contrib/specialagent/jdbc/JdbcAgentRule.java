@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Properties;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -36,7 +36,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class JdbcAgentPlugin implements AgentPlugin {
+public class JdbcAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     final Narrowable builder = new AgentBuilder.Default()
@@ -62,7 +62,7 @@ public class JdbcAgentPlugin implements AgentPlugin {
   public static class OnEnter {
     @Advice.OnMethodEnter
     public static void enter(@Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
-      if (!AgentPluginUtil.isEnabled())
+      if (!AgentRuleUtil.isEnabled())
         return;
 
       final Connection connection = JdbcAgentIntercept.enter(url, info);

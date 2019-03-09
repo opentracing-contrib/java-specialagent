@@ -18,8 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -31,7 +31,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class Elasticsearch6TransportAgentPlugin implements AgentPlugin {
+public class Elasticsearch6TransportAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
@@ -42,14 +42,14 @@ public class Elasticsearch6TransportAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Elasticsearch6TransportAgentPlugin.class).on(named("doExecute").and(takesArguments(3))));
+          return builder.visit(Advice.to(Elasticsearch6TransportAgentRule.class).on(named("doExecute").and(takesArguments(3))));
         }
       }));
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-    if (AgentPluginUtil.isEnabled())
+    if (AgentRuleUtil.isEnabled())
       listener = Elasticsearch6TransportAgentIntercept.enter(request, listener);
   }
 }

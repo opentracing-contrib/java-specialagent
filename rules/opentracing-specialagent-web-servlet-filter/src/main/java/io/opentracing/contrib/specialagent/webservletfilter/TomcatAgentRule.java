@@ -19,8 +19,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -31,7 +31,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class TomcatAgentPlugin implements AgentPlugin {
+public class TomcatAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     return Arrays.asList(new AgentBuilder.Default()
@@ -42,13 +42,13 @@ public class TomcatAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(TomcatAgentPlugin.class).on(isConstructor()));
+          return builder.visit(Advice.to(TomcatAgentRule.class).on(isConstructor()));
         }}));
   }
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.This Object thiz) {
-    if (AgentPluginUtil.isEnabled())
+    if (AgentRuleUtil.isEnabled())
       TomcatAgentIntercept.exit(thiz);
   }
 }

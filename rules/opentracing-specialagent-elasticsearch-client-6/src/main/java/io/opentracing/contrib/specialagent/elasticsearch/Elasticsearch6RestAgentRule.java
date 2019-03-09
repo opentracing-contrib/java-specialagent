@@ -18,8 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -30,7 +30,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class Elasticsearch6RestAgentPlugin implements AgentPlugin {
+public class Elasticsearch6RestAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
@@ -41,14 +41,14 @@ public class Elasticsearch6RestAgentPlugin implements AgentPlugin {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Elasticsearch6RestAgentPlugin.class).on(named("build")));
+          return builder.visit(Advice.to(Elasticsearch6RestAgentRule.class).on(named("build")));
         }
       }));
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.This Object thiz) {
-    if (AgentPluginUtil.isEnabled())
+    if (AgentRuleUtil.isEnabled())
       Elasticsearch6RestAgentIntercept.enter(thiz);
   }
 }

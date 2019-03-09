@@ -42,11 +42,12 @@ import net.bytebuddy.utility.JavaModule;
  */
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
+  static String RULES_FILE = "otarules.mf";
 
   private Instrumentation inst;
 
   ByteBuddyManager() {
-    super("otaplugins.txt");
+    super(RULES_FILE);
   }
 
   @Override
@@ -60,21 +61,21 @@ public class ByteBuddyManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadPlugins(final ClassLoader allPluginsClassLoader, final Map<String,Integer> pluginJarToIndex, final String agentArgs, final Event[] events) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<String,Integer> ruleJarToIndex, final String agentArgs, final Event[] events) throws IOException {
     // Prepare the ClassLoader rule
     ClassLoaderAgent.premain(agentArgs, inst);
 
     MutexAgent.premain(agentArgs, inst);
 
-    // Prepare the Plugin rules
-    final Enumeration<URL> enumeration = allPluginsClassLoader.getResources(file);
+    // Prepare the agent rules
+    final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
     while (enumeration.hasMoreElements()) {
       final URL scriptUrl = enumeration.nextElement();
-      final String pluginJar = Util.getSourceLocation(scriptUrl, file);
+      final String ruleJar = Util.getSourceLocation(scriptUrl, file);
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("Dereferencing index for " + pluginJar);
+        logger.finest("Dereferencing index for " + ruleJar);
 
-      final int index = pluginJarToIndex.get(pluginJar);
+      final int index = ruleJarToIndex.get(ruleJar);
 
       final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()));
       for (String line; (line = reader.readLine()) != null;) {
@@ -83,31 +84,31 @@ public class ByteBuddyManager extends Manager {
           continue;
 
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Installing plugin: " + line);
+          logger.fine("Installing rule: " + line);
 
         try {
-          final Class<?> agentClass = Class.forName(line, true, allPluginsClassLoader);
-          if (!AgentPlugin.class.isAssignableFrom(agentClass)) {
-            logger.severe("Class " + agentClass.getName() + " does not implement " + AgentPlugin.class);
+          final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
+          if (!AgentRule.class.isAssignableFrom(agentClass)) {
+            logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
             continue;
           }
 
-          final AgentPlugin agentPlugin = (AgentPlugin)agentClass.getConstructor().newInstance();
-          final Iterable<? extends AgentBuilder> builders = agentPlugin.buildAgent(agentArgs);
+          final AgentRule agentRule = (AgentRule)agentClass.getConstructor().newInstance();
+          final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentArgs);
 
           for (final AgentBuilder builder : builders) {
           final TransformationListener listener = new TransformationListener(index, events);
-//            if (agentPlugin.onEn().getOnEnter() != null)
-//              installOn(builder, agentPlugin.onEn().getOnEnter(), agentPlugin, listener, instrumentation);
+//            if (agentRule.onEn().getOnEnter() != null)
+//              installOn(builder, agentRule.onEn().getOnEnter(), agentRule, listener, instrumentation);
 //
-//            if (agentPlugin.onEn().getOnExit() != null)
-//              installOn(builder, agentPlugin.onEn().getOnExit(), agentPlugin, listener, instrumentation);
+//            if (agentRule.onEn().getOnExit() != null)
+//              installOn(builder, agentRule.onEn().getOnExit(), agentRule, listener, instrumentation);
 
             builder.with(listener).installOn(inst);
           }
         }
         catch (final UnsupportedClassVersionError | InvocationTargetException e) {
-          logger.log(Level.SEVERE, "Error initliaizing plugin: " + line, e);
+          logger.log(Level.SEVERE, "Error initliaizing rule: " + line, e);
         }
         catch (final InstantiationException e) {
           logger.log(Level.SEVERE, "Unable to instantiate: " + line, e);
@@ -122,12 +123,12 @@ public class ByteBuddyManager extends Manager {
     }
   }
 
-  private static void installOn(final Narrowable builder, final Class<?> advice, final AgentPlugin agentPlugin, final Listener listener, final Instrumentation instrumentation) {
+  private static void installOn(final Narrowable builder, final Class<?> advice, final AgentRule agentRule, final Listener listener, final Instrumentation instrumentation) {
     builder
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return null;//builder.visit(Advice.to(advice).on(agentPlugin.onMethod()));
+          return null;//builder.visit(Advice.to(advice).on(agentRule.onMethod()));
         }
       })
       .with(listener)
@@ -154,7 +155,7 @@ public class ByteBuddyManager extends Manager {
       if (events[Event.TRANSFORMATION.ordinal()] != null)
         logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + Util.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
-      if (!SpecialAgent.linkPlugin(index, classLoader))
+      if (!SpecialAgent.linkRule(index, classLoader))
         throw new IllegalStateException("Disallowing transformation due to incompatibility");
     }
 

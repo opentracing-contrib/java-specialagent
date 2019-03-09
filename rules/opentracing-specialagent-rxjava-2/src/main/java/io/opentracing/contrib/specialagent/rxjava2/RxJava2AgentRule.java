@@ -18,8 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -32,7 +32,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class RxJava2AgentPlugin implements AgentPlugin {
+public class RxJava2AgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     final Narrowable builder = new AgentBuilder.Default()
@@ -78,7 +78,7 @@ public class RxJava2AgentPlugin implements AgentPlugin {
   public static class OnEnter1 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext) {
-      if (!AgentPluginUtil.isEnabled())
+      if (!AgentRuleUtil.isEnabled())
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 1, onNext, null, null, null);
@@ -90,7 +90,7 @@ public class RxJava2AgentPlugin implements AgentPlugin {
   public static class OnEnter2 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError) {
-      if (!AgentPluginUtil.isEnabled())
+      if (!AgentRuleUtil.isEnabled())
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 2, onNext, onError, null, null);
@@ -102,7 +102,7 @@ public class RxJava2AgentPlugin implements AgentPlugin {
   public static class OnEnter3 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete) {
-      if (!AgentPluginUtil.isEnabled())
+      if (!AgentRuleUtil.isEnabled())
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 3, onNext, onError, onComplete, null);
@@ -114,7 +114,7 @@ public class RxJava2AgentPlugin implements AgentPlugin {
   public static class OnEnter4 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete, @Advice.Argument(value = 3, readOnly = false, typing = Typing.DYNAMIC) Object onSubscribe) {
-      if (!AgentPluginUtil.isEnabled())
+      if (!AgentRuleUtil.isEnabled())
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 4, onNext, onError, onComplete, onSubscribe);

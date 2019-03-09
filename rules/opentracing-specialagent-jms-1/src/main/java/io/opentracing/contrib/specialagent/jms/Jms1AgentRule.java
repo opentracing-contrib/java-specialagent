@@ -18,8 +18,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
-import io.opentracing.contrib.specialagent.AgentPlugin;
-import io.opentracing.contrib.specialagent.AgentPluginUtil;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -32,7 +32,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class Jms1AgentPlugin implements AgentPlugin {
+public class Jms1AgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     final Narrowable builder = new AgentBuilder.Default().
@@ -57,7 +57,7 @@ public class Jms1AgentPlugin implements AgentPlugin {
   public static class Producer {
     @Advice.OnMethodExit
     public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentPluginUtil.isEnabled())
+      if (AgentRuleUtil.isEnabled())
         returned = Jms1AgentIntercept.createProducer(returned);
     }
   }
@@ -65,7 +65,7 @@ public class Jms1AgentPlugin implements AgentPlugin {
   public static class Consumer {
     @Advice.OnMethodExit
     public static void enter(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentPluginUtil.isEnabled())
+      if (AgentRuleUtil.isEnabled())
         returned = Jms1AgentIntercept.createConsumer(returned);
     }
   }

@@ -51,8 +51,8 @@ import io.opentracing.contrib.specialagent.Manager.Event;
 import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
- * A JUnit runner that is designed to run tests for instrumentation plugins that
- * have auto-instrumentation rules implemented as per the {@link AgentPlugin}
+ * A JUnit runner that is designed to run tests for instrumentation rules that
+ * have auto-instrumentation rules implemented as per the {@link AgentRule}
  * API.
  * <p>
  * The {@code AgentRunner} uses ByteBuddy's self-attach methodology to obtain
@@ -196,11 +196,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         <p>
      *         If this property is set to {@code false}, the {@code AgentRunner}
      *         runtime disables all testing that asserts proper functionality of
-     *         the plugin when the 3rd-party library it is instrumenting is
+     *         the rule when the 3rd-party library it is instrumenting is
      *         loaded in a class loader that is _not_ the system class loader.
      *         <p>
      *         <ins>By disabling this facet of the {@code AgentRunner}, the test
-     *         may pass, but the plugin may fail in real-world
+     *         may pass, but the rule may fail in real-world
      *         application.</ins>
      *         <p>
      *         If this property is set to {@code false}, the build will print a
@@ -250,11 +250,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }
       }
 
-      final List<String> pluginPaths = findPluginPaths(dependenciesUrl);
+      final List<String> rulePaths = findRulePaths(dependenciesUrl);
 
-      pluginPaths.add(testClassesPath);
-      pluginPaths.add(classesPath);
-      final Set<String> isolatedClasses = TestUtil.getClassFiles(pluginPaths);
+      rulePaths.add(testClassesPath);
+      rulePaths.add(classesPath);
+      final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
 
       final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));
       // Special case for AgentRunnerITest, because it belongs to the same
@@ -281,38 +281,38 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Find the plugin paths using the specified dependencies TGF {@code URL}.
+   * Find the rule paths using the specified dependencies TGF {@code URL}.
    *
    * @param dependenciesUrl The {@code URL} pointing to the dependencies TGF
    *          file.
-   * @return A list of the plugin paths.
+   * @return A list of the rule paths.
    * @throws IOException If an I/O error has occurred.
    */
-  private static List<String> findPluginPaths(final URL dependenciesUrl) throws IOException {
+  private static List<String> findRulePaths(final URL dependenciesUrl) throws IOException {
     final String dependenciesTgf = dependenciesUrl == null ? null : new String(Util.readBytes(dependenciesUrl));
 
-    final List<String> pluginPaths = new ArrayList<>();
+    final List<String> rulePaths = new ArrayList<>();
     final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
 
-    final URL[] pluginUrls = Util.filterPluginURLs(classpath, dependenciesTgf, false, "compile");
-    for (int i = 0; i < pluginUrls.length; ++i)
-      pluginPaths.add(pluginUrls[i].getFile());
+    final URL[] ruleUrls = Util.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
+    for (int i = 0; i < ruleUrls.length; ++i)
+      rulePaths.add(ruleUrls[i].getFile());
 
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
     // The JARs with classes in the Boot-Path are already excluded due to their
     // provided scope.
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("PluginsPath of forked process will be:\n" + Util.toIndentedString(pluginPaths));
+      logger.finest("rulePaths of forked process will be:\n" + Util.toIndentedString(rulePaths));
 
-    System.setProperty(SpecialAgent.PLUGIN_ARG, Util.toString(pluginPaths.toArray(), ":"));
+    System.setProperty(SpecialAgent.RULE_ARG, Util.toString(rulePaths.toArray(), ":"));
 
-    // Add scope={"test", "provided"}, optional=true to pluginPaths
-    final URL[] testDependencies = Util.filterPluginURLs(classpath, dependenciesTgf, true, "test", "provided");
+    // Add scope={"test", "provided"}, optional=true to rulePaths
+    final URL[] testDependencies = Util.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
     for (final URL testDependency : testDependencies)
-      pluginPaths.add(testDependency.getPath());
+      rulePaths.add(testDependency.getPath());
 
-    return pluginPaths;
+    return rulePaths;
   }
 
   private final Config config;
