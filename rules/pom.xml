@@ -23,8 +23,8 @@
     <artifactId>specialagent</artifactId>
     <version>0.9.1-SNAPSHOT</version>
   </parent>
-  <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
-  <artifactId>plugins</artifactId>
+  <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+  <artifactId>rules</artifactId>
   <packaging>pom</packaging>
   <name>${project.groupId}:${project.artifactId}</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins</url>
