@@ -41,6 +41,7 @@
     <module>opentracing-specialagent-jms-2</module>
     <module>opentracing-specialagent-elasticsearch-client-6</module>
     <module>opentracing-specialagent-rxjava-2</module>
+    <module>opentracing-specialagent-kafka-client</module>
   </modules>
   <profiles>
     <profile>

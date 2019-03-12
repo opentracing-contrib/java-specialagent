@@ -72,6 +72,7 @@ _<ins>Instrumentation Modules</ins> **ARE** coupled to the <ins>SpecialAgent</in
 9. [JMS API (`javax.jms` v1 & v2)][java-jms]
 10. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
 11. [RxJava 2](https://github.com/opentracing-contrib/java-rxjava)
+12. [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client)
 
 ## Goals
 
