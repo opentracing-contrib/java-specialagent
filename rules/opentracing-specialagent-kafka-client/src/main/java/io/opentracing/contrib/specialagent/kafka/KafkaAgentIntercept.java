@@ -14,34 +14,31 @@
  */
 package io.opentracing.contrib.specialagent.kafka;
 
-import io.opentracing.Scope;
-import io.opentracing.contrib.kafka.TracingCallback;
-import io.opentracing.contrib.kafka.TracingKafkaUtils;
-import io.opentracing.util.GlobalTracer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import io.opentracing.Scope;
+import io.opentracing.contrib.kafka.TracingCallback;
+import io.opentracing.contrib.kafka.TracingKafkaUtils;
+import io.opentracing.util.GlobalTracer;
+
 public class KafkaAgentIntercept {
-
-  public static Object producerCallback(Object record, Object callback) {
-    Scope scope = TracingKafkaUtils
-        .buildAndInjectSpan((ProducerRecord) record, GlobalTracer.get());
-
-    return new TracingCallback((Callback) callback, scope.span(), GlobalTracer.get());
+  public static void onConsumerEnter(final Object records) {
+    for (final ConsumerRecord<?,?> record : (ConsumerRecords<?,?>)records)
+      TracingKafkaUtils.buildAndFinishChildSpan(record, GlobalTracer.get());
   }
 
+  public static Object onProducerEnter(final Object record, final Object callback) {
+    final Scope scope = TracingKafkaUtils.buildAndInjectSpan((ProducerRecord<?,?>)record, GlobalTracer.get());
+    return new TracingCallback((Callback)callback, scope.span(), GlobalTracer.get());
+  }
+
+  @SuppressWarnings("resource")
   public static void onProducerExit() {
     final Scope active = GlobalTracer.get().scopeManager().active();
-    if (active != null) {
+    if (active != null)
       active.close();
-    }
-  }
-
-  public static void consumerRecords(Object records) {
-    for (Object record : (ConsumerRecords) records) {
-      TracingKafkaUtils.buildAndFinishChildSpan((ConsumerRecord) record, GlobalTracer.get());
-    }
   }
 }
