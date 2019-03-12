@@ -780,7 +780,7 @@ public final class Util {
     return a.length - b.length;
   }
 
-  private static final Event[] DEFAULT_EVENTS = new Event[] {null, null, Event.ERROR, null, null};
+  private static final Event[] DEFAULT_EVENTS = new Event[5];
 
   static Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)

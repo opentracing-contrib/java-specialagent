@@ -329,7 +329,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
-    if (config != null) {
+    final Event[] events;
+    if (config == null) {
+      events = new Event[] {Event.ERROR};
+    }
+    else {
+      events = config.events();
       if (config.log() != Config.Log.INFO) {
         final String logLevelProperty = System.getProperty(SpecialAgent.LOGGING_PROPERTY);
         if (logLevelProperty != null)
@@ -338,24 +343,23 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           System.setProperty(SpecialAgent.LOGGING_PROPERTY, String.valueOf(config.log()));
       }
 
-      final Event[] events = config.events();
-      if (events.length > 0) {
-        final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
-        if (eventsProperty != null) {
-          logger.warning(SpecialAgent.EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
-        }
-        else {
-          final StringBuilder builder = new StringBuilder();
-          for (final Event event : events)
-            builder.append(event).append(",");
-
-          builder.setLength(builder.length() - 1);
-          System.setProperty(SpecialAgent.EVENTS_PROPERTY, builder.toString());
-        }
-      }
-
       if (!config.isolateClassLoader())
         logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
+    }
+
+    if (events.length > 0) {
+      final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
+      if (eventsProperty != null) {
+        logger.warning(SpecialAgent.EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
+      }
+      else {
+        final StringBuilder builder = new StringBuilder();
+        for (final Event event : events)
+          builder.append(event).append(",");
+
+        builder.setLength(builder.length() - 1);
+        System.setProperty(SpecialAgent.EVENTS_PROPERTY, builder.toString());
+      }
     }
 
     try {
