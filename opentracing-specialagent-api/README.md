@@ -49,9 +49,9 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 
     The <ins>Instrumentation Plugin</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the plugin to be instrumentable (i.e. if the plugin finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
 
-3. **Implement the `AgentPlugin` interface**
+3. **Implement the `AgentRule` interface**
 
-    The `AgentPlugin` interface defines one method:
+    The `AgentRule` interface defines one method:
 
     ```java
     Iterable<? extends AgentBuilder> buildAgent(String agentArgs) throws Exception;
@@ -60,7 +60,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
     An example implementation for an <ins>Instrumentation Rule</ins> that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
 
     ```java
-      public class TargetAgentPlugin implements AgentPlugin {
+      public class TargetAgentRule implements AgentRule {
         public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
           return Arrays.asList(new AgentBuilder.Default()
             .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
@@ -79,7 +79,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
               @Override
               public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
                 return builder.visit(Advice
-                  .to(TargetAgentPlugin.class)            // A class literal reference to this class.
+                  .to(TargetAgentRule.class)            // A class literal reference to this class.
                   .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
                     .and(takesArguments(String.class)))); // Additional specification for the method intercept.
               }}));
@@ -91,7 +91,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
           // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
           @Advice.OnMethodExit
           public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-            if (AgentPluginUtil.isEnabled())              // Prevents the SpecialAgent from instrumenting the tracer itself.
+            if (AgentRuleUtil.isEnabled())              // Prevents the SpecialAgent from instrumenting the tracer itself.
               returned = TargetAgentIntercept.exit(returned);
           }
         }
@@ -108,15 +108,15 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 
 4. **Create a `otarules.mf` file**
 
-    The `otarules.mf` file identifies the classes that implement `AgentPlugin`, so that the <ins>SpecialAgent</ins> knows to load them during startup.
+    The `otarules.mf` file identifies the classes that implement `AgentRule`, so that the <ins>SpecialAgent</ins> knows to load them during startup.
 
     The `otarules.mf` file for this example will be:
 
     ```java
-    io.opentracing.contrib.example.TargetAgentPlugin
+    io.opentracing.contrib.example.TargetAgentRule
     ```
 
-    Multiple `AgentPlugin` implementations can be specified in the `otarules.mf` file, each of which will be loaded by <ins>SpecialAgent</ins> during startup.
+    Multiple `AgentRule` implementations can be specified in the `otarules.mf` file, each of which will be loaded by <ins>SpecialAgent</ins> during startup.
 
     Put the file in `src/main/resources` for it to be found by <ins>SpecialAgent</ins>.
 
@@ -212,7 +212,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
         ```xml
         <plugin>
           <groupId>io.opentracing.contrib.specialagent</groupId>
-          <artifactId>agentplugin-maven-plugin</artifactId>
+          <artifactId>agentrule-maven-plugin</artifactId>
           <version>0.9.0</version>
           <executions>
             <execution>

@@ -24,7 +24,7 @@
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-aws-sdk</artifactId>
-  <name>${project.groupId}:${project.artifactId}</name>
+  <name>SpecialAgent Rule for AWS SDK</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-aws-sdk</url>
   <dependencies>
     <dependency>

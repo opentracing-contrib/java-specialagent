@@ -62,10 +62,11 @@ public class ByteBuddyManager extends Manager {
    */
   @Override
   void loadRules(final ClassLoader allRulesClassLoader, final Map<String,Integer> ruleJarToIndex, final String agentArgs, final Event[] events) throws IOException {
-    // Prepare the ClassLoader rule
-    ClassLoaderAgent.premain(agentArgs, inst);
+    // Load ClassLoader Agent
+    ClassLoaderAgent.premain(inst);
 
-    MutexAgent.premain(agentArgs, inst);
+    // Load the Mutex Agent
+    MutexAgent.premain(inst);
 
     // Prepare the agent rules
     final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);

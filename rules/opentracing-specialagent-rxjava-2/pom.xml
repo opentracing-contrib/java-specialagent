@@ -24,7 +24,7 @@
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-rxjava-2</artifactId>
-  <name>${project.groupId}:${project.artifactId}</name>
+  <name>SpecialAgent Rule for RxJava 2</name>
   <url>https://github.com/opentracing-contrib/java-rxjava/tree/master/opentracing-rxjava-2</url>
   <dependencies>
     <dependency>

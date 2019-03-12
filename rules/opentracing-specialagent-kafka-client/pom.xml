@@ -24,7 +24,7 @@
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-kafka-client</artifactId>
-  <name>${project.groupId}:${project.artifactId}</name>
+  <name>SpecialAgent Rule for Kafka Client</name>
   <url>https://github.com/opentracing-contrib/java-rxjava/tree/master/opentracing-specialagent-kafka-client</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>

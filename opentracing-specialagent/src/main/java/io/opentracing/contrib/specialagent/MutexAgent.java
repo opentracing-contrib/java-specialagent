@@ -40,7 +40,7 @@ import net.bytebuddy.utility.JavaModule;
 public class MutexAgent {
   private static final Logger logger = Logger.getLogger(MutexAgent.class.getName());
 
-  public static void premain(final String agentArgs, final Instrumentation inst) {
+  public static void premain(final Instrumentation inst) {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<<< Installing AgentRunnerUtil >>>>>>>>>>>>>>>>>>>\n");
 

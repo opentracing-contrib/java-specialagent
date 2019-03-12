@@ -1,12 +1,12 @@
 <!--
   Copyright 2018-2019 The OpenTracing Authors
-  
+
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
       http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@
   <groupId>io.opentracing.contrib.specialagent.rules</groupId>
   <artifactId>rules</artifactId>
   <packaging>pom</packaging>
-  <name>${project.groupId}:${project.artifactId}</name>
+  <name>SpecialAgent Rules</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins</url>
   <modules>
     <module>opentracing-specialagent-okhttp</module>
@@ -184,7 +184,7 @@
       </plugin>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentplugin-maven-plugin</artifactId>
+        <artifactId>agentrule-maven-plugin</artifactId>
         <version>${project.version}</version>
         <executions>
           <execution>
@@ -236,13 +236,13 @@
       <artifactId>opentracing-tracerresolver</artifactId>
       <scope>provided</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-mock</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-embedder</artifactId>
@@ -258,7 +258,7 @@
       <artifactId>maven-compat</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
