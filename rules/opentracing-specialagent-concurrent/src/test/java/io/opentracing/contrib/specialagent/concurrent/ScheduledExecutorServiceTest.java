@@ -27,7 +27,6 @@ import org.junit.runner.RunWith;
 
 import io.opentracing.Scope;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
@@ -37,7 +36,6 @@ import io.opentracing.mock.MockTracer;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(events=Event.ERROR)
 public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
 	private static final int NUMBER_OF_THREADS = 4;
 

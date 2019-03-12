@@ -780,11 +780,11 @@ public final class Util {
     return a.length - b.length;
   }
 
-  private static final Event[] EMPTY_EVENTS = new Event[5];
+  private static final Event[] DEFAULT_EVENTS = new Event[] {null, null, Event.ERROR, null, null};
 
   static Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)
-      return EMPTY_EVENTS;
+      return DEFAULT_EVENTS;
 
     final String[] parts = eventsProperty.split(",");
     Arrays.sort(parts);

@@ -31,11 +31,9 @@ import com.datastax.driver.core.Session;
 
 import io.opentracing.contrib.cassandra.TracingSession;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(events = Event.ERROR)
 public class CassandraTest {
   private static final Logger logger = Logger.getLogger(CassandraTest.class.getName());
 

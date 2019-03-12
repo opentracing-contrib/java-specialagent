@@ -178,9 +178,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     /**
      * @return Output re/transformer events.
      *         <p>
-     *         Default: <code>{}</code>.
+     *         Default: <code>{Event.ERROR}</code>.
      */
-    Event[] events() default {};
+    Event[] events() default {Event.ERROR};
 
     /**
      * @return Whether the tests should be run in a class loader that is

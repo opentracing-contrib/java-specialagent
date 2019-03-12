@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,11 +41,9 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(events=Event.ERROR)
 public class JettyServletTest {
   // jetty starts on random port
   private int serverPort;
-
   private Server jettyServer;
 
   @Before

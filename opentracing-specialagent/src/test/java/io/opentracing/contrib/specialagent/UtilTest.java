@@ -276,8 +276,8 @@ public class UtilTest {
   @Test
   public void testDigestEventsProperty() {
     Event[] events = Util.digestEventsProperty(null);
-    for (final Event event : events)
-      assertNull(event);
+    for (int i = 0; i < events.length; ++i)
+      assertTrue(events[i] == null || i == Event.ERROR.ordinal() && events[i] == Event.ERROR);
 
     events = Util.digestEventsProperty("DISCOVERY,TRANSFORMATION,IGNORED,ERROR,COMPLETE");
     for (final Event event : events)

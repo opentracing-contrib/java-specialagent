@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.reactivex.Observable;
@@ -37,7 +36,6 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(events = Event.ERROR)
 public class RxJava2Test {
   private static final Logger logger = Logger.getLogger(RxJava2Test.class.getName());
   private static final String COMPLETED = "completed";
@@ -253,7 +251,7 @@ public class RxJava2Test {
     });
   }
 
-  private static <T> Observer<T> observer(final String name, final List<T> result) {
+  private static <T>Observer<T> observer(final String name, final List<T> result) {
     return new Observer<T>() {
       @Override
       public void onSubscribe(final Disposable d) {

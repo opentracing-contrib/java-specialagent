@@ -80,5 +80,5 @@ public abstract class Manager {
    * @param events Manager events to log.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<String,Integer> ruleJarToIndex, String agentArgs, final Event[] events) throws IOException;
+  abstract void loadRules(ClassLoader allRulesClassLoader, Map<String,Integer> ruleJarToIndex, String agentArgs, Event[] events) throws IOException;
 }
