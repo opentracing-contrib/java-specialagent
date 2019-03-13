@@ -155,6 +155,7 @@ public class SpecialAgent {
    * @throws Exception If an error has occurred.
    */
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+    BootLoaderAgent.premain(inst, null);
     SpecialAgent.agentArgs = agentArgs;
     SpecialAgent.inst = inst;
     instrumenter.manager.premain(null, inst);
