@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
-import io.opentracing.contrib.specialagent.SpecialAgent.AllRulesClassLoader;
+import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -61,7 +61,7 @@ public class ClassLoaderAgent {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(AllRulesClassLoader.class)))));
+      .type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(AllPluginsClassLoader.class)))));
 
     builder
       .transform(new Transformer() {

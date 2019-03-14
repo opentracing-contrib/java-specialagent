@@ -21,8 +21,8 @@ A Java agent that automatically instruments distinct 3rd-party libraries in Java
 Vendor implementation of the `io.opentracing.Tracer` interface.
 
 Examples:
-* [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
 * [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
+* [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
 * [DataDog Tracer](https://github.com/DataDog/dd-trace-java)
 * [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
@@ -55,7 +55,7 @@ Examples:
 * [`rules/opentracing-specialagent-jms-1`][specialagent-jms-1]
 * [`rules/opentracing-specialagent-jms-2`][specialagent-jms-2]
 
-_<ins>Instrumentation Modules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>._
+_<ins>Instrumentation Plugins</ins> **ARE** coupled to the <ins>SpecialAgent</ins>._
 
 ## Supported <ins>Instrumentation Plugins</ins>
 
@@ -92,18 +92,18 @@ _<ins>Instrumentation Modules</ins> **ARE** coupled to the <ins>SpecialAgent</in
 
 ## Operation
 
-When <ins>SpecialAgent</ins> attaches to an application, either statically or dynamically, it will automatically load the <ins>Instrumentation Modules</ins> explicitly specified as dependencies in its POM.
+When <ins>SpecialAgent</ins> attaches to an application, either statically or dynamically, it will automatically load the <ins>Instrumentation Plugins</ins> explicitly specified as dependencies in its POM.
 
 Any exception that occurs during the execution of the bootstrap process will not adversely affect the stability of the target application. It is, however, possible that the <ins>Instrumentation Plugin</ins> code may result in exceptions that are not properly handled, and could destabilize the target application.
 
 ## Installation
 
-The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be created by cloning this repository and following the [Building](#building) instructions. These artifacts can also be downloaded directly from Maven's Central Repository.
+The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Building](#building) instructions, or downloading directly from Maven's Central Repository.
 
 1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0.jar`][main-release]<br>
    SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT.jar`][main-snapshot]
 
-    This is the main artifact that contains within it all applicable <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
+    This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
 1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0-tests.jar`][test-release]<br>
    SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT-tests.jar`][test-snapshot]
@@ -155,9 +155,30 @@ The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>S
 
 4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
 
-### Disabling <ins>Instrumentation Modules</ins>
+### Selecting the <ins>Tracer Plugin</ins>
 
-The <ins>SpecialAgent</ins> allows <ins>Instrumentation Modules</ins> to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+The <ins>SpecialAgent</ins> supports 2 ways to connect to a OpenTracing-compatible tracer:
+
+1. **Internal <ins>Tracer Plugins</ins>**
+
+    The <ins>SpecialAgent</ins> includes the collowing <ins>Tracer Plugins</ins>:
+
+    1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
+    2. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
+
+    The `-Dspecialagent.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which <ins>Tracer Plugin</ins> will be used. The value of `${TRACER_PLUGIN}` is the short name of the <ins>Tracer Plugin</ins>, i.e. `jaeger` or `lightstep`.
+
+2. **External <ins>Tracer Plugins</ins>**
+
+    The <ins>SpecialAgent</ins> allows external <ins>Tracer Plugins</ins> to be attached to the runtime.
+
+    The `-Dspecialagent.tracer=${TRACER_JAR}` property is used on the command-line to specify the JAR path of the <ins>Tracer Plugin</ins> to be used. The `${TRACER_JAR}` must be a JAR that conforms to the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) API of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
+
+_**NOTE**: If a tracer is not specified with the `-Dspecialagent.tracer=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._ 
+
+### Disabling <ins>Instrumentation Plugins</ins>
+
+The <ins>SpecialAgent</ins> allows <ins>Instrumentation Plugins</ins> to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
 ${PLUGIN_NAME}.enabled=false
