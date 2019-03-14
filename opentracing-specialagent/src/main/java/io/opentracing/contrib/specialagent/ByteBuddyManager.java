@@ -61,7 +61,7 @@ public class ByteBuddyManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<String,Integer> ruleJarToIndex, final String agentArgs, final Event[] events) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final String agentArgs, final Event[] events) throws IOException {
     // Load ClassLoader Agent
     ClassLoaderAgent.premain(inst);
 
@@ -72,7 +72,7 @@ public class ByteBuddyManager extends Manager {
     final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
     while (enumeration.hasMoreElements()) {
       final URL scriptUrl = enumeration.nextElement();
-      final String ruleJar = Util.getSourceLocation(scriptUrl, file);
+      final URL ruleJar = Util.getSourceLocation(scriptUrl, file);
       if (logger.isLoggable(Level.FINEST))
         logger.finest("Dereferencing index for " + ruleJar);
 

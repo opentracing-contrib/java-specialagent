@@ -35,7 +35,7 @@
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
-          <goalPrefix>agent</goalPrefix>
+          <goalPrefix>agentrule</goalPrefix>
         </configuration>
         <executions>
           <execution>
