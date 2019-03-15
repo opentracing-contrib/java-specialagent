@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.aws;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -20,7 +21,6 @@ import io.opentracing.contrib.aws.TracingRequestHandler;
 
 public class AwsAgentIntercept {
   public static void enter(final Object thiz) {
-    final TracingRequestHandler requestHandler = new TracingRequestHandler();
-    ((AwsClientBuilder<?,?>)thiz).withRequestHandlers(requestHandler);
+    ((AwsClientBuilder<?,?>)thiz).withRequestHandlers(new TracingRequestHandler());
   }
 }

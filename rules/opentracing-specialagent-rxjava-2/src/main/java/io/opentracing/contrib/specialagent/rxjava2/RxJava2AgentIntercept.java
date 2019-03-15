@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rxjava2;
 
 import io.opentracing.rxjava2.TracingConsumer;

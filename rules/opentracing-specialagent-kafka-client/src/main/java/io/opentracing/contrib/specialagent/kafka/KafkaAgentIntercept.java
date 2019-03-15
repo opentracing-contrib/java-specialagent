@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;

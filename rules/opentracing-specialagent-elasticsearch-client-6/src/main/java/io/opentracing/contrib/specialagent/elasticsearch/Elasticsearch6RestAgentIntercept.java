@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.elasticsearch;
 
 import org.elasticsearch.client.RestClientBuilder;
@@ -20,7 +21,6 @@ import io.opentracing.contrib.elasticsearch.common.TracingHttpClientConfigCallba
 
 public class Elasticsearch6RestAgentIntercept {
   public static void enter(final Object thiz) {
-    final TracingHttpClientConfigCallback callback = new TracingHttpClientConfigCallback();
-    ((RestClientBuilder)thiz).setHttpClientConfigCallback(callback);
+    ((RestClientBuilder)thiz).setHttpClientConfigCallback(new TracingHttpClientConfigCallback());
   }
 }
