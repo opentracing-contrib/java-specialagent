@@ -13,4 +13,4 @@
 # limitations under the License.
 
 io.opentracing.contrib.specialagent.webservletfilter.JettyAgentRule
-io.opentracing.contrib.specialagent.webservletfilter.TomcatAgentRule
+io.opentracing.contrib.specialagent.webservletfilter.ServletContextAgentRule
