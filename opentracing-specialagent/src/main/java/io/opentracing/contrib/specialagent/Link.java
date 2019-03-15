@@ -319,13 +319,18 @@ class Link implements Serializable {
     }
 
     private static final long serialVersionUID = -6324404954794150472L;
+    private static final String[] excludePrefixes = {"io.opentracing.", "java.", "javax.", "net.bytebuddy."};
     private final Map<String,Link> links = new HashMap<>();
 
     private Link addClass(final Type type) {
-      if (isPrimitive(type) || type.getClassName().startsWith("java."))
+      if (isPrimitive(type))
         return null;
 
       final String className = type.getClassName();
+      for (int i = 0; i < excludePrefixes.length; ++i)
+        if (className.startsWith(excludePrefixes[i]))
+          return null;
+
       Link link = links.get(className);
       if (link == null)
         links.put(className, link = new Link(className));

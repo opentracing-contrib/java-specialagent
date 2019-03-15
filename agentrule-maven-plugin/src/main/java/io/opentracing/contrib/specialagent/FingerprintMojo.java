@@ -148,17 +148,22 @@ public final class FingerprintMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     try {
-      destFile.getParentFile().mkdirs();
+      // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, project.getArtifacts().iterator(), 0);
+      destFile.getParentFile().mkdirs();
       if (optionalDeps == null) {
         getLog().warn("No dependencies were found with (scope=*, optional=true), " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
         new LibraryFingerprint().toFile(destFile);
         return;
       }
 
-      final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, project.getArtifacts().iterator(), 0);
-      if (compileDeps == null)
-        throw new MojoExecutionException("No dependency spec (scope=compile, optional=false) for an Instrumentation Plugin was found");
+      // The `compileDeps` represent the Instrumentation Plugin (this is the dependency(ies)
+      // that bridges/links between the 3rd-Party Library to the Instrumentation Rule).
+      final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, project.getArtifacts().iterator(), 1);
+      // Include the compile path of the Instrumentation Rule itself, which solves the use-
+      // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
+      // bridges/links between the 3rd-Party Library to itself).
+      compileDeps[0] = new File(project.getBuild().getOutputDirectory()).toURI().toURL();
 
       final Manifest manifest = Link.createManifest(compileDeps);
 

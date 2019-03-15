@@ -41,7 +41,7 @@ public class AsyncHttpClientAgentIntercept {
     tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
       @Override
       public Iterator<Entry<String,String>> iterator() {
-        throw new UnsupportedOperationException("iterator should never be used with Tracer.inject()");
+        throw new UnsupportedOperationException("iterator not supported with Tracer.inject()");
       }
 
       @Override
