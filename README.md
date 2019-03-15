@@ -188,20 +188,20 @@ The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is include
 
 ### Building
 
-The <ins>SpecialAgent</ins> is built in 2 profiles:
+The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles:
 
-1. The `default` profile is used for development of <ins>Instrumentation Rules</ins>. It builds and runs tests for each rule, but _does not put the rules_ into [`opentracing-specialagent-0.9.0.jar`][main-release]
+1. The `default` profile is used for development of <ins>Instrumentation Rules</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-0.9.0.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean package
     ```
 
-2. The `assemble` profile is used for packaging of <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-0.9.0.jar`][main-release]. It builds each rule, but does not run tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-0.9.0.jar`][main-release] will contain the built rules inside it.
+2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-0.9.0.jar`][main-release]. It builds each rule, but does not run tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-0.9.0.jar`][main-release] will contain the built rules inside it.
 
     _**Note**: If you do not run this step, the [`opentracing-specialagent-0.9.0.jar`][main-release] from the previous step will not contain any <ins>Instrumentation Plugins</ins> within it!_
 
-    _**Note**: It is important to **not** run Maven's `clean` lifecycle when creating the `assemble` package._
+    _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
     To run this profile:
     ```bash
