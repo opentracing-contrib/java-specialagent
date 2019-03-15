@@ -195,7 +195,7 @@ The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles
 
     To run this profile:
     ```bash
-    mvn clean package
+    mvn clean install
     ```
 
 2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.0.0.jar`][main-release]. It builds each rule, but does not run tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.0.0.jar`][main-release] will contain the built rules inside it.
@@ -212,7 +212,7 @@ The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles
 * For a one-line build command to build <ins>SpecialAgent</ins>, its rules, run all tests, and create the `assemble` package:
 
     ```bash
-    mvn clean package && mvn -Dassemble package
+    mvn clean install && mvn -Dassemble package
     ```
 
 ## Contributing
