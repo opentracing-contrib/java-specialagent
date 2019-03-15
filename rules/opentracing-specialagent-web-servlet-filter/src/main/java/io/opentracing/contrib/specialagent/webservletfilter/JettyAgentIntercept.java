@@ -20,6 +20,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import javax.servlet.DispatcherType;
+
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
@@ -28,16 +30,15 @@ import io.opentracing.util.GlobalTracer;
 
 public class JettyAgentIntercept {
   public static final Map<Context,Object> state = Collections.synchronizedMap(new WeakHashMap<Context,Object>());
+  private static final String[] patterns = {"/*"};
 
   public static void exit(final Object thiz) {
-    final ServletContextHandler handler = (ServletContextHandler)thiz;
-    final Context context = handler.getServletContext();
+    final Context context = ((ServletContextHandler)thiz).getServletContext();
     if (state.containsKey(context))
       return;
 
     final TracingFilter filter = new TracingFilter(GlobalTracer.get());
-    final String[] patterns = {"/*"};
-    context.addFilter("tracingFilter", filter).addMappingForUrlPatterns(EnumSet.allOf(javax.servlet.DispatcherType.class), true, patterns);
+    context.addFilter("tracingFilter", filter).addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     state.put(context, null);
   }
 }

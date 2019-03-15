@@ -32,29 +32,27 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class ServletContextAgentRule implements AgentRule {
-    @Override
-    public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
-        return Arrays.asList(
-                new AgentBuilder.Default()
-                        .with(RedefinitionStrategy.RETRANSFORMATION)
-                        .with(InitializationStrategy.NoOp.INSTANCE)
-                        .with(TypeStrategy.Default.REDEFINE)
-                        .type(hasSuperType(named("javax.servlet.ServletContext"))
-                                // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
-                                .and(not(nameStartsWith("org.eclipse.jetty")))
-                                // Similarly, ApplicationContextFacade causes trouble and it's enough to instrument ApplicationContext
-                                .and(not(named("org.apache.catalina.core.ApplicationContextFacade"))))
-                        .transform(new Transformer() {
-                            @Override
-                            public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-                                return builder.visit(Advice.to(ServletContextAgentRule.class).on(isConstructor()));
-                            }})
-        );
-    }
+  @Override
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
+    return Arrays.asList(new AgentBuilder.Default()
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .type(hasSuperType(named("javax.servlet.ServletContext"))
+        // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
+        .and(not(nameStartsWith("org.eclipse.jetty")))
+        // Similarly, ApplicationContextFacade causes trouble and it's enough to instrument ApplicationContext
+        .and(not(named("org.apache.catalina.core.ApplicationContextFacade"))))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ServletContextAgentRule.class).on(isConstructor()));
+        }}));
+  }
 
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.This Object thiz) {
-        if (AgentRuleUtil.isEnabled())
-            ServletContextAgentIntercept.exit(thiz);
-    }
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.This Object thiz) {
+    if (AgentRuleUtil.isEnabled())
+      ServletContextAgentIntercept.exit(thiz);
+  }
 }

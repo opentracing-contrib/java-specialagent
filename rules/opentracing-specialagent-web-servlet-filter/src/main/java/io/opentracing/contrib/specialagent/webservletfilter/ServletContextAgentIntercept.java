@@ -17,24 +17,23 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.util.EnumSet;
 
-import io.opentracing.contrib.web.servlet.filter.TracingFilter;
-import io.opentracing.util.GlobalTracer;
-
+import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 
+import io.opentracing.contrib.web.servlet.filter.TracingFilter;
+import io.opentracing.util.GlobalTracer;
+
 public class ServletContextAgentIntercept {
+  private static final String[] patterns = {"/*"};
+
   public static void exit(final Object thiz) {
-    if (thiz instanceof ServletContext) {
-      final ServletContext context = (ServletContext) thiz;
+    if (!(thiz instanceof ServletContext))
+      return;
 
-      final TracingFilter filter = new TracingFilter(GlobalTracer.get());
-      final String[] patterns = {"/*"};
-
-      final FilterRegistration.Dynamic registration = context.addFilter("tracingFilter", filter);
-      if (registration != null) {
-        registration.addMappingForUrlPatterns(EnumSet.allOf(javax.servlet.DispatcherType.class), true, patterns);
-      }
-    }
+    final TracingFilter filter = new TracingFilter(GlobalTracer.get());
+    final FilterRegistration.Dynamic registration = ((ServletContext)thiz).addFilter("tracingFilter", filter);
+    if (registration != null)
+      registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
   }
 }
