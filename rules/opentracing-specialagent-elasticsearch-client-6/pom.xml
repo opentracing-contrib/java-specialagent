@@ -25,7 +25,7 @@
   </parent>
   <artifactId>opentracing-specialagent-elasticsearch-client-6</artifactId>
   <name>SpecialAgent Rule for Elasticsearch 6 Client</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-elasticsearch-client-6</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-elasticsearch-client-6</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

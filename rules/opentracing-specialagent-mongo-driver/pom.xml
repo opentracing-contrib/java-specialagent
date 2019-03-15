@@ -25,7 +25,7 @@
   </parent>
   <artifactId>opentracing-specialagent-mongo-driver</artifactId>
   <name>SpecialAgent Rule for Mongo Driver</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-mongo-driver</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-mongo-driver</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

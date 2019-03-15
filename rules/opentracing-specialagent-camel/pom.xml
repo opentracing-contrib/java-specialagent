@@ -25,7 +25,7 @@
   </parent>
   <artifactId>opentracing-specialagent-camel</artifactId>
   <name>SpecialAgent Rule for Apache Camel</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins/opentracing-specialagent-camel</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-camel</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

@@ -27,7 +27,7 @@
   <artifactId>rules</artifactId>
   <packaging>pom</packaging>
   <name>SpecialAgent Rules</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/plugins</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules</url>
   <modules>
     <module>opentracing-specialagent-okhttp</module>
     <module>opentracing-specialagent-jdbc</module>
