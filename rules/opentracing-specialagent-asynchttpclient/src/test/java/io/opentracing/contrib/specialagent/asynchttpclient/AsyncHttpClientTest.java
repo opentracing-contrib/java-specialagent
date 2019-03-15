@@ -1,17 +1,29 @@
+/* Copyright 2019 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent.asynchttpclient;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.mock.MockTracer;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
@@ -23,8 +35,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
-@Config
 public class AsyncHttpClientTest {
   @Before
   public void before(final MockTracer tracer) {
@@ -32,62 +46,51 @@ public class AsyncHttpClientTest {
   }
 
   @Test
-  public void testNoHandler(MockTracer tracer) {
-    AsyncHttpClient client = new DefaultAsyncHttpClient();
-
-    Request request = new RequestBuilder(HttpConstants.Methods.GET)
-        .setUrl("http://localhost:12345")
-        .build();
-
-    try {
-      client.executeRequest(request).get(10, TimeUnit.SECONDS);
-    } catch (Exception ignore) {
-      // OK
+  public void testNoHandler(final MockTracer tracer) throws IOException {
+    try (final AsyncHttpClient client = new DefaultAsyncHttpClient()) {
+      final Request request = new RequestBuilder(HttpConstants.Methods.GET).setUrl("http://localhost:12345").build();
+      try {
+        client.executeRequest(request).get(10, TimeUnit.SECONDS);
+      }
+      catch (final Exception ignore) {
+      }
     }
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
-
     assertEquals(1, tracer.finishedSpans().size());
     assertNull(tracer.activeSpan());
   }
 
   @Test
-  public void testWithHandler(MockTracer tracer) {
-
-    AsyncHttpClient client = new DefaultAsyncHttpClient();
-
-    Request request = new RequestBuilder(HttpConstants.Methods.GET)
-        .setUrl("http://localhost:12345")
-        .build();
-
+  public void testWithHandler(final MockTracer tracer) throws IOException {
     final AtomicInteger counter = new AtomicInteger();
+    try (final AsyncHttpClient client = new DefaultAsyncHttpClient()) {
+      final Request request = new RequestBuilder(HttpConstants.Methods.GET).setUrl("http://localhost:12345").build();
+      try {
+        client.executeRequest(request, new AsyncCompletionHandler<Object>() {
+          @Override
+          public Object onCompleted(final Response response) {
+            assertNotNull(tracer.activeSpan());
+            counter.incrementAndGet();
+            return response;
+          }
 
-    try {
-      client.executeRequest(request, new AsyncCompletionHandler<Object>() {
-        @Override
-        public Object onCompleted(Response response) {
-          assertNotNull(tracer.activeSpan());
-          counter.incrementAndGet();
-          return response;
-        }
-
-        @Override
-        public void onThrowable(Throwable t) {
-          assertNotNull(tracer.activeSpan());
-          counter.incrementAndGet();
-        }
-      }).get(10, TimeUnit.SECONDS);
-    } catch (Exception ignore) {
-      // OK
+          @Override
+          public void onThrowable(final Throwable t) {
+            assertNotNull(tracer.activeSpan());
+            counter.incrementAndGet();
+          }
+        }).get(10, TimeUnit.SECONDS);
+      }
+      catch (final Exception ignore) {
+      }
     }
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
-
     assertEquals(1, tracer.finishedSpans().size());
     assertEquals(1, counter.get());
     assertNull(tracer.activeSpan());
   }
-
 
   private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
     return new Callable<Integer>() {

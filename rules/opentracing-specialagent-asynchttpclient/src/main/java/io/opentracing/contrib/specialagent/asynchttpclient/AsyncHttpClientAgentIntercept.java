@@ -12,39 +12,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.asynchttpclient;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.Request;
+
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import org.asynchttpclient.AsyncHandler;
-import org.asynchttpclient.Request;
 
 public class AsyncHttpClientAgentIntercept {
-  public static Object enter(Object request, Object handler) {
-    Request req = (Request) request;
-    final Span span = GlobalTracer.get().buildSpan(req.getMethod())
-        .withTag(Tags.HTTP_METHOD.getKey(), req.getMethod())
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.HTTP_URL.getKey(), req.getUrl())
-        .start();
+  public static Object enter(final Object request, final Object handler) {
+    final Request req = (Request)request;
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = tracer
+      .buildSpan(req.getMethod())
+      .withTag(Tags.HTTP_METHOD.getKey(), req.getMethod())
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.HTTP_URL.getKey(), req.getUrl()).start();
 
-    GlobalTracer.get().inject(span.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
+    tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
       @Override
-      public Iterator<Entry<String, String>> iterator() {
-        throw new UnsupportedOperationException(
-            "iterator should never be used with Tracer.inject()");
+      public Iterator<Entry<String,String>> iterator() {
+        throw new UnsupportedOperationException("iterator should never be used with Tracer.inject()");
       }
 
       @Override
-      public void put(String key, String value) {
+      public void put(final String key, final String value) {
         req.getHeaders().add(key, value);
       }
     });
-    return new TracingAsyncHandler((AsyncHandler) handler, span);
+
+    return new TracingAsyncHandler(tracer, (AsyncHandler<?>)handler, span);
   }
 }

@@ -14,99 +14,101 @@
  */
 package io.opentracing.contrib.specialagent.asynchttpclient;
 
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.net.ssl.SSLSession;
+
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.HttpResponseStatus;
+import org.asynchttpclient.netty.request.NettyRequest;
+
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
-import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.net.ssl.SSLSession;
-import org.asynchttpclient.AsyncHandler;
-import org.asynchttpclient.HttpResponseBodyPart;
-import org.asynchttpclient.HttpResponseStatus;
-import org.asynchttpclient.netty.request.NettyRequest;
 
-public class TracingAsyncHandler implements AsyncHandler {
-  private final AsyncHandler handler;
-  private final Span span;
+public class TracingAsyncHandler implements AsyncHandler<Object> {
   private final Tracer tracer;
+  private final AsyncHandler<?> handler;
+  private final Span span;
 
-  public TracingAsyncHandler(AsyncHandler handler, Span span) {
+  public TracingAsyncHandler(final Tracer tracer, final AsyncHandler<?> handler, final Span span) {
+    this.tracer = tracer;
     this.handler = handler;
     this.span = span;
-    tracer = GlobalTracer.get();
   }
 
   @Override
-  public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+  public State onStatusReceived(final HttpResponseStatus responseStatus) throws Exception {
     span.setTag(Tags.HTTP_STATUS.getKey(), responseStatus.getStatusCode());
     return handler.onStatusReceived(responseStatus);
   }
 
   @Override
-  public State onHeadersReceived(HttpHeaders headers) throws Exception {
+  public State onHeadersReceived(final HttpHeaders headers) throws Exception {
     return handler.onHeadersReceived(headers);
   }
 
   @Override
-  public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+  public State onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
     return handler.onBodyPartReceived(bodyPart);
   }
 
   @Override
-  public State onTrailingHeadersReceived(HttpHeaders headers) throws Exception {
+  public State onTrailingHeadersReceived(final HttpHeaders headers) throws Exception {
     return handler.onTrailingHeadersReceived(headers);
   }
 
   @Override
-  public void onThrowable(Throwable t) {
-    try(Scope scope = tracer.scopeManager().activate(span, true)) {
+  public void onThrowable(final Throwable t) {
+    try (final Scope scope = tracer.scopeManager().activate(span, true)) {
       handler.onThrowable(t);
-    } finally {
+    }
+    finally {
       onError(t, span);
     }
   }
 
   @Override
   public Object onCompleted() throws Exception {
-    try(Scope scope = tracer.scopeManager().activate(span, true)) {
+    try (final Scope scope = tracer.scopeManager().activate(span, true)) {
       return handler.onCompleted();
     }
   }
 
   @Override
-  public void onHostnameResolutionAttempt(String name) {
+  public void onHostnameResolutionAttempt(final String name) {
     handler.onHostnameResolutionAttempt(name);
   }
 
   @Override
-  public void onHostnameResolutionSuccess(String name, List list) {
+  public void onHostnameResolutionSuccess(final String name, final List<InetSocketAddress> list) {
     handler.onHostnameResolutionSuccess(name, list);
   }
 
   @Override
-  public void onHostnameResolutionFailure(String name, Throwable cause) {
+  public void onHostnameResolutionFailure(final String name, final Throwable cause) {
     handler.onHostnameResolutionFailure(name, cause);
   }
 
   @Override
-  public void onTcpConnectAttempt(InetSocketAddress remoteAddress) {
+  public void onTcpConnectAttempt(final InetSocketAddress remoteAddress) {
     handler.onTcpConnectAttempt(remoteAddress);
   }
 
   @Override
-  public void onTcpConnectSuccess(InetSocketAddress remoteAddress,
-      Channel connection) {
+  public void onTcpConnectSuccess(final InetSocketAddress remoteAddress, final Channel connection) {
     handler.onTcpConnectSuccess(remoteAddress, connection);
   }
 
   @Override
-  public void onTcpConnectFailure(InetSocketAddress remoteAddress, Throwable cause) {
+  public void onTcpConnectFailure(final InetSocketAddress remoteAddress, final Throwable cause) {
     handler.onTcpConnectFailure(remoteAddress, cause);
   }
 
@@ -116,12 +118,12 @@ public class TracingAsyncHandler implements AsyncHandler {
   }
 
   @Override
-  public void onTlsHandshakeSuccess(SSLSession sslSession) {
+  public void onTlsHandshakeSuccess(final SSLSession sslSession) {
     handler.onTlsHandshakeSuccess(sslSession);
   }
 
   @Override
-  public void onTlsHandshakeFailure(Throwable cause) {
+  public void onTlsHandshakeFailure(final Throwable cause) {
     handler.onTlsHandshakeFailure(cause);
   }
 
@@ -131,17 +133,17 @@ public class TracingAsyncHandler implements AsyncHandler {
   }
 
   @Override
-  public void onConnectionPooled(Channel connection) {
+  public void onConnectionPooled(final Channel connection) {
     handler.onConnectionPooled(connection);
   }
 
   @Override
-  public void onConnectionOffer(Channel connection) {
+  public void onConnectionOffer(final Channel connection) {
     handler.onConnectionOffer(connection);
   }
 
   @Override
-  public void onRequestSend(NettyRequest request) {
+  public void onRequestSend(final NettyRequest request) {
     handler.onRequestSend(request);
   }
 
@@ -150,16 +152,14 @@ public class TracingAsyncHandler implements AsyncHandler {
     handler.onRetry();
   }
 
-  private static void onError(Throwable throwable, Span span) {
+  private static void onError(final Throwable throwable, final Span span) {
     Tags.ERROR.set(span, Boolean.TRUE);
-
-    if (throwable != null) {
+    if (throwable != null)
       span.log(errorLogs(throwable));
-    }
   }
 
-  private static Map<String, Object> errorLogs(Throwable throwable) {
-    Map<String, Object> errorLogs = new HashMap<>(2);
+  private static Map<String,Object> errorLogs(final Throwable throwable) {
+    final Map<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", throwable);
     return errorLogs;

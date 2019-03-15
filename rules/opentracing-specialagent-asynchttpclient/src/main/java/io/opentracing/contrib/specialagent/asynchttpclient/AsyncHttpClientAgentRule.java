@@ -12,16 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.asynchttpclient;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
-import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -44,17 +43,13 @@ public class AsyncHttpClientAgentRule implements AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncHttpClientAgentRule.class).on(named("executeRequest")
-              .and(takesArguments(2)).and(takesArgument(0, named("org.asynchttpclient.Request")))));
+          return builder.visit(Advice.to(AsyncHttpClientAgentRule.class).on(named("executeRequest").and(takesArguments(2)).and(takesArgument(0, named("org.asynchttpclient.Request")))));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(
-      @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object request,
-      @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object handler) {
-    if (AgentRuleUtil.isEnabled()) {
+  public static void enter(final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object handler) {
+    if (AgentRuleUtil.isEnabled())
       handler = AsyncHttpClientAgentIntercept.enter(request, handler);
-    }
   }
 }
