@@ -73,6 +73,7 @@ _<ins>Instrumentation Plugins</ins> **ARE** coupled to the <ins>SpecialAgent</in
 10. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
 11. [RxJava 2](https://github.com/opentracing-contrib/java-rxjava)
 12. [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client)
+13. [AsyncHttpClient](https://github.com/opentracing-contrib/java-asynchttpclient)
 
 ## Goals
 
