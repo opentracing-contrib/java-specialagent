@@ -102,12 +102,12 @@ Any exception that occurs during the execution of the bootstrap process will not
 The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Building](#building) instructions, or downloading directly from Maven's Central Repository.
 
 1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0.jar`][main-release]<br>
-   SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT.jar`][main-snapshot]
+   SNAPSHOT: [`opentracing-specialagent-1.0.0-SNAPSHOT.jar`][main-snapshot]
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
 1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-0.9.0-tests.jar`][test-release]<br>
-   SNAPSHOT: [`opentracing-specialagent-0.9.1-SNAPSHOT-tests.jar`][test-snapshot]
+   SNAPSHOT: [`opentracing-specialagent-1.0.0-SNAPSHOT-tests.jar`][test-snapshot]
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any <ins>Instrumentation Plugins</ins> themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an <ins>Instrumentation Plugin</ins> implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
@@ -230,11 +230,11 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [main-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/0.9.0/opentracing-specialagent-0.9.0.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.1-SNAPSHOT
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.0-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jdbc
 [specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-1
 [specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-2
 [specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-okhttp
 [test-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/0.9.0/opentracing-specialagent-0.9.0-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/0.9.1-SNAPSHOT
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.0-SNAPSHOT

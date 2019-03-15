@@ -90,7 +90,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
           // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
           // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
           @Advice.OnMethodExit
-          public static void exit(@Advice.Origin Method method, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
+          public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
             if (AgentRuleUtil.isEnabled())              // Prevents the SpecialAgent from instrumenting the tracer itself.
               returned = TargetAgentIntercept.exit(returned);
           }
@@ -101,7 +101,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
         // class path.
         public class TargetAgentIntercept {
           public static Builder exit(final Object returned) {
-            // The OpenTracing instrumentation logic
+            // The OpenTracing instrumentation logic goes here
           }
         }
     ```
@@ -219,9 +219,9 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
               <goals>
                 <goal>fingerprint</goal>
               </goals>
-              <phase>generate-resources</phase>
+              <phase>process-classes</phase>
               <configuration>
-                <destFile>${project.build.directory}/generated-resources/fingerprint.bin</destFile>
+                <destFile>${project.build.outputDirectory}/fingerprint.bin</destFile>
               </configuration>
             </execution>
           </executions>
