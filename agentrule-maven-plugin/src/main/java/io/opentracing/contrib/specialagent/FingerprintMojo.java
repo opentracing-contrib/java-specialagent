@@ -151,12 +151,15 @@ public final class FingerprintMojo extends AbstractMojo {
       destFile.getParentFile().mkdirs();
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, project.getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with <optional>true</optional> -- " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
+        getLog().warn("No dependencies were found with (scope=*, optional=true), " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
         new LibraryFingerprint().toFile(destFile);
         return;
       }
 
       final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, project.getArtifacts().iterator(), 0);
+      if (compileDeps == null)
+        throw new MojoExecutionException("No dependency spec (scope=compile, optional=false) for an Instrumentation Plugin was found");
+
       final Manifest manifest = Link.createManifest(compileDeps);
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, project.getArtifacts().iterator(), 0);
