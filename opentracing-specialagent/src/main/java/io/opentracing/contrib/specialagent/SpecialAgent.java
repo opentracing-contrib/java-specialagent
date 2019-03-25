@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import com.sun.tools.attach.VirtualMachine;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
+import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 /**
@@ -50,7 +52,6 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
-@SuppressWarnings("restriction")
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
@@ -175,7 +176,7 @@ public class SpecialAgent {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final Set<String> excludes = new HashSet<>();
+    final ArrayList<String> excludes = new ArrayList<>();
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = (String)property.getKey();
       final String value = (String)property.getValue();
@@ -257,14 +258,13 @@ public class SpecialAgent {
   private static JarFile findTracer(final ClassLoader classLoader, final String name) {
     try {
       final Enumeration<URL> enumeration = classLoader.getResources(TRACER_FACTORY);
-      final Set<String> urls = new HashSet<>();
-
+      final Set<URL> urls = new HashSet<>();
       while (enumeration.hasMoreElements()) {
         final URL url = enumeration.nextElement();
-        if (urls.contains(url.toString()))
+        if (urls.contains(url))
           continue;
 
-        urls.add(url.toString());
+        urls.add(url);
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Found " + TRACER_FACTORY + ": <" + Util.getIdentityCode(url) + ">" + url);
 
@@ -392,20 +392,27 @@ public class SpecialAgent {
     if (tracerProperty == null)
       return;
 
-    final File file = new File(tracerProperty);
-    final JarFile tracerJar;
-    try {
-      tracerJar = file.exists() ? new JarFile(file) : findTracer(allPluginsClassLoader, tracerProperty);
-      if (tracerJar == null)
-        throw new IllegalStateException("TRACER_PROPERTY=" + tracerProperty + " did not resolve to a tracer JAR or name");
-
-      inst.appendToBootstrapClassLoaderSearch(tracerJar);
+    final Tracer tracer;
+    if ("mock".equals(tracerProperty)) {
+      tracer = new MockTracer();
     }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
+    else {
+      final File file = new File(tracerProperty);
+      final JarFile tracerJar;
+      try {
+        tracerJar = file.exists() ? new JarFile(file) : findTracer(allPluginsClassLoader, tracerProperty);
+        if (tracerJar == null)
+          throw new IllegalStateException("TRACER_PROPERTY=" + tracerProperty + " did not resolve to a tracer JAR or name");
+
+        inst.appendToBootstrapClassLoaderSearch(tracerJar);
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+
+      tracer = TracerResolver.resolveTracer();
     }
 
-    final Tracer tracer = TracerResolver.resolveTracer();
     if (tracer != null) {
       GlobalTracer.register(tracer);
       if (logger.isLoggable(Level.FINE))

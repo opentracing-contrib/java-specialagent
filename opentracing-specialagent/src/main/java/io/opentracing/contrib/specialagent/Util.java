@@ -504,7 +504,7 @@ public final class Util {
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path, final Set<String> excludes) {
+  static Set<URL> findJarResources(final String path, final Collection<String> excludes) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       final Set<URL> urls = new HashSet<>();
@@ -529,22 +529,25 @@ public final class Util {
         jarURLConnection.setUseCaches(false);
         final JarFile jarFile = jarURLConnection.getJarFile();
         final Enumeration<JarEntry> entries = jarFile.entries();
+        OUT:
         while (entries.hasMoreElements()) {
           final String entry = entries.nextElement().getName();
-          if (entry.length() > path.length() && entry.startsWith(path)) {
-            final int slash = entry.lastIndexOf('/');
-            final String jarFileName = entry.substring(slash + 1);
-            if (excludes.contains(jarFileName.substring(0, jarFileName.lastIndexOf('.'))))
-              continue;
+          if (entry.length() <= path.length() || !entry.startsWith(path))
+            continue;
 
-            final File subDir = new File(destDir, entry.substring(0, slash));
-            subDir.mkdirs();
-            final File file = new File(subDir, jarFileName);
+          final int slash = entry.lastIndexOf('/');
+          final String jarFileName = entry.substring(slash + 1);
+          for (final String exclude : excludes)
+            if (jarFileName.startsWith(exclude + "-"))
+              continue OUT;
 
-            final URL url = new URL(resource, entry.substring(path.length()));
-            Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            urls.add(file.toURI().toURL());
-          }
+          final File subDir = new File(destDir, entry.substring(0, slash));
+          subDir.mkdirs();
+          final File file = new File(subDir, jarFileName);
+
+          final URL url = new URL(resource, entry.substring(path.length()));
+          Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          urls.add(file.toURI().toURL());
         }
       }
       while (resources.hasMoreElements());
