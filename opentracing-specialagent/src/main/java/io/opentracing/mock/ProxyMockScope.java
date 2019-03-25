@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.mock;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -40,6 +40,6 @@ public class ProxyMockScope implements Scope {
   public ProxyMockSpan span() {
     final Span mockSpan = mockScope.span();
     final Span realSpan = realScope.span();
-    return new ProxyMockSpan(mockSpan, realSpan);
+    return new ProxyMockSpan((MockSpan)mockSpan, realSpan);
   }
 }

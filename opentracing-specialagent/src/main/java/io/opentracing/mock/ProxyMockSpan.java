@@ -13,91 +13,87 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.mock;
 
 import java.util.Map;
 
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 
-public class ProxyMockSpan implements Span {
-  final Span mockSpan;
+public class ProxyMockSpan extends MockSpan {
   final Span realSpan;
 
-  public ProxyMockSpan(final Span mockSpan, final Span realSpan) {
-    if (mockSpan != null ? realSpan == null : realSpan != null)
-      throw new IllegalStateException();
-
-    this.mockSpan = mockSpan;
+  public ProxyMockSpan(final MockSpan mockSpan, final Span realSpan) {
+    super(mockSpan.mockTracer, mockSpan.operationName(), mockSpan.startMicros, mockSpan.tags, mockSpan.references);
     this.realSpan = realSpan;
   }
 
   @Override
   public ProxyMockSpanContext context() {
-    final SpanContext mockSpanContext = mockSpan.context();
+    final MockContext mockSpanContext = super.context();
     final SpanContext realSpanContext = realSpan.context();
     return new ProxyMockSpanContext(mockSpanContext, realSpanContext);
   }
 
   @Override
   public ProxyMockSpan setTag(final String key, final String value) {
-    mockSpan.setTag(key, value);
+    super.setTag(key, value);
     realSpan.setTag(key, value);
     return this;
   }
 
   @Override
   public ProxyMockSpan setTag(final String key, final boolean value) {
-    mockSpan.setTag(key, value);
+    super.setTag(key, value);
     realSpan.setTag(key, value);
     return this;
   }
 
   @Override
   public ProxyMockSpan setTag(final String key, final Number value) {
-    mockSpan.setTag(key, value);
+    super.setTag(key, value);
     realSpan.setTag(key, value);
     return this;
   }
 
   @Override
   public ProxyMockSpan log(final Map<String,?> fields) {
-    mockSpan.log(fields);
+    super.log(fields);
     realSpan.log(fields);
     return this;
   }
 
   @Override
   public ProxyMockSpan log(final long timestampMicroseconds, final Map<String,?> fields) {
-    mockSpan.log(timestampMicroseconds, fields);
+    super.log(timestampMicroseconds, fields);
     realSpan.log(timestampMicroseconds, fields);
     return this;
   }
 
   @Override
   public ProxyMockSpan log(final String event) {
-    mockSpan.log(event);
+    super.log(event);
     realSpan.log(event);
     return this;
   }
 
   @Override
   public ProxyMockSpan log(final long timestampMicroseconds, final String event) {
-    mockSpan.log(timestampMicroseconds, event);
+    super.log(timestampMicroseconds, event);
     realSpan.log(timestampMicroseconds, event);
     return this;
   }
 
   @Override
   public ProxyMockSpan setBaggageItem(final String key, final String value) {
-    mockSpan.setBaggageItem(key, value);
+    super.setBaggageItem(key, value);
     realSpan.setBaggageItem(key, value);
     return this;
   }
 
   @Override
   public String getBaggageItem(final String key) {
-    final String mockBaggageItem = mockSpan.getBaggageItem(key);
+    final String mockBaggageItem = super.getBaggageItem(key);
     final String realBaggageItem = realSpan.getBaggageItem(key);
     if (mockBaggageItem != null ? !mockBaggageItem.equals(realBaggageItem) : realBaggageItem != null)
       throw new IllegalStateException();
@@ -107,20 +103,20 @@ public class ProxyMockSpan implements Span {
 
   @Override
   public ProxyMockSpan setOperationName(final String operationName) {
-    mockSpan.setOperationName(operationName);
+    super.setOperationName(operationName);
     realSpan.setOperationName(operationName);
     return this;
   }
 
   @Override
   public void finish() {
-    mockSpan.finish();
+    super.finish();
     realSpan.finish();
   }
 
   @Override
   public void finish(final long finishMicros) {
-    mockSpan.finish(finishMicros);
+    super.finish(finishMicros);
     realSpan.finish(finishMicros);
   }
 }

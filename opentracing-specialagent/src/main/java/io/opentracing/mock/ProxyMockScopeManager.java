@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.mock;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;

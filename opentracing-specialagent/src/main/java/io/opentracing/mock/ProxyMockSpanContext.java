@@ -13,28 +13,25 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.mock;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
 
 import io.opentracing.SpanContext;
+import io.opentracing.mock.MockSpan.MockContext;
 
-public class ProxyMockSpanContext implements SpanContext {
-  final SpanContext mockSpanContext;
+public class ProxyMockSpanContext extends MockContext {
   final SpanContext realSpanContext;
 
-  public ProxyMockSpanContext(final SpanContext mockSpanContext, final SpanContext realSpanContext) {
-    if (mockSpanContext != null ? realSpanContext == null : realSpanContext != null)
-      throw new IllegalStateException();
-
-    this.mockSpanContext = mockSpanContext;
+  public ProxyMockSpanContext(final MockContext mockSpanContext, final SpanContext realSpanContext) {
+    super(mockSpanContext.traceId, mockSpanContext.spanId, mockSpanContext.baggage);
     this.realSpanContext = realSpanContext;
   }
 
   @Override
   public Iterable<Entry<String,String>> baggageItems() {
-    final Iterable<Entry<String,String>> mockBaggageItems = mockSpanContext.baggageItems();
+    final Iterable<Entry<String,String>> mockBaggageItems = super.baggageItems();
     final Iterable<Entry<String,String>> realBaggageItems = realSpanContext.baggageItems();
     if (mockBaggageItems != null ? realBaggageItems == null : realBaggageItems != null)
       throw new IllegalStateException();

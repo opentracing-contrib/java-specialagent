@@ -50,7 +50,6 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
-@SuppressWarnings("restriction")
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
