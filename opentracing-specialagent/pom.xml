@@ -1,12 +1,12 @@
 <!--
   Copyright 2018 The OpenTracing Authors
-  
+
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
       http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,11 +21,11 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <name>${project.groupId}:${project.artifactId}</name>
+  <name>OpenTracing SpecialAgent</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent</url>
   <profiles>
     <profile>
@@ -39,7 +39,7 @@
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
-            <artifactId>agentplugin-maven-plugin</artifactId>
+            <artifactId>agentrule-maven-plugin</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -54,74 +54,86 @@
       </build>
       <dependencies>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-okhttp</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-jdbc</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-concurrent</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-mongo-driver</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-web-servlet-filter</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-camel</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-aws-sdk</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-cassandra-driver</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-jms-1</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-jms-2</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-elasticsearch-client-6</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib.specialagent.plugins</groupId>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-rxjava-2</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>opentracing-specialagent-kafka-client</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>opentracing-specialagent-asynchttpclient</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -143,6 +155,20 @@
     </profile>
   </profiles>
   <dependencies>
+    <!-- Tracer Plugins -->
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>jaeger-client-bundle</artifactId>
+      <version>0.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.lightstep.tracer</groupId>
+      <artifactId>lightstep-tracer-jre-bundle</artifactId>
+      <version>0.15.3</version>
+      <scope>provided</scope>
+    </dependency>
+
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-mock</artifactId>
@@ -170,10 +196,10 @@
       <groupId>junit</groupId>
       <scope>test</scope>
     </dependency>
-    
+
     <!-- Use <optional>true</optional> instead of <scope>provided</scope>
       for OT libs so they make it into both the main and test JARs. -->
-    
+
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>

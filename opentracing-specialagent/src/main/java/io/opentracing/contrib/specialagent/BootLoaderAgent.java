@@ -63,9 +63,15 @@ public class BootLoaderAgent {
   }
 
   public static final List<JarFile> jarFiles = new ArrayList<>();
+  private static boolean loaded = false;
 
   public static void premain(final Instrumentation inst, final JarFile jarFile) {
-    jarFiles.add(jarFile);
+    if (loaded)
+      return;
+
+    if (jarFile != null)
+      jarFiles.add(jarFile);
+
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
@@ -109,6 +115,8 @@ public class BootLoaderAgent {
           return builder.visit(Advice.to(AppendToBootstrap.class, cachedLocator).on(named("appendToBootstrapClassLoaderSearch").and(takesArguments(JarFile.class))));
         }})
       .installOn(inst);
+
+    loaded = true;
   }
 
   public static class Mutex extends ThreadLocal<Set<String>> {
@@ -147,7 +155,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
       }
       finally {
         mutex.get().remove(arg);
@@ -188,7 +196,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
       }
       finally {
         mutex.get().remove(arg);
@@ -203,7 +211,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
       }
     }
   }

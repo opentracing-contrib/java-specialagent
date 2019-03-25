@@ -101,8 +101,7 @@ public final class Util {
 
   /**
    * Filter the specified array of URL objects to return the Instrumentation
-   * Plugin URLs as specified by the Dependency TGF file at
-   * {@code dependencyUrl}.
+   * Rule URLs as specified by the Dependency TGF file at {@code dependencyUrl}.
    *
    * @param urls The array of URL objects to filter.
    * @param dependenciesTgf The contents of the TGF file that specify the
@@ -111,10 +110,10 @@ public final class Util {
    *          {@code (optional)}.
    * @param scopes An array of Maven scopes to include in the returned set, or
    *          {@code null} to include all scopes.
-   * @return An array of URL objects representing Instrumentation Plugin URLs
+   * @return An array of URL objects representing Instrumentation Rule URLs
    * @throws IOException If an I/O error has occurred.
    */
-  public static URL[] filterPluginURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
+  public static URL[] filterRuleURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
     final Set<String> names = Util.selectFromTgf(dependenciesTgf, includeOptional, scopes);
     return filterUrlFileNames(urls, names, 0, 0);
   }
@@ -284,16 +283,18 @@ public final class Util {
    * @param url The {@code URL} from which to find the source location.
    * @param resourcePath The resource path that is the suffix of the specified
    *          URL.
-   * @return The source location of the specified resource in the specified URL
+   * @return The source location of the specified resource in the specified URL.
+   * @throws MalformedURLException If no protocol is specified, or an unknown
+   *           protocol is found, or spec is null.
    * @throws IllegalArgumentException If the specified resource path is not the
    *           suffix of the specified URL.
    */
-  static String getSourceLocation(final URL url, final String resourcePath) {
+  static URL getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
     final String string = url.toString();
     if (!string.endsWith(resourcePath))
       throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
 
-    return string.startsWith("jar:") ? string.substring(4, string.lastIndexOf('!')) : string.substring(0, string.length() - resourcePath.length());
+    return new URL(string.startsWith("jar:") ? string.substring(4, string.lastIndexOf('!')) : string.substring(0, string.length() - resourcePath.length()));
   }
 
   /**
@@ -467,12 +468,37 @@ public final class Util {
   }
 
   /**
+   * Returns the name of the file or directory denoted by the specified
+   * pathname. This is just the last name in the name sequence of {@code path}.
+   * If the name sequence of {@code path} is empty, then the empty string is
+   * returned.
+   *
+   * @param path The path string.
+   * @return The name of the file or directory denoted by the specified
+   *         pathname, or the empty string if the name sequence of {@code path}
+   *         is empty.
+   * @throws NullPointerException If {@code path} is null.
+   * @throws IllegalArgumentException If {@code path} is an empty string.
+   */
+  public static String getName(final String path) {
+    if (path.length() == 0)
+      throw new IllegalArgumentException("Empty path");
+
+    if (path.length() == 0)
+      return path;
+
+    final boolean end = path.charAt(path.length() - 1) == '/';
+    final int start = end ? path.lastIndexOf('/', path.length() - 2) : path.lastIndexOf('/');
+    return start == -1 ? (end ? path.substring(0, path.length() - 1) : path) : end ? path.substring(start + 1, path.length() - 1) : path.substring(start + 1);
+  }
+
+  /**
    * Returns a {@code List} of {@code URL} objects having a prefix path that
    * matches {@code path}. This method will add a shutdown hook to delete any
    * temporary directory and file resources it created.
    *
    * @param path The prefix path to match when finding resources.
-   * @param excludes A set of plugin names to exclude.
+   * @param excludes A set of rule names to exclude.
    * @return A {@code List} of {@code URL} objects having a prefix path that
    *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
@@ -494,7 +520,7 @@ public final class Util {
           continue;
 
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("SpecialAgent Plugin Path: " + resource);
+          logger.finest("SpecialAgent Rule Path: " + resource);
 
         if (destDir == null)
           destDir = Files.createTempDirectory("opentracing-specialagent").toFile();
@@ -781,11 +807,11 @@ public final class Util {
     return a.length - b.length;
   }
 
-  private static final Event[] EMPTY_EVENTS = new Event[5];
+  private static final Event[] DEFAULT_EVENTS = new Event[5];
 
   static Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)
-      return EMPTY_EVENTS;
+      return DEFAULT_EVENTS;
 
     final String[] parts = eventsProperty.split(",");
     Arrays.sort(parts);

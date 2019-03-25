@@ -97,17 +97,17 @@ public class SpecialAgentAgent {
         if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
           classpath += "/";
 
-        try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
-          final URL resource = pluginClassLoader.findResource(arg.replace('.', '/').concat(".class"));
+        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
+          final URL resource = ruleClassLoader.findResource(arg.replace('.', '/').concat(".class"));
           if (resource != null)
             returned = Util.readBytes(resource);
         }
 
-        if (AgentPluginUtil.logger.isLoggable(Level.FINEST))
-          AgentPluginUtil.logger.finest("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (AgentRuleUtil.logger.isLoggable(Level.FINEST))
+          AgentRuleUtil.logger.finest("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindClass#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindClass#exit", t);
       }
     }
   }
@@ -124,15 +124,15 @@ public class SpecialAgentAgent {
         if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
           classpath += "/";
 
-        try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
-          returned = pluginClassLoader.findResource(arg);
+        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
+          returned = ruleClassLoader.findResource(arg);
         }
 
-        if (AgentPluginUtil.logger.isLoggable(Level.FINEST))
-          AgentPluginUtil.logger.finest("<<<<<<< Agent#findResource(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (AgentRuleUtil.logger.isLoggable(Level.FINEST))
+          AgentRuleUtil.logger.finest("<<<<<<< Agent#findResource(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResource#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResource#exit", t);
       }
     }
   }
@@ -149,16 +149,16 @@ public class SpecialAgentAgent {
         if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
           classpath += "/";
 
-        try (final PluginClassLoader pluginClassLoader = new PluginClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
-          returned = pluginClassLoader.getResources(arg); // Why is findResources(arg) not returning expected results?
+        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
+          returned = ruleClassLoader.getResources(arg); // Why is findResources(arg) not returning expected results?
           returned.hasMoreElements(); // For some reason, if I don't call this, the returned value does not have any elements!!!!
         }
 
-        if (AgentPluginUtil.logger.isLoggable(Level.FINEST))
-          AgentPluginUtil.logger.finest("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (AgentRuleUtil.logger.isLoggable(Level.FINEST))
+          AgentRuleUtil.logger.finest("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        AgentPluginUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResources#exit", t);
+        AgentRuleUtil.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResources#exit", t);
       }
     }
   }
