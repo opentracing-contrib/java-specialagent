@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -43,6 +44,10 @@ import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import io.opentracing.contrib.specialagent.Manager.Event;
 
@@ -75,19 +80,15 @@ public final class Util {
   private static URL[] filterUrlFileNames(final URL[] urls, final Set<String> names, final int index, final int depth) throws MalformedURLException {
     for (int i = index; i < urls.length; ++i) {
       final String string = urls[i].toString();
-      final boolean isDirectory;
-      final String token = (isDirectory = string.endsWith("/target/classes/")) ? string.substring(0, string.length() - 16) : string;
-      final String artifact = token.substring(token.lastIndexOf('/') + 1);
-      boolean match = false;
-      if (isDirectory) {
-        for (final String name : names)
-          if (match = name.startsWith(artifact))
-            break;
-      }
-      else {
-        match = names.contains(artifact);
-      }
+      final String artifact;
+      if (string.endsWith("/target/classes/"))
+        artifact = getArtifactFile(new File(string.substring(5, string.length() - 16)));
+      else if (string.endsWith(".jar"))
+        artifact = string.substring(string.lastIndexOf('/') + 1);
+      else
+        continue;
 
+      final boolean match = names.contains(artifact);
       if (match) {
         final URL result = new URL(string);
         final URL[] results = filterUrlFileNames(urls, names, i + 1, depth + 1);
@@ -97,6 +98,18 @@ public final class Util {
     }
 
     return depth == 0 ? null : new URL[depth];
+  }
+
+  private static String getArtifactFile(final File dir) {
+    try {
+      final MavenXpp3Reader reader = new MavenXpp3Reader();
+      final Model model = reader.read(new FileReader(new File(dir, "pom.xml")));
+      final String version = model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();
+      return model.getArtifactId() + "-" + version + ".jar";
+    }
+    catch (final IOException | XmlPullParserException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**

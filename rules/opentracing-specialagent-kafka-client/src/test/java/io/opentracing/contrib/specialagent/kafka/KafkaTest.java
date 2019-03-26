@@ -83,7 +83,7 @@ public class KafkaTest {
       createConsumer(latch, 1, tracer);
     }
 
-    List<MockSpan> mockSpans = tracer.finishedSpans();
+    final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(4, mockSpans.size());
     assertNull(tracer.activeSpan());
   }
@@ -102,7 +102,7 @@ public class KafkaTest {
     final KStream<Integer,String> kStream = builder.stream("stream-test");
     kStream.map(new KeyValueMapper<Integer,String,KeyValue<Integer,String>>() {
       @Override
-      public KeyValue<Integer,String> apply(Integer key, String value) {
+      public KeyValue<Integer,String> apply(final Integer key, final String value) {
         return new KeyValue<>(key, value + "map");
       }
     }).to("stream-out", Produced.with(intSerde, stringSerde));

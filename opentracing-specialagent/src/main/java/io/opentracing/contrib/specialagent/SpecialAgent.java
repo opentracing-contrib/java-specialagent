@@ -164,8 +164,8 @@ public class SpecialAgent {
     instrumenter.manager.premain(null, inst);
   }
 
-  public static void agentmain(final String agentArgs, final Instrumentation instrumentation) throws Exception {
-    premain(agentArgs, instrumentation);
+  public static void agentmain(final String agentArgs, final Instrumentation inst) throws Exception {
+    premain(agentArgs, inst);
   }
 
   /**
@@ -309,6 +309,9 @@ public class SpecialAgent {
         final URL jarUrl = Util.getSourceLocation(url, DEPENDENCIES_TGF);
         final String dependenciesTgf = new String(Util.readBytes(url));
         final URL[] dependencies = Util.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
+        if (dependencies == null)
+          throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
+
         boolean foundReference = false;
         for (final URL dependency : dependencies) {
           if (allPluginsClassLoader.containsPath(dependency)) {
