@@ -23,7 +23,6 @@
     <artifactId>specialagent</artifactId>
     <version>1.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
   <name>OpenTracing SpecialAgent</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent</url>
@@ -179,6 +178,11 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-embedder</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>3.6.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
