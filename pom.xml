@@ -322,6 +322,21 @@
       </plugins>
     </pluginManagement>
   </build>
+  <dependencies>
+    <!-- Tracer Plugins -->
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>jaeger-client-bundle</artifactId>
+      <version>0.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.lightstep.tracer</groupId>
+      <artifactId>lightstep-tracer-jre-bundle</artifactId>
+      <version>0.15.3</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>

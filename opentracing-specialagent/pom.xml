@@ -49,6 +49,13 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
       <dependencies>
@@ -154,20 +161,6 @@
     </profile>
   </profiles>
   <dependencies>
-    <!-- Tracer Plugins -->
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>jaeger-client-bundle</artifactId>
-      <version>0.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.lightstep.tracer</groupId>
-      <artifactId>lightstep-tracer-jre-bundle</artifactId>
-      <version>0.15.3</version>
-      <scope>provided</scope>
-    </dependency>
-
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-mock</artifactId>
@@ -182,7 +175,6 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.6.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
