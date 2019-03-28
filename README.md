@@ -167,15 +167,15 @@ The <ins>SpecialAgent</ins> supports 2 ways to connect to a OpenTracing-compatib
     1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
     2. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
 
-    The `-Dspecialagent.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which <ins>Tracer Plugin</ins> will be used. The value of `${TRACER_PLUGIN}` is the short name of the <ins>Tracer Plugin</ins>, i.e. `jaeger` or `lightstep`.
+    The `-Dsa.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which <ins>Tracer Plugin</ins> will be used. The value of `${TRACER_PLUGIN}` is the short name of the <ins>Tracer Plugin</ins>, i.e. `jaeger` or `lightstep`.
 
 2. **External <ins>Tracer Plugins</ins>**
 
     The <ins>SpecialAgent</ins> allows external <ins>Tracer Plugins</ins> to be attached to the runtime.
 
-    The `-Dspecialagent.tracer=${TRACER_JAR}` property is used on the command-line to specify the JAR path of the <ins>Tracer Plugin</ins> to be used. The `${TRACER_JAR}` must be a JAR that conforms to the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) API of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
+    The `-Dsa.tracer=${TRACER_JAR}` property is used on the command-line to specify the JAR path of the <ins>Tracer Plugin</ins> to be used. The `${TRACER_JAR}` must be a JAR that conforms to the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) API of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
 
-_**NOTE**: If a tracer is not specified with the `-Dspecialagent.tracer=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._ 
+_**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._ 
 
 ### Disabling <ins>Instrumentation Plugins</ins>
 
