@@ -163,7 +163,7 @@ public class ProxyMockTracer extends MockTracer {
   @Override
   public <C>void inject(final SpanContext spanContext, final Format<C> format, final C carrier) {
     super.inject(spanContext, format, carrier);
-    realTracer.inject(spanContext, format, carrier);
+    realTracer.inject(((ProxyMockSpanContext)spanContext).realSpanContext, format, carrier);
   }
 
   @Override
@@ -177,6 +177,9 @@ public class ProxyMockTracer extends MockTracer {
   public Span activeSpan() {
     final Span mockSpan = super.activeSpan();
     final Span realSpan = realTracer.activeSpan();
-    return new ProxyMockSpan((MockSpan)mockSpan, realSpan);
+    if (mockSpan == null ? realSpan != null : realSpan == null)
+      throw new IllegalStateException();
+
+    return mockSpan == null ? null : new ProxyMockSpan((MockSpan)mockSpan, realSpan);
   }
 }
