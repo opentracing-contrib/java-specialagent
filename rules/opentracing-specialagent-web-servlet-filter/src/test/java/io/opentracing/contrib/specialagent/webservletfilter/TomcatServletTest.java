@@ -49,7 +49,7 @@ import okhttp3.Response;
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class.getName());
 
-  private int serverPort = 9786;
+  private final int serverPort = 9786;
   private Tomcat tomcatServer;
 
   @Before

@@ -87,9 +87,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (testClassesPath.endsWith(".jar"))
       return new JarFile(new File(testClassesPath));
 
-    if (testClassesPath.endsWith("/test-classes/")) {
+    if (testClassesPath.endsWith("/test-classes/"))
       return Util.createTempJarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/"));
-    }
 
     if (testClassesPath.endsWith("classes/"))
       return Util.createTempJarFile(new File(testClassesPath.endsWith("/test-classes/") ? testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/" : testClassesPath));
@@ -294,9 +293,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     final List<String> rulePaths = new ArrayList<>();
     final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
 
-    final URL[] ruleUrls = Util.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
-    for (int i = 0; i < ruleUrls.length; ++i)
-      rulePaths.add(ruleUrls[i].getFile());
+    final URL[] dependencies = Util.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
+    if (dependencies == null)
+      throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
+
+    for (int i = 0; i < dependencies.length; ++i)
+      rulePaths.add(dependencies[i].getFile());
 
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
@@ -309,6 +311,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
     // Add scope={"test", "provided"}, optional=true to rulePaths
     final URL[] testDependencies = Util.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
+    if (testDependencies == null)
+      throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
+
     for (final URL testDependency : testDependencies)
       rulePaths.add(testDependency.getPath());
 

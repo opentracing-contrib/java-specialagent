@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -43,6 +44,10 @@ import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import io.opentracing.contrib.specialagent.Manager.Event;
 
@@ -75,19 +80,15 @@ public final class Util {
   private static URL[] filterUrlFileNames(final URL[] urls, final Set<String> names, final int index, final int depth) throws MalformedURLException {
     for (int i = index; i < urls.length; ++i) {
       final String string = urls[i].toString();
-      final boolean isDirectory;
-      final String token = (isDirectory = string.endsWith("/target/classes/")) ? string.substring(0, string.length() - 16) : string;
-      final String artifact = token.substring(token.lastIndexOf('/') + 1);
-      boolean match = false;
-      if (isDirectory) {
-        for (final String name : names)
-          if (match = name.startsWith(artifact))
-            break;
-      }
-      else {
-        match = names.contains(artifact);
-      }
+      final String artifact;
+      if (string.endsWith("/target/classes/"))
+        artifact = getArtifactFile(new File(string.substring(5, string.length() - 16)));
+      else if (string.endsWith(".jar"))
+        artifact = string.substring(string.lastIndexOf('/') + 1);
+      else
+        continue;
 
+      final boolean match = names.contains(artifact);
       if (match) {
         final URL result = new URL(string);
         final URL[] results = filterUrlFileNames(urls, names, i + 1, depth + 1);
@@ -97,6 +98,18 @@ public final class Util {
     }
 
     return depth == 0 ? null : new URL[depth];
+  }
+
+  private static String getArtifactFile(final File dir) {
+    try {
+      final MavenXpp3Reader reader = new MavenXpp3Reader();
+      final Model model = reader.read(new FileReader(new File(dir, "pom.xml")));
+      final String version = model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();
+      return model.getArtifactId() + "-" + version + ".jar";
+    }
+    catch (final IOException | XmlPullParserException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**
@@ -504,7 +517,7 @@ public final class Util {
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path, final Set<String> excludes) {
+  static Set<URL> findJarResources(final String path, final Collection<String> excludes) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       final Set<URL> urls = new HashSet<>();
@@ -529,22 +542,25 @@ public final class Util {
         jarURLConnection.setUseCaches(false);
         final JarFile jarFile = jarURLConnection.getJarFile();
         final Enumeration<JarEntry> entries = jarFile.entries();
+        OUT:
         while (entries.hasMoreElements()) {
           final String entry = entries.nextElement().getName();
-          if (entry.length() > path.length() && entry.startsWith(path)) {
-            final int slash = entry.lastIndexOf('/');
-            final String jarFileName = entry.substring(slash + 1);
-            if (excludes.contains(jarFileName.substring(0, jarFileName.lastIndexOf('.'))))
-              continue;
+          if (entry.length() <= path.length() || !entry.startsWith(path))
+            continue;
 
-            final File subDir = new File(destDir, entry.substring(0, slash));
-            subDir.mkdirs();
-            final File file = new File(subDir, jarFileName);
+          final int slash = entry.lastIndexOf('/');
+          final String jarFileName = entry.substring(slash + 1);
+          for (final String exclude : excludes)
+            if (jarFileName.startsWith(exclude + "-"))
+              continue OUT;
 
-            final URL url = new URL(resource, entry.substring(path.length()));
-            Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            urls.add(file.toURI().toURL());
-          }
+          final File subDir = new File(destDir, entry.substring(0, slash));
+          subDir.mkdirs();
+          final File file = new File(subDir, jarFileName);
+
+          final URL url = new URL(resource, entry.substring(path.length()));
+          Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          urls.add(file.toURI().toURL());
         }
       }
       while (resources.hasMoreElements());

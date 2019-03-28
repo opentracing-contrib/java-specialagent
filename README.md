@@ -182,7 +182,7 @@ _**NOTE**: If a tracer is not specified with the `-Dspecialagent.tracer=...` pro
 The <ins>SpecialAgent</ins> allows <ins>Instrumentation Plugins</ins> to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-${PLUGIN_NAME}.enabled=false
+${PLUGIN_NAME}.enable=false
 ```
 
 The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is included in the <ins>SpecialAgent</ins>, such as `opentracing-specialagent-okhttp` or `opentracing-specialagent-web-servlet-filter`.

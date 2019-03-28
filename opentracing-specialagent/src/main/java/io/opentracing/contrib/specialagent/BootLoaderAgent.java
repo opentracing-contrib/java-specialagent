@@ -65,12 +65,13 @@ public class BootLoaderAgent {
   public static final List<JarFile> jarFiles = new ArrayList<>();
   private static boolean loaded = false;
 
-  public static void premain(final Instrumentation inst, final JarFile jarFile) {
+  public static void premain(final Instrumentation inst, final JarFile ... jarFiles) {
     if (loaded)
       return;
 
-    if (jarFile != null)
-      jarFiles.add(jarFile);
+    if (jarFiles != null)
+      for (final JarFile jarFile : jarFiles)
+        BootLoaderAgent.jarFiles.add(jarFile);
 
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
