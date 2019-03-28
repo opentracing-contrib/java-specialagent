@@ -371,7 +371,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       SpecialAgent.premain(null, inst);
     }
     catch (final Throwable e) {
-      e.printStackTrace();
+      throw new IllegalStateException(e.getMessage(), e.getCause());
     }
   }
 
