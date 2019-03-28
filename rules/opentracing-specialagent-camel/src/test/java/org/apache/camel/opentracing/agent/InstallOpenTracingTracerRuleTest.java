@@ -31,7 +31,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -56,9 +55,8 @@ public class InstallOpenTracingTracerRuleTest extends CamelTestSupport {
   protected ProducerTemplate template;
 
   @Before
-  public void init(final Tracer tracer) {
-    assertTrue(InstallOpenTracingTracerRuleTest.tracer.scopeManager() == tracer.scopeManager());
-    InstallOpenTracingTracerRuleTest.tracer.reset();
+  public void init() {
+    tracer.reset();
   }
 
   @Override

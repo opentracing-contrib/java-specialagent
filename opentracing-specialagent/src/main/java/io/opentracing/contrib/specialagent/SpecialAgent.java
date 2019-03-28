@@ -52,16 +52,16 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
+@SuppressWarnings("restriction")
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
-  static final String TRACER_PROPERTY = "specialagent.tracer";
-  static final String EVENTS_PROPERTY = "specialagent.log.events";
-  static final String LOGGING_PROPERTY = "specialagent.log.level";
-  static final String RULE_ARG = "io.opentracing.contrib.specialagent.rules";
+  static final String TRACER_PROPERTY = "sa.tracer";
+  static final String EVENTS_PROPERTY = "sa.log.events";
+  static final String LOGGING_PROPERTY = "sa.log.level";
+  static final String RULE_ARG = "sa.rulepath";
 
   static final String DEPENDENCIES_TGF = "dependencies.tgf";
-
   static final String TRACER_FACTORY = "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory";
 
   private static final Map<ClassLoader,RuleClassLoader> classLoaderToRuleClassLoader = new IdentityHashMap<ClassLoader,RuleClassLoader>() {
@@ -195,11 +195,6 @@ public class SpecialAgent {
       final Enumeration<URL> instrumentationRules = instrumenter.manager.getResources();
       while (instrumentationRules.hasMoreElements())
         pluginJarUrls.add(Util.getSourceLocation(instrumentationRules.nextElement(), instrumenter.manager.file));
-
-      // Add tracer plugin JARs from system class loader
-      final Enumeration<URL> tracerFactories = ClassLoader.getSystemClassLoader().getResources(TRACER_FACTORY);
-      while (tracerFactories.hasMoreElements())
-        pluginJarUrls.add(Util.getSourceLocation(tracerFactories.nextElement(), TRACER_FACTORY));
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
@@ -401,13 +396,12 @@ public class SpecialAgent {
     }
     else {
       final File file = new File(tracerProperty);
-      final JarFile tracerJar;
       try {
-        tracerJar = file.exists() ? new JarFile(file) : findTracer(allPluginsClassLoader, tracerProperty);
-        if (tracerJar == null)
+        final JarFile tracerJar = file.exists() ? new JarFile(file) : findTracer(allPluginsClassLoader, tracerProperty);
+        if (tracerJar != null)
+          inst.appendToBootstrapClassLoaderSearch(tracerJar);
+        else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null)
           throw new IllegalStateException("TRACER_PROPERTY=" + tracerProperty + " did not resolve to a tracer JAR or name");
-
-        inst.appendToBootstrapClassLoaderSearch(tracerJar);
       }
       catch (final IOException e) {
         throw new IllegalStateException(e);

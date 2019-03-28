@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.okhttp;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.URLClassLoader;
 import java.util.List;
 
 import org.junit.Test;
@@ -28,7 +27,6 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -43,11 +41,6 @@ public class OkHttpTest {
       server.enqueue(new MockResponse().setBody("hello, world!").setResponseCode(200));
 
       final HttpUrl httpUrl = server.url("/hello");
-
-      assertEquals(URLClassLoader.class, Interceptor.class.getClassLoader().getClass());
-      assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
-      assertEquals(URLClassLoader.class, OkHttpClient.Builder.class.getClassLoader().getClass());
-      assertEquals(URLClassLoader.class, OkHttpClient.class.getClassLoader().getClass());
 
       // FIXME: Rule does not currently work when just using the `OkHttpClient`
       // FIXME: default constructor.
