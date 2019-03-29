@@ -101,13 +101,13 @@ Any exception that occurs during the execution of the bootstrap process will not
 
 The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Building](#building) instructions, or downloading directly from Maven's Central Repository.
 
-1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-1.0.0.jar`][main-release]<br>
-   SNAPSHOT: [`opentracing-specialagent-1.0.1-SNAPSHOT.jar`][main-snapshot]
+1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-1.0.1.jar`][main-release]<br>
+   SNAPSHOT: [`opentracing-specialagent-1.0.2-SNAPSHOT.jar`][main-snapshot]
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
-1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-1.0.0-tests.jar`][test-release]<br>
-   SNAPSHOT: [`opentracing-specialagent-1.0.1-SNAPSHOT-tests.jar`][test-snapshot]
+1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-1.0.1-tests.jar`][test-release]<br>
+   SNAPSHOT: [`opentracing-specialagent-1.0.2-SNAPSHOT-tests.jar`][test-snapshot]
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any <ins>Instrumentation Plugins</ins> themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an <ins>Instrumentation Plugin</ins> implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
@@ -120,7 +120,7 @@ The <ins>SpecialAgent</ins> uses [Java’s Instrumentation mechanism](https://do
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.0.0.jar -jar myapp.jar
+java -javaagent:opentracing-specialagent-1.0.1.jar -jar myapp.jar
 ```
 
 This command statically attaches <ins>SpecialAgent</ins> into the application in `myapp.jar`.
@@ -136,12 +136,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 2. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.0.0.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.0.1.jar <PID>
     ```
 
 3. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-1.0.0.jar <PID>
+    java -jar opentracing-specialagent-1.0.1.jar <PID>
     ```
 
 ## Configuration
@@ -193,16 +193,16 @@ _**Prerequisite**: The <ins>SpecialAgent</ins> requires [Oracle Java](https://ww
 
 The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles:
 
-1. The `default` profile is used for development of <ins>Instrumentation Rules</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.0.0.jar`][main-release]
+1. The `default` profile is used for development of <ins>Instrumentation Rules</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.0.1.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.0.0.jar`][main-release]. It builds each rule, but does not run tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.0.0.jar`][main-release] will contain the built rules inside it.
+2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.0.1.jar`][main-release]. It builds each rule, but does not run tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.0.1.jar`][main-release] will contain the built rules inside it.
 
-    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.0.0.jar`][main-release] from the previous step will not contain any <ins>Instrumentation Plugins</ins> within it!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.0.1.jar`][main-release] from the previous step will not contain any <ins>Instrumentation Plugins</ins> within it!_
 
     _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
@@ -231,12 +231,12 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jdbc]: https://github.com/opentracing-contrib/java-jdbc
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
-[main-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.0/opentracing-specialagent-1.0.0.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.1-SNAPSHOT
+[main-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.1/opentracing-specialagent-1.0.1.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.2-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jdbc
 [specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-1
 [specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-2
 [specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-okhttp
-[test-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.0/opentracing-specialagent-1.0.0-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.1-SNAPSHOT
+[test-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.1/opentracing-specialagent-1.0.1-tests.jar
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.2-SNAPSHOT
