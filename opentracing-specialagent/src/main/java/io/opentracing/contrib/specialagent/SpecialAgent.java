@@ -56,10 +56,11 @@ import io.opentracing.util.GlobalTracer;
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
+  static final String AGENT_RUNNER_ARG = "sa.agentrunner";
+  static final String RULE_PATH_ARG = "sa.rulepath";
   static final String TRACER_PROPERTY = "sa.tracer";
   static final String EVENTS_PROPERTY = "sa.log.events";
   static final String LOGGING_PROPERTY = "sa.log.level";
-  static final String RULE_ARG = "sa.rulepath";
 
   static final String DEPENDENCIES_TGF = "dependencies.tgf";
   static final String TRACER_FACTORY = "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory";
@@ -200,7 +201,7 @@ public class SpecialAgent {
       throw new IllegalStateException(e);
     }
 
-    final URL[] rulePaths = Util.classPathToURLs(System.getProperty(RULE_ARG));
+    final URL[] rulePaths = Util.classPathToURLs(System.getProperty(RULE_PATH_ARG));
     if (rulePaths != null)
       for (final URL rulePath : rulePaths)
         pluginJarUrls.add(rulePath);
@@ -372,6 +373,20 @@ public class SpecialAgent {
       logger.fine("OpenTracing AgentRule(s) loaded");
   }
 
+  private static boolean isAgentRunner() {
+    return System.getProperty(AGENT_RUNNER_ARG) != null;
+  }
+
+  private static Tracer deferredTracer;
+
+  static Tracer getDeferredTracer() {
+    return deferredTracer;
+  }
+
+  public static void setDeferredTracer(Tracer deferredTracer) {
+    SpecialAgent.deferredTracer = deferredTracer;
+  }
+
   /**
    * Connects a Tracer Plugin to the runtime.
    */
@@ -398,10 +413,13 @@ public class SpecialAgent {
       final File file = new File(tracerProperty);
       try {
         final JarFile tracerJar = file.exists() ? new JarFile(file) : findTracer(allPluginsClassLoader, tracerProperty);
-        if (tracerJar != null)
-          inst.appendToBootstrapClassLoaderSearch(tracerJar);
-        else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null)
+        if (tracerJar != null) {
+          if (!isAgentRunner())
+            inst.appendToBootstrapClassLoaderSearch(tracerJar);
+        }
+        else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null) {
           throw new IllegalStateException("TRACER_PROPERTY=" + tracerProperty + " did not resolve to a tracer JAR or name");
+        }
       }
       catch (final IOException e) {
         throw new IllegalStateException(e);
@@ -411,9 +429,13 @@ public class SpecialAgent {
     }
 
     if (tracer != null) {
-      GlobalTracer.register(tracer);
+      if (isAgentRunner())
+        deferredTracer = tracer;
+      else
+        GlobalTracer.register(tracer);
+
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Tracer resolved & registered with GlobalTracer: " + tracer.getClass().getName());
+        logger.fine("Tracer resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer: " + tracer.getClass().getName());
     }
     else {
       logger.warning("Tracer NOT RESOLVED");

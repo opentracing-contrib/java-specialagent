@@ -39,7 +39,7 @@ import io.opentracing.util.ThreadLocalScopeManager;
  */
 public class MockTracer implements Tracer {
     private final List<MockSpan> finishedSpans = new ArrayList<>();
-    private final Propagator propagator;
+    final Propagator propagator;
     private final ScopeManager scopeManager;
 
     public MockTracer() {

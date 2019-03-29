@@ -46,6 +46,37 @@
   </modules>
   <profiles>
     <profile>
+      <id>default</id>
+      <activation>
+        <property>
+          <name>!assemble</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent</groupId>
+          <artifactId>opentracing-specialagent</artifactId>
+          <version>${project.version}</version>
+          <type>test-jar</type>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>ProxyMockTracer</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-Dsa.tracer=jaeger -DJAEGER_SERVICE_NAME=ProxyMockTracer</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>assemble</id>
       <activation>
         <property>
@@ -80,23 +111,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>!assemble</name>
-        </property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent</groupId>
-          <artifactId>opentracing-specialagent</artifactId>
-          <version>${project.version}</version>
-          <type>test-jar</type>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
   <build>

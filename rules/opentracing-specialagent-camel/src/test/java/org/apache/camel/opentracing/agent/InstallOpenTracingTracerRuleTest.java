@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config.Log;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.MockTracer.Propagator;
@@ -39,7 +40,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false)
+@AgentRunner.Config(isolateClassLoader=false, log=Log.FINE)
 public class InstallOpenTracingTracerRuleTest extends CamelTestSupport {
   private static MockTracer tracer;
 

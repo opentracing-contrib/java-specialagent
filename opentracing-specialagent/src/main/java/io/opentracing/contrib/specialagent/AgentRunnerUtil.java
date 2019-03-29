@@ -62,12 +62,27 @@ public class AgentRunnerUtil {
       if (tracer != null)
         return tracer;
 
+      final Tracer deferredTracer = SpecialAgent.getDeferredTracer();
       final MockTracer tracer;
       if (GlobalTracer.isRegistered()) {
         try {
           final Field field = GlobalTracer.class.getDeclaredField("tracer");
           field.setAccessible(true);
-          tracer = new ProxyMockTracer((Tracer)field.get(null));
+          final Tracer registered = (Tracer)field.get(null);
+          if (deferredTracer == null) {
+            tracer = registered instanceof MockTracer ? (MockTracer)registered : new ProxyMockTracer(registered);
+          }
+          else if (registered instanceof MockTracer) {
+            tracer = new ProxyMockTracer((MockTracer)registered, deferredTracer);
+          }
+          else {
+            // NOTE: This is guaranteed to fail, and is implemented this way to
+            // NOTE: use GlobalTracer's own error checking mechanism to disallow
+            // NOTE: 2 non-MockTracer tracers from being registered.
+            GlobalTracer.register(deferredTracer);
+            throw new IllegalStateException("Should have failed on the previous line");
+          }
+
           field.set(null, tracer);
         }
         catch (final IllegalAccessException | NoSuchFieldException e) {
@@ -75,7 +90,7 @@ public class AgentRunnerUtil {
         }
       }
       else {
-        tracer = new MockTracer();
+        tracer = deferredTracer != null ? new ProxyMockTracer(deferredTracer) : new MockTracer();
         GlobalTracer.register(tracer);
       }
 
