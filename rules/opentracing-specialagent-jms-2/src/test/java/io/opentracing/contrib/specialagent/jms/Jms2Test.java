@@ -15,20 +15,19 @@
 
 package io.opentracing.contrib.specialagent.jms;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
+
 import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
@@ -41,8 +40,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
-@AgentRunner.Config
 public class Jms2Test extends JmsTest {
   private ActiveMQServer server;
   private JMSContext context;
