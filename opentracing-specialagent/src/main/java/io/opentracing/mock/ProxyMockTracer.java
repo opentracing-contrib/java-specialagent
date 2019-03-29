@@ -21,6 +21,8 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan.MockContext;
+import io.opentracing.mock.ProxyMockScopeManager.ProxyMockScope;
+import io.opentracing.mock.ProxyMockScopeManager.ProxyMockScope.ProxyMockSpan;
 import io.opentracing.noop.NoopScopeManager;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.ThreadLocalScopeManager;
@@ -29,32 +31,31 @@ public class ProxyMockTracer extends MockTracer {
   final Tracer realTracer;
   private ProxyMockScopeManager scopeManager;
 
+  public ProxyMockTracer(final MockTracer mockTracer, final Tracer tracer) {
+    super(mockTracer.scopeManager(), mockTracer.propagator);
+    this.realTracer = tracer;
+    if (mockTracer == tracer)
+      throw new IllegalArgumentException(ProxyMockTracer.class.getSimpleName() + " cannot proxy to itself");
+  }
+
   public ProxyMockTracer(final Tracer tracer) {
     super(new ThreadLocalScopeManager(), Propagator.TEXT_MAP);
     this.realTracer = tracer;
-    if (tracer == this)
-      throw new IllegalArgumentException(ProxyMockTracer.class.getSimpleName() + " cannot proxy to itself");
   }
 
   public ProxyMockTracer(final Tracer tracer, final ScopeManager scopeManager) {
     super(scopeManager, Propagator.TEXT_MAP);
     this.realTracer = tracer;
-    if (tracer == this)
-      throw new IllegalArgumentException(ProxyMockTracer.class.getSimpleName() + " cannot proxy to itself");
   }
 
   public ProxyMockTracer(final Tracer tracer, final ScopeManager scopeManager, final Propagator propagator) {
     super(scopeManager, propagator);
     this.realTracer = tracer;
-    if (tracer == this)
-      throw new IllegalArgumentException(ProxyMockTracer.class.getSimpleName() + " cannot proxy to itself");
   }
 
   public ProxyMockTracer(final Tracer tracer, final Propagator propagator) {
     super(NoopScopeManager.INSTANCE, propagator);
     this.realTracer = tracer;
-    if (tracer == this)
-      throw new IllegalArgumentException(ProxyMockTracer.class.getSimpleName() + " cannot proxy to itself");
   }
 
   @Override
@@ -62,7 +63,7 @@ public class ProxyMockTracer extends MockTracer {
     final ScopeManager mockScopeManager = super.scopeManager();
     final ScopeManager realScopeManager = realTracer.scopeManager();
     if (scopeManager == null || scopeManager.mockScopeManager != mockScopeManager || scopeManager.realScopeManager != realScopeManager)
-      scopeManager = new ProxyMockScopeManager(mockScopeManager, realScopeManager);
+      scopeManager = new ProxyMockScopeManager(this, mockScopeManager, realScopeManager);
 
     return scopeManager;
   }
@@ -141,7 +142,7 @@ public class ProxyMockTracer extends MockTracer {
     public ProxyMockScope startActive(final boolean finishSpanOnClose) {
       final Scope mockScope = super.startActive(finishSpanOnClose);
       final Scope realScope = realSpanBuilder.startActive(finishSpanOnClose);
-      return new ProxyMockScope(mockScope, realScope);
+      return new ProxyMockScope(ProxyMockTracer.this, mockScope, realScope);
     }
 
     @Override
@@ -149,14 +150,14 @@ public class ProxyMockTracer extends MockTracer {
     public ProxyMockSpan startManual() {
       final MockSpan mockSpan = super.startManual();
       final Span realSpan = realSpanBuilder.startManual();
-      return new ProxyMockSpan(mockSpan, realSpan);
+      return new ProxyMockSpan(ProxyMockTracer.this, mockSpan, realSpan);
     }
 
     @Override
     public ProxyMockSpan start() {
       final MockSpan mockSpan = super.start();
       final Span realSpan = realSpanBuilder.start();
-      return new ProxyMockSpan(mockSpan, realSpan);
+      return new ProxyMockSpan(ProxyMockTracer.this, mockSpan, realSpan);
     }
   }
 
@@ -170,16 +171,13 @@ public class ProxyMockTracer extends MockTracer {
   public <C>ProxyMockSpanContext extract(final Format<C> format, final C carrier) {
     final SpanContext mockSpanContext = super.extract(format, carrier);
     final SpanContext realSpanContext = realTracer.extract(format, carrier);
-    return new ProxyMockSpanContext((MockContext)mockSpanContext, realSpanContext);
+    return mockSpanContext == null ? null : new ProxyMockSpanContext((MockContext)mockSpanContext, realSpanContext);
   }
 
   @Override
   public Span activeSpan() {
     final Span mockSpan = super.activeSpan();
     final Span realSpan = realTracer.activeSpan();
-    if (mockSpan == null ? realSpan != null : realSpan == null)
-      throw new IllegalStateException();
-
-    return mockSpan == null ? null : new ProxyMockSpan((MockSpan)mockSpan, realSpan);
+    return mockSpan == null ? null : new ProxyMockSpan(ProxyMockTracer.this, (MockSpan)mockSpan, realSpan);
   }
 }

@@ -35,10 +35,10 @@ public class MockSpan implements Span {
     // A simple-as-possible (consecutive for repeatability) id generator.
     private static AtomicLong nextId = new AtomicLong(0);
 
-    final MockTracer mockTracer;
+    private final MockTracer mockTracer;
     private MockContext context;
     private final long parentId; // 0 if there's no parent.
-    final long startMicros;
+    private final long startMicros;
     private boolean finished;
     private long finishMicros;
     final Map<String, Object> tags;
@@ -183,9 +183,9 @@ public class MockSpan implements Span {
      * between processes).
      */
     public static class MockContext implements SpanContext {
-        final long traceId;
-        final Map<String, String> baggage;
-        final long spanId;
+        private final long traceId;
+        private final Map<String, String> baggage;
+        private final long spanId;
 
         /**
          * A package-protected constructor to create a new MockContext. This should only be called by MockSpan and/or

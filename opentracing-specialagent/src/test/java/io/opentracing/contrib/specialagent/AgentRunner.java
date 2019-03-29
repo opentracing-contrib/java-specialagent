@@ -141,6 +141,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final File CWD = new File("").getAbsoluteFile();
 
   static {
+    System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
     absorbProperties();
     inst = install();
   }
@@ -255,11 +256,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       rulePaths.add(classesPath);
       final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
 
-      final URL[] libs = Util.classPathToURLs(System.getProperty("java.class.path"));
+      final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
       // Special case for AgentRunnerITest, because it belongs to the same
       // classpath path as the AgentRunner
 
-      final URLClassLoader classLoader = new URLClassLoader(libs, new ClassLoader(ClassLoader.getSystemClassLoader()) {
+      final URLClassLoader classLoader = new URLClassLoader(classpath, new ClassLoader(ClassLoader.getSystemClassLoader()) {
         private final ClassLoader bootstrapClassLoader = new URLClassLoader(new URL[0], null);
 
         @Override
@@ -307,7 +308,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("rulePaths of forked process will be:\n" + Util.toIndentedString(rulePaths));
 
-    System.setProperty(SpecialAgent.RULE_ARG, Util.toString(rulePaths.toArray(), ":"));
+    System.setProperty(SpecialAgent.RULE_PATH_ARG, Util.toString(rulePaths.toArray(), ":"));
 
     // Add scope={"test", "provided"}, optional=true to rulePaths
     final URL[] testDependencies = Util.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");

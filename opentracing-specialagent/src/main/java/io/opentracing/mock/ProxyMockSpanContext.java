@@ -17,21 +17,24 @@ package io.opentracing.mock;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import io.opentracing.SpanContext;
 import io.opentracing.mock.MockSpan.MockContext;
 
-public class ProxyMockSpanContext extends MockContext {
+class ProxyMockSpanContext extends MockContext {
+  final SpanContext mockSpanContext;
   final SpanContext realSpanContext;
 
-  public ProxyMockSpanContext(final MockContext mockSpanContext, final SpanContext realSpanContext) {
-    super(mockSpanContext.traceId, mockSpanContext.spanId, mockSpanContext.baggage);
-    this.realSpanContext = realSpanContext;
+  ProxyMockSpanContext(final MockContext mockSpanContext, final SpanContext realSpanContext) {
+    super(-1, -1, null);
+    this.mockSpanContext = Objects.requireNonNull(mockSpanContext);
+    this.realSpanContext = Objects.requireNonNull(realSpanContext);
   }
 
   @Override
   public Iterable<Entry<String,String>> baggageItems() {
-    final Iterable<Entry<String,String>> mockBaggageItems = super.baggageItems();
+    final Iterable<Entry<String,String>> mockBaggageItems = mockSpanContext.baggageItems();
     final Iterable<Entry<String,String>> realBaggageItems = realSpanContext.baggageItems();
     if (mockBaggageItems != null ? realBaggageItems == null : realBaggageItems != null)
       throw new IllegalStateException();
@@ -44,11 +47,8 @@ public class ProxyMockSpanContext extends MockContext {
     private final Iterator<Entry<String,String>> realIterator;
 
     private ProxyIterator(final Iterator<Entry<String,String>> mockIterator, final Iterator<Entry<String,String>> realIterator) {
-      if (mockIterator != null ? realIterator == null : realIterator != null)
-        throw new IllegalStateException();
-
-      this.mockIterator = mockIterator;
-      this.realIterator = realIterator;
+      this.mockIterator = Objects.requireNonNull(mockIterator);
+      this.realIterator = Objects.requireNonNull(realIterator);
     }
 
     @Override
