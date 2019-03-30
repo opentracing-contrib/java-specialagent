@@ -55,7 +55,7 @@ Examples:
 * [`rules/opentracing-specialagent-jms-1`][specialagent-jms-1]
 * [`rules/opentracing-specialagent-jms-2`][specialagent-jms-2]
 
-_<ins>Instrumentation Plugins</ins> **ARE** coupled to the <ins>SpecialAgent</ins>._
+_<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>._
 
 ## Supported <ins>Instrumentation Plugins</ins>
 
