@@ -231,12 +231,12 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jdbc]: https://github.com/opentracing-contrib/java-jdbc
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
-[main-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.1/opentracing-specialagent-1.0.1.jar
+[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.1/opentracing-specialagent-1.0.1.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.2-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jdbc
 [specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-1
 [specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-2
 [specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-okhttp
-[test-release]: https://search.maven.org/remotecontent?filepath=io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.1/opentracing-specialagent-1.0.1-tests.jar
+[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.0.1/opentracing-specialagent-1.0.1-tests.jar
 [test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/opentracing-specialagent/1.0.2-SNAPSHOT
