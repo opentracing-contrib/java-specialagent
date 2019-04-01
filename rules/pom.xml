@@ -61,17 +61,23 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
-      <id>ProxyMockTracer</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>-Dsa.tracer=jaeger -DJAEGER_SERVICE_NAME=ProxyMockTracer</argLine>
-            </configuration>
+            <groupId>io.opentracing.contrib.specialagent</groupId>
+            <artifactId>agentrule-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>fingerprint</goal>
+                </goals>
+                <phase>process-classes</phase>
+                <configuration>
+                  <destFile>${project.build.outputDirectory}/fingerprint.bin</destFile>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
@@ -108,6 +114,20 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ProxyMockTracer</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-Dsa.tracer=jaeger -DJAEGER_SERVICE_NAME=ProxyMockTracer</argLine>
+            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -193,22 +213,6 @@
               <excludes>
                 <exclude></exclude> <!-- This is necessary for inner classes to be run -->
               </excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
-        <version>${project.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>fingerprint</goal>
-            </goals>
-            <phase>process-classes</phase>
-            <configuration>
-              <destFile>${project.build.outputDirectory}/fingerprint.bin</destFile>
             </configuration>
           </execution>
         </executions>

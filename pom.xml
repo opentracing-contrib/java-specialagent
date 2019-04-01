@@ -48,6 +48,7 @@
   <modules>
     <module>opentracing-specialagent-api</module>
     <module>opentracing-specialagent</module>
+    <module>agentrule-maven-plugin</module>
     <module>rules</module>
   </modules>
   <properties>
@@ -138,17 +139,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>!assemble</name>
-        </property>
-      </activation>
-      <modules>
-        <module>agentrule-maven-plugin</module>
-      </modules>
     </profile>
     <profile>
       <id>report</id>
