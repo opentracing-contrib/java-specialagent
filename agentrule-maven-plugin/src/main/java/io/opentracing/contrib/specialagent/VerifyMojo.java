@@ -56,7 +56,7 @@ public final class VerifyMojo extends AbstractMojo {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
             final String entry = entries.nextElement().getName();
-            if (ByteBuddyManager.RULES_FILE.equals(entry))
+            if ("otarules.mf".equals(entry)) // Deliberately unlinked from ByteBuddyManager#RULES_FILE
               hasOtaRulesMf = true;
             else if ("fingerprint.bin".equals(entry))
               hasFingerprintBin = true;
