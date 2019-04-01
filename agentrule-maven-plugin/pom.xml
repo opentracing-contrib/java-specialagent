@@ -142,6 +142,21 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>default</id>
+      <activation>
+        <property>
+          <name>!assemble</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent</groupId>
+          <artifactId>opentracing-specialagent</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
   <dependencies>
     <dependency>
@@ -158,11 +173,6 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>3.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>opentracing-specialagent</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <artifactId>junit</artifactId>
