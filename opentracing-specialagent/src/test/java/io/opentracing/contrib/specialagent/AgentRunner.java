@@ -139,6 +139,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private static final File CWD = new File("").getAbsoluteFile();
+  private static final ClassLoader bootLoaderProxy = new URLClassLoader(new URL[0], null);
 
   static {
     System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
@@ -251,21 +252,15 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
 
       final List<String> rulePaths = findRulePaths(dependenciesUrl);
-
       rulePaths.add(testClassesPath);
       rulePaths.add(classesPath);
+
       final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
-
       final URL[] classpath = Util.classPathToURLs(System.getProperty("java.class.path"));
-      // Special case for AgentRunnerITest, because it belongs to the same
-      // classpath path as the AgentRunner
-
       final URLClassLoader classLoader = new URLClassLoader(classpath, new ClassLoader(ClassLoader.getSystemClassLoader()) {
-        private final ClassLoader bootstrapClassLoader = new URLClassLoader(new URL[0], null);
-
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-          return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? bootstrapClassLoader.loadClass(name) : super.loadClass(name, resolve);
+          return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? bootLoaderProxy.loadClass(name) : super.loadClass(name, resolve);
         }
       });
 

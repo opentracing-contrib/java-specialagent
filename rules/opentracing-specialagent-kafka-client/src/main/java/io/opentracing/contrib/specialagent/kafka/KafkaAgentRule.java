@@ -36,9 +36,10 @@ public class KafkaAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     final AgentBuilder builder = new AgentBuilder.Default()
-    .with(RedefinitionStrategy.RETRANSFORMATION)
-    .with(InitializationStrategy.NoOp.INSTANCE)
-    .with(TypeStrategy.Default.REDEFINE);
+      .ignore(none())
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE);
 
     return Arrays.asList(builder
       .type(named("org.apache.kafka.clients.consumer.KafkaConsumer"))

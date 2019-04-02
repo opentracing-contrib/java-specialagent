@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 class RuleClassLoader extends URLClassLoader {
   public static final String FINGERPRINT_FILE = "fingerprint.bin";
   private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
+  static final ClassLoader BOOT_LOADER_PROXY = new URLClassLoader(new URL[0], null);
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
   private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
@@ -83,7 +84,10 @@ class RuleClassLoader extends URLClassLoader {
    *         represented by this {@code RuleClassLoader}, and {@code false} if
    *         the specified {@code ClassLoader} is incompatible.
    */
-  boolean isCompatible(final ClassLoader classLoader) {
+  boolean isCompatible(ClassLoader classLoader) {
+    if (classLoader == null)
+      classLoader = BOOT_LOADER_PROXY;
+
     final Boolean compatible = compatibility.get(classLoader);
     if (compatible != null)
       return compatible;
