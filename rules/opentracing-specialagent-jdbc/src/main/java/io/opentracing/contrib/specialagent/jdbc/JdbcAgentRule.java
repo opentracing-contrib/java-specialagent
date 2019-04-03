@@ -40,6 +40,7 @@ public class JdbcAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
     final Narrowable builder = new AgentBuilder.Default()
+      .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

@@ -36,6 +36,7 @@ public class Elasticsearch6TransportAgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
     return Arrays.asList(new AgentBuilder.Default()
+      .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

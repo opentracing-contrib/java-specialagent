@@ -36,11 +36,12 @@ import net.bytebuddy.utility.JavaModule;
 public class Jms1AgentRule implements AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    final Narrowable builder = new AgentBuilder.Default().
-      with(RedefinitionStrategy.RETRANSFORMATION).
-      with(InitializationStrategy.NoOp.INSTANCE).
-      with(TypeStrategy.Default.REDEFINE).
-      type(hasSuperType(named("javax.jms.Session")));
+    final Narrowable builder = new AgentBuilder.Default()
+      .ignore(none())
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .type(hasSuperType(named("javax.jms.Session")));
 
     return Arrays.asList(builder.transform(new Transformer() {
       @Override

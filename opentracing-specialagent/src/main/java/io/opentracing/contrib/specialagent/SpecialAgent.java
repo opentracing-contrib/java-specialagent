@@ -292,7 +292,6 @@ public class SpecialAgent {
     try {
       final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES_TGF);
       final Set<String> urls = new HashSet<>();
-
       while (enumeration.hasMoreElements()) {
         final URL url = enumeration.nextElement();
         if (urls.contains(url.toString()))
