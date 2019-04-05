@@ -1,5 +1,10 @@
 # Changes by Version
 
+## v1.0.2 (2019-04-05)
+* Release `agentrule-maven-plugin` in deployment.
+* Support any 3rd-party libraries present on BootPath.
+* Upgrade LightStep Tracer to 0.15.4 for interoperability with SpringBoot.
+
 ## v1.0.1 (2019-03-15)
 * Resolve bugs in dependency correlation for plugin wiring in SpecialAgent runtime.
 * Standardize `-Dsa.` prefix for properties of SpecialAgent.
