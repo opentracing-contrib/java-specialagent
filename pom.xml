@@ -323,7 +323,7 @@
     <dependency>
       <groupId>com.lightstep.tracer</groupId>
       <artifactId>lightstep-tracer-jre-bundle</artifactId>
-      <version>0.15.3</version>
+      <version>0.15.4</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
