@@ -127,7 +127,6 @@ public class RabbitMQTest {
     });
 
     latch.await(15, TimeUnit.SECONDS);
-
     List<MockSpan> finishedSpans = tracer.finishedSpans();
     for (int tries = 10; tries > 0 && finishedSpans.size() < 2; --tries) {
       TimeUnit.SECONDS.sleep(1L);

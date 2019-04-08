@@ -15,28 +15,60 @@
 package io.opentracing.contrib.specialagent.rabbitmq;
 
 import java.io.File;
-import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.qpid.server.SystemLauncher;
+import org.apache.qpid.server.SystemLauncherListener;
+import org.apache.qpid.server.model.Port;
+import org.apache.qpid.server.model.SystemConfig;
 
 class EmbeddedAMQPBroker {
-  private final SystemLauncher broker = new SystemLauncher();
-  private final int brokerPort;
+  private int brokerPort;
+  private final SystemLauncher broker = new SystemLauncher(new SystemLauncherListener() {
+    private SystemConfig<?> systemConfig;
+
+    @Override
+    public void onContainerResolve(final SystemConfig<?> systemConfig) {
+      this.systemConfig = systemConfig;
+    }
+
+    @Override
+    public void beforeStartup() {
+    }
+
+    @Override
+    public void errorOnStartup(final RuntimeException e) {
+    }
+
+    @Override
+    public void afterStartup() {
+      brokerPort = systemConfig.getContainer().getChildByName(Port.class, "AMQP").getBoundPort();
+    }
+
+    @Override
+    public void onContainerClose(final SystemConfig<?> systemConfig) {
+    }
+
+    @Override
+    public void onShutdown(final int exitCode) {
+    }
+
+    @Override
+    public void exceptionOnShutdown(final Exception e) {
+    }
+  });
 
   EmbeddedAMQPBroker() throws Exception {
-    this.brokerPort = findAvailableTcpPort();
-
     final Map<String,Object> context = new HashMap<>();
-    context.put("qpid.amqp_port", brokerPort);
+    context.put("qpid.amqp_port", 0);
     context.put("qpid.work_dir", Files.createTempDirectory("qpid").toFile().getAbsolutePath());
 
     final Map<String,Object> brokerOptions = new HashMap<>();
     brokerOptions.put("type", "Memory");
     brokerOptions.put("context", context);
-    brokerOptions.put("initialConfigurationLocation", findResourcePath("qpid-config.json"));
+    brokerOptions.put("initialConfigurationLocation", Thread.currentThread().getContextClassLoader().getResource("qpid-config.json").getPath());
 
     // start broker
     broker.startup(brokerOptions);
@@ -45,28 +77,6 @@ class EmbeddedAMQPBroker {
   void shutdown() {
     broker.shutdown();
     new File("derby.log").delete();
-  }
-
-  private static String findResourcePath(final String file) {
-    return "src/test/resources/" + file;
-  }
-
-  private static int findAvailableTcpPort() {
-    for (int i = 1024; i < 65535; i++) {
-      if (isPortAvailable(i)) {
-        return i;
-      }
-    }
-    throw new IllegalStateException("No port available");
-  }
-
-  private static boolean isPortAvailable(final int port) {
-    try (final ServerSocket socket = new ServerSocket(port)) {
-      return true;
-    }
-    catch (final Exception e) {
-      return false;
-    }
   }
 
   int getBrokerPort() {
