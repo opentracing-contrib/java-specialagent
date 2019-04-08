@@ -14,32 +14,30 @@
  */
 package io.opentracing.contrib.specialagent.rabbitmq;
 
-
 import java.io.File;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ServerSocketFactory;
+
 import org.apache.qpid.server.SystemLauncher;
 
-
 class EmbeddedAMQPBroker {
-
-  private int brokerPort;
   private final SystemLauncher broker = new SystemLauncher();
+  private final int brokerPort;
 
   EmbeddedAMQPBroker() throws Exception {
     this.brokerPort = findAvailableTcpPort();
-    final String configFileName = "qpid-config.json";
-    Map<String, Object> brokerOptions = new HashMap<>();
-    brokerOptions.put("type", "Memory");
-    Map<String, Object> context = new HashMap<>();
+
+    final Map<String,Object> context = new HashMap<>();
     context.put("qpid.amqp_port", brokerPort);
     context.put("qpid.work_dir", Files.createTempDirectory("qpid").toFile().getAbsolutePath());
+
+    final Map<String,Object> brokerOptions = new HashMap<>();
+    brokerOptions.put("type", "Memory");
     brokerOptions.put("context", context);
-    brokerOptions.put("initialConfigurationLocation", findResourcePath(configFileName));
+    brokerOptions.put("initialConfigurationLocation", findResourcePath("qpid-config.json"));
+
     // start broker
     broker.startup(brokerOptions);
   }
@@ -49,10 +47,9 @@ class EmbeddedAMQPBroker {
     new File("derby.log").delete();
   }
 
-  private String findResourcePath(final String file) {
+  private static String findResourcePath(final String file) {
     return "src/test/resources/" + file;
   }
-
 
   private static int findAvailableTcpPort() {
     for (int i = 1024; i < 65535; i++) {
@@ -63,13 +60,11 @@ class EmbeddedAMQPBroker {
     throw new IllegalStateException("No port available");
   }
 
-  private static boolean isPortAvailable(int port) {
-    try {
-      ServerSocket serverSocket = ServerSocketFactory.getDefault().createServerSocket(
-          port, 1, InetAddress.getByName("localhost"));
-      serverSocket.close();
+  private static boolean isPortAvailable(final int port) {
+    try (final ServerSocket socket = new ServerSocket(port)) {
       return true;
-    } catch (Exception ex) {
+    }
+    catch (final Exception e) {
       return false;
     }
   }

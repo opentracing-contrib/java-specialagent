@@ -1,39 +1,29 @@
 {
   "name": "EmbeddedBroker",
   "modelVersion": "7.0",
-  "authenticationproviders": [
-    {
-      "name": "password",
-      "type": "Plain",
-      "secureOnlyMechanisms": [],
-      "users": [
-        {
-          "name": "guest",
-          "password": "guest",
-          "type": "managed"
-        }
-      ]
-    }
-  ],
-  "ports": [
-    {
-      "name": "AMQP",
-      "port": "${qpid.amqp_port}",
-      "authenticationProvider": "password",
-      "virtualhostaliases": [
-        {
-          "name": "defaultAlias",
-          "type": "defaultAlias"
-        }
-      ]
-    }
-  ],
-  "virtualhostnodes": [
-    {
-      "name": "default",
-      "defaultVirtualHostNode": "true",
-      "type": "Memory",
-      "virtualHostInitialConfiguration": "{\"type\": \"Memory\" }"
-    }
-  ]
+  "authenticationproviders": [{
+    "name": "password",
+    "type": "Plain",
+    "secureOnlyMechanisms": [],
+    "users": [{
+      "name": "guest",
+      "password": "guest",
+      "type": "managed"
+    }]
+  }],
+  "ports": [{
+    "name": "AMQP",
+    "port": "${qpid.amqp_port}",
+    "authenticationProvider": "password",
+    "virtualhostaliases": [{
+      "name": "defaultAlias",
+      "type": "defaultAlias"
+    }]
+  }],
+  "virtualhostnodes": [{
+    "name": "default",
+    "defaultVirtualHostNode": "true",
+    "type": "Memory",
+    "virtualHostInitialConfiguration": "{\"type\": \"Memory\"}"
+  }]
 }
