@@ -43,6 +43,7 @@
     <module>opentracing-specialagent-rxjava-2</module>
     <module>opentracing-specialagent-kafka-client</module>
     <module>opentracing-specialagent-asynchttpclient</module>
+    <module>opentracing-specialagent-rabbitmq-client</module>
     <module>opentracing-specialagent-thrift</module>
   </modules>
   <profiles>
