@@ -54,7 +54,7 @@ public class ThriftProtocolFactoryAgentRule implements AgentRule {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.This Object thiz,
+  public static void exit(
       @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
     if (AgentRuleUtil.isEnabled()) {
       returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
