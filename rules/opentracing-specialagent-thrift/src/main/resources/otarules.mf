@@ -15,3 +15,4 @@
 io.opentracing.contrib.specialagent.thrift.ThriftProcessorAgentRule
 io.opentracing.contrib.specialagent.thrift.ThriftProtocolAgentRule
 io.opentracing.contrib.specialagent.thrift.ThriftProtocolFactoryAgentRule
+io.opentracing.contrib.specialagent.thrift.ThriftAsyncMethodCallbackAgentRule

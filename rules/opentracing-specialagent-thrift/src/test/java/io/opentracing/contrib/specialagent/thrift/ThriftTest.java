@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.thrift;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -39,6 +40,7 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 import io.opentracing.util.GlobalTracerTestUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -264,7 +266,7 @@ public class ThriftTest {
           @Override
           public void onComplete(String response) {
             assertEquals("Say Async World", response);
-            //TODO: assertNotNull(GlobalTracer.get().activeSpan());
+            assertNotNull(GlobalTracer.get().activeSpan());
             counter.incrementAndGet();
           }
 
@@ -303,7 +305,7 @@ public class ThriftTest {
           @Override
           public void onComplete(String response) {
             assertEquals("no args", response);
-            //TODO: assertNotNull(GlobalTracer.get().activeSpan());
+            assertNotNull(GlobalTracer.get().activeSpan());
             counter.incrementAndGet();
           }
 
@@ -343,7 +345,7 @@ public class ThriftTest {
             @Override
             public void onComplete(String response) {
               assertEquals("delay 1", response);
-              //TODO: assertNotNull(GlobalTracer.get().activeSpan());
+              assertNotNull(GlobalTracer.get().activeSpan());
               counter.incrementAndGet();
             }
 
@@ -381,7 +383,7 @@ public class ThriftTest {
         .oneWay(new AsyncMethodCallback<Void>() {
           @Override
           public void onComplete(Void response) {
-            //TODO: assertNotNull(GlobalTracer.get().activeSpan());
+            assertNotNull(GlobalTracer.get().activeSpan());
             counter.incrementAndGet();
           }
 

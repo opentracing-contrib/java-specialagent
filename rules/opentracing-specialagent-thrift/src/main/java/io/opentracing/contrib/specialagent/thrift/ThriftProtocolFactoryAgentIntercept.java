@@ -29,12 +29,13 @@ public class ThriftProtocolFactoryAgentIntercept {
       SpanHolder spanHolder;
       if (Thread.currentThread().getName().startsWith("TAsyncClientManager#SelectorThread")) {
         spanHolder = spanHolders.poll();
+        GlobalTracer.get().scopeManager().activate(spanHolder.getSpan(), true);
       } else {
         spanHolder = new SpanHolder();
         spanHolders.add(spanHolder);
       }
 
-      return new SpanProtocol((TProtocol) protocol, GlobalTracer.get(), spanHolder, true);
+      return new SpanProtocol((TProtocol) protocol, GlobalTracer.get(), spanHolder, false);
     }
     return protocol;
   }
