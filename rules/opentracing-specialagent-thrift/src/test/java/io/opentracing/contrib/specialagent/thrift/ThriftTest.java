@@ -28,11 +28,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import custom.Address;
-import custom.CustomService;
-import custom.CustomService.AsyncClient;
-import custom.User;
-import custom.UserWithAddress;
+import io.opentracing.contrib.specialagent.thrift.CustomService.AsyncClient;
 import io.opentracing.Scope;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.specialagent.AgentRunner;

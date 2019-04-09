@@ -15,10 +15,6 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
-import custom.Address;
-import custom.CustomService;
-import custom.User;
-import custom.UserWithAddress;
 import java.util.concurrent.TimeUnit;
 
 
