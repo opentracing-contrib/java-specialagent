@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
-import io.opentracing.Span;
 import io.opentracing.thrift.SpanHolder;
 import io.opentracing.thrift.SpanProtocol;
 import io.opentracing.util.GlobalTracer;
@@ -30,7 +29,7 @@ public class ThriftProtocolFactoryAgentIntercept {
       SpanHolder spanHolder;
       if (Thread.currentThread().getName().startsWith("TAsyncClientManager#SelectorThread")) {
         spanHolder = spanHolders.poll();
-        if(spanHolder != null) {
+        if (spanHolder != null) {
           GlobalTracer.get().scopeManager().activate(spanHolder.getSpan(), true);
         }
       } else {
