@@ -29,7 +29,7 @@ before_install:
      cd thrift-0.12.0 &&
      ./configure --without-c_glib --without-cpp --without-ruby --without-python --without-go --without-erlang --without-nodejs --without-php &&
      sudo make install &&
-     cd ..
+     cd ..;
    fi'
 install:
 - cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
