@@ -15,6 +15,8 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,8 +30,11 @@ import java.util.logging.Logger;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
+import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Listener;
+import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
+import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.DynamicType.Builder;
@@ -42,7 +47,7 @@ import net.bytebuddy.utility.JavaModule;
  */
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
-  static String RULES_FILE = "otarules.mf";
+  static final String RULES_FILE = "otarules.mf";
 
   private Instrumentation inst;
 
@@ -94,8 +99,18 @@ public class ByteBuddyManager extends Manager {
             continue;
           }
 
+          // Prepare the builder to be used to implement transformations in AgentRule(s)
+          AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(none());
+          if (AgentRuleUtil.tracerClassLoader != null)
+            agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
+
+          agentBuilder = agentBuilder
+            .with(RedefinitionStrategy.RETRANSFORMATION)
+            .with(InitializationStrategy.NoOp.INSTANCE)
+            .with(TypeStrategy.Default.REDEFINE);
+
           final AgentRule agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-          final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentArgs);
+          final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentArgs, agentBuilder);
 
           for (final AgentBuilder builder : builders) {
           final TransformationListener listener = new TransformationListener(index, events);

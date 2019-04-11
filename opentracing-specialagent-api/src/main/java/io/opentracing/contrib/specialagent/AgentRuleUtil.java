@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 public final class AgentRuleUtil {
   public static final Logger logger = Logger.getLogger(AgentRule.class.getName());
 
+  static ClassLoader tracerClassLoader;
+
   public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
     @Override
     protected Integer initialValue() {

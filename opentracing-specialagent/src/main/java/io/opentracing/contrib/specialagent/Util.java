@@ -22,6 +22,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,9 +61,7 @@ import io.opentracing.contrib.specialagent.Manager.Event;
  */
 public final class Util {
   private static final Logger logger = Logger.getLogger(Util.class.getName());
-
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
-
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
 
   /**
@@ -848,6 +849,50 @@ public final class Util {
     }
 
     return events;
+  }
+
+  public static <T>T proxy(final T obj) {
+    final ClassLoader targetClassLoader = Thread.currentThread().getContextClassLoader();
+    if (targetClassLoader == obj.getClass().getClassLoader())
+      return obj;
+
+    try {
+      final Class<?>[] interfaces = obj.getClass().getInterfaces();
+      for (int i = 0; i < interfaces.length; ++i)
+        interfaces[i] = Class.forName(interfaces[i].getName(), false, targetClassLoader);
+
+      final Object o = Proxy.newProxyInstance(targetClassLoader, interfaces, new InvocationHandler() {
+        @Override
+        public Object invoke(final Object proxy, final Method m, final Object[] args) throws Throwable {
+          if (args == null || args.length == 0) {
+            System.err.println("0 " + targetClassLoader + " -> " + obj.getClass().getClassLoader());
+            return obj.getClass().getMethod(m.getName()).invoke(obj);
+          }
+
+          final Class<?>[] types = m.getParameterTypes();
+          final Class<?>[] proxyTypes = new Class<?>[types.length];
+          for (int i = 0; i < types.length; ++i) {
+            final Class<?> type = types[i];
+            proxyTypes[i] = type.getClassLoader() == targetClassLoader ? type : Class.forName(type.getName(), false, targetClassLoader);
+          }
+
+          final Object[] proxyArgs = new Object[args.length];
+          for (int i = 0; i < args.length; ++i) {
+            final Object arg = args[i];
+            proxyArgs[i] = arg == null || arg.getClass().getClassLoader() == targetClassLoader ? arg : proxy(arg);
+          }
+
+          final Method method = obj.getClass().getDeclaredMethod(m.getName(), proxyTypes);
+          System.err.println(": " + targetClassLoader + " -> " + obj.getClass().getClassLoader());
+          return method.invoke(obj, proxyArgs);
+        }
+      });
+
+      return (T)o;
+    }
+    catch (final ClassNotFoundException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private Util() {
