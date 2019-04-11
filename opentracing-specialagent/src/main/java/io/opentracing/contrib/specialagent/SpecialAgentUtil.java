@@ -613,7 +613,7 @@ public final class SpecialAgentUtil {
    * {@code null}</li>
    * <li>If {@code cls} represents an array, this method returns the code
    * semantics representation (i.e. {@code java.lang.Object[]})</li>
-   * <li>Otherwies, this method return {@code cls.getName()}</li>
+   * <li>Otherwise, this method return {@code cls.getName()}</li>
    * </ul>
    *
    * @param cls The class.
