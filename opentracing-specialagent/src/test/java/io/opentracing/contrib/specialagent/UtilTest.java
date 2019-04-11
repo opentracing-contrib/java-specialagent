@@ -28,7 +28,7 @@ import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.noop.NoopTracer;
 
 /**
- * Tests for methods in {@link Util}.
+ * Tests for methods in {@link SpecialAgentUtil}.
  *
  * @author Seva Safris
  */
@@ -52,8 +52,8 @@ public class UtilTest {
     expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
-    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
-    final Set<String> actual = Util.selectFromTgf(test, true, null);
+    final String test = new String(SpecialAgentUtil.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
+    final Set<String> actual = SpecialAgentUtil.selectFromTgf(test, true, null);
     assertEquals(expected, actual);
   }
 
@@ -70,8 +70,8 @@ public class UtilTest {
     expected.add("opentracing-specialagent1-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
-    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
-    final Set<String> actual = Util.selectFromTgf(test, true, new String[] {"test"});
+    final String test = new String(SpecialAgentUtil.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
+    final Set<String> actual = SpecialAgentUtil.selectFromTgf(test, true, new String[] {"test"});
     assertEquals(expected, actual);
   }
 
@@ -86,8 +86,8 @@ public class UtilTest {
     expected.add("opentracing-specialagent1-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-util-0.31.0.jar");
 
-    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
-    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"test"});
+    final String test = new String(SpecialAgentUtil.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
+    final Set<String> actual = SpecialAgentUtil.selectFromTgf(test, false, new String[] {"test"});
     assertEquals(expected, actual);
   }
 
@@ -101,8 +101,8 @@ public class UtilTest {
     expected.add("opentracing-noop-0.31.0.jar");
     expected.add("opentracing-api-0.31.0.jar");
 
-    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
-    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"});
+    final String test = new String(SpecialAgentUtil.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
+    final Set<String> actual = SpecialAgentUtil.selectFromTgf(test, false, new String[] {"compile"});
     assertEquals(expected, actual);
   }
 
@@ -114,8 +114,8 @@ public class UtilTest {
     expected.add("opentracing-specialagent-okhttp-0.0.0-SNAPSHOT.jar");
     expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
 
-    final String test = new String(Util.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
-    final Set<String> actual = Util.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class, Tracer.class);
+    final String test = new String(SpecialAgentUtil.readBytes(Thread.currentThread().getContextClassLoader().getResource("test.tgf")));
+    final Set<String> actual = SpecialAgentUtil.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class, Tracer.class);
     assertEquals(expected, actual);
   }
 
@@ -125,82 +125,82 @@ public class UtilTest {
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(a, r);
 
     a = new String[] {"b", "c", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(a, r);
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(b, r);
 
     a = new String[] {"a", "b", "c"};
     b = new String[] {"a", "b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(a, r);
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "b", "c"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(b, r);
 
     a = new String[] {"a", "b", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(a, r);
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "b", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(b, r);
 
     a = new String[] {"a", "c", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(a, r);
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(b, r);
 
     a = new String[] {"a", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(a, r);
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(b, r);
 
     a = new String[] {"a", "c", "d"};
     b = new String[] {"a", "b", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(new String[] {"a", "d"}, r);
 
     a = new String[] {"a", "b", "d"};
     b = new String[] {"a", "c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(new String[] {"a", "d"}, r);
 
     a = new String[] {"c", "d"};
     b = new String[] {"a", "b", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(new String[] {"d"}, r);
 
     a = new String[] {"a", "b"};
     b = new String[] {"a", "c"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertArrayEquals(new String[] {"a"}, r);
 
     a = new String[] {"a", "b"};
     b = new String[] {"c", "d"};
-    r = Util.retain(a, b, 0, 0, 0);
+    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
     assertNull(r);
   }
 
@@ -210,91 +210,91 @@ public class UtilTest {
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    assertTrue(Util.containsAll(a, b));
+    assertTrue(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"b", "c", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"b", "c", "d"};
-    assertTrue(Util.containsAll(a, b));
+    assertTrue(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "c"};
     b = new String[] {"a", "b", "c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "b", "c"};
-    assertTrue(Util.containsAll(a, b));
+    assertTrue(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "b", "d"};
-    assertTrue(Util.containsAll(a, b));
+    assertTrue(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "c", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "c", "d"};
-    assertTrue(Util.containsAll(a, b));
+    assertTrue(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "d"};
     b = new String[] {"a", "b", "c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "c", "d"};
     b = new String[] {"a", "d"};
-    assertTrue(Util.containsAll(a, b));
+    assertTrue(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "c", "d"};
     b = new String[] {"a", "b", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b", "d"};
     b = new String[] {"a", "c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"c", "d"};
     b = new String[] {"a", "b", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b"};
     b = new String[] {"a", "c"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
 
     a = new String[] {"a", "b"};
     b = new String[] {"c", "d"};
-    assertFalse(Util.containsAll(a, b));
+    assertFalse(SpecialAgentUtil.containsAll(a, b));
   }
 
   @Test
   public void testDigestEventsProperty() {
-    Event[] events = Util.digestEventsProperty(null);
+    Event[] events = SpecialAgentUtil.digestEventsProperty(null);
     for (int i = 0; i < events.length; ++i)
       assertNull(events[i]);
 
-    events = Util.digestEventsProperty("DISCOVERY,TRANSFORMATION,IGNORED,ERROR,COMPLETE");
+    events = SpecialAgentUtil.digestEventsProperty("DISCOVERY,TRANSFORMATION,IGNORED,ERROR,COMPLETE");
     for (final Event event : events)
       assertNotNull(event);
 
-    events = Util.digestEventsProperty("");
+    events = SpecialAgentUtil.digestEventsProperty("");
     for (final Event event : events)
       assertNull(event);
 
-    events = Util.digestEventsProperty("DISCOVERY");
+    events = SpecialAgentUtil.digestEventsProperty("DISCOVERY");
     assertNotNull(events[Event.DISCOVERY.ordinal()]);
     assertNull(events[Event.COMPLETE.ordinal()]);
     assertNull(events[Event.TRANSFORMATION.ordinal()]);
     assertNull(events[Event.ERROR.ordinal()]);
     assertNull(events[Event.IGNORED.ordinal()]);
 
-    events = Util.digestEventsProperty("TRANSFORMATION,COMPLETE");
+    events = SpecialAgentUtil.digestEventsProperty("TRANSFORMATION,COMPLETE");
     assertNotNull(events[Event.TRANSFORMATION.ordinal()]);
     assertNotNull(events[Event.COMPLETE.ordinal()]);
     assertNull(events[Event.DISCOVERY.ordinal()]);

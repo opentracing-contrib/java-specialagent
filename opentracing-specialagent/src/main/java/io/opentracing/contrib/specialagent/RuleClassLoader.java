@@ -98,23 +98,23 @@ class RuleClassLoader extends URLClassLoader {
       if (fingerprint != null) {
         final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
         if (errors != null) {
-          logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + Util.toIndentedString(errors) + " in: " + Util.toIndentedString(getURLs()));
+          logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + SpecialAgentUtil.toIndentedString(errors) + " in: " + SpecialAgentUtil.toIndentedString(getURLs()));
           compatibility.put(classLoader, false);
           return false;
         }
 
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + Util.toIndentedString(getURLs()));
+          logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
       }
       else {
         if (failOnEmptyFingerprint) {
-          logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
+          logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
           compatibility.put(classLoader, false);
           return false;
         }
 
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + Util.toIndentedString(getURLs()));
+          logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
       }
     }
     catch (final IOException e) {

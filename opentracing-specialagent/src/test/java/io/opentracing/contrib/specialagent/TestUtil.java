@@ -69,7 +69,7 @@ class TestUtil {
       }
       else {
         final Path filePath = file.toPath();
-        Util.recurseDir(file, new Predicate<File>() {
+        SpecialAgentUtil.recurseDir(file, new Predicate<File>() {
           @Override
           public boolean test(final File t) {
             final String name = filePath.relativize(t.toPath()).toString();

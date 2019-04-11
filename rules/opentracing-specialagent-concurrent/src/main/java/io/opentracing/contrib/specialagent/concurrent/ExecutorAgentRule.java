@@ -46,8 +46,8 @@ public class ExecutorAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void exit(@Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!AgentRuleUtil.isEnabled())
+  public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
+    if (!AgentRuleUtil.isEnabled(origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();

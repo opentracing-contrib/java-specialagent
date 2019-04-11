@@ -151,7 +151,7 @@ class Fingerprinter extends ClassVisitor {
       else {
         final File file = new File(url.getPath());
         final Path path = file.toPath();
-        Util.recurseDir(file, new Predicate<File>() {
+        SpecialAgentUtil.recurseDir(file, new Predicate<File>() {
           @Override
           public boolean test(final File t) {
             if (t.isDirectory())
@@ -176,7 +176,7 @@ class Fingerprinter extends ClassVisitor {
     }
 
     classNameToFingerprint.keySet().removeAll(excludes);
-    return Util.sort(classNameToFingerprint.values().toArray(new ClassFingerprint[classNameToFingerprint.size()]));
+    return SpecialAgentUtil.sort(classNameToFingerprint.values().toArray(new ClassFingerprint[classNameToFingerprint.size()]));
   }
 
   /**
@@ -198,7 +198,7 @@ class Fingerprinter extends ClassVisitor {
 
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);
-      return className == null ? null : new ClassFingerprint(className, superClass, Util.sort(constructors.size() == 0 ? null : constructors.toArray(new ConstructorFingerprint[constructors.size()])), Util.sort(methods.size() == 0 ? null : methods.toArray(new MethodFingerprint[methods.size()])), Util.sort(fields.size() == 0 ? null : fields.toArray(new FieldFingerprint[fields.size()])));
+      return className == null ? null : new ClassFingerprint(className, superClass, SpecialAgentUtil.sort(constructors.size() == 0 ? null : constructors.toArray(new ConstructorFingerprint[constructors.size()])), SpecialAgentUtil.sort(methods.size() == 0 ? null : methods.toArray(new MethodFingerprint[methods.size()])), SpecialAgentUtil.sort(fields.size() == 0 ? null : fields.toArray(new FieldFingerprint[fields.size()])));
     }
     catch (final IOException e) {
       if (!"Class not found".equals(e.getMessage()))
@@ -252,11 +252,11 @@ class Fingerprinter extends ClassVisitor {
 
       if (Visibility.get(access) != Visibility.PRIVATE && !isSynthetic(access)) {
         if ("<init>".equals(name)) {
-          constructors.add(new ConstructorFingerprint(parameterTypes, Util.sort(exceptionTypes)));
+          constructors.add(new ConstructorFingerprint(parameterTypes, SpecialAgentUtil.sort(exceptionTypes)));
         }
         else if (!"<clinit>".equals(name)) {
           final String returnType = Type.getMethodType(desc).getReturnType().getClassName();
-          methods.add(new MethodFingerprint(name, "void".equals(returnType) ? null : returnType, parameterTypes, Util.sort(exceptionTypes)));
+          methods.add(new MethodFingerprint(name, "void".equals(returnType) ? null : returnType, parameterTypes, SpecialAgentUtil.sort(exceptionTypes)));
         }
       }
     }

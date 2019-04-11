@@ -58,32 +58,32 @@ public class RabbitMQAgentRule extends AgentRule {
 
   public static class OnEnterConsume {
     @Advice.OnMethodEnter
-    public static void enter(@Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+      if (AgentRuleUtil.isEnabled(origin))
         callback = RabbitMQAgentIntercept.enterConsume(callback);
     }
   }
 
   public static class OnEnterPublish {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exchange, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
-      if (AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exchange, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
+      if (AgentRuleUtil.isEnabled(origin))
         props = RabbitMQAgentIntercept.enterPublish(exchange, props);
     }
   }
 
   public static class OnExitPublish {
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin))
         RabbitMQAgentIntercept.exitPublish();
     }
   }
 
   public static class OnExitGet {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (AgentRuleUtil.isEnabled(origin))
         RabbitMQAgentIntercept.exitGet(returned);
     }
   }

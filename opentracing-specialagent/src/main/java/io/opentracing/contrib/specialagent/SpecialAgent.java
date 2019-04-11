@@ -188,7 +188,7 @@ public class SpecialAgent {
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
-    final Set<URL> pluginJarUrls = Util.findJarResources("META-INF/opentracing-specialagent/", excludes);
+    final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", excludes);
     if (logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
@@ -196,19 +196,19 @@ public class SpecialAgent {
       // Add instrumentation rule JARs from system class loader
       final Enumeration<URL> instrumentationRules = instrumenter.manager.getResources();
       while (instrumentationRules.hasMoreElements())
-        pluginJarUrls.add(Util.getSourceLocation(instrumentationRules.nextElement(), instrumenter.manager.file));
+        pluginJarUrls.add(SpecialAgentUtil.getSourceLocation(instrumentationRules.nextElement(), instrumenter.manager.file));
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
 
-    final URL[] rulePaths = Util.classPathToURLs(System.getProperty(RULE_PATH_ARG));
+    final URL[] rulePaths = SpecialAgentUtil.classPathToURLs(System.getProperty(RULE_PATH_ARG));
     if (rulePaths != null)
       for (final URL rulePath : rulePaths)
         pluginJarUrls.add(rulePath);
 
     if (logger.isLoggable(Level.FINER))
-      logger.finer("Loading " + pluginJarUrls.size() + " rule paths:\n" + Util.toIndentedString(pluginJarUrls));
+      logger.finer("Loading " + pluginJarUrls.size() + " rule paths:\n" + SpecialAgentUtil.toIndentedString(pluginJarUrls));
 
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
@@ -263,10 +263,10 @@ public class SpecialAgent {
 
         urls.add(url);
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + TRACER_FACTORY + ": <" + Util.getIdentityCode(url) + ">" + url);
+          logger.finest("Found " + TRACER_FACTORY + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
 
-        final String jarPath = Util.getSourceLocation(url, TRACER_FACTORY).getPath();
-        final String artifactName = Util.getName(jarPath);
+        final String jarPath = SpecialAgentUtil.getSourceLocation(url, TRACER_FACTORY).getPath();
+        final String artifactName = SpecialAgentUtil.getName(jarPath);
         final int dash = artifactName.indexOf('-');
         final String tracerName = dash == -1 ? artifactName : artifactName.substring(0, dash);
         if (name.equals(tracerName))
@@ -300,11 +300,11 @@ public class SpecialAgent {
 
         urls.add(url.toString());
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + DEPENDENCIES_TGF + ": <" + Util.getIdentityCode(url) + ">" + url);
+          logger.finest("Found " + DEPENDENCIES_TGF + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
 
-        final URL jarUrl = Util.getSourceLocation(url, DEPENDENCIES_TGF);
-        final String dependenciesTgf = new String(Util.readBytes(url));
-        final URL[] dependencies = Util.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
+        final URL jarUrl = SpecialAgentUtil.getSourceLocation(url, DEPENDENCIES_TGF);
+        final String dependenciesTgf = new String(SpecialAgentUtil.readBytes(url));
+        final URL[] dependencies = SpecialAgentUtil.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
         if (dependencies == null)
           throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
@@ -325,7 +325,7 @@ public class SpecialAgent {
             }
 
             if (logger.isLoggable(Level.FINEST))
-              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":\n" + Util.toIndentedString(dependencies));
+              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":\n" + SpecialAgentUtil.toIndentedString(dependencies));
 
             ++count;
             ruleToDependencies.put(jarUrl, dependencies);
@@ -334,7 +334,7 @@ public class SpecialAgent {
         }
 
         if (!foundReference)
-          throw new IllegalStateException("Could not find a rule JAR referenced in " + jarUrl + DEPENDENCIES_TGF + " from: \n" + Util.toIndentedString(dependencies));
+          throw new IllegalStateException("Could not find a rule JAR referenced in " + jarUrl + DEPENDENCIES_TGF + " from: \n" + SpecialAgentUtil.toIndentedString(dependencies));
       }
     }
     catch (final IOException e) {
@@ -363,7 +363,7 @@ public class SpecialAgent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         ruleJarToIndex.put(allPluginsClassLoader.getURLs()[i], i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, agentArgs, Util.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
+      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, agentArgs, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -499,7 +499,7 @@ public class SpecialAgent {
       throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + rulePath);
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("new " + RuleClassLoader.class.getSimpleName() + "([\n" + Util.toIndentedString(rulePaths) + "]\n, " + Util.getIdentityCode(classLoader) + ");");
+      logger.finest("new " + RuleClassLoader.class.getSimpleName() + "([\n" + SpecialAgentUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
 
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
     final RuleClassLoader ruleClassLoader = new RuleClassLoader(rulePaths, classLoader);
@@ -508,7 +508,7 @@ public class SpecialAgent {
         ruleClassLoader.close();
       }
       catch (final IOException e) {
-        logger.log(Level.WARNING, "Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + Util.getIdentityCode(ruleClassLoader), e);
+        logger.log(Level.WARNING, "Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + SpecialAgentUtil.getIdentityCode(ruleClassLoader), e);
       }
 
       return false;
@@ -521,7 +521,7 @@ public class SpecialAgent {
       for (final URL path : rulePaths) {
         try {
           final File file = new File(path.getPath());
-          inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
+          inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
           logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
@@ -535,7 +535,7 @@ public class SpecialAgent {
       for (final URL path : rulePaths) {
         try {
           final File file = new File(path.getPath());
-          inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : Util.createTempJarFile(file));
+          inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
           logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);
@@ -560,7 +560,7 @@ public class SpecialAgent {
       else {
         final File dir = new File(URI.create(pathUrl.toString()));
         final Path path = dir.toPath();
-        Util.recurseDir(dir, new Predicate<File>() {
+        SpecialAgentUtil.recurseDir(dir, new Predicate<File>() {
           @Override
           public boolean test(final File file) {
             loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
@@ -592,7 +592,7 @@ public class SpecialAgent {
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
     final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);
@@ -609,12 +609,12 @@ public class SpecialAgent {
     // Return the resource's bytes, or null if the resource does not exist in
     // ruleClassLoader
     final URL resource = ruleClassLoader.getResource(resourceName);
-    return resource == null ? null : Util.readBytes(resource);
+    return resource == null ? null : SpecialAgentUtil.readBytes(resource);
   }
 
   public static URL findResource(final ClassLoader classLoader, final String name) {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findResource(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findResource(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
     final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);
@@ -623,7 +623,7 @@ public class SpecialAgent {
 
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findResources(" + Util.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findResources(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
     final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);

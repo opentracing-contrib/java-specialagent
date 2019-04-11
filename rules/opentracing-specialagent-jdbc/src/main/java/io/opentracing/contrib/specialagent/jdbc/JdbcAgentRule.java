@@ -55,8 +55,8 @@ public class JdbcAgentRule extends AgentRule {
 
   public static class OnEnter {
     @Advice.OnMethodEnter
-    public static void enter(@Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
-      if (!AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
+      if (!AgentRuleUtil.isEnabled(origin))
         return;
 
       final Connection connection = JdbcAgentIntercept.enter(url, info);

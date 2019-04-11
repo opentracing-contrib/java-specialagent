@@ -59,8 +59,8 @@ import io.opentracing.contrib.specialagent.Manager.Event;
  *
  * @author Seva Safris
  */
-public final class Util {
-  private static final Logger logger = Logger.getLogger(Util.class.getName());
+public final class SpecialAgentUtil {
+  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class.getName());
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
 
@@ -128,11 +128,11 @@ public final class Util {
    * @throws IOException If an I/O error has occurred.
    */
   public static URL[] filterRuleURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
-    final Set<String> names = Util.selectFromTgf(dependenciesTgf, includeOptional, scopes);
+    final Set<String> names = SpecialAgentUtil.selectFromTgf(dependenciesTgf, includeOptional, scopes);
     return filterUrlFileNames(urls, names, 0, 0);
   }
 
-  public static JarFile createTempJarFile(final File dir) throws IOException {
+  static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();
     final Path zipPath = Files.createTempFile("specialagent", ".jar");
     try (
@@ -426,7 +426,7 @@ public final class Util {
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Collection#toString()}.
    */
-  public static String toIndentedString(final Collection<?> l) {
+  static String toIndentedString(final Collection<?> l) {
     if (l == null)
       return "null";
 
@@ -494,7 +494,7 @@ public final class Util {
    * @throws NullPointerException If {@code path} is null.
    * @throws IllegalArgumentException If {@code path} is an empty string.
    */
-  public static String getName(final String path) {
+  static String getName(final String path) {
     if (path.length() == 0)
       throw new IllegalArgumentException("Empty path");
 
@@ -798,7 +798,7 @@ public final class Util {
    *         second array; and a value greater than {@code 0} if the first array
    *         is lexicographically greater than the second array.
    */
-  public static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
+  static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
     if (a == b)
       return 0;
 
@@ -851,7 +851,7 @@ public final class Util {
     return events;
   }
 
-  public static <T>T proxy(final T obj) {
+  static <T>T proxy(final T obj) {
     final ClassLoader targetClassLoader = Thread.currentThread().getContextClassLoader();
     if (targetClassLoader == obj.getClass().getClassLoader())
       return obj;
@@ -863,13 +863,13 @@ public final class Util {
 
       final Object o = Proxy.newProxyInstance(targetClassLoader, interfaces, new InvocationHandler() {
         @Override
-        public Object invoke(final Object proxy, final Method m, final Object[] args) throws Throwable {
+        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
           if (args == null || args.length == 0) {
             System.err.println("0 " + targetClassLoader + " -> " + obj.getClass().getClassLoader());
-            return obj.getClass().getMethod(m.getName()).invoke(obj);
+            return obj.getClass().getMethod(method.getName()).invoke(obj);
           }
 
-          final Class<?>[] types = m.getParameterTypes();
+          final Class<?>[] types = method.getParameterTypes();
           final Class<?>[] proxyTypes = new Class<?>[types.length];
           for (int i = 0; i < types.length; ++i) {
             final Class<?> type = types[i];
@@ -882,9 +882,9 @@ public final class Util {
             proxyArgs[i] = arg == null || arg.getClass().getClassLoader() == targetClassLoader ? arg : proxy(arg);
           }
 
-          final Method method = obj.getClass().getDeclaredMethod(m.getName(), proxyTypes);
+          final Method declaredMethod = obj.getClass().getDeclaredMethod(method.getName(), proxyTypes);
           System.err.println(": " + targetClassLoader + " -> " + obj.getClass().getClassLoader());
-          return method.invoke(obj, proxyArgs);
+          return declaredMethod.invoke(obj, proxyArgs);
         }
       });
 
@@ -895,6 +895,6 @@ public final class Util {
     }
   }
 
-  private Util() {
+  private SpecialAgentUtil() {
   }
 }

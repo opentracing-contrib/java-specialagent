@@ -43,8 +43,8 @@ public class Elasticsearch6TransportAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-    if (AgentRuleUtil.isEnabled())
+  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
+    if (AgentRuleUtil.isEnabled(origin))
       listener = Elasticsearch6TransportAgentIntercept.enter(request, listener);
   }
 }

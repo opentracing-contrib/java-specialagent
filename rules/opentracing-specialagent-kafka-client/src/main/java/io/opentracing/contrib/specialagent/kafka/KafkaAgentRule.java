@@ -50,22 +50,22 @@ public class KafkaAgentRule extends AgentRule {
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+      if (AgentRuleUtil.isEnabled(origin))
         KafkaAgentIntercept.onConsumerEnter(returned);
     }
   }
 
   public static class Producer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+      if (AgentRuleUtil.isEnabled(origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
 
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin))
         KafkaAgentIntercept.onProducerExit();
     }
   }

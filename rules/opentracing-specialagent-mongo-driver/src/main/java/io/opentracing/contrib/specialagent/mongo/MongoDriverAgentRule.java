@@ -41,8 +41,8 @@ public class MongoDriverAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Return Object returned) {
-    if (AgentRuleUtil.isEnabled())
+  public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
+    if (AgentRuleUtil.isEnabled(origin))
       MongoDriverAgentIntercept.exit(returned);
   }
 }

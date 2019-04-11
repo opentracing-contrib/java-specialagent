@@ -45,8 +45,8 @@ public class ServletContextAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.This Object thiz) {
-    if (AgentRuleUtil.isEnabled())
+  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (AgentRuleUtil.isEnabled(origin))
       ServletContextAgentIntercept.exit(thiz);
   }
 }
