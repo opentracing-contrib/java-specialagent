@@ -22,24 +22,17 @@ import java.util.Arrays;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class Elasticsearch6TransportAgentRule implements AgentRule {
+public class Elasticsearch6TransportAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    return Arrays.asList(new AgentBuilder.Default()
-      .ignore(none())
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+    return Arrays.asList(builder
       .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
       .transform(new Transformer() {
         @Override
@@ -50,8 +43,8 @@ public class Elasticsearch6TransportAgentRule implements AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-    if (AgentRuleUtil.isEnabled())
+  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
+    if (AgentRuleUtil.isEnabled(origin))
       listener = Elasticsearch6TransportAgentIntercept.enter(request, listener);
   }
 }

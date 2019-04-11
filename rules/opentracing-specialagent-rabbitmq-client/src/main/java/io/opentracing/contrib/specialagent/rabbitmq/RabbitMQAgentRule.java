@@ -23,39 +23,32 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class RabbitMQAgentRule implements AgentRule {
+public class RabbitMQAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
-    final Narrowable builder = new AgentBuilder.Default()
-      .ignore(none())
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+    final Narrowable narrowable = builder
       .type(hasSuperType(named("com.rabbitmq.client.impl.AMQChannel"))
           .and(not(named("io.opentracing.contrib.rabbitmq.TracingChannel"))));
 
     return Arrays.asList(
-      builder.transform(new Transformer() {
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnEnterPublish.class, OnExitPublish.class).on(named("basicPublish").and(takesArguments(6))));
         }
-      }), builder.transform(new Transformer() {
+      }), narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnExitGet.class).on(named("basicGet")));
         }
-      }), builder.transform(new Transformer() {
+      }), narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnEnterConsume.class).on(named("basicConsume").and(takesArguments(7))));
@@ -65,32 +58,32 @@ public class RabbitMQAgentRule implements AgentRule {
 
   public static class OnEnterConsume {
     @Advice.OnMethodEnter
-    public static void enter(@Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+      if (AgentRuleUtil.isEnabled(origin))
         callback = RabbitMQAgentIntercept.enterConsume(callback);
     }
   }
 
   public static class OnEnterPublish {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exchange, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
-      if (AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exchange, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
+      if (AgentRuleUtil.isEnabled(origin))
         props = RabbitMQAgentIntercept.enterPublish(exchange, props);
     }
   }
 
   public static class OnExitPublish {
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin))
         RabbitMQAgentIntercept.exitPublish();
     }
   }
 
   public static class OnExitGet {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (AgentRuleUtil.isEnabled(origin))
         RabbitMQAgentIntercept.exitGet(returned);
     }
   }

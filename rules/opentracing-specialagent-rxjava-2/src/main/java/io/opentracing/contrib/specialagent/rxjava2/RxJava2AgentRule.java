@@ -23,42 +23,35 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class RxJava2AgentRule implements AgentRule {
+public class RxJava2AgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    final Narrowable builder = new AgentBuilder.Default()
-      .ignore(none())
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+    final Narrowable narrowable = builder
       .type(hasSuperType(named("io.reactivex.Observable")));
 
-    return Arrays.asList(builder.transform(new Transformer() {
+    return Arrays.asList(narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(OnEnter1.class, OnExit.class).on(named("subscribe").and(takesArguments(1))));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(OnEnter2.class, OnExit.class).on(named("subscribe").and(takesArguments(2))));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(OnEnter3.class, OnExit.class).on(named("subscribe").and(takesArguments(3))));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(OnEnter4.class, OnExit.class).on(named("subscribe").and(takesArguments(4))));
@@ -79,8 +72,8 @@ public class RxJava2AgentRule implements AgentRule {
 
   public static class OnEnter1 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext) {
-      if (!AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext) {
+      if (!AgentRuleUtil.isEnabled(origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 1, onNext, null, null, null);
@@ -91,8 +84,8 @@ public class RxJava2AgentRule implements AgentRule {
 
   public static class OnEnter2 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError) {
-      if (!AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError) {
+      if (!AgentRuleUtil.isEnabled(origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 2, onNext, onError, null, null);
@@ -103,8 +96,8 @@ public class RxJava2AgentRule implements AgentRule {
 
   public static class OnEnter3 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete) {
-      if (!AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete) {
+      if (!AgentRuleUtil.isEnabled(origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 3, onNext, onError, onComplete, null);
@@ -115,8 +108,8 @@ public class RxJava2AgentRule implements AgentRule {
 
   public static class OnEnter4 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete, @Advice.Argument(value = 3, readOnly = false, typing = Typing.DYNAMIC) Object onSubscribe) {
-      if (!AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete, @Advice.Argument(value = 3, readOnly = false, typing = Typing.DYNAMIC) Object onSubscribe) {
+      if (!AgentRuleUtil.isEnabled(origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 4, onNext, onError, onComplete, onSubscribe);
