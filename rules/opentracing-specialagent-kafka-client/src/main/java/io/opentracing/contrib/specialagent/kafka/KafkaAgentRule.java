@@ -22,25 +22,16 @@ import java.util.Arrays;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class KafkaAgentRule implements AgentRule {
+public class KafkaAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    final AgentBuilder builder = new AgentBuilder.Default()
-      .ignore(none())
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE);
-
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(named("org.apache.kafka.clients.consumer.KafkaConsumer"))
       .transform(new Transformer() {
@@ -59,22 +50,22 @@ public class KafkaAgentRule implements AgentRule {
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+      if (AgentRuleUtil.isEnabled(origin))
         KafkaAgentIntercept.onConsumerEnter(returned);
     }
   }
 
   public static class Producer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (AgentRuleUtil.isEnabled())
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+      if (AgentRuleUtil.isEnabled(origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
 
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled())
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin))
         KafkaAgentIntercept.onProducerExit();
     }
   }

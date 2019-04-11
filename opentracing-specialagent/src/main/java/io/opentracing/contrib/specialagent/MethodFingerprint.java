@@ -79,7 +79,7 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     if (comparison != 0)
       return comparison;
 
-    comparison = Util.compare(parameterTypes, o.parameterTypes);
+    comparison = SpecialAgentUtil.compare(parameterTypes, o.parameterTypes);
     if (comparison != 0)
       return comparison;
 
@@ -116,11 +116,11 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     builder.append(returnType == null ? "void" : returnType).append(' ');
     builder.append(getName()).append("(");
     if (parameterTypes != null)
-      builder.append(Util.toString(parameterTypes, ", "));
+      builder.append(SpecialAgentUtil.toString(parameterTypes, ", "));
 
     builder.append(")");
     if (exceptionTypes != null)
-      builder.append(" throws ").append(Util.toString(exceptionTypes, ", "));
+      builder.append(" throws ").append(SpecialAgentUtil.toString(exceptionTypes, ", "));
 
     builder.append(";");
     return builder.toString();

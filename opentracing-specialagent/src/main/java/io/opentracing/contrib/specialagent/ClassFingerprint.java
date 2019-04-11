@@ -110,13 +110,13 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     if (superClass != null ? !superClass.equals(o.superClass) : o.superClass != null)
       return false;
 
-    if (constructors == null ? o.constructors != null : o.constructors == null || !Util.containsAll(constructors, o.constructors))
+    if (constructors == null ? o.constructors != null : o.constructors == null || !SpecialAgentUtil.containsAll(constructors, o.constructors))
       return false;
 
-    if (methods == null ? o.methods != null : o.methods == null || !Util.containsAll(methods, o.methods))
+    if (methods == null ? o.methods != null : o.methods == null || !SpecialAgentUtil.containsAll(methods, o.methods))
       return false;
 
-    if (fields == null ? o.fields != null : o.fields == null || !Util.containsAll(fields, o.fields))
+    if (fields == null ? o.fields != null : o.fields == null || !SpecialAgentUtil.containsAll(fields, o.fields))
       return false;
 
     return true;
@@ -155,13 +155,13 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
 
     builder.append(" {\n");
     if (constructors != null)
-      builder.append("  ").append(getName()).append(Util.toString(constructors, "\n  " + getName())).append('\n');
+      builder.append("  ").append(getName()).append(SpecialAgentUtil.toString(constructors, "\n  " + getName())).append('\n');
 
     if (methods != null)
-      builder.append("  ").append(Util.toString(methods, "\n  ")).append('\n');
+      builder.append("  ").append(SpecialAgentUtil.toString(methods, "\n  ")).append('\n');
 
     if (fields != null)
-      builder.append("  ").append(Util.toString(fields, "\n  ")).append('\n');
+      builder.append("  ").append(SpecialAgentUtil.toString(fields, "\n  ")).append('\n');
 
     builder.append('}');
     return builder.toString();
