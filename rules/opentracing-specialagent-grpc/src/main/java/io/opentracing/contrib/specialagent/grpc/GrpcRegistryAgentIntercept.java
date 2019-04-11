@@ -18,7 +18,7 @@ package io.opentracing.contrib.specialagent.grpc;
 import io.grpc.ServerServiceDefinition;
 import io.opentracing.contrib.grpc.ServerTracingInterceptor;
 
-public class GrpcAgentIntercept {
+public class GrpcRegistryAgentIntercept {
 
   public static Object addService(Object service) {
     if (service instanceof ServerServiceDefinition) {

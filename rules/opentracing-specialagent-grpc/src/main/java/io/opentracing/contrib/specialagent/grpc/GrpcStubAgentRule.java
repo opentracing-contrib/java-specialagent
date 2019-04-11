@@ -17,35 +17,28 @@ package io.opentracing.contrib.specialagent.grpc;
 
 import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.none;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class GrpcStubAgentRule implements AgentRule {
+public class GrpcStubAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    final Narrowable builder = new AgentBuilder.Default()
-        .ignore(none())
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs,
+      final AgentBuilder builder) {
+    final Narrowable narrowable = new AgentBuilder.Default()
         .type(hasSuperType(named("io.grpc.stub.AbstractStub")));
-        //.and(not(isAbstract()));
+    //.and(not(isAbstract()));
 
-    return Arrays.asList(builder.transform(new Transformer() {
+    return Arrays.asList(narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
@@ -56,11 +49,12 @@ public class GrpcStubAgentRule implements AgentRule {
   }
 
 
-    @Advice.OnMethodExit
-    public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled()) {
-        returned = GrpcStubAgentIntercept.build(returned);
-      }
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.Origin String origin,
+      @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (AgentRuleUtil.isEnabled(origin)) {
+      returned = GrpcStubAgentIntercept.build(returned);
     }
+  }
 
 }
