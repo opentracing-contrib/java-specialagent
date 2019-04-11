@@ -31,7 +31,7 @@
       <!-- https://github.com/opentracing-contrib/java-concurrent -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-concurrent</artifactId>
-      <version>0.2.0</version>
+      <version>0.2.1</version>
     </dependency>
   </dependencies>
 </project>
