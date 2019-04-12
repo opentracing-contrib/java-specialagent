@@ -29,12 +29,14 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <version.apache.logging>2.11.2</version.apache.logging>
   </properties>
   <dependencies>
+    <!-- https://github.com/opentracing-contrib/java-elasticsearch-client -->
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-elasticsearch-client-common</artifactId>
-      <version>0.0.7</version>
+      <version>0.1.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.elasticsearch.client</groupId>
@@ -45,26 +47,20 @@
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>transport</artifactId>
-      <version>6.6.1</version>
+      <version>6.6.2</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <version>3.1.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>2.11.1</version>
+      <version>${version.apache.logging}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.11.1</version>
+      <version>${version.apache.logging}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

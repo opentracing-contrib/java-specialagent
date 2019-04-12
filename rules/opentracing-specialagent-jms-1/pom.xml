@@ -29,14 +29,14 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <activemq.version>5.15.5</activemq.version>
+    <activemq.version>5.15.9</activemq.version>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jms -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-1</artifactId>
-      <version>0.0.11</version>
+      <version>0.1.0</version>
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
@@ -55,12 +55,6 @@
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-broker</artifactId>
       <version>${activemq.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <version>3.1.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -36,6 +36,33 @@ class ProxyMockScopeManager implements ScopeManager {
   }
 
   @Override
+  public Scope activate(final Span span) {
+    if (!(span instanceof ProxyMockSpan))
+      throw new IllegalStateException();
+
+    final ProxyMockSpan proxyMockSpan = (ProxyMockSpan)span;
+    final Scope mockScope = mockScopeManager.activate(proxyMockSpan.mockSpan);
+    final Scope realScope = realScopeManager.activate(proxyMockSpan.realSpan);
+    return mockScope == null ? null : new ProxyMockScope(tracer, mockScope, realScope);
+  }
+
+  @Override
+  @Deprecated
+  public ProxyMockScope active() {
+    final Scope mockScope = mockScopeManager.active();
+    final Scope realScope = realScopeManager.active();
+    return mockScope == null ? null : new ProxyMockScope(tracer, mockScope, realScope);
+  }
+
+  @Override
+  public ProxyMockSpan activeSpan() {
+    final Span mockSpan = mockScopeManager.activeSpan();
+    final Span realSpan = realScopeManager.activeSpan();
+    return mockSpan == null ? null : new ProxyMockSpan(tracer, (MockSpan)mockSpan, realSpan);
+  }
+
+  @Override
+  @Deprecated
   public ProxyMockScope activate(final Span span, final boolean finishSpanOnClose) {
     if (!(span instanceof ProxyMockSpan))
       throw new IllegalStateException();
@@ -43,13 +70,6 @@ class ProxyMockScopeManager implements ScopeManager {
     final ProxyMockSpan proxyMockSpan = (ProxyMockSpan)span;
     final Scope mockScope = mockScopeManager.activate(proxyMockSpan.mockSpan, finishSpanOnClose);
     final Scope realScope = realScopeManager.activate(proxyMockSpan.realSpan, finishSpanOnClose);
-    return mockScope == null ? null : new ProxyMockScope(tracer, mockScope, realScope);
-  }
-
-  @Override
-  public ProxyMockScope active() {
-    final Scope mockScope = mockScopeManager.active();
-    final Scope realScope = realScopeManager.active();
     return mockScope == null ? null : new ProxyMockScope(tracer, mockScope, realScope);
   }
 
@@ -72,6 +92,7 @@ class ProxyMockScopeManager implements ScopeManager {
     }
 
     @Override
+    @Deprecated
     public ProxyMockSpan span() {
       final Span mockSpan = mockScope.span();
       final Span realSpan = mockSpan == null ? null : Objects.requireNonNull(realScope.span());

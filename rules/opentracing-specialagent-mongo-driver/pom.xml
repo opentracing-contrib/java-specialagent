@@ -29,14 +29,14 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.org.mongodb.mongo-java-driver>3.8.1</version.org.mongodb.mongo-java-driver>
+    <version.org.mongodb.mongo-java-driver>3.10.1</version.org.mongodb.mongo-java-driver>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-mongo-driver -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-mongo-driver</artifactId>
-      <version>0.0.6</version>
+      <version>0.1.1</version>
       <exclusions>
         <exclusion>
           <groupId>org.mongodb</groupId>
@@ -65,7 +65,7 @@
     <dependency>
       <groupId>de.bwaldvogel</groupId>
       <artifactId>mongo-java-server</artifactId>
-      <version>1.8.0</version>
+      <version>1.14.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
