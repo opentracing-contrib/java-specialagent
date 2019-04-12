@@ -63,11 +63,11 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
 
   @Override
   public int compareTo(final ConstructorFingerprint o) {
-    final int comparison = Util.compare(parameterTypes, o.parameterTypes);
+    final int comparison = SpecialAgentUtil.compare(parameterTypes, o.parameterTypes);
     if (comparison != 0)
       return comparison;
 
-    return Util.compare(exceptionTypes, o.exceptionTypes);
+    return SpecialAgentUtil.compare(exceptionTypes, o.exceptionTypes);
   }
 
   @Override
@@ -93,11 +93,11 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
     final StringBuilder builder = new StringBuilder();
     builder.append("(");
     if (parameterTypes != null)
-      builder.append(Util.toString(parameterTypes, ", "));
+      builder.append(SpecialAgentUtil.toString(parameterTypes, ", "));
 
     builder.append(")");
     if (exceptionTypes != null)
-      builder.append(" throws ").append(Util.toString(exceptionTypes, ", "));
+      builder.append(" throws ").append(SpecialAgentUtil.toString(exceptionTypes, ", "));
 
     builder.append(";");
     return builder.toString();

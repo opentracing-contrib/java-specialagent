@@ -192,6 +192,6 @@ class LibraryFingerprint extends Fingerprint {
 
   @Override
   public String toString() {
-    return "\n" + Util.toString(classes, "\n");
+    return "\n" + SpecialAgentUtil.toString(classes, "\n");
   }
 }
