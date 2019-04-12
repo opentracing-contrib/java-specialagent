@@ -34,41 +34,41 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ThriftProtocolAgentRule implements AgentRule {
+public class ThriftProtocolAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
-    final Narrowable builder = new AgentBuilder.Default()
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+    final Narrowable narrowable = new AgentBuilder.Default()
         .ignore(none())
         .with(RedefinitionStrategy.RETRANSFORMATION)
         .with(InitializationStrategy.NoOp.INSTANCE)
         .with(TypeStrategy.Default.REDEFINE)
         .type(hasSuperType(named("org.apache.thrift.protocol.TProtocol")));
 
-    return Arrays.asList(builder.transform(new Transformer() {
+    return Arrays.asList(narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(WriteMessageBegin.class).on(named("writeMessageBegin")));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(WriteMessageEnd.class).on(named("writeMessageEnd")));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(WriteFieldStop.class).on(named("writeFieldStop")));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(ReadMessageBegin.class).on(named("readMessageBegin")));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
@@ -79,9 +79,10 @@ public class ThriftProtocolAgentRule implements AgentRule {
 
   public static class WriteMessageBegin {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz,
+    public static void enter(final @Advice.Origin String origin,
+        final @Advice.This Object thiz,
         @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object message) {
-      if (AgentRuleUtil.isEnabled()) {
+      if (AgentRuleUtil.isEnabled(origin)) {
         ThriftProtocolAgentIntercept.writeMessageBegin(thiz, message);
       }
     }
@@ -89,8 +90,8 @@ public class ThriftProtocolAgentRule implements AgentRule {
 
   public static class WriteMessageEnd {
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled()) {
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin)) {
         ThriftProtocolAgentIntercept.writeMessageEnd();
       }
     }
@@ -98,9 +99,9 @@ public class ThriftProtocolAgentRule implements AgentRule {
 
   public static class WriteFieldStop {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.This Object thiz)
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz)
         throws Exception {
-      if (AgentRuleUtil.isEnabled()) {
+      if (AgentRuleUtil.isEnabled(origin)) {
         ThriftProtocolAgentIntercept.writeFieldStop(thiz);
       }
     }
@@ -108,8 +109,9 @@ public class ThriftProtocolAgentRule implements AgentRule {
 
   public static class ReadMessageBegin {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(@Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
-      if (AgentRuleUtil.isEnabled() && thrown != null) {
+    public static void exit(final @Advice.Origin String origin,
+        @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+      if (AgentRuleUtil.isEnabled(origin) && thrown != null) {
         ThriftProtocolAgentIntercept.readMessageBegin(thrown);
       }
     }
@@ -117,8 +119,8 @@ public class ThriftProtocolAgentRule implements AgentRule {
 
   public static class ReadMessageEnd {
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled()) {
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin)) {
         ThriftProtocolAgentIntercept.readMessageEnd();
       }
     }

@@ -19,23 +19,23 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ThriftAsyncMethodCallbackAgentRule implements AgentRule {
+public class ThriftAsyncMethodCallbackAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(String agentArgs) throws Exception {
-    final Narrowable builder = new AgentBuilder.Default()
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+    final Narrowable narrowable = new AgentBuilder.Default()
         .ignore(none())
         .with(RedefinitionStrategy.RETRANSFORMATION)
         .with(InitializationStrategy.NoOp.INSTANCE)
         .with(TypeStrategy.Default.REDEFINE)
         .type(hasSuperType(named("org.apache.thrift.async.AsyncMethodCallback")));
 
-    return Arrays.asList(builder.transform(new Transformer() {
+    return Arrays.asList(narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(OnComplete.class).on(named("onComplete")));
       }
-    }), builder.transform(new Transformer() {
+    }), narrowable.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
           final ClassLoader classLoader, final JavaModule module) {
@@ -46,8 +46,8 @@ public class ThriftAsyncMethodCallbackAgentRule implements AgentRule {
 
   public static class OnComplete {
     @Advice.OnMethodExit
-    public static void exit() {
-      if (AgentRuleUtil.isEnabled()) {
+    public static void exit(final @Advice.Origin String origin) {
+      if (AgentRuleUtil.isEnabled(origin)) {
         ThriftAsyncMethodCallbackAgentIntercept.onComplete();
       }
     }
@@ -55,8 +55,9 @@ public class ThriftAsyncMethodCallbackAgentRule implements AgentRule {
 
   public static class OnError {
     @Advice.OnMethodExit
-    public static void exit(@Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exception) {
-      if (AgentRuleUtil.isEnabled()) {
+    public static void exit(final @Advice.Origin String origin,
+        @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exception) {
+      if (AgentRuleUtil.isEnabled(origin)) {
         ThriftAsyncMethodCallbackAgentIntercept.onError(exception);
       }
     }

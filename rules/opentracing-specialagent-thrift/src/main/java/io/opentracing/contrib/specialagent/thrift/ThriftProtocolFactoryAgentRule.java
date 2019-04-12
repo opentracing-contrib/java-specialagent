@@ -33,9 +33,9 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ThriftProtocolFactoryAgentRule implements AgentRule {
+public class ThriftProtocolFactoryAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) {
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
     return Arrays.asList(new AgentBuilder.Default()
         .ignore(none())
         .with(RedefinitionStrategy.RETRANSFORMATION)
@@ -54,9 +54,9 @@ public class ThriftProtocolFactoryAgentRule implements AgentRule {
   }
 
   @Advice.OnMethodExit
-  public static void exit(
+  public static void exit(final @Advice.Origin String origin,
       @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (AgentRuleUtil.isEnabled()) {
+    if (AgentRuleUtil.isEnabled(origin)) {
       returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
     }
   }

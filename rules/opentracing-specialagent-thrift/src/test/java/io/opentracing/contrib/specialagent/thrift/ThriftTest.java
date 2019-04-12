@@ -28,10 +28,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import io.opentracing.contrib.specialagent.thrift.CustomService.AsyncClient;
+import io.opentracing.contrib.specialagent.thrift.gen.Address;
+import io.opentracing.contrib.specialagent.thrift.gen.CustomHandler;
+import io.opentracing.contrib.specialagent.thrift.gen.CustomService;
+import io.opentracing.contrib.specialagent.thrift.gen.CustomService.AsyncClient;
 import io.opentracing.Scope;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.thrift.gen.User;
+import io.opentracing.contrib.specialagent.thrift.gen.UserWithAddress;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.propagation.Format;

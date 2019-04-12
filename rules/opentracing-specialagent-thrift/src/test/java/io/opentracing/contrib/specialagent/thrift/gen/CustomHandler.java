@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.thrift;
+package io.opentracing.contrib.specialagent.thrift.gen;
 
 import java.util.concurrent.TimeUnit;
 
