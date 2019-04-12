@@ -8,6 +8,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcServerRule;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.grpc.gen.GreeterGrpc;
 import io.opentracing.contrib.specialagent.grpc.gen.GreeterGrpc.GreeterBlockingStub;
 import io.opentracing.contrib.specialagent.grpc.gen.HelloReply;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
+@Config(isolateClassLoader = false)
 public class GrpcTest {
   @Rule
   public GrpcServerRule grpcServer = new GrpcServerRule();

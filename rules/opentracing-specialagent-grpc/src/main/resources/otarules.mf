@@ -14,3 +14,4 @@
 
 io.opentracing.contrib.specialagent.grpc.GrpcRegistryAgentRule
 io.opentracing.contrib.specialagent.grpc.GrpcStubAgentRule
+io.opentracing.contrib.specialagent.grpc.GrpcServerBuilderAgentRule
