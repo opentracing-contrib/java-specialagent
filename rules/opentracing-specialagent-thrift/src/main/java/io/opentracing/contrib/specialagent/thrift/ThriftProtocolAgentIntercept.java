@@ -18,7 +18,7 @@ package io.opentracing.contrib.specialagent.thrift;
 
 import io.opentracing.Span;
 import io.opentracing.propagation.Format.Builtin;
-import io.opentracing.propagation.TextMapInjectAdapter;
+import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.tag.Tags;
 import io.opentracing.thrift.ClientSpanDecorator;
 import io.opentracing.thrift.DefaultClientSpanDecorator;
@@ -89,8 +89,7 @@ public class ThriftProtocolAgentIntercept {
       Span span = spanHolder.get();
       if (span != null) {
         Map<String, String> map = new HashMap<>();
-        TextMapInjectAdapter adapter = new TextMapInjectAdapter(map);
-        GlobalTracer.get().inject(span.context(), Builtin.TEXT_MAP, adapter);
+        GlobalTracer.get().inject(span.context(), Builtin.TEXT_MAP, new TextMapAdapter(map));
 
         tProtocol.writeFieldBegin(new TField("span", TType.MAP, SPAN_FIELD_ID));
         tProtocol.writeMapBegin(new TMap(TType.STRING, TType.STRING, map.size()));
