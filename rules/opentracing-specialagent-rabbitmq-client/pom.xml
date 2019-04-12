@@ -30,10 +30,11 @@
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   <dependencies>
+    <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
-      <version>0.0.8</version>
+      <version>0.1.1</version>
       <exclusions>
         <exclusion>
           <groupId>com.rabbitmq</groupId>

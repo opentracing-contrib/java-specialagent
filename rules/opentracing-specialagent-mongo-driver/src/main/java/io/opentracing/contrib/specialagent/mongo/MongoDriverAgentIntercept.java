@@ -17,7 +17,7 @@ package io.opentracing.contrib.specialagent.mongo;
 
 import com.mongodb.MongoClientSettings.Builder;
 
-import io.opentracing.contrib.mongo.TracingCommandListener;
+import io.opentracing.contrib.mongo.common.TracingCommandListener;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 

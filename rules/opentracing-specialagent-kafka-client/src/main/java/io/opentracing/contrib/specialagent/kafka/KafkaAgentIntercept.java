@@ -21,6 +21,7 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.contrib.kafka.TracingCallback;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
 import io.opentracing.util.GlobalTracer;
@@ -32,8 +33,8 @@ public class KafkaAgentIntercept {
   }
 
   public static Object onProducerEnter(final Object record, final Object callback) {
-    final Scope scope = TracingKafkaUtils.buildAndInjectSpan((ProducerRecord<?,?>)record, GlobalTracer.get());
-    return new TracingCallback((Callback)callback, scope.span(), GlobalTracer.get());
+    final Span span = TracingKafkaUtils.buildAndInjectSpan((ProducerRecord<?,?>)record, GlobalTracer.get());
+    return new TracingCallback((Callback)callback, span, GlobalTracer.get());
   }
 
   @SuppressWarnings("resource")
