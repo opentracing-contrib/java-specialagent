@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
-//@Config(isolateClassLoader = false)
 public class GrpcTest {
   @Rule
   public GrpcServerRule grpcServer = new GrpcServerRule();
@@ -30,20 +29,13 @@ public class GrpcTest {
 
   @Test
   public void test(MockTracer tracer) {
-
-//    ServerBuilder.forPort(123)
-//        .addService(new GreeterImpl()).build();
-
-//    grpcServer.getServiceRegistry()
-//        .addService(new GreeterImpl().bindService());
-
     grpcServer.getServiceRegistry()
         .addService(new GreeterImpl());
 
-    final ManagedChannel channel = grpcServer.getChannel();
-    final GreeterBlockingStub greeterBlockingStub = GreeterGrpc.newBlockingStub(channel);
+    ManagedChannel channel = grpcServer.getChannel();
+    GreeterBlockingStub greeterBlockingStub = GreeterGrpc.newBlockingStub(channel);
 
-    final String message = greeterBlockingStub
+    String message = greeterBlockingStub
         .sayHello(HelloRequest.newBuilder().setName("world").build()).getMessage();
 
     assertEquals("Hello world", message);

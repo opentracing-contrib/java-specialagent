@@ -22,7 +22,6 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -34,18 +33,17 @@ public class GrpcStubAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs,
       final AgentBuilder builder) {
-    final Narrowable narrowable = new AgentBuilder.Default()
-        .type(hasSuperType(named("io.grpc.stub.AbstractStub")));
-    //.and(not(isAbstract()));
-
-    return Arrays.asList(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
-        return builder
-            .visit(Advice.to(GrpcStubAgentRule.class).on(named("getChannel")));
-      }
-    }));
+    return Arrays.asList(new AgentBuilder.Default()
+        .type(hasSuperType(named("io.grpc.stub.AbstractStub")))
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder,
+              final TypeDescription typeDescription,
+              final ClassLoader classLoader, final JavaModule module) {
+            return builder
+                .visit(Advice.to(GrpcStubAgentRule.class).on(named("getChannel")));
+          }
+        }));
   }
 
 

@@ -25,7 +25,6 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -37,18 +36,17 @@ public class GrpcRegistryAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs,
       final AgentBuilder builder) {
-    final Narrowable narrowable = new AgentBuilder.Default()
+    return Arrays.asList(new AgentBuilder.Default()
         .type(hasSuperType(named("io.grpc.HandlerRegistry")))
-        .and(not(isAbstract()));
-
-    return Arrays.asList(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
-        return builder
-            .visit(Advice.to(AddService.class).on(named("addService").and(takesArguments(1))));
-      }
-    }));
+        .and(not(isAbstract())).transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder,
+              final TypeDescription typeDescription,
+              final ClassLoader classLoader, final JavaModule module) {
+            return builder
+                .visit(Advice.to(AddService.class).on(named("addService").and(takesArguments(1))));
+          }
+        }));
   }
 
 
