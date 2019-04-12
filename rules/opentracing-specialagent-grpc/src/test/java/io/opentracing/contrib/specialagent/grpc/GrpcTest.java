@@ -1,5 +1,7 @@
 package io.opentracing.contrib.specialagent.grpc;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 
 import io.grpc.ManagedChannel;
@@ -12,6 +14,8 @@ import io.opentracing.contrib.specialagent.grpc.gen.HelloReply;
 import io.opentracing.contrib.specialagent.grpc.gen.HelloRequest;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +44,7 @@ public class GrpcTest {
 
     assertEquals("Hello world", message);
 
-    System.out.println(tracer.finishedSpans());
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
 
     assertEquals(2, tracer.finishedSpans().size());
   }
@@ -60,4 +64,12 @@ public class GrpcTest {
     }
   }
 
+  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
+    return new Callable<Integer>() {
+      @Override
+      public Integer call() {
+        return tracer.finishedSpans().size();
+      }
+    };
+  }
 }
