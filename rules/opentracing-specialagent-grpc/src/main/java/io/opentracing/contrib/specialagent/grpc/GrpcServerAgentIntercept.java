@@ -19,11 +19,10 @@ import io.grpc.ServerServiceDefinition;
 import io.opentracing.contrib.grpc.ServerTracingInterceptor;
 
 public class GrpcServerAgentIntercept {
+  public static Object addService(final Object service) {
+    if (service instanceof ServerServiceDefinition)
+      return new ServerTracingInterceptor().intercept((ServerServiceDefinition)service);
 
-  public static Object addService(Object service) {
-    if (service instanceof ServerServiceDefinition) {
-      return new ServerTracingInterceptor().intercept((ServerServiceDefinition) service);
-    }
     return service;
   }
 }

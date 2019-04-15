@@ -20,8 +20,7 @@ import io.grpc.ClientInterceptors;
 import io.opentracing.contrib.grpc.ClientTracingInterceptor;
 
 public class GrpcStubAgentIntercept {
-
   public static Object build(Object channel) {
-    return ClientInterceptors.intercept((Channel) channel, new ClientTracingInterceptor());
+    return ClientInterceptors.intercept((Channel)channel, new ClientTracingInterceptor());
   }
 }

@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent.grpc;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -31,28 +31,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class GrpcStubAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs,
-      final AgentBuilder builder) {
-    return Arrays.asList(new AgentBuilder.Default()
-        .type(hasSuperType(named("io.grpc.stub.AbstractStub")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription,
-              final ClassLoader classLoader, final JavaModule module) {
-            return builder
-                .visit(Advice.to(GrpcStubAgentRule.class).on(named("getChannel")));
-          }
-        }));
+  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+    return Arrays.asList(builder
+      .type(hasSuperType(named("io.grpc.stub.AbstractStub")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(GrpcStubAgentRule.class).on(named("getChannel")));
+        }}));
   }
-
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin,
-      @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (AgentRuleUtil.isEnabled(origin)) {
+  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (AgentRuleUtil.isEnabled(origin))
       returned = GrpcStubAgentIntercept.build(returned);
-    }
   }
-
 }

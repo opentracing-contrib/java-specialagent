@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -113,7 +114,10 @@ public class ByteBuddyManager extends Manager {
           final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentArgs, agentBuilder);
 
           for (final AgentBuilder builder : builders) {
-          final TransformationListener listener = new TransformationListener(index, events);
+            if (agentBuilder != getParent(builder))
+              throw new IllegalArgumentException("AgentBuilder instance provided in buildAgent(String,AgentBuilder) was not used");
+
+            final TransformationListener listener = new TransformationListener(index, events);
 //            if (agentRule.onEn().getOnEnter() != null)
 //              installOn(builder, agentRule.onEn().getOnEnter(), agentRule, listener, instrumentation);
 //
@@ -136,6 +140,18 @@ public class ByteBuddyManager extends Manager {
           logger.log(Level.SEVERE, "Error invoking " + line + "#buildAgent(String) was not found", e);
         }
       }
+    }
+  }
+
+  private static Object getParent(final AgentBuilder builder) {
+    try {
+      final Class<?> cls = Class.forName("net.bytebuddy.agent.builder.AgentBuilder$Default$Transforming");
+      final Field field = cls.getDeclaredField("this$0");
+      field.setAccessible(true);
+      return field.get(builder);
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+      throw new IllegalStateException(e);
     }
   }
 
