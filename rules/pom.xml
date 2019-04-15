@@ -45,6 +45,7 @@
     <module>opentracing-specialagent-asynchttpclient</module>
     <module>opentracing-specialagent-rabbitmq-client</module>
     <module>opentracing-specialagent-grpc</module>
+    <module>opentracing-specialagent-jedis-2</module>
   </modules>
   <profiles>
     <profile>

@@ -76,6 +76,7 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 13. [AsyncHttpClient](https://github.com/opentracing-contrib/java-asynchttpclient)
 14. [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client)
 15. [GRPC](https://github.com/opentracing-contrib/java-grpc)
+16. [Jedis 2 Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
 
 ## Goals
 
