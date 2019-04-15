@@ -155,7 +155,7 @@
               <goal>testCompile</goal>
             </goals>
             <configuration>
-              <skip>${deploy}</skip>
+              <skip>${assemble}</skip>
             </configuration>
           </execution>
         </executions>
