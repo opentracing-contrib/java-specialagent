@@ -47,20 +47,6 @@
         </property>
       </activation>
       <build>
-        <testResources>
-          <testResource>
-            <directory>${project.build.directory}/generated-test-sources/protobuf/java</directory>
-            <excludes>
-              <exclude>**/*.java</exclude>
-            </excludes>
-          </testResource>
-          <testResource>
-            <directory>${project.build.directory}/generated-test-sources/protobuf/grpc-java</directory>
-            <excludes>
-              <exclude>**/*.java</exclude>
-            </excludes>
-          </testResource>
-        </testResources>
         <plugins>
           <plugin>
             <groupId>org.xolstice.maven.plugins</groupId>
@@ -78,6 +64,7 @@
                   <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                   <pluginId>grpc-java</pluginId>
                   <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                  <clearOutputDirectory>false</clearOutputDirectory>
                 </configuration>
               </execution>
             </executions>
