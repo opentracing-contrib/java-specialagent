@@ -46,6 +46,7 @@
     <module>opentracing-specialagent-rabbitmq-client</module>
     <module>opentracing-specialagent-grpc</module>
     <module>opentracing-specialagent-jedis-2</module>
+    <module>opentracing-specialagent-spring-rabbitmq</module>
   </modules>
   <profiles>
     <profile>
