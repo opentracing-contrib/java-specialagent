@@ -36,7 +36,9 @@ public class ServletContextAgentRule extends AgentRule {
         // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
         .and(not(nameStartsWith("org.eclipse.jetty")))
         // Similarly, ApplicationContextFacade causes trouble and it's enough to instrument ApplicationContext
-        .and(not(named("org.apache.catalina.core.ApplicationContextFacade"))))
+        .and(not(named("org.apache.catalina.core.ApplicationContextFacade")))
+        // Otherwise we are breaking Tomcat 8.5+
+        .and(not(named("org.apache.catalina.core.StandardContext$NoPluggabilityServletContext"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
