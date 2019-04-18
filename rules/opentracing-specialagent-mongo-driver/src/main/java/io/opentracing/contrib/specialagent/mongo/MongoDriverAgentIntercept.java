@@ -23,7 +23,7 @@ import io.opentracing.util.GlobalTracer;
 
 public class MongoDriverAgentIntercept {
   public static void exit(final Object returned) {
-    if (!AgentRuleUtil.callerEquals("com.mongodb.async.client.MongoClientSettings.createFromClientSettings", 4))
+    if (!AgentRuleUtil.callerEquals(4, "com.mongodb.async.client.MongoClientSettings.createFromClientSettings"))
       ((Builder)returned).addCommandListener(new TracingCommandListener(GlobalTracer.get()));
   }
 }
