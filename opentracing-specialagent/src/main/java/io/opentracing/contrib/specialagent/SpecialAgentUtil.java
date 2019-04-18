@@ -22,9 +22,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -849,50 +846,6 @@ public final class SpecialAgentUtil {
     }
 
     return events;
-  }
-
-  static <T>T proxy(final T obj) {
-    final ClassLoader targetClassLoader = Thread.currentThread().getContextClassLoader();
-    if (targetClassLoader == obj.getClass().getClassLoader())
-      return obj;
-
-    try {
-      final Class<?>[] interfaces = obj.getClass().getInterfaces();
-      for (int i = 0; i < interfaces.length; ++i)
-        interfaces[i] = Class.forName(interfaces[i].getName(), false, targetClassLoader);
-
-      final Object o = Proxy.newProxyInstance(targetClassLoader, interfaces, new InvocationHandler() {
-        @Override
-        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-          if (args == null || args.length == 0) {
-            System.err.println("0 " + targetClassLoader + " -> " + obj.getClass().getClassLoader());
-            return obj.getClass().getMethod(method.getName()).invoke(obj);
-          }
-
-          final Class<?>[] types = method.getParameterTypes();
-          final Class<?>[] proxyTypes = new Class<?>[types.length];
-          for (int i = 0; i < types.length; ++i) {
-            final Class<?> type = types[i];
-            proxyTypes[i] = type.getClassLoader() == targetClassLoader ? type : Class.forName(type.getName(), false, targetClassLoader);
-          }
-
-          final Object[] proxyArgs = new Object[args.length];
-          for (int i = 0; i < args.length; ++i) {
-            final Object arg = args[i];
-            proxyArgs[i] = arg == null || arg.getClass().getClassLoader() == targetClassLoader ? arg : proxy(arg);
-          }
-
-          final Method declaredMethod = obj.getClass().getDeclaredMethod(method.getName(), proxyTypes);
-          System.err.println(": " + targetClassLoader + " -> " + obj.getClass().getClassLoader());
-          return declaredMethod.invoke(obj, proxyArgs);
-        }
-      });
-
-      return (T)o;
-    }
-    catch (final ClassNotFoundException e) {
-      throw new IllegalStateException(e);
-    }
   }
 
   private SpecialAgentUtil() {
