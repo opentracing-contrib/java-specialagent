@@ -17,11 +17,11 @@ package io.opentracing.contrib.specialagent.concurrent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 
-import io.opentracing.Tracer;
-import io.opentracing.contrib.concurrent.TracedRunnable;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
@@ -46,12 +46,13 @@ public class ExecutorAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
+  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
     if (!AgentRuleUtil.isEnabled(origin))
       return;
 
-    final Tracer tracer = GlobalTracer.get();
-    if (tracer.activeSpan() != null)
-      arg = new TracedRunnable(arg, tracer);
+    Span span = GlobalTracer.get().buildSpan("execute")
+        .withTag(Tags.COMPONENT, "java-concurrent").start();
+    arg = new TracedRunnable(arg, span.context());
+    span.finish();
   }
 }

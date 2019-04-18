@@ -15,18 +15,19 @@
 
 package io.opentracing.contrib.specialagent.concurrent;
 
-import static net.bytebuddy.matcher.ElementMatchers.*;
+import static net.bytebuddy.matcher.ElementMatchers.isSubTypeOf;
+import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import io.opentracing.Tracer;
-import io.opentracing.contrib.concurrent.TracedCallable;
-import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -48,12 +49,13 @@ public class ScheduledCallableAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Callable<?> arg) throws Exception {
+  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Callable<?> arg) throws Exception {
     if (!AgentRuleUtil.isEnabled(origin))
       return;
 
-    final Tracer tracer = GlobalTracer.get();
-    if (tracer.activeSpan() != null)
-      arg = new TracedCallable<>(arg, tracer);
+    Span span = GlobalTracer.get().buildSpan("schedule")
+        .withTag(Tags.COMPONENT, "java-concurrent").start();
+    arg = new TracedCallable<>(arg, span.context());
+    span.finish();
   }
 }
