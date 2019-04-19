@@ -20,7 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -57,7 +56,7 @@ public class Jedis2AgentRule extends AgentRule {
   public static class SendCommand {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         Jedis2AgentIntercept.sendCommand(command, args);
     }
   }
@@ -65,7 +64,7 @@ public class Jedis2AgentRule extends AgentRule {
   public static class ReadCommandOutput {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         Jedis2AgentIntercept.readCommandOutput();
     }
   }
@@ -73,7 +72,7 @@ public class Jedis2AgentRule extends AgentRule {
   public static class OnError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         Jedis2AgentIntercept.onError(thrown);
     }
   }

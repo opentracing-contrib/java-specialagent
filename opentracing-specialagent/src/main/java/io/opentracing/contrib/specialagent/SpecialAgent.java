@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,8 +36,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import com.sun.tools.attach.VirtualMachine;
 
@@ -66,7 +62,7 @@ public class SpecialAgent {
   static final String DEPENDENCIES_TGF = "dependencies.tgf";
   static final String TRACER_FACTORY = "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory";
 
-  private static final Map<ClassLoader,RuleClassLoader> classLoaderToRuleClassLoader = new IdentityHashMap<ClassLoader,RuleClassLoader>() {
+  private static class ClassLoaderMap<T> extends IdentityHashMap<ClassLoader,T> {
     private static final long serialVersionUID = 5515722666603482519L;
 
     /**
@@ -79,15 +75,18 @@ public class SpecialAgent {
      */
     @Override
     @SuppressWarnings("unlikely-arg-type")
-    public RuleClassLoader get(final Object key) {
-      RuleClassLoader value = super.get(key);
+    public T get(final Object key) {
+      T value = super.get(key);
       if (value != null || !(key instanceof URLClassLoader))
         return value;
 
       final URLClassLoader urlClassLoader = (URLClassLoader)key;
       return urlClassLoader.getURLs().length > 0 || urlClassLoader.getParent() != null ? null : super.get(null);
     }
-  };
+  }
+
+  private static final ClassLoaderMap<Boolean> classLoaderToCompatibility = new ClassLoaderMap<>();
+  private static final ClassLoaderMap<RuleClassLoader> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
 
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
@@ -153,7 +152,7 @@ public class SpecialAgent {
   }
 
   /**
-   * Entrypoint to load {@code SpecialAgent}.
+   * Main entrypoint to load the {@code SpecialAgent} via static attach.
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
@@ -166,6 +165,13 @@ public class SpecialAgent {
     instrumenter.manager.premain(null, inst);
   }
 
+  /**
+   * Main entrypoint to load the {@code SpecialAgent} via dynamic attach.
+   *
+   * @param agentArgs Agent arguments.
+   * @param inst The {@code Instrumentation}.
+   * @throws Exception If an error has occurred.
+   */
   public static void agentmain(final String agentArgs, final Instrumentation inst) throws Exception {
     premain(agentArgs, inst);
   }
@@ -174,7 +180,7 @@ public class SpecialAgent {
    * Main initialization method for the {@code SpecialAgent}. This method is
    * called by the re/transformation {@link Manager} instance.
    */
-  public static void initialize() {
+  static void initialize() {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
@@ -466,28 +472,12 @@ public class SpecialAgent {
     }
   }
 
-  /**
-   * Callback that is used to load a class by the specified resource path into
-   * the provided {@code ClassLoader}.
-   */
-  private static final BiPredicate<String,ClassLoader> loadClass = new BiPredicate<String,ClassLoader>() {
-    @Override
-    public boolean test(final String path, final ClassLoader classLoader) {
-      if (path.endsWith(".class") && !path.startsWith("META-INF/") && !path.startsWith("module-info")) {
-        try {
-          Class.forName(path.substring(0, path.length() - 6).replace('/', '.'), false, classLoader);
-        }
-        catch (final ClassNotFoundException e) {
-          logger.log(Level.SEVERE, "Failed to load class in " + classLoader, e);
-        }
-      }
-
-      return true;
-    }
-  };
-
   @SuppressWarnings("resource")
   public static boolean linkRule(final int index, final ClassLoader classLoader) {
+    Boolean compatible = classLoaderToCompatibility.get(classLoader);
+    if (compatible != null && compatible)
+      return true;
+
     // Find the Rule Path (identified by index passed to this method)
     final URL rulePath = allPluginsClassLoader.getURLs()[index];
     if (logger.isLoggable(Level.FINEST))
@@ -503,7 +493,9 @@ public class SpecialAgent {
 
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
     final RuleClassLoader ruleClassLoader = new RuleClassLoader(rulePaths, classLoader);
-    if (!ruleClassLoader.isCompatible(classLoader)) {
+    compatible = ruleClassLoader.isCompatible(classLoader);
+    classLoaderToCompatibility.put(classLoader, compatible);
+    if (!compatible) {
       try {
         ruleClassLoader.close();
       }
@@ -545,31 +537,6 @@ public class SpecialAgent {
 
     // Associate the ruleClassLoader with the target class's classLoader
     classLoaderToRuleClassLoader.put(classLoader, ruleClassLoader);
-
-    // Call Class.forName(...) for each class in ruleClassLoader to load in
-    // the caller's class loader
-    for (final URL pathUrl : ruleClassLoader.getURLs()) {
-      if (pathUrl.toString().endsWith(".jar")) {
-        try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
-          for (ZipEntry entry; (entry = zip.getNextEntry()) != null; loadClass.test(entry.getName(), classLoader));
-        }
-        catch (final IOException e) {
-          logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
-        }
-      }
-      else {
-        final File dir = new File(URI.create(pathUrl.toString()));
-        final Path path = dir.toPath();
-        SpecialAgentUtil.recurseDir(dir, new Predicate<File>() {
-          @Override
-          public boolean test(final File file) {
-            loadClass.test(path.relativize(file.toPath()).toString(), classLoader);
-            return true;
-          }
-        });
-      }
-    }
-
     return true;
   }
 
@@ -582,8 +549,8 @@ public class SpecialAgent {
    * requested {@code Class}, or if it has already been called for
    * {@code classLoader} and {@code name}.
    *
-   * @param classLoader The {@code ClassLoader} to match to a rule
-   *          {@code ClassLoader} that contains OpenTracing instrumentation
+   * @param classLoader The {@code ClassLoader} to match to a
+   *          {@link RuleClassLoader} that contains Instrumentation Plugin
    *          classes intended to be loaded into {@code classLoader}.
    * @param name The name of the {@code Class} to be found.
    * @return The bytecode of the {@code Class} by the name of {@code name}, or
@@ -591,25 +558,44 @@ public class SpecialAgent {
    *         {@code classLoader} and {@code name}.
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
-
     // Check if the class loader matches a ruleClassLoader
     final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoader == null)
+    if (ruleClassLoader == null) {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): NO RuleClassLoader");
+
       return null;
+    }
+
+    // Ensure the `RuleClassLoader` is preloaded
+    ruleClassLoader.preLoad(classLoader);
 
     // Check that the resourceName has not already been retrieved by this method
     // (this may be a moot check, because the JVM won't call findClass() twice
     // for the same class)
     final String resourceName = name.replace('.', '/').concat(".class");
-    if (ruleClassLoader.markFindResource(classLoader, resourceName))
-      return null;
+    if (ruleClassLoader.markFindResource(classLoader, resourceName)) {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): REDUNDANT CALL");
 
-    // Return the resource's bytes, or null if the resource does not exist in
-    // ruleClassLoader
+      return null;
+    }
+
+    // Return null if the resource does not exist in the ruleClassLoader
     final URL resource = ruleClassLoader.getResource(resourceName);
-    return resource == null ? null : SpecialAgentUtil.readBytes(resource);
+    if (resource == null) {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): null");
+
+      return null;
+    }
+
+    // Return the resource's bytes
+    final byte[] bytecode = SpecialAgentUtil.readBytes(resource);
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
+
+    return bytecode;
   }
 
   public static URL findResource(final ClassLoader classLoader, final String name) {

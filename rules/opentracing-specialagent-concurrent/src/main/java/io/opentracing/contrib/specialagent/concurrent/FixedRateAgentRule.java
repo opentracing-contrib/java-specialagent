@@ -48,8 +48,8 @@ public class FixedRateAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!AgentRuleUtil.isEnabled(origin))
+  public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
+    if (!isEnabled(origin))
       return;
 
     if (ConcurrentAgentMode.isVerbose()) {

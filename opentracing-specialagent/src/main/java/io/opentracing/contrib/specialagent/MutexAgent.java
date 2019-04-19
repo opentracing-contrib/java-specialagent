@@ -60,13 +60,13 @@ public class MutexAgent {
 
   @Advice.OnMethodEnter
   public static void enter() {
-    final ThreadLocal<Integer> latch = AgentRuleUtil.latch;
+    final ThreadLocal<Integer> latch = AgentRule.latch;
     latch.set(latch.get() + 1);
   }
 
   @Advice.OnMethodExit
   public static void exit() {
-    final ThreadLocal<Integer> latch = AgentRuleUtil.latch;
+    final ThreadLocal<Integer> latch = AgentRule.latch;
     latch.set(latch.get() - 1);
   }
 }

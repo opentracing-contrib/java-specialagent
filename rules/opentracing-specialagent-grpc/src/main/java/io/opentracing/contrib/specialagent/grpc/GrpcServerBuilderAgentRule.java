@@ -5,7 +5,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -28,7 +27,7 @@ public class GrpcServerBuilderAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object service) {
-    if (AgentRuleUtil.isEnabled(origin))
+    if (isEnabled(origin))
       service = GrpcServerAgentIntercept.addService(service);
   }
 }

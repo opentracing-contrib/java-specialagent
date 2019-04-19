@@ -15,15 +15,20 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
@@ -39,14 +44,35 @@ import java.util.logging.Logger;
  * @author Seva Safris
  */
 class RuleClassLoader extends URLClassLoader {
-  public static final String FINGERPRINT_FILE = "fingerprint.bin";
   private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
+
+  public static final String FINGERPRINT_FILE = "fingerprint.bin";
   static final ClassLoader BOOT_LOADER_PROXY = new URLClassLoader(new URL[0], null);
+
+  private static final boolean failOnEmptyFingerprint;
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
   private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
+  private boolean preLoaded;
 
-  private static final boolean failOnEmptyFingerprint;
+  /**
+   * Callback that is used to load a class by the specified resource path into
+   * the provided {@code ClassLoader}.
+   */
+  private static final BiConsumer<String,ClassLoader> loadClass = new BiConsumer<String,ClassLoader>() {
+    @Override
+    public void accept(final String path, final ClassLoader classLoader) {
+      if (!path.endsWith(".class") || path.startsWith("META-INF/") || path.startsWith("module-info"))
+        return;
+
+      try {
+        Class.forName(path.substring(0, path.length() - 6).replace('/', '.'), false, classLoader);
+      }
+      catch (final ClassNotFoundException e) {
+        logger.log(Level.SEVERE, "Failed to load class in " + classLoader, e);
+      }
+    }
+  };
 
   static {
     final String property = System.getProperty("failOnEmptyFingerprint");
@@ -62,6 +88,52 @@ class RuleClassLoader extends URLClassLoader {
    */
   RuleClassLoader(final URL[] urls, final ClassLoader parent) {
     super(urls, parent);
+  }
+
+  /**
+   * Preloads classes in the {@code RuleClassLoader} by calling
+   * {@link Class#forName(String)} on all classes in this class loader. A
+   * side-effect of this procedure is that is will load all dependent classes
+   * that are also needed to be loaded, which may belong to a different class
+   * loader (i.e. the parent, or parent's parent, and so on).
+   *
+   * @param classLoader The {@code ClassLoader}.
+   */
+  void preLoad(final ClassLoader classLoader) {
+    if (preLoaded)
+      return;
+
+    preLoaded = true;
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("RuleClassLoader<" + SpecialAgentUtil.getIdentityCode(this) + ">#preLoad(ClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">)");
+
+    // Call Class.forName(...) for each class in ruleClassLoader to load in
+    // the caller's class loader
+    for (final URL pathUrl : getURLs()) {
+      if (pathUrl.toString().endsWith(".jar")) {
+        try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
+          for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
+            final String name = entry.getName();
+            loadClass.accept(name, classLoader);
+          }
+        }
+        catch (final IOException e) {
+          logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
+        }
+      }
+      else {
+        final File dir = new File(URI.create(pathUrl.toString()));
+        final Path path = dir.toPath();
+        SpecialAgentUtil.recurseDir(dir, new Predicate<File>() {
+          @Override
+          public boolean test(final File file) {
+            final String name = path.relativize(file.toPath()).toString();
+            loadClass.accept(name, classLoader);
+            return true;
+          }
+        });
+      }
+    }
   }
 
   /**
@@ -88,40 +160,46 @@ class RuleClassLoader extends URLClassLoader {
     if (classLoader == null)
       classLoader = BOOT_LOADER_PROXY;
 
-    final Boolean compatible = compatibility.get(classLoader);
+    Boolean compatible = compatibility.get(classLoader);
     if (compatible != null)
       return compatible;
 
     try {
       final URL fpURL = getResource(FINGERPRINT_FILE);
       final LibraryFingerprint fingerprint = fpURL == null ? null : LibraryFingerprint.fromFile(fpURL);
-      if (fingerprint != null) {
-        final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
-        if (errors != null) {
-          logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + SpecialAgentUtil.toIndentedString(errors) + " in: " + SpecialAgentUtil.toIndentedString(getURLs()));
-          compatibility.put(classLoader, false);
-          return false;
-        }
-
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
-      }
-      else {
-        if (failOnEmptyFingerprint) {
-          logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
-          compatibility.put(classLoader, false);
-          return false;
-        }
-
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
-      }
+      compatible = isCompatible(fingerprint, classLoader);
+      compatibility.put(classLoader, compatible);
+      return compatible;
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
+  }
 
-    compatibility.put(classLoader, true);
+  private boolean isCompatible(final LibraryFingerprint fingerprint, final ClassLoader classLoader) {
+    if (fingerprint != null) {
+      final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
+      if (errors != null) {
+        logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + SpecialAgentUtil.toIndentedString(errors) + " in: " + SpecialAgentUtil.toIndentedString(getURLs()));
+        compatibility.put(classLoader, false);
+        return false;
+      }
+
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
+
+      return true;
+    }
+
+    if (failOnEmptyFingerprint) {
+      logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
+      compatibility.put(classLoader, false);
+      return false;
+    }
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
+
     return true;
   }
 
