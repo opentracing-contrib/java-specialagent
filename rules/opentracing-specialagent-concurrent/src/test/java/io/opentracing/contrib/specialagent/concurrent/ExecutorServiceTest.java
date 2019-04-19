@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.concurrent;
 import static org.junit.Assert.assertEquals;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 import java.util.Arrays;
@@ -83,19 +82,17 @@ public class ExecutorServiceTest extends AbstractConcurrentTest {
 		System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-		Span parent =tracer.buildSpan("parent").start();
-		try(Scope scope =tracer.activateSpan(parent)) {
+		try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
 			executorService.execute(new TestRunnable(tracer, countDownLatch));
 		}
 
 		countDownLatch.await();
-		parent.finish();
 		assertEquals(2, tracer.finishedSpans().size());
 		assertParentSpan(tracer);
 	}
 
 	@Test
-	public void testSubmitRunnable(final MockTracer tracer) throws InterruptedException {
+	public void testSubmitRunnableVerbose(final MockTracer tracer) throws InterruptedException {
 		System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
 	  final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -107,7 +104,7 @@ public class ExecutorServiceTest extends AbstractConcurrentTest {
 	}
 
 	@Test
-	public void testSubmitRunnableTyped(final MockTracer tracer) throws InterruptedException {
+	public void testSubmitRunnableTypedVerbose(final MockTracer tracer) throws InterruptedException {
 		System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
 	  final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -147,19 +144,17 @@ public class ExecutorServiceTest extends AbstractConcurrentTest {
 		System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-		Span parent =tracer.buildSpan("parent").start();
-		try(Scope scope =tracer.activateSpan(parent)) {
+    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
 			executorService.submit(new TestCallable(tracer, countDownLatch));
 		}
 
 		countDownLatch.await();
-		parent.finish();
 		assertEquals(2, tracer.finishedSpans().size());
 		assertParentSpan(tracer);
 	}
 
 	@Test
-	public void testInvokeAll(final MockTracer tracer) throws InterruptedException {
+	public void testInvokeAllVerbose(final MockTracer tracer) throws InterruptedException {
 		System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
 		final CountDownLatch countDownLatch = new CountDownLatch(2);
 
@@ -174,7 +169,7 @@ public class ExecutorServiceTest extends AbstractConcurrentTest {
 	}
 
 	@Test
-	public void testInvokeAllTimeUnit(final MockTracer tracer) throws InterruptedException {
+	public void testInvokeAllTimeUnitVerbose(final MockTracer tracer) throws InterruptedException {
 		System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
 		final CountDownLatch countDownLatch = new CountDownLatch(2);
 
@@ -189,7 +184,7 @@ public class ExecutorServiceTest extends AbstractConcurrentTest {
 	}
 
 	@Test
-	public void testInvokeAnyTimeUnit(final MockTracer tracer) throws InterruptedException, ExecutionException, TimeoutException {
+	public void testInvokeAnyTimeUnitVerbose(final MockTracer tracer) throws InterruptedException, ExecutionException, TimeoutException {
 		System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
 	  final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -202,7 +197,7 @@ public class ExecutorServiceTest extends AbstractConcurrentTest {
 	}
 
 	@Test
-	public void testInvokeAny(final MockTracer tracer) throws InterruptedException, ExecutionException {
+	public void testInvokeAnyVerbose(final MockTracer tracer) throws InterruptedException, ExecutionException {
 		System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
 	  final CountDownLatch countDownLatch = new CountDownLatch(1);
 

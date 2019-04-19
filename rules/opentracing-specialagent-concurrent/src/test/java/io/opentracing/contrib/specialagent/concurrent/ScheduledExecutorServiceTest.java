@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.concurrent;
 import static org.junit.Assert.assertEquals;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 import java.util.concurrent.CountDownLatch;
@@ -58,7 +57,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(3, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -69,7 +67,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(1, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -78,13 +75,10 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   public void scheduleRunnableTestSilentWithParent(MockTracer tracer) throws InterruptedException {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-    Span parent = tracer.buildSpan("parent").start();
-    try(Scope scope = tracer.activateSpan(parent)) {
+    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
       executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     }
     countDownLatch.await();
-    parent.finish();
-    executorService.shutdownNow();
     assertEquals(2, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -96,7 +90,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
 
     executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(3, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -108,7 +101,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
 
     executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(1, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -118,13 +110,10 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    Span parent = tracer.buildSpan("parent").start();
-    try(Scope scope = tracer.activateSpan(parent)) {
+    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
       executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     }
     countDownLatch.await();
-    parent.finish();
-    executorService.shutdownNow();
     assertEquals(2, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -137,7 +126,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000,
         TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(3, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -150,7 +138,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000,
         TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(1, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -160,14 +147,11 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    Span parent = tracer.buildSpan("parent").start();
-    try(Scope scope = tracer.activateSpan(parent)) {
+    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
       executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000,
           TimeUnit.MILLISECONDS);
     }
     countDownLatch.await();
-    parent.finish();
-    executorService.shutdownNow();
     assertEquals(2, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -180,7 +164,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000,
         TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(3, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -193,7 +176,6 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000,
         TimeUnit.MILLISECONDS);
     countDownLatch.await();
-    executorService.shutdownNow();
     assertEquals(1, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
@@ -203,14 +185,11 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    Span parent = tracer.buildSpan("parent").start();
-    try(Scope scope = tracer.activateSpan(parent)) {
+    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
       executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000,
           TimeUnit.MILLISECONDS);
     }
     countDownLatch.await();
-    parent.finish();
-    executorService.shutdownNow();
     assertEquals(2, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }

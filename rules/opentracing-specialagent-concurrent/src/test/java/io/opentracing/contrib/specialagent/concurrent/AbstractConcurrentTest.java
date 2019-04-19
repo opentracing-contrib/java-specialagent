@@ -23,9 +23,6 @@ import io.opentracing.mock.MockTracer;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.junit.After;
 import org.junit.Before;
 

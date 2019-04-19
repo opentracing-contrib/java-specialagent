@@ -18,12 +18,9 @@ package io.opentracing.contrib.specialagent.concurrent;
 import static org.junit.Assert.assertEquals;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.After;
@@ -80,14 +77,12 @@ public class ExecutorTest extends AbstractConcurrentTest {
   public void testExecuteSilentWithParent(final MockTracer tracer) throws InterruptedException {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-    
-    Span parent = tracer.buildSpan("parent").start();
-    try(Scope scope = tracer.activateSpan(parent)) {
+
+    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
       executorService.execute(new TestRunnable(tracer, countDownLatch));
     }
     countDownLatch.await();
-    parent.finish();
-    
+
     assertEquals(2, tracer.finishedSpans().size());
     assertParentSpan(tracer);
   }
