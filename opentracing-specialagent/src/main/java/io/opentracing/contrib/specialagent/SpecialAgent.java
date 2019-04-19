@@ -568,7 +568,7 @@ public class SpecialAgent {
     }
 
     // Ensure the `RuleClassLoader` is preloaded
-    ruleClassLoader.preLoad();
+    ruleClassLoader.preLoad(classLoader);
 
     // Check that the resourceName has not already been retrieved by this method
     // (this may be a moot check, because the JVM won't call findClass() twice

@@ -96,16 +96,16 @@ class RuleClassLoader extends URLClassLoader {
    * side-effect of this procedure is that is will load all dependent classes
    * that are also needed to be loaded, which may belong to a different class
    * loader (i.e. the parent, or parent's parent, and so on).
+   *
+   * @param classLoader The {@code ClassLoader}.
    */
-  void preLoad() {
+  void preLoad(final ClassLoader classLoader) {
     if (preLoaded)
       return;
 
     preLoaded = true;
-
-    final ClassLoader classLoader = getParent();
     if (logger.isLoggable(Level.FINE))
-      logger.fine("RuleClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">#preLoad(ClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">)");
+      logger.fine("RuleClassLoader<" + SpecialAgentUtil.getIdentityCode(this) + ">#preLoad(ClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">)");
 
     // Call Class.forName(...) for each class in ruleClassLoader to load in
     // the caller's class loader
