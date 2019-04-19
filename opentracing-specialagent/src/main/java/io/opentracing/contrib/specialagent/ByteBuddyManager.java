@@ -48,7 +48,7 @@ import net.bytebuddy.utility.JavaModule;
  */
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
-  static final String RULES_FILE = "otarules.mf";
+  private static final String RULES_FILE = "otarules.mf";
 
   private Instrumentation inst;
 

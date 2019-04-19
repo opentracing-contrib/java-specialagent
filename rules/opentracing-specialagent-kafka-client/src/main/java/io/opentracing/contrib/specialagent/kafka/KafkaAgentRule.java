@@ -20,7 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -51,7 +50,7 @@ public class KafkaAgentRule extends AgentRule {
   public static class Consumer {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         KafkaAgentIntercept.onConsumerEnter(returned);
     }
   }
@@ -59,13 +58,13 @@ public class KafkaAgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         KafkaAgentIntercept.onProducerExit();
     }
   }

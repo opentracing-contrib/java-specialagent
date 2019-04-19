@@ -20,7 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -59,7 +58,7 @@ public class RabbitMQAgentRule extends AgentRule {
   public static class OnEnterConsume {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         callback = RabbitMQAgentIntercept.enterConsume(callback);
     }
   }
@@ -67,7 +66,7 @@ public class RabbitMQAgentRule extends AgentRule {
   public static class OnEnterPublish {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exchange, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         props = RabbitMQAgentIntercept.enterPublish(exchange, props);
     }
   }
@@ -75,7 +74,7 @@ public class RabbitMQAgentRule extends AgentRule {
   public static class OnExitPublish {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         RabbitMQAgentIntercept.exitPublish();
     }
   }
@@ -83,7 +82,7 @@ public class RabbitMQAgentRule extends AgentRule {
   public static class OnExitGet {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         RabbitMQAgentIntercept.exitGet(returned);
     }
   }

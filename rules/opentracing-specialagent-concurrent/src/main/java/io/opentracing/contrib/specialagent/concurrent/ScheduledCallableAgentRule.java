@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedCallable;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -49,7 +48,7 @@ public class ScheduledCallableAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Callable<?> arg) throws Exception {
-    if (!AgentRuleUtil.isEnabled(origin))
+    if (!isEnabled(origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();

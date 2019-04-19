@@ -15,6 +15,8 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.util.logging.Logger;
+
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
@@ -27,29 +29,31 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class DebugListener implements AgentBuilder.Listener {
+  public static final Logger logger = Logger.getLogger(DebugListener.class.getName());
+
   @Override
   public void onDiscovery(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
-    // System.out.println("onDiscovery:" + typeName);
+//     logger.info("onDiscovery:" + typeName);
   }
 
   @Override
   public void onTransformation(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final DynamicType dynamicType) {
-//     System.out.println("onTransformation:" + typeDescription);
+//     logger.info("onTransformation:" + typeDescription);
   }
 
   @Override
   public void onIgnored(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
-//     System.out.println("onIgnored:" + typeDescription);
+//     logger.info("onIgnored:" + typeDescription);
   }
 
   @Override
   public void onError(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final Throwable throwable) {
-    System.out.println("onError:" + typeName);
+    logger.info("onError:" + typeName);
     throwable.printStackTrace();
   }
 
   @Override
   public void onComplete(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
-    // System.out.println("onComplete:" + typeName);
+//     logger.info("onComplete:" + typeName);
   }
 }
