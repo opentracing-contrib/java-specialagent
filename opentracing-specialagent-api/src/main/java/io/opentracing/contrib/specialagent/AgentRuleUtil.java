@@ -16,8 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Array;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Utility functions for subclasses of {@link AgentRule}.
@@ -25,24 +23,7 @@ import java.util.logging.Logger;
  * @author Seva Safris
  */
 public final class AgentRuleUtil {
-  public static final Logger logger = Logger.getLogger(AgentRule.class.getName());
-
   static ClassLoader tracerClassLoader;
-
-  public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
-    @Override
-    protected Integer initialValue() {
-      return 0;
-    }
-  };
-
-  public static boolean isEnabled(final String origin) {
-    final boolean enabled = latch.get() == 0;
-    if (enabled && logger.isLoggable(Level.FINER))
-      logger.finer("-------> Intercept from: " + origin);
-
-    return enabled;
-  }
 
   /**
    * Returns an array that is the subArray of the provided array.
@@ -122,20 +103,111 @@ public final class AgentRuleUtil {
    * Tests whether the name of the method at the specified {@code frameIndex} in
    * the call stack matches the provided {@code name}.
    *
-   * @param name The {@code className + "." + methodName} to match.
    * @param frameIndex The index of the stack frame to check.
+   * @param name The {@code className + "." + methodName} to match.
    * @return {@code true} if the name of the method at the specified
    *         {@code frameIndex} in the call stack matches the provided
    *         {@code name}; otherwise {@code false}.
    */
-  public static boolean callerEquals(final String name, int frameIndex) {
+  public static boolean callerEquals(int frameIndex, final String name) {
     frameIndex += 2;
     final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    if (stackTraceElements.length < frameIndex)
+    if (stackTraceElements.length <= frameIndex)
       return false;
 
     final StackTraceElement stackTraceElement = stackTraceElements[frameIndex];
-    return (stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName()).equals(name);
+    final String element = stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName();
+    return element.equals(name);
+  }
+
+  /**
+   * Tests whether the name of the method at the specified {@code frameIndex} in
+   * the call stack matches the provided {@code name}.
+   *
+   * @param startFrame The start index of the stack frame to check.
+   * @param endFrame The end index (exclusive) of the stack frame to check.
+   * @param name The {@code className + "." + methodName} to match.
+   * @return {@code true} if the name of the method at the specified
+   *         {@code frameIndex} in the call stack matches the provided
+   *         {@code name}; otherwise {@code false}.
+   */
+  public static boolean callerEquals(int startFrame, int endFrame, final String name) {
+    startFrame += 2;
+    endFrame += 2;
+
+    final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    if (stackTraceElements.length <= startFrame)
+      return false;
+
+    if (stackTraceElements.length < endFrame)
+      endFrame = stackTraceElements.length;
+
+    for (int i = startFrame; i < endFrame; ++i) {
+      final StackTraceElement stackTraceElement = stackTraceElements[i];
+      final String element = stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName();
+      if (element.equals(name))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Tests whether the name of the method at the specified {@code frameIndex} in
+   * the call stack matches the provided {@code name}.
+   *
+   * @param frameIndex The index of the stack frame to check.
+   * @param names The array of {@code className + "." + methodName} to match.
+   * @return {@code true} if the name of the method at the specified
+   *         {@code frameIndex} in the call stack matches the provided
+   *         {@code name}; otherwise {@code false}.
+   */
+  public static boolean callerEquals(int frameIndex, final String ... names) {
+    frameIndex += 2;
+    final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    if (stackTraceElements.length <= frameIndex)
+      return false;
+
+    final StackTraceElement stackTraceElement = stackTraceElements[frameIndex];
+    final String element = stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName();
+    for (int i = 0; i < names.length; ++i)
+      if (element.equals(names[i]))
+        return true;
+
+    return false;
+  }
+
+  /**
+   * Tests whether the name of the method at the specified {@code frameIndex} in
+   * the call stack matches the provided {@code name}.
+   *
+   * @param startFrame The start index of the stack frame to check.
+   * @param endFrame The end index (exclusive) of the stack frame to check.
+   * @param names The array of {@code className + "." + methodName} to match.
+   * @return {@code true} if the name of the method at the specified
+   *         {@code frameIndex} in the call stack matches the provided
+   *         {@code name}; otherwise {@code false}.
+   */
+  public static boolean callerEquals(int startFrame, int endFrame, final String ...  names) {
+    startFrame += 2;
+    endFrame += 2;
+
+    final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    if (stackTraceElements.length <= startFrame)
+      return false;
+
+    if (stackTraceElements.length < endFrame)
+      endFrame = stackTraceElements.length;
+
+    for (int i = startFrame; i < endFrame; ++i) {
+      final StackTraceElement stackTraceElement = stackTraceElements[i];
+      final String element = stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName();
+      for (int j = 0; j < names.length; ++j)
+        if (element.equals(names[j]))
+          return true;
+    }
+
+    return false;
   }
 
   private AgentRuleUtil() {

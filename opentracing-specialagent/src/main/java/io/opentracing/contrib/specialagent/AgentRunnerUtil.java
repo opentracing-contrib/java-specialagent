@@ -16,19 +16,12 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Field;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import io.opentracing.Scope;
-import io.opentracing.ScopeManager;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.ProxyMockTracer;
-import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
 /**

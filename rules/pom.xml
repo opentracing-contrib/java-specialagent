@@ -45,6 +45,8 @@
     <module>opentracing-specialagent-asynchttpclient</module>
     <module>opentracing-specialagent-rabbitmq-client</module>
     <module>opentracing-specialagent-thrift</module>
+    <module>opentracing-specialagent-grpc</module>
+    <module>opentracing-specialagent-jedis-2</module>
   </modules>
   <profiles>
     <profile>
@@ -155,7 +157,7 @@
               <goal>testCompile</goal>
             </goals>
             <configuration>
-              <skip>${deploy}</skip>
+              <skip>${assemble}</skip>
             </configuration>
           </execution>
         </executions>
