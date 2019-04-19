@@ -20,7 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -52,7 +51,7 @@ public class Jms1AgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         returned = Jms1AgentIntercept.createProducer(returned);
     }
   }
@@ -60,7 +59,7 @@ public class Jms1AgentRule extends AgentRule {
   public static class Consumer {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (AgentRuleUtil.isEnabled(origin))
+      if (isEnabled(origin))
         returned = Jms1AgentIntercept.createConsumer(returned);
     }
   }

@@ -20,7 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -43,7 +42,7 @@ public class GrpcStubAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (AgentRuleUtil.isEnabled(origin))
+    if (isEnabled(origin))
       returned = GrpcStubAgentIntercept.build(returned);
   }
 }

@@ -20,7 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -44,7 +43,7 @@ public class Elasticsearch6TransportAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-    if (AgentRuleUtil.isEnabled(origin))
+    if (isEnabled(origin))
       listener = Elasticsearch6TransportAgentIntercept.enter(request, listener);
   }
 }

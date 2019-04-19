@@ -16,8 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Array;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Utility functions for subclasses of {@link AgentRule}.
@@ -25,23 +23,7 @@ import java.util.logging.Logger;
  * @author Seva Safris
  */
 public final class AgentRuleUtil {
-  public static final Logger logger = Logger.getLogger(AgentRule.class.getName());
   static ClassLoader tracerClassLoader;
-
-  public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
-    @Override
-    protected Integer initialValue() {
-      return 0;
-    }
-  };
-
-  public static boolean isEnabled(final String origin) {
-    final boolean enabled = latch.get() == 0;
-    if (enabled && AgentRuleUtil.logger.isLoggable(Level.FINER))
-      AgentRuleUtil.logger.finer("-------> Intercept from: " + origin);
-
-    return enabled;
-  }
 
   /**
    * Returns an array that is the subArray of the provided array.
