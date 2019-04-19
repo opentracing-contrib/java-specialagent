@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.1.0 (2019-04-19)
+* Place `Tracer` instances into an isolated class loader.
+* Upgrade to OpenTracing API 0.32.0.
+* Support instrumentation plugins: Jedis, RabbitMQ, RabbitMQ Spring, gRPC, and Apache Thrift.
+* Upgraded `opentracing-specialagent-api`.
+* Improved logging: see intercept events on `Level.FINER`.
+
 ## v1.0.2 (2019-04-05)
 * Release `agentrule-maven-plugin` in deployment.
 * Support any 3rd-party libraries present on BootPath.
