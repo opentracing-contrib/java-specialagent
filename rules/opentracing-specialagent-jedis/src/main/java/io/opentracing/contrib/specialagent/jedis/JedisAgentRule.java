@@ -29,7 +29,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class Jedis2AgentRule extends AgentRule {
+public class JedisAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
     final Narrowable narrowable = builder
@@ -57,7 +57,7 @@ public class Jedis2AgentRule extends AgentRule {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
       if (isEnabled(origin))
-        Jedis2AgentIntercept.sendCommand(command, args);
+        JedisAgentIntercept.sendCommand(command, args);
     }
   }
 
@@ -65,7 +65,7 @@ public class Jedis2AgentRule extends AgentRule {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
       if (isEnabled(origin))
-        Jedis2AgentIntercept.readCommandOutput();
+        JedisAgentIntercept.readCommandOutput();
     }
   }
 
@@ -73,7 +73,7 @@ public class Jedis2AgentRule extends AgentRule {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
       if (isEnabled(origin))
-        Jedis2AgentIntercept.onError(thrown);
+        JedisAgentIntercept.onError(thrown);
     }
   }
 }

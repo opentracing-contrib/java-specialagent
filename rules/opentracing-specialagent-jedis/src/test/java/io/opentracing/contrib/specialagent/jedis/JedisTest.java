@@ -34,7 +34,7 @@ import redis.clients.jedis.Pipeline;
 import redis.embedded.RedisServer;
 
 @RunWith(AgentRunner.class)
-public class Jedis2Test {
+public class JedisTest {
   private RedisServer redisServer;
   private Jedis jedis;
 

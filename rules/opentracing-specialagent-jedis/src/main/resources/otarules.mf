@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.jedis.Jedis2AgentRule
+io.opentracing.contrib.specialagent.jedis.JedisAgentRule

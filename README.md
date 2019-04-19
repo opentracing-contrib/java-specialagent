@@ -78,7 +78,7 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 15. [RabbitMQ Spring](https://github.com/opentracing-contrib/java-spring-rabbitmq)
 16. [Thrift](https://github.com/opentracing-contrib/java-thrift)
 17. [GRPC](https://github.com/opentracing-contrib/java-grpc)
-18. [Jedis 2 Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
+18. [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
 
 ## Goals
 
@@ -180,7 +180,7 @@ The <ins>SpecialAgent</ins> supports 2 ways to connect to a OpenTracing-compatib
 
     The `-Dsa.tracer=${TRACER_JAR}` property is used on the command-line to specify the JAR path of the <ins>Tracer Plugin</ins> to be used. The `${TRACER_JAR}` must be a JAR that conforms to the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) API of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
 
-_**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._ 
+_**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._
 
 ### Disabling <ins>Instrumentation Plugins</ins>
 
