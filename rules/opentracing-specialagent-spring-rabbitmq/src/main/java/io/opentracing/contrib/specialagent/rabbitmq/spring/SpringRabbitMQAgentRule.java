@@ -1,4 +1,4 @@
-/* Copyright 2018 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,8 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.rabbitmq.spring;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -27,27 +26,27 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class ServletContextAgentRule extends AgentRule {
+public class SpringRabbitMQAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("javax.servlet.ServletContext"))
-        // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
-        .and(not(nameStartsWith("org.eclipse.jetty")))
-        // Similarly, ApplicationContextFacade causes trouble and it's enough to instrument ApplicationContext
-        .and(not(named("org.apache.catalina.core.ApplicationContextFacade")))
-        // Otherwise we are breaking Tomcat 8.5+
-        .and(not(named("org.apache.catalina.core.StandardContext$NoPluggabilityServletContext"))))
+      .type(hasSuperType(named("org.springframework.amqp.core.MessageListener")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ServletContextAgentRule.class).on(isConstructor()));
+          return builder.visit(Advice.to(SpringRabbitMQAgentRule.class).on(named("onMessage")));
         }}));
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+  @Advice.OnMethodEnter
+  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
     if (isEnabled(origin))
-      ServletContextAgentIntercept.exit(thiz);
+      SpringRabbitMQAgentIntercept.onMessageEnter(message);
+  }
+
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.Origin String origin) {
+    if (isEnabled(origin))
+      SpringRabbitMQAgentIntercept.onMessageExit();
   }
 }

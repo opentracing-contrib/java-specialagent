@@ -23,11 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
 import org.junit.After;
 import org.junit.Before;
@@ -53,7 +55,7 @@ public class TomcatServletTest {
   private Tomcat tomcatServer;
 
   @Before
-  public void beforeTest() throws LifecycleException, ServletException {
+  public void beforeTest() throws LifecycleException {
     tomcatServer = new Tomcat();
     tomcatServer.setPort(serverPort);
 
@@ -64,6 +66,10 @@ public class TomcatServletTest {
     applicationDir.mkdirs();
 
     final Context appContext = tomcatServer.addWebapp("", applicationDir.getAbsolutePath());
+
+    // Following triggers creation of NoPluggabilityServletContext object during initialization
+    ((StandardContext) appContext).addApplicationLifecycleListener(new SCL());
+
     Tomcat.addServlet(appContext, "helloWorldServlet", new MockServlet());
     appContext.addServletMappingDecoded("/hello", "helloWorldServlet");
 
@@ -79,6 +85,18 @@ public class TomcatServletTest {
 
     assertEquals(HttpServletResponse.SC_ACCEPTED, response.code());
     assertEquals(1, tracer.finishedSpans().size());
+  }
+
+  public static class SCL implements ServletContextListener {
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+      // NOOP
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+      // NOOP
+    }
   }
 
   @After

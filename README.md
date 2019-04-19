@@ -75,9 +75,10 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 12. [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client)
 13. [AsyncHttpClient](https://github.com/opentracing-contrib/java-asynchttpclient)
 14. [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client)
-15. [Thrift](https://github.com/opentracing-contrib/java-thrift)
-16. [GRPC](https://github.com/opentracing-contrib/java-grpc)
-17. [Jedis 2 Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
+15. [RabbitMQ Spring](https://github.com/opentracing-contrib/java-spring-rabbitmq)
+16. [Thrift](https://github.com/opentracing-contrib/java-thrift)
+17. [GRPC](https://github.com/opentracing-contrib/java-grpc)
+18. [Jedis 2 Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
 
 ## Goals
 
