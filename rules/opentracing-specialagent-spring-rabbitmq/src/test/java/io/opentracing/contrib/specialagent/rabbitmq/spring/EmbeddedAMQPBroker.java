@@ -64,11 +64,10 @@ class EmbeddedAMQPBroker {
     context.put("qpid.amqp_port", 0);
     context.put("qpid.work_dir", Files.createTempDirectory("qpid").toFile().getAbsolutePath());
 
-    final Map<String, Object> brokerOptions = new HashMap<>();
+    final Map<String,Object> brokerOptions = new HashMap<>();
     brokerOptions.put("type", "Memory");
     brokerOptions.put("context", context);
-    brokerOptions.put("initialConfigurationLocation",
-        Thread.currentThread().getContextClassLoader().getResource("qpid-config.json").getPath());
+    brokerOptions.put("initialConfigurationLocation", Thread.currentThread().getContextClassLoader().getResource("qpid-config.json").getPath());
 
     // start broker
     broker.startup(brokerOptions);

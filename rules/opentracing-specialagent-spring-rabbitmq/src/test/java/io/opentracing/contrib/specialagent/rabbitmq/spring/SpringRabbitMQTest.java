@@ -14,19 +14,15 @@
  */
 package io.opentracing.contrib.specialagent.rabbitmq.spring;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,13 +44,18 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.util.GlobalTracer;
+
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader = false)
 public class SpringRabbitMQTest {
-  private static EmbeddedAMQPBroker embeddedAMQPBroker;
   private static final String QUEUE_NAME = "queue-test";
   private static final String QUEUE_NAME2 = "queue-test-2";
-  private static AtomicInteger counter = new AtomicInteger();
+  private static final AtomicInteger counter = new AtomicInteger();
+  private static EmbeddedAMQPBroker embeddedAMQPBroker;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -63,19 +64,19 @@ public class SpringRabbitMQTest {
 
   @AfterClass
   public static void afterClass() {
-    if (embeddedAMQPBroker != null) {
+    if (embeddedAMQPBroker != null)
       embeddedAMQPBroker.shutdown();
-    }
   }
 
   @Test
-  public void test(MockTracer tracer) {
-    ApplicationContext context =
-        new AnnotationConfigApplicationContext(RabbitConfiguration.class);
-    AmqpTemplate template = context.getBean(AmqpTemplate.class);
+  public void test(final MockTracer tracer) {
+    final ApplicationContext context = new AnnotationConfigApplicationContext(RabbitConfiguration.class);
+    final AmqpTemplate template = context.getBean(AmqpTemplate.class);
     template.convertAndSend(QUEUE_NAME, "message");
     template.convertAndSend(QUEUE_NAME2, "message-2");
+
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+
     assertEquals(2, counter.get());
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
@@ -93,7 +94,6 @@ public class SpringRabbitMQTest {
   @Configuration
   @EnableRabbit
   public static class RabbitConfiguration {
-
     @Bean
     public ConnectionFactory connectionFactory() {
       return new CachingConnectionFactory("localhost", embeddedAMQPBroker.getBrokerPort());
@@ -120,9 +120,8 @@ public class SpringRabbitMQTest {
     }
 
     @Bean
-    SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
-        MessageListenerAdapter listenerAdapter) {
-      SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+    SimpleMessageListenerContainer container(final ConnectionFactory connectionFactory, final MessageListenerAdapter listenerAdapter) {
+      final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
       container.setConnectionFactory(connectionFactory);
       container.setQueueNames(QUEUE_NAME2);
       container.setMessageListener(listenerAdapter);
@@ -131,7 +130,7 @@ public class SpringRabbitMQTest {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
-      SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+      final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
       factory.setConnectionFactory(connectionFactory());
       factory.setConcurrentConsumers(3);
       factory.setMaxConcurrentConsumers(10);
@@ -151,19 +150,16 @@ public class SpringRabbitMQTest {
     }
 
     @Bean
-    MessageListenerAdapter listenerAdapter(Receiver receiver) {
+    MessageListenerAdapter listenerAdapter(final Receiver receiver) {
       return new MessageListenerAdapter(receiver, "receiveMessage");
     }
 
-
     public static class Receiver {
-
-      public void receiveMessage(String message) {
+      public void receiveMessage(final String message) {
         assertNotNull(GlobalTracer.get().activeSpan());
         assertEquals("message-2", message);
         counter.incrementAndGet();
       }
-
     }
   }
 }

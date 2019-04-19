@@ -13,7 +13,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
@@ -23,16 +24,12 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <name>SpecialAgent Rule for RabbitMQ Spring</name>
-  <url>
-    https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-spring-rabbitmq
-  </url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-spring-rabbitmq</url>
   <artifactId>opentracing-specialagent-spring-rabbitmq</artifactId>
-
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.springframework.amqp</groupId>
@@ -48,5 +45,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>

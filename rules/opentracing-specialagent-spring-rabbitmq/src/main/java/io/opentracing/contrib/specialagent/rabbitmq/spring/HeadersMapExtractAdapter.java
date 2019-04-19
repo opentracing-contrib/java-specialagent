@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rabbitmq.spring;
 
 import io.opentracing.propagation.TextMap;
@@ -20,25 +21,23 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class HeadersMapExtractAdapter implements TextMap {
-  private final Map<String, String> map = new HashMap<>();
+  private final Map<String,String> map = new HashMap<>();
 
-  public HeadersMapExtractAdapter(Map<String, Object> headers) {
-    if (headers == null) {
+  public HeadersMapExtractAdapter(final Map<String,Object> headers) {
+    if (headers == null)
       return;
-    }
-    for (Map.Entry<String, Object> entry : headers.entrySet()) {
+
+    for (final Map.Entry<String,Object> entry : headers.entrySet())
       map.put(entry.getKey(), entry.getValue().toString());
-    }
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
+  public Iterator<Map.Entry<String,String>> iterator() {
     return map.entrySet().iterator();
   }
 
   @Override
-  public void put(String key, String value) {
-    throw new UnsupportedOperationException(
-        "HeadersMapExtractAdapter should only be used with Tracer.extract()");
+  public void put(final String key, final String value) {
+    throw new UnsupportedOperationException("HeadersMapExtractAdapter can only be used with Tracer.extract()");
   }
 }
