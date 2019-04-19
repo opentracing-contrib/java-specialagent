@@ -21,18 +21,12 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import io.opentracing.Tracer;
-import io.opentracing.contrib.concurrent.TracedCallable;
-import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;

@@ -21,7 +21,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
