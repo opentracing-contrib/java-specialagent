@@ -87,7 +87,6 @@ public class SpecialAgent {
 
   private static final ClassLoaderMap<Boolean> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<RuleClassLoader> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
-  private static final ClassLoaderMap<Boolean> classLoaderToLoaded = new ClassLoaderMap<>();
 
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
@@ -538,7 +537,6 @@ public class SpecialAgent {
 
     // Associate the ruleClassLoader with the target class's classLoader
     classLoaderToRuleClassLoader.put(classLoader, ruleClassLoader);
-//    ruleClassLoader.preLoad(classLoader);
     return true;
   }
 
@@ -569,11 +567,8 @@ public class SpecialAgent {
       return null;
     }
 
-    final Boolean loaded = classLoaderToLoaded.get(classLoader);
-    if (loaded == null || !loaded) {
-      classLoaderToLoaded.put(classLoader, true);
-      ruleClassLoader.preLoad(classLoader);
-    }
+    // Ensure the `RuleClassLoader` is preloaded
+    ruleClassLoader.preLoad();
 
     // Check that the resourceName has not already been retrieved by this method
     // (this may be a moot check, because the JVM won't call findClass() twice

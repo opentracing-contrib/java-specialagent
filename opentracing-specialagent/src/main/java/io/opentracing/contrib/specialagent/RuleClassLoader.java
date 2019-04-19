@@ -44,14 +44,16 @@ import java.util.zip.ZipInputStream;
  * @author Seva Safris
  */
 class RuleClassLoader extends URLClassLoader {
-  public static final String FINGERPRINT_FILE = "fingerprint.bin";
   private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
+
+  public static final String FINGERPRINT_FILE = "fingerprint.bin";
   static final ClassLoader BOOT_LOADER_PROXY = new URLClassLoader(new URL[0], null);
+
+  private static final boolean failOnEmptyFingerprint;
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
   private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
-
-  private static final boolean failOnEmptyFingerprint;
+  private boolean preLoaded;
 
   /**
    * Callback that is used to load a class by the specified resource path into
@@ -94,10 +96,14 @@ class RuleClassLoader extends URLClassLoader {
    * side-effect of this procedure is that is will load all dependent classes
    * that are also needed to be loaded, which may belong to a different class
    * loader (i.e. the parent, or parent's parent, and so on).
-   *
-   * @param classLoader The {@code ClassLoader}.
    */
-  void preLoad(final ClassLoader classLoader) {
+  void preLoad() {
+    if (preLoaded)
+      return;
+
+    preLoaded = true;
+
+    final ClassLoader classLoader = getParent();
     if (logger.isLoggable(Level.FINE))
       logger.fine("RuleClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">#preLoad(ClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">)");
 
