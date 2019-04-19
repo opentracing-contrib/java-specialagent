@@ -17,11 +17,17 @@ package io.opentracing.contrib.specialagent.concurrent;
 
 import static org.junit.Assert.assertEquals;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
+import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,14 +38,57 @@ import org.junit.runner.RunWith;
  */
 @RunWith(AgentRunner.class)
 public class ExecutorTest extends AbstractConcurrentTest {
+  private ExecutorService executorService;
+
+  @Before
+  public void before() {
+    executorService =  Executors.newFixedThreadPool(10);
+  }
+
+  @After
+  public void after() {
+    if(executorService != null) {
+      executorService.shutdownNow();
+    }
+  }
+
   @Test
-	public void testExecute(final MockTracer tracer) throws InterruptedException {
+	public void testExecuteVerbose(final MockTracer tracer) throws InterruptedException {
+    System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-    final Executor executor = Executors.newFixedThreadPool(10);
-    executor.execute(new TestRunnable(tracer, countDownLatch));
+    executorService.execute(new TestRunnable(tracer, countDownLatch));
 
 		countDownLatch.await();
+		
 		assertEquals(3, tracer.finishedSpans().size());
     assertParentSpan(tracer);
 	}
+
+  @Test
+  public void testExecuteSilent(final MockTracer tracer) throws InterruptedException {
+    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
+    executorService.execute(new TestRunnable(tracer, countDownLatch));
+
+    countDownLatch.await();
+    
+    assertEquals(1, tracer.finishedSpans().size());
+    assertParentSpan(tracer);
+  }
+
+  @Test
+  public void testExecuteSilentWithParent(final MockTracer tracer) throws InterruptedException {
+    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
+    
+    Span parent = tracer.buildSpan("parent").start();
+    try(Scope scope = tracer.activateSpan(parent)) {
+      executorService.execute(new TestRunnable(tracer, countDownLatch));
+    }
+    countDownLatch.await();
+    parent.finish();
+    
+    assertEquals(2, tracer.finishedSpans().size());
+    assertParentSpan(tracer);
+  }
 }

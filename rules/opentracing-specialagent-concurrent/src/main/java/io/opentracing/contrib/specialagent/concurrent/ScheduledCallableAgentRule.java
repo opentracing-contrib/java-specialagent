@@ -53,9 +53,13 @@ public class ScheduledCallableAgentRule extends AgentRule {
     if (!AgentRuleUtil.isEnabled(origin))
       return;
 
-    Span span = GlobalTracer.get().buildSpan("schedule")
-        .withTag(Tags.COMPONENT, "java-concurrent").start();
-    arg = new TracedCallable<>(arg, span.context());
-    span.finish();
+    if (ConcurrentAgentMode.isVerbose()) {
+      Span span = GlobalTracer.get().buildSpan("schedule")
+          .withTag(Tags.COMPONENT, "java-concurrent").start();
+      arg = new TracedCallable<>(arg, span, true);
+      span.finish();
+    } else if (GlobalTracer.get().activeSpan() != null) {
+      arg = new TracedCallable<>(arg, GlobalTracer.get().activeSpan(), false);
+    }
   }
 }

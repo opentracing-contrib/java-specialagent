@@ -52,9 +52,13 @@ public class FixedRateAgentRule extends AgentRule {
     if (!AgentRuleUtil.isEnabled(origin))
       return;
 
-    Span span = GlobalTracer.get().buildSpan("scheduleAtFixedRate")
-        .withTag(Tags.COMPONENT, "java-concurrent").start();
-    arg = new TracedRunnable(arg, span.context());
-    span.finish();
+    if (ConcurrentAgentMode.isVerbose()) {
+      Span span = GlobalTracer.get().buildSpan("scheduleAtFixedRate")
+          .withTag(Tags.COMPONENT, "java-concurrent").start();
+      arg = new TracedRunnable(arg, span, true);
+      span.finish();
+    } else if (GlobalTracer.get().activeSpan() != null) {
+      arg = new TracedRunnable(arg, GlobalTracer.get().activeSpan(), false);
+    }
   }
 }

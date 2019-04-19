@@ -17,27 +17,35 @@ package io.opentracing.contrib.specialagent.concurrent;
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.SpanContext;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class TracedRunnable implements Runnable {
   private final Runnable delegate;
-  private final SpanContext parentContext;
+  private final Span parent;
+  private final boolean verbose;
 
-  public TracedRunnable(Runnable delegate, SpanContext parentContext) {
+  public TracedRunnable(Runnable delegate, Span parent, boolean verbose) {
     this.delegate = delegate;
-    this.parentContext = parentContext;
+    this.parent = parent;
+    this.verbose = verbose;
   }
 
   @Override
   public void run() {
-    Span span = GlobalTracer.get().buildSpan("runnable").withTag(Tags.COMPONENT, "java-concurrent")
-        .addReference(References.FOLLOWS_FROM, parentContext).start();
-    try(final Scope scope = GlobalTracer.get().activateSpan(span)) {
-      delegate.run();
-    } finally {
-      span.finish();
+    if (verbose) {
+      Span span = GlobalTracer.get().buildSpan("runnable")
+          .withTag(Tags.COMPONENT, "java-concurrent")
+          .addReference(References.FOLLOWS_FROM, parent.context()).start();
+      try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
+        delegate.run();
+      } finally {
+        span.finish();
+      }
+    } else {
+      try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
+        delegate.run();
+      }
     }
   }
 }
