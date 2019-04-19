@@ -15,18 +15,13 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.none;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
@@ -36,28 +31,18 @@ import net.bytebuddy.utility.JavaModule;
 public class ThriftProtocolFactoryAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
-    return Arrays.asList(new AgentBuilder.Default()
-        .ignore(none())
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
-        .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription, final ClassLoader classLoader,
-              final JavaModule module) {
-            return builder
-                .visit(Advice.to(ThriftProtocolFactoryAgentRule.class).on(named("getProtocol")));
-          }
-        }));
+    return Arrays.asList(builder
+      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ThriftProtocolFactoryAgentRule.class).on(named("getProtocol")));
+        }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin,
-      @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (AgentRuleUtil.isEnabled(origin)) {
+  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(origin))
       returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
-    }
   }
 }

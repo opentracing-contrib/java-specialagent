@@ -15,63 +15,48 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.none;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class ThriftProtocolAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
-    final Narrowable narrowable = new AgentBuilder.Default()
-        .ignore(none())
-        .with(RedefinitionStrategy.RETRANSFORMATION)
-        .with(InitializationStrategy.NoOp.INSTANCE)
-        .with(TypeStrategy.Default.REDEFINE)
-        .type(hasSuperType(named("org.apache.thrift.protocol.TProtocol")));
+    final Narrowable narrowable = builder
+      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocol")));
 
     return Arrays.asList(narrowable.transform(new Transformer() {
       @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(WriteMessageBegin.class).on(named("writeMessageBegin")));
       }
     }), narrowable.transform(new Transformer() {
       @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(WriteMessageEnd.class).on(named("writeMessageEnd")));
       }
     }), narrowable.transform(new Transformer() {
       @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(WriteFieldStop.class).on(named("writeFieldStop")));
       }
     }), narrowable.transform(new Transformer() {
       @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(ReadMessageBegin.class).on(named("readMessageBegin")));
       }
     }), narrowable.transform(new Transformer() {
       @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription,
-          final ClassLoader classLoader, final JavaModule module) {
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(ReadMessageEnd.class).on(named("readMessageEnd")));
       }
     }));
@@ -79,52 +64,41 @@ public class ThriftProtocolAgentRule extends AgentRule {
 
   public static class WriteMessageBegin {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin,
-        final @Advice.This Object thiz,
-        @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object message) {
-      if (AgentRuleUtil.isEnabled(origin)) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
+      if (isEnabled(origin))
         ThriftProtocolAgentIntercept.writeMessageBegin(thiz, message);
-      }
     }
   }
 
   public static class WriteMessageEnd {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (AgentRuleUtil.isEnabled(origin)) {
+      if (isEnabled(origin))
         ThriftProtocolAgentIntercept.writeMessageEnd();
-      }
     }
   }
 
   public static class WriteFieldStop {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz)
-        throws Exception {
-      if (AgentRuleUtil.isEnabled(origin)) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) throws Exception {
+      if (isEnabled(origin))
         ThriftProtocolAgentIntercept.writeFieldStop(thiz);
-      }
     }
   }
 
   public static class ReadMessageBegin {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin,
-        @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
-      if (AgentRuleUtil.isEnabled(origin) && thrown != null) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(origin) && thrown != null)
         ThriftProtocolAgentIntercept.readMessageBegin(thrown);
-      }
     }
   }
 
   public static class ReadMessageEnd {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (AgentRuleUtil.isEnabled(origin)) {
+      if (isEnabled(origin))
         ThriftProtocolAgentIntercept.readMessageEnd();
-      }
     }
   }
-
-
 }

@@ -15,13 +15,12 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
-
-import io.opentracing.thrift.SpanProcessor;
 import org.apache.thrift.TProcessor;
 
-public class ThriftProcessorAgentIntercept {
+import io.opentracing.thrift.SpanProcessor;
 
-  public static Object getProcessor(Object processor) {
-    return new SpanProcessor((TProcessor) processor);
+public class ThriftProcessorAgentIntercept {
+  public static Object getProcessor(final Object processor) {
+    return new SpanProcessor((TProcessor)processor);
   }
 }

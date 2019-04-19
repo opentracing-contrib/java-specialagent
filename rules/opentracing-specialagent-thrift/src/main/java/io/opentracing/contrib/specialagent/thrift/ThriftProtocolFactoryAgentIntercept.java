@@ -15,43 +15,48 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.thrift.protocol.TProtocol;
+
 import io.opentracing.thrift.SpanHolder;
 import io.opentracing.thrift.SpanProtocol;
 import io.opentracing.util.GlobalTracer;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import org.apache.thrift.protocol.TProtocol;
 
 public class ThriftProtocolFactoryAgentIntercept {
   private static final ConcurrentLinkedQueue<SpanHolder> spanHolders = new ConcurrentLinkedQueue<>();
 
-  public static Object exit(Object protocol) {
+  public static Object exit(final Object protocol) {
     if (callerHasClass("org.apache.thrift.async.TAsyncMethodCall", 5)) {
-      SpanHolder spanHolder;
+      final SpanHolder spanHolder;
       if (Thread.currentThread().getName().startsWith("TAsyncClientManager#SelectorThread")) {
         spanHolder = spanHolders.poll();
         if (spanHolder != null) {
           GlobalTracer.get().scopeManager().activate(spanHolder.getSpan(), true);
         }
-      } else {
+      }
+      else {
         spanHolder = new SpanHolder();
         spanHolders.add(spanHolder);
       }
 
-      return new SpanProtocol((TProtocol) protocol, GlobalTracer.get(), spanHolder, false);
+      return new SpanProtocol((TProtocol)protocol, GlobalTracer.get(), spanHolder, false);
     }
+
     return protocol;
   }
 
+  // FIXME: Look at AgentRuleUtil#callerEquals
   static boolean callerHasClass(final String className, final int frameMaxIndex) {
     final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    for (int i = 2; i < frameMaxIndex + 2; i++) {
-      if (stackTraceElements.length < i) {
+    for (int i = 2; i < frameMaxIndex + 2; ++i) {
+      if (stackTraceElements.length < i)
         return false;
-      }
-      if (stackTraceElements[i].getClassName().equals(className)) {
+
+      if (stackTraceElements[i].getClassName().equals(className))
         return true;
-      }
     }
+
     return false;
   }
 }
