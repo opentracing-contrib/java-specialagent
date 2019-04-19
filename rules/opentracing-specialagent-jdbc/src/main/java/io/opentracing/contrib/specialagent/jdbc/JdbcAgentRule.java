@@ -18,43 +18,69 @@ package io.opentracing.contrib.specialagent.jdbc;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.sql.Connection;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
+import net.bytebuddy.matcher.ElementMatcher.Junction;
 import net.bytebuddy.utility.JavaModule;
 
 public class JdbcAgentRule extends AgentRule {
+  private static final boolean isJdk178 = System.getProperty("java.version").startsWith("1.");
+
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
-    final Narrowable narrowable = builder
-      .type(hasSuperType(named("java.sql.Driver")).and(not(named("io.opentracing.contrib.jdbc.TracingDriver"))));
+    Junction<TypeDescription> driverJunction = hasSuperType(named("java.sql.Driver")).and(not(named("io.opentracing.contrib.jdbc.TracingDriver")));
+    if (isJdk178)
+      driverJunction = named("java.sql.DriverManager").or(driverJunction);
 
-    return Arrays.asList(
-      narrowable.transform(new Transformer() {
+    final Narrowable narrowable = builder.type(driverJunction);
+    final List<Extendable> transformers = new ArrayList<>(isJdk178 ? 3 : 2);
+    transformers.add(narrowable.transform(new Transformer() {
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(DriverEnter.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
+      }}));
+    transformers.add(narrowable.transform(new Transformer() {
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(DriverExit.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
+      }}));
+
+    if (isJdk178) {
+      transformers.add(narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnEnter.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
-        }}),
-      narrowable.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnExit.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
-        }})
-    );
+          return builder.visit(Advice.to(DriverManagerEnter.class).on(isPrivate().and(isStatic()).and(named("isDriverAllowed")).and(takesArgument(1, Class.class))));
+        }}));
+    }
+
+    return transformers;
   }
 
-  public static class OnEnter {
+  public static class DriverManagerEnter {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0) String url, @Advice.Argument(value = 1) Properties info) throws Exception {
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Class<?> caller) throws Exception {
+      if (!isEnabled(origin))
+        return;
+
+      caller = JdbcAgentIntercept.caller(caller);
+    }
+  }
+
+  public static class DriverEnter {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) String url, final @Advice.Argument(value = 1) Properties info) throws Exception {
       if (!isEnabled(origin))
         return;
 
@@ -64,7 +90,7 @@ public class JdbcAgentRule extends AgentRule {
     }
   }
 
-  public static class OnExit {
+  public static class DriverExit {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) throws Exception {

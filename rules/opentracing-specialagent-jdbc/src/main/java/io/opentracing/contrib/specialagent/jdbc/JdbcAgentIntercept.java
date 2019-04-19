@@ -21,45 +21,51 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentracing.contrib.jdbc.TracingDriver;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 
 public class JdbcAgentIntercept {
-  public static final ThreadLocal<Boolean> mutex = new ThreadLocal<Boolean>() {
-    @Override
-    protected Boolean initialValue() {
-      return Boolean.FALSE;
-    }
-  };
+  public static AtomicReference<TracingDriver> tracingDriver = new AtomicReference<>();
 
-  public static TracingDriver tracingDriver;
+  public static Class<?> caller(final Class<?> caller) {
+    return TracingDriver.class.equals(caller) ? AgentRuleUtil.getExecutionStack()[8] : caller;
+  }
 
   public static Connection enter(final String url, final Properties info) throws SQLException {
-    if (mutex.get())
+    if (AgentRuleUtil.callerEquals(2, TracingDriver.class.getName() + ".connect"))
       return null;
 
-    mutex.set(true);
-    if (tracingDriver == null) {
-      try {
-        Class.forName(TracingDriver.class.getName());
-      }
-      catch (final ClassNotFoundException e) {
-        throw new IllegalStateException("TracingDriver initialization failed", e);
-      }
+    if (tracingDriver.get() == null) {
+      synchronized (tracingDriver) {
+        if (tracingDriver.get() == null) {
+          // Load & register the `TracingDriver`
+          try {
+            Class.forName(TracingDriver.class.getName());
+          }
+          catch (final ClassNotFoundException e) {
+            throw new IllegalStateException("TracingDriver initialization failed", e);
+          }
 
-      final Enumeration<Driver> drivers = DriverManager.getDrivers();
-      while (drivers.hasMoreElements()) {
-        final Driver driver = drivers.nextElement();
-        if (driver instanceof TracingDriver) {
-          tracingDriver = (TracingDriver)driver;
-          break;
+          final Enumeration<Driver> drivers = DriverManager.getDrivers();
+          TracingDriver tracingDriver = null;
+          while (drivers.hasMoreElements()) {
+            final Driver driver = drivers.nextElement();
+            if (driver instanceof TracingDriver) {
+              tracingDriver = (TracingDriver)driver;
+              break;
+            }
+          }
+
+          if (tracingDriver == null)
+            throw new IllegalStateException(TracingDriver.class.getSimpleName() + " initialization failed");
+
+          JdbcAgentIntercept.tracingDriver.set(tracingDriver);
         }
       }
-
-      if (tracingDriver == null)
-        throw new IllegalStateException("TracingDriver initialization failed");
     }
 
-    return tracingDriver.connect(!url.startsWith("jdbc:tracing:") ? "jdbc:tracing:" + url.substring(5) : url, info);
+    return tracingDriver.get().connect(!url.startsWith("jdbc:tracing:") ? "jdbc:tracing:" + url.substring(5) : url, info);
   }
 }

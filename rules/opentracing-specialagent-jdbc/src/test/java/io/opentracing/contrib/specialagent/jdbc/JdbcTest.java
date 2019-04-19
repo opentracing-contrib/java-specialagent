@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.List;
 
+import org.h2.Driver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +35,7 @@ import io.opentracing.mock.MockTracer;
 public class JdbcTest {
   @Test
   public void test(final MockTracer tracer) throws Exception {
-    Class.forName("org.h2.Driver");
+    Driver.load();
     try (
       final Scope ignored = tracer.buildSpan("jdbc-test").startActive(true);
       final Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc");
