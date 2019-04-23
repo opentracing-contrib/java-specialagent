@@ -49,7 +49,6 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
-@SuppressWarnings("restriction")
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
@@ -184,17 +183,17 @@ public class SpecialAgent {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final ArrayList<String> excludes = new ArrayList<>();
+    final ArrayList<String> disabledPlugins = new ArrayList<>();
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = (String)property.getKey();
       final String value = (String)property.getValue();
-      if (key.endsWith(".enable") && !Boolean.parseBoolean(value)) {
-        excludes.add(key.substring(0, key.length() - 7));
+      if (key.startsWith("instrumentation.plugin") && key.endsWith(".enable") && !Boolean.parseBoolean(value)) {
+        disabledPlugins.add(key.substring(0, key.length() - 7));
       }
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
-    final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", excludes);
+    final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", disabledPlugins);
     if (logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
@@ -396,6 +395,7 @@ public class SpecialAgent {
   /**
    * Connects a Tracer Plugin to the runtime.
    */
+  @SuppressWarnings("resource")
   private static void loadTracer() {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n======================== Loading Tracer ========================\n");
@@ -461,8 +461,8 @@ public class SpecialAgent {
     if (tracer != null) {
       if (isAgentRunner())
         deferredTracer = tracer;
-      else
-        GlobalTracer.register(tracer);
+      else if (!GlobalTracer.registerIfAbsent(tracer))
+        throw new IllegalStateException("There is already a registered global Tracer.");
 
       if (logger.isLoggable(Level.FINE))
         logger.fine("Tracer resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer:\n  " + tracer.getClass().getName() + " from " + (tracer.getClass().getProtectionDomain().getCodeSource() == null ? "null" : tracer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()));
