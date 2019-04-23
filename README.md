@@ -4,6 +4,7 @@
 
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.png)](https://travis-ci.org/opentracing-contrib/java-specialagent)
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg)](https://coveralls.io/github/opentracing-contrib/java-specialagent)
+[![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
 [![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://search.maven.org/search?q=a:opentracing-specialagent)
 
 ## Overview
@@ -59,7 +60,7 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 
 ## Supported <ins>Instrumentation Plugins</ins>
 
-> These plugins have <ins>Instrumentation Rules</ins> implemented.
+> The plugins have <ins>Instrumentation Rules</ins> implemented.
 
 1. [OkHttp3][java-okhttp]
 2. [JDBC API (`java.sql`)][java-jdbc]
@@ -106,13 +107,41 @@ Any exception that occurs during the execution of the bootstrap process will not
 
 The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Building](#building) instructions, or downloading directly from Maven's Central Repository.
 
-1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-1.1.0.jar`][main-release]<br>
-   SNAPSHOT: [`opentracing-specialagent-1.1.1-SNAPSHOT.jar`][main-snapshot]
+* To use the <ins>SpecialAgent</ins> on an application, first download the JAR:
+
+   **Latest RELEASE**
+
+   ```bash
+   wget -O opentracing-specialagent-LATEST.jar https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST
+   ```
+
+   **Latest SNAPSHOT**
+
+   ```bash
+   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST
+   ```
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
-1. &nbsp;&nbsp;&nbsp;&nbsp;RELEASE: [`opentracing-specialagent-1.1.0-tests.jar`][test-release]<br>
-   SNAPSHOT: [`opentracing-specialagent-1.1.1-SNAPSHOT-tests.jar`][test-snapshot]
+* For development of <ins>Instrumentation Plugins</ins>, import the `opentracing-specialagent-api` and `test-jar` of the `opentracing-specialagent`.
+
+   **Latest RELEASE and SNAPSHOT**
+
+  ```xml
+  <dependency>
+    <groupId>io.opentracing.contrib.specialagent</groupId>
+    <artifactId>opentracing-specialagent-api</artifactId>
+    <version>1.1.0</version> <!--version>1.1.1-SNAPSHOT<version-->
+    <scope>provided</scope>
+  </dependency>
+  <dependency>
+    <groupId>io.opentracing.contrib.specialagent</groupId>
+    <artifactId>opentracing-specialagent</artifactId>
+    <version>1.1.0</version> <!--version>1.1.1-SNAPSHOT<version-->
+    <type>test-jar</type>
+    <scope>test</scope>
+  </dependency>
+  ```
 
     This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any <ins>Instrumentation Plugins</ins> themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an <ins>Instrumentation Plugin</ins> implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
@@ -125,7 +154,7 @@ The <ins>SpecialAgent</ins> uses [Java’s Instrumentation mechanism](https://do
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.1.0.jar -jar myapp.jar
+java -javaagent:opentracing-specialagent-LATEST.jar -jar myapp.jar
 ```
 
 This command statically attaches <ins>SpecialAgent</ins> into the application in `myapp.jar`.
@@ -141,29 +170,29 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 2. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.1.0.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-LATEST.jar <PID>
     ```
 
 3. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-1.1.0.jar <PID>
+    java -jar opentracing-specialagent-LATEST.jar <PID>
     ```
 
 ## Configuration
 
-The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>SpecialAgent</ins>, the <ins>Instrumentation Plugins</ins>, as well as <ins>Tracer Plugins</ins>. The configuration pattern is based on system properties, which can be defined on the command-line, in a properties file, or in [@AgentRunner.Config](#configuring-agentrunner):
+The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>SpecialAgent</ins>, the <ins>Instrumentation Plugins</ins>, as well as <ins>Tracer Plugins</ins>. The configuration pattern is based on system properties, which can be defined on the command-line, in a properties file, or in [@AgentRunner.Config](#configuring-agentrunner) for JUnit tests:
 
-1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in layers below.
+1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in layers below...
 
-2. The [@AgentRunner.Config](#configuring-agentrunner) annotation allows one to define log level and transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in layers below.
+2. The [@AgentRunner.Config](#configuring-agentrunner) annotation allows one to define log level and transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in layers below...
 
-3. The `-Dconfig=${PROPERTIES_FILE}` command-line argument can be specified to have the <ins>SpecialAgent</ins> load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below.
+3. The `-Dconfig=${PROPERTIES_FILE}` command-line argument can be specified for <ins>SpecialAgent</ins> to load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below...
 
 4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
 
 ### Selecting the <ins>Tracer Plugin</ins>
 
-The <ins>SpecialAgent</ins> supports 2 ways to connect to a OpenTracing-compatible tracer:
+The <ins>SpecialAgent</ins> supports OpenTracing-compatible tracers. There are 2 ways to connect a tracer to the <ins>SpecialAgent</ins> runtime:
 
 1. **Internal <ins>Tracer Plugins</ins>**
 
@@ -184,17 +213,17 @@ _**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the
 
 ### Disabling <ins>Instrumentation Plugins</ins>
 
-The <ins>SpecialAgent</ins> allows <ins>Instrumentation Plugins</ins> to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+The <ins>SpecialAgent</ins> has all of its <ins>Instrumentation Plugins</ins> enabled by default, but allows the <ins>Instrumentation Plugins</ins> to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-${PLUGIN_NAME}.enable=false
+instrumentation.plugin.${PLUGIN_NAME}.enable=false
 ```
 
 The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is included in the <ins>SpecialAgent</ins>, such as `opentracing-specialagent-okhttp` or `opentracing-specialagent-web-servlet-filter`.
 
 ### Building
 
-_**Prerequisite**: The <ins>SpecialAgent</ins> requires [Oracle Java](https://www.oracle.com/technetwork/java/javase/downloads/) to build successfully._
+_**Prerequisite**: The <ins>SpecialAgent</ins> requires [Oracle Java](https://www.oracle.com/technetwork/java/javase/downloads/) to build. Thought the <ins>SpecialAgent</ins> supports OpenJDK for general application use, it only supports Oracle Java for building and testing._
 
 The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles:
 
@@ -205,7 +234,7 @@ The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles
     mvn clean install
     ```
 
-2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.1.0.jar`][main-release]. It builds each rule, but does not run tests. Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.1.0.jar`][main-release] will contain the built rules inside it.
+2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.1.0.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.1.0.jar`][main-release] will contain the built rules inside it.
 
     _**Note**: If you do not run this step, the [`opentracing-specialagent-1.1.0.jar`][main-release] from the previous step will not contain any <ins>Instrumentation Plugins</ins> within it!_
 
