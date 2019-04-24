@@ -1,3 +1,20 @@
+/*
+ * Copyright 2018 The OpenTracing Authors
+ * and other contributors as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent.mongo;
 
 import static org.junit.Assert.assertEquals;
@@ -29,52 +46,50 @@ import org.reactivestreams.Subscription;
 
 @RunWith(AgentRunner.class)
 public class ReactiveMongoClientTest {
-
   @Test
-  public void test(MockTracer tracer) throws InterruptedException {
+  public void test(final MockTracer tracer) throws InterruptedException {
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
     final CountDownLatch latch = new CountDownLatch(1);
 
     try {
-      MongoClientSettings mongoSettings = MongoClientSettings.builder().applyToClusterSettings(new Block<Builder>() {
+      final MongoClientSettings mongoSettings = MongoClientSettings.builder().applyToClusterSettings(new Block<Builder>() {
         @Override
         public void apply(final ClusterSettings.Builder builder) {
           builder.hosts(Arrays.asList(new ServerAddress(serverAddress)));
         }
       }).build();
 
-      MongoClient mongoClient = MongoClients.create(mongoSettings);
-      final MongoCollection<Document> collection = mongoClient.getDatabase("MyDB").getCollection("MyCollection");
-      final Document myDocument = new Document("name", "MyDocument");
-      collection.insertOne(myDocument).subscribe(new Subscriber<Success>() {
-        @Override
-        public void onSubscribe(Subscription s) {
-          s.request(1);
-        }
+      try (final MongoClient mongoClient = MongoClients.create(mongoSettings)) {
+        final MongoCollection<Document> collection = mongoClient.getDatabase("MyDB").getCollection("MyCollection");
+        final Document myDocument = new Document("name", "MyDocument");
+        collection.insertOne(myDocument).subscribe(new Subscriber<Success>() {
+          @Override
+          public void onSubscribe(final Subscription s) {
+            s.request(1);
+          }
 
-        @Override
-        public void onNext(Success success) {
+          @Override
+          public void onNext(final Success success) {
+          }
 
-        }
+          @Override
+          public void onError(final Throwable t) {
+          }
 
-        @Override
-        public void onError(Throwable t) {
+          @Override
+          public void onComplete() {
+            latch.countDown();
+          }
+        });
+        latch.await(15, TimeUnit.SECONDS);
+      }
 
-        }
-
-        @Override
-        public void onComplete() {
-          latch.countDown();
-        }
-      });
-      latch.await(15, TimeUnit.SECONDS);
-      mongoClient.close();
       final List<MockSpan> spans = tracer.finishedSpans();
       assertEquals(1, spans.size());
       assertEquals("insert", spans.get(0).operationName());
-
-    } finally {
+    }
+    finally {
       server.shutdown();
     }
   }
