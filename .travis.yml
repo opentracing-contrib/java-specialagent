@@ -22,7 +22,9 @@ jdk:
 install:
 - cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
 script:
-- 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
+- 'if [ "$TRAVIS_COMMIT_MESSAGE" = "Update README.md" ]; then
+    return;
+  elif [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
       [ "$TRAVIS_BRANCH" = "master" ] &&
       [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
