@@ -69,6 +69,9 @@ public class OkHttpTest {
       assertEquals(2, finishedSpans.size());
       assertEquals("GET", finishedSpans.get(0).operationName());
       assertEquals("GET", finishedSpans.get(1).operationName());
+
+      assertEquals(1, client.interceptors().size());
+      assertEquals(1, client.networkInterceptors().size());
     }
   }
 }
