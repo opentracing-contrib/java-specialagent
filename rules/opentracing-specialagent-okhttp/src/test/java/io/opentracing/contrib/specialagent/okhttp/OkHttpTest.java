@@ -36,9 +36,8 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
 public class OkHttpTest {
-
   @Before
-  public void before(MockTracer tracer) {
+  public void before(final MockTracer tracer) {
     tracer.reset();
   }
 
@@ -54,7 +53,7 @@ public class OkHttpTest {
     test(client, tracer);
   }
 
-  private void test(final OkHttpClient client, final MockTracer tracer) throws IOException {
+  private static void test(final OkHttpClient client, final MockTracer tracer) throws IOException {
     try (final MockWebServer server = new MockWebServer()) {
       server.enqueue(new MockResponse().setBody("hello, world!").setResponseCode(200));
 

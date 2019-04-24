@@ -34,23 +34,21 @@ public class OkHttpAgentRule extends AgentRule {
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
     final Narrowable narrowable = builder.type(named("okhttp3.OkHttpClient"));
     return Arrays.asList(
-        narrowable.transform(new Transformer() {
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(Interceptors.class).on(named("interceptors")));
         }}),
-        narrowable.transform(new Transformer() {
-          @Override
-          public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
-            return builder.visit(Advice.to(NetworkInterceptors.class).on(named("networkInterceptors")));
-          }
-        }));
+      narrowable.transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(NetworkInterceptors.class).on(named("networkInterceptors")));
+        }}));
   }
 
   public static class Interceptors {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin,
-        @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled(origin))
         returned = OkHttpAgentIntercept.exit(returned);
     }
@@ -58,8 +56,7 @@ public class OkHttpAgentRule extends AgentRule {
 
   public static class NetworkInterceptors {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin,
-        @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled(origin))
         returned = OkHttpAgentIntercept.exit(returned);
     }
