@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,16 +36,29 @@ import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
 public class OkHttpTest {
+
+  @Before
+  public void before(MockTracer tracer) {
+    tracer.reset();
+  }
+
   @Test
-  public void test(final MockTracer tracer) throws IOException {
+  public void testBuilder(final MockTracer tracer) throws IOException {
+    final OkHttpClient client = new OkHttpClient.Builder().build();
+    test(client, tracer);
+  }
+
+  @Test
+  public void testConstructor(final MockTracer tracer) throws IOException {
+    final OkHttpClient client = new OkHttpClient();
+    test(client, tracer);
+  }
+
+  private void test(final OkHttpClient client, final MockTracer tracer) throws IOException {
     try (final MockWebServer server = new MockWebServer()) {
       server.enqueue(new MockResponse().setBody("hello, world!").setResponseCode(200));
 
       final HttpUrl httpUrl = server.url("/hello");
-
-      // FIXME: Rule does not currently work when just using the `OkHttpClient`
-      // FIXME: default constructor.
-      final OkHttpClient client = new OkHttpClient.Builder().build();
 
       final Request request = new Request.Builder().url(httpUrl).build();
       final Response response = client.newCall(request).execute();
@@ -55,6 +69,9 @@ public class OkHttpTest {
       assertEquals(2, finishedSpans.size());
       assertEquals("GET", finishedSpans.get(0).operationName());
       assertEquals("GET", finishedSpans.get(1).operationName());
+
+      assertEquals(1, client.interceptors().size());
+      assertEquals(1, client.networkInterceptors().size());
     }
   }
 }
