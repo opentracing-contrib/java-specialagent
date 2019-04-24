@@ -190,6 +190,8 @@ The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>S
 
 4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
 
+5. Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
+
 ### Selecting the <ins>Tracer Plugin</ins>
 
 The <ins>SpecialAgent</ins> supports OpenTracing-compatible tracers. There are 2 ways to connect a tracer to the <ins>SpecialAgent</ins> runtime:
