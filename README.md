@@ -112,13 +112,13 @@ The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are 
    **Latest RELEASE**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST.jar https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST
+   wget -O opentracing-specialagent-LATEST.jar "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
    ```
 
    **Latest SNAPSHOT**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST
+   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
    ```
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
