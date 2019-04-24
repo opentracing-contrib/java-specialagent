@@ -15,19 +15,21 @@
 
 package io.opentracing.contrib.specialagent.concurrent;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
-import io.opentracing.Scope;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockTracer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.opentracing.Scope;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockTracer;
 
 /**
  * @author Pavol Loffay
@@ -73,9 +75,10 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   public void scheduleRunnableTestSilentWithParent(MockTracer tracer) throws InterruptedException {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
+    try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     }
+
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -105,9 +108,10 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
+    try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     }
+
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -117,8 +121,7 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000,
-        TimeUnit.MILLISECONDS);
+    executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -128,8 +131,7 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000,
-        TimeUnit.MILLISECONDS);
+    executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -139,10 +141,10 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
-      executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000,
-          TimeUnit.MILLISECONDS);
+    try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
+      executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     }
+
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -152,8 +154,7 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000,
-        TimeUnit.MILLISECONDS);
+    executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -163,8 +164,7 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000,
-        TimeUnit.MILLISECONDS);
+    executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
@@ -174,10 +174,10 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
-      executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000,
-          TimeUnit.MILLISECONDS);
+    try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
+      executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     }
+
     countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }

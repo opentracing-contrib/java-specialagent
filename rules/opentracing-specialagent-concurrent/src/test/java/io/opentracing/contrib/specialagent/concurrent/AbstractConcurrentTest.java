@@ -15,19 +15,20 @@
 
 package io.opentracing.contrib.specialagent.concurrent;
 
-import io.opentracing.Tracer;
-import io.opentracing.mock.MockTracer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+
 import org.junit.Before;
+
+import io.opentracing.Tracer;
+import io.opentracing.mock.MockTracer;
 
 /**
  * @author Pavol Loffay
  * @author Jose Montoya
  * @author Seva Safris
  */
-public abstract class AbstractConcurrentTest {
-
+abstract class AbstractConcurrentTest {
   @Before
   public void reset(final MockTracer tracer) {
     tracer.reset();

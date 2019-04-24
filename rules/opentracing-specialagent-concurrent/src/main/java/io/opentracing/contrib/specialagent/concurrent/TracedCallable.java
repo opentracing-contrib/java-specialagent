@@ -14,19 +14,21 @@
  */
 package io.opentracing.contrib.specialagent.concurrent;
 
+import java.util.concurrent.Callable;
+
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.concurrent.Callable;
 
 public class TracedCallable<V> implements Callable<V> {
   private final Callable<V> delegate;
   private final Span parent;
   private final boolean verbose;
 
-  public TracedCallable(Callable<V> delegate, Span parent, boolean verbose) {
+  public TracedCallable(final Callable<V> delegate, final Span parent, final boolean verbose) {
     this.delegate = delegate;
     this.parent = parent;
     this.verbose = verbose;
@@ -34,19 +36,19 @@ public class TracedCallable<V> implements Callable<V> {
 
   @Override
   public V call() throws Exception {
+    final Tracer tracer = GlobalTracer.get();
     if (verbose) {
-      Span span = GlobalTracer.get().buildSpan("callable")
-          .withTag(Tags.COMPONENT, "java-concurrent")
-          .addReference(References.FOLLOWS_FROM, parent.context()).start();
-      try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
+      final Span span = tracer.buildSpan("callable").withTag(Tags.COMPONENT, "java-concurrent").addReference(References.FOLLOWS_FROM, parent.context()).start();
+      try (final Scope scope = tracer.activateSpan(span)) {
         return delegate.call();
-      } finally {
+      }
+      finally {
         span.finish();
       }
-    } else {
-      try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
-        return delegate.call();
-      }
+    }
+
+    try (final Scope scope = tracer.activateSpan(parent)) {
+      return delegate.call();
     }
   }
 }

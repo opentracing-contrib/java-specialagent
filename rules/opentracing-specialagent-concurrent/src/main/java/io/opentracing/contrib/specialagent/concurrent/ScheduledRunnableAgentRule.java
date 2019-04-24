@@ -15,17 +15,16 @@
 
 package io.opentracing.contrib.specialagent.concurrent;
 
-import static net.bytebuddy.matcher.ElementMatchers.isSubTypeOf;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.Arrays;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -52,11 +51,11 @@ public class ScheduledRunnableAgentRule extends AgentRule {
       return;
 
     if (ConcurrentAgentMode.isVerbose()) {
-      Span span = GlobalTracer.get().buildSpan("schedule")
-          .withTag(Tags.COMPONENT, "java-concurrent").start();
+      final Span span = GlobalTracer.get().buildSpan("schedule").withTag(Tags.COMPONENT, "java-concurrent").start();
       arg = new TracedRunnable(arg, span, true);
       span.finish();
-    } else if (GlobalTracer.get().activeSpan() != null) {
+    }
+    else if (GlobalTracer.get().activeSpan() != null) {
       arg = new TracedRunnable(arg, GlobalTracer.get().activeSpan(), false);
     }
   }

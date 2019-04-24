@@ -15,18 +15,20 @@
 
 package io.opentracing.contrib.specialagent.concurrent;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
-import io.opentracing.Scope;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockTracer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.opentracing.Scope;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockTracer;
 
 /**
  * @author Pavol Loffay
@@ -39,26 +41,24 @@ public class ExecutorTest extends AbstractConcurrentTest {
 
   @Before
   public void before() {
-    executorService =  Executors.newFixedThreadPool(10);
+    executorService = Executors.newFixedThreadPool(10);
   }
 
   @After
   public void after() {
-    if(executorService != null) {
+    if (executorService != null)
       executorService.shutdownNow();
-    }
   }
 
   @Test
-	public void testExecuteVerbose(final MockTracer tracer) throws InterruptedException {
+  public void testExecuteVerbose(final MockTracer tracer) throws InterruptedException {
     System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.execute(new TestRunnable(tracer, countDownLatch));
 
-		countDownLatch.await();
-		
-		assertFalse(tracer.finishedSpans().isEmpty());
-	}
+    countDownLatch.await();
+    assertFalse(tracer.finishedSpans().isEmpty());
+  }
 
   @Test
   public void testExecuteSilent(final MockTracer tracer) throws InterruptedException {
@@ -67,7 +67,6 @@ public class ExecutorTest extends AbstractConcurrentTest {
     executorService.execute(new TestRunnable(tracer, countDownLatch));
 
     countDownLatch.await();
-
     assertFalse(tracer.finishedSpans().isEmpty());
   }
 
@@ -76,11 +75,11 @@ public class ExecutorTest extends AbstractConcurrentTest {
     System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    try(Scope scope =tracer.buildSpan("parent").startActive(true)) {
+    try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.execute(new TestRunnable(tracer, countDownLatch));
     }
-    countDownLatch.await();
 
+    countDownLatch.await();
     assertFalse(tracer.finishedSpans().isEmpty());
   }
 }
