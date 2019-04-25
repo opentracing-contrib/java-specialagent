@@ -48,6 +48,7 @@
     <module>opentracing-specialagent-thrift</module>
     <module>opentracing-specialagent-grpc</module>
     <module>opentracing-specialagent-jedis</module>
+    <module>opentracing-specialagent-apache-httpclient</module>
   </modules>
   <profiles>
     <profile>

@@ -80,6 +80,7 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 16. [Thrift](https://github.com/opentracing-contrib/java-thrift)
 17. [GRPC](https://github.com/opentracing-contrib/java-grpc)
 18. [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
+19. [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient)
 
 ## Goals
 
