@@ -28,7 +28,7 @@ import io.opentracing.mock.MockTracer;
  * @author Jose Montoya
  * @author Seva Safris
  */
-abstract class AbstractConcurrentTest {
+public abstract class AbstractConcurrentTest {
   @Before
   public void reset(final MockTracer tracer) {
     tracer.reset();
