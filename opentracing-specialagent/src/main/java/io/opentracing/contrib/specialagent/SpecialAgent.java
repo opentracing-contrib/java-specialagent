@@ -86,6 +86,7 @@ public class SpecialAgent {
 
   private static final ClassLoaderMap<Boolean> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<RuleClassLoader> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
+  private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
 
   private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
@@ -537,6 +538,13 @@ public class SpecialAgent {
 
     // Associate the ruleClassLoader with the target class's classLoader
     classLoaderToRuleClassLoader.put(classLoader, ruleClassLoader);
+
+    // Attempt to preload classes if the callstack is not coming from ClassLoader#defineClass
+    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
+      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName()))
+        return true;
+
+    ruleClassLoader.preLoad(classLoader);
     return true;
   }
 

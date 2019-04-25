@@ -21,27 +21,44 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class OkHttpAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
-      .type(named("okhttp3.OkHttpClient$Builder"))
-      .transform(new Transformer() {
+    final Narrowable narrowable = builder.type(named("okhttp3.OkHttpClient"));
+    return Arrays.asList(
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OkHttpAgentRule.class).on(named("build")));
+          return builder.visit(Advice.to(Interceptors.class).on(named("interceptors")));
+        }}),
+      narrowable.transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(NetworkInterceptors.class).on(named("networkInterceptors")));
         }}));
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(origin))
-      OkHttpAgentIntercept.enter(thiz);
+  public static class Interceptors {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(origin))
+        returned = OkHttpAgentIntercept.exit(returned);
+    }
+  }
+
+  public static class NetworkInterceptors {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(origin))
+        returned = OkHttpAgentIntercept.exit(returned);
+    }
   }
 }

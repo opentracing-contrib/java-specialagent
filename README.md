@@ -3,7 +3,7 @@
 > Automatically instruments 3rd-party libraries in Java applications
 
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.png)](https://travis-ci.org/opentracing-contrib/java-specialagent)
-[![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg)](https://coveralls.io/github/opentracing-contrib/java-specialagent)
+[![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
 [![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://search.maven.org/search?q=a:opentracing-specialagent)
 
@@ -113,13 +113,13 @@ The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are 
    **Latest RELEASE**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST.jar https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST
+   wget -O opentracing-specialagent-LATEST.jar "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
    ```
 
    **Latest SNAPSHOT**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST
+   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
    ```
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
@@ -190,6 +190,8 @@ The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>S
 3. The `-Dconfig=${PROPERTIES_FILE}` command-line argument can be specified for <ins>SpecialAgent</ins> to load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below...
 
 4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
+
+5. Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
 
 ### Selecting the <ins>Tracer Plugin</ins>
 

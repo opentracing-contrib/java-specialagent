@@ -35,22 +35,18 @@
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-mongo-driver -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-mongo-driver</artifactId>
+      <artifactId>opentracing-mongo-common</artifactId>
       <version>0.1.2</version>
       <exclusions>
         <exclusion>
           <groupId>org.mongodb</groupId>
           <artifactId>mongo-java-driver</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.mongodb</groupId>
-          <artifactId>mongodb-driver-async</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
-      <artifactId>mongo-java-driver</artifactId>
+      <artifactId>mongodb-driver-core</artifactId>
       <version>${version.org.mongodb.mongo-java-driver}</version>
       <optional>true</optional>
       <scope>provided</scope>
@@ -62,9 +58,27 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>de.bwaldvogel</groupId>
       <artifactId>mongo-java-server</artifactId>
       <version>1.14.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-reactivestreams</artifactId>
+      <version>1.11.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mongodb</groupId>
+          <artifactId>mongodb-driver-async</artifactId>
+        </exclusion>
+      </exclusions>
       <scope>test</scope>
     </dependency>
   </dependencies>
