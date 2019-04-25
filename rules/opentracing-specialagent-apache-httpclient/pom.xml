@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>rules</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+    <version>1.1.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>opentracing-specialagent-apache-httpclient</artifactId>
+  <name>SpecialAgent Rule for Apache HttpClient</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-apache-httpclient</url>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  <dependencies>
+
+    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.8</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+</project>
