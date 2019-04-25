@@ -15,7 +15,7 @@ This file contains the operational instructions for the use and development of <
 
 #### <ins>SpecialAgent</ins>
 
-A Java agent that automatically instruments distinct 3rd-party libraries in Java applications via the OpenTracing API.
+A Java agent that automatically instruments distinct 3rd-party libraries in Java applications via the OpenTracing API. The <ins>SpecialAgent</ins> supports Oracle Java and OpenJDK. When building <ins>SpecialAgent</ins> from source, only Oracle Java is supported.
 
 #### <ins>Tracer</ins>
 
