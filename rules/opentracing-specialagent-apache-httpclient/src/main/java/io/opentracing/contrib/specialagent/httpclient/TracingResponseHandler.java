@@ -12,28 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.httpclient;
+
+import java.io.IOException;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.io.IOException;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ResponseHandler;
 
 public class TracingResponseHandler<T> implements ResponseHandler<T> {
   private final ResponseHandler<T> handler;
   private final Span span;
 
-  public TracingResponseHandler(ResponseHandler<T> handler, Span span) {
+  public TracingResponseHandler(final ResponseHandler<T> handler, final Span span) {
     this.handler = handler;
     this.span = span;
   }
 
   @Override
-  public T handleResponse(HttpResponse response) throws IOException {
-    try (Scope scope = GlobalTracer.get().activateSpan(span)) {
+  public T handleResponse(final HttpResponse response) throws IOException {
+    try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
       return handler.handleResponse(response);
     } finally {
       Tags.HTTP_STATUS.set(span, response.getStatusLine().getStatusCode());

@@ -12,28 +12,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.httpclient;
 
-import io.opentracing.propagation.TextMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
 import org.apache.http.HttpRequest;
 
+import io.opentracing.propagation.TextMap;
+
 public class HttpHeadersInjectAdapter implements TextMap {
+  private final HttpRequest httpRequest;
 
-  private HttpRequest httpRequest;
-
-  public HttpHeadersInjectAdapter(HttpRequest httpRequest) {
+  public HttpHeadersInjectAdapter(final HttpRequest httpRequest) {
     this.httpRequest = httpRequest;
   }
 
   @Override
-  public void put(String key, String value) {
+  public void put(final String key, final String value) {
     httpRequest.addHeader(key, value);
   }
 
   @Override
-  public Iterator<Entry<String, String>> iterator() {
+  public Iterator<Entry<String,String>> iterator() {
     throw new UnsupportedOperationException("This class should be used only with tracer#inject()");
   }
 }

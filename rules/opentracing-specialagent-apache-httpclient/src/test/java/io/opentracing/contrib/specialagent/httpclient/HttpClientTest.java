@@ -12,14 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.httpclient;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.tag.Tags;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -30,6 +27,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
+
 @RunWith(AgentRunner.class)
 public class HttpClientTest {
   @Before
@@ -38,30 +40,31 @@ public class HttpClientTest {
   }
 
   @Test
-  public void test(MockTracer tracer) {
+  public void test(final MockTracer tracer) {
     final CloseableHttpClient httpclient = HttpClients.createDefault();
     final String url = "http://localhost:12345";
 
     try {
       httpclient.execute(new HttpGet(url));
-    } catch (Exception ignore) {
     }
-    try {
-      httpclient.execute(HttpHost.create(url),
-          new BasicHttpRequest("GET", url));
-    } catch (Exception ignore) {
+    catch (final Exception ignore) {
     }
+
     try {
-      httpclient.execute(new HttpGet(url),
-          (ResponseHandler<Object>) response -> "done");
-    } catch (Exception ignore) {
+      httpclient.execute(HttpHost.create(url), new BasicHttpRequest("GET", url));
+    }
+    catch (final Exception ignore) {
+    }
+
+    try {
+      httpclient.execute(new HttpGet(url), (ResponseHandler<Object>)response -> "done");
+    }
+    catch (final Exception ignore) {
     }
 
     assertEquals(3, tracer.finishedSpans().size());
-
-    for (MockSpan span : tracer.finishedSpans()) {
-      assertEquals(HttpClientAgentIntercept.COMPONENT_NAME,
-          span.tags().get(Tags.COMPONENT.getKey()));
+    for (final MockSpan span : tracer.finishedSpans()) {
+      assertEquals(HttpClientAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertEquals(HttpGet.METHOD_NAME, span.tags().get(Tags.HTTP_METHOD.getKey()));
       assertEquals(url, span.tags().get(Tags.HTTP_URL.getKey()));
     }

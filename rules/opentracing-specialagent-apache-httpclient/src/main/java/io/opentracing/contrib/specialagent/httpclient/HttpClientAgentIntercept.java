@@ -15,16 +15,18 @@
 
 package io.opentracing.contrib.specialagent.httpclient;
 
-import io.opentracing.Span;
-import io.opentracing.propagation.Format.Builtin;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
+
+import io.opentracing.Span;
+import io.opentracing.propagation.Format.Builtin;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 
 public class HttpClientAgentIntercept {
   private static class Context {
@@ -35,65 +37,58 @@ public class HttpClientAgentIntercept {
   static final String COMPONENT_NAME = "java-httpclient";
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
-  public static Object[] enter(Object arg, Object arg2, Object arg3) {
-    HttpRequest request = null;
-    if (arg instanceof HttpRequest) {
-      request = (HttpRequest) arg;
-    } else if (arg2 instanceof HttpRequest) {
-      request = (HttpRequest) arg2;
-    }
-    if (request == null) {
+  public static Object[] enter(final Object arg0, final Object arg1, final Object arg2) {
+    final HttpRequest request = arg0 instanceof HttpRequest ? (HttpRequest)arg0 : arg1 instanceof HttpRequest ? (HttpRequest)arg1 : null;
+    if (request == null)
       return null;
-    }
-    if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+
+    Context context = contextHolder.get();
+    if (context != null) {
+      ++context.counter;
       return null;
     }
 
-    final Context context = new Context();
+    context = new Context();
     contextHolder.set(context);
 
-    Span span;
-    span = createSpan(request);
+    final Span span = createSpan(request);
     if (request instanceof HttpUriRequest) {
-      HttpUriRequest uriRequest = (HttpUriRequest) request;
+      final HttpUriRequest uriRequest = (HttpUriRequest)request;
       Tags.PEER_HOSTNAME.set(span, uriRequest.getURI().getHost());
-      Tags.PEER_PORT
-          .set(span, uriRequest.getURI().getPort() == -1 ? 80 : uriRequest.getURI().getPort());
+      Tags.PEER_PORT.set(span, uriRequest.getURI().getPort() == -1 ? 80 : uriRequest.getURI().getPort());
     }
 
-    GlobalTracer.get()
-        .inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request));
+    GlobalTracer.get().inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request));
+    context.span = span;
+    if (arg1 instanceof ResponseHandler)
+      return new Object[] {new TracingResponseHandler<>((ResponseHandler<?>)arg1, span)};
 
-    contextHolder.get().span = span;
+    if (arg2 instanceof ResponseHandler)
+      return new Object[] {null, new TracingResponseHandler<>((ResponseHandler<?>)arg2, span)};
 
-    if (arg2 instanceof ResponseHandler) {
-      return new Object[]{new TracingResponseHandler<>((ResponseHandler<?>) arg2, span)};
-    } else if (arg3 instanceof ResponseHandler) {
-      return new Object[]{null, new TracingResponseHandler<>((ResponseHandler<?>) arg3, span)};
-    }
     return null;
   }
 
-  private static Span createSpan(HttpRequest request) {
-    return GlobalTracer.get().buildSpan(request.getRequestLine().getMethod())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
-        .withTag(Tags.HTTP_URL, request.getRequestLine().getUri())
-        .start();
+  private static Span createSpan(final HttpRequest request) {
+    return GlobalTracer.get()
+      .buildSpan(request.getRequestLine().getMethod())
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
+      .withTag(Tags.HTTP_URL, request.getRequestLine().getUri()).start();
   }
 
-  public static void exit(Object returned) {
+  public static void exit(final Object returned) {
     final Context context = contextHolder.get();
-    if (context == null) {
+    if (context == null)
       return;
-    }
+
     --context.counter;
     if (context.counter == 0) {
       if (returned instanceof HttpResponse) {
-        HttpResponse response = (HttpResponse) returned;
+        final HttpResponse response = (HttpResponse)returned;
         Tags.HTTP_STATUS.set(context.span, response.getStatusLine().getStatusCode());
       }
+
       context.span.finish();
       contextHolder.remove();
     }
@@ -101,14 +96,14 @@ public class HttpClientAgentIntercept {
 
   public static void onError(Throwable thrown) {
     final Context context = contextHolder.get();
-    if (context == null) {
+    if (context == null)
       return;
-    }
+
     --context.counter;
     if (context.counter == 0) {
       Tags.ERROR.set(context.span, Boolean.TRUE);
 
-      Map<String, Object> errorLogs = new HashMap<>(2);
+      final Map<String,Object> errorLogs = new HashMap<>(2);
       errorLogs.put("event", Tags.ERROR.getKey());
       errorLogs.put("error.object", thrown);
       context.span.log(errorLogs);
