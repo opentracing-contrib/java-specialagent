@@ -30,7 +30,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ThriftProcessorAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(named("org.apache.thrift.TProcessorFactory"))
       .transform(new Transformer() {

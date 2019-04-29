@@ -39,7 +39,7 @@ public class JdbcAgentRule extends AgentRule {
   private static final boolean isJdk178 = System.getProperty("java.version").startsWith("1.");
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     Junction<TypeDescription> driverJunction = hasSuperType(named("java.sql.Driver")).and(not(named("io.opentracing.contrib.jdbc.TracingDriver")));
     if (isJdk178)
       driverJunction = named("java.sql.DriverManager").or(driverJunction);

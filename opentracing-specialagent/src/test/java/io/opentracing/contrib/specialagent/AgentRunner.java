@@ -90,8 +90,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (testClassesPath.endsWith("/test-classes/"))
       return SpecialAgentUtil.createTempJarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/"));
 
-    if (testClassesPath.endsWith("classes/"))
-      return SpecialAgentUtil.createTempJarFile(new File(testClassesPath.endsWith("/test-classes/") ? testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/" : testClassesPath));
+    if (testClassesPath.endsWith("/classes/"))
+      return SpecialAgentUtil.createTempJarFile(new File(testClassesPath));
 
     throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
   }
@@ -148,6 +148,20 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
+   * Annotation to specify configuration parameters for {@code AgentRunner} test methods.
+   */
+  @Target(ElementType.METHOD)
+  @Retention(RetentionPolicy.RUNTIME)
+  public @interface TestConfig {
+    /**
+     * @return Whether the plugin should run in verbose mode.
+     *         <p>
+     *         Default: <code>false</code>.
+     */
+    boolean verbose() default false;
+  }
+
+  /**
    * Annotation to specify configuration parameters for {@code AgentRunner}.
    */
   @Target(ElementType.TYPE)
@@ -182,6 +196,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: <code>{Event.ERROR}</code>.
      */
     Event[] events() default {Event.ERROR};
+
+    /**
+     * @return Whether the plugin should run in verbose mode.
+     *         <p>
+     *         Default: <code>false</code>.
+     */
+    boolean verbose() default false;
 
     /**
      * @return Whether the tests should be run in a class loader that is
@@ -317,6 +338,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private final Config config;
+  private final String pluginName;
+
+  private void setVerbose(final boolean verbose) {
+    System.setProperty("sa.instrumentation.plugin." + pluginName, String.valueOf(verbose));
+  }
 
   /**
    * Creates a new {@code AgentRunner} for the specified test class.
@@ -330,11 +356,15 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
+    this.pluginName = AgentRuleUtil.getPluginName(testClass.getProtectionDomain().getCodeSource().getLocation());
+    final boolean verbose;
     final Event[] events;
     if (config == null) {
+      verbose = false;
       events = new Event[] {Event.ERROR};
     }
     else {
+      verbose = config.verbose();
       events = config.events();
       if (config.log() != Config.Log.INFO) {
         final String logLevelProperty = System.getProperty(SpecialAgent.LOGGING_PROPERTY);
@@ -347,6 +377,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (!config.isolateClassLoader())
         logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
+
+    if (verbose)
+      setVerbose(true);
 
     if (events.length > 0) {
       final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
@@ -459,6 +492,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
           Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
         }
+
+        final TestConfig testConfig = method.getMethod().getAnnotation(TestConfig.class);
+        if (testConfig != null)
+          setVerbose(testConfig.verbose());
 
         final Object object = method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, AgentRunnerUtil.getTracer()) : super.invokeExplosively(target);
         --delta;

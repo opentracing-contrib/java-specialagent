@@ -31,7 +31,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class Jms2AgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     final Narrowable narrowable = builder
       .type(hasSuperType(named("javax.jms.Session")));
 

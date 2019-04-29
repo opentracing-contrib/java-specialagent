@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.png)](https://travis-ci.org/opentracing-contrib/java-specialagent)
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
-[![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://search.maven.org/search?q=a:opentracing-specialagent)
+[![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://mvnrepository.com/artifact/io.opentracing.contrib.specialagent/opentracing-specialagent)
 
 ## Overview
 
@@ -181,6 +181,8 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 ## Configuration
 
+### Pattern
+
 The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>SpecialAgent</ins>, the <ins>Instrumentation Plugins</ins>, as well as <ins>Tracer Plugins</ins>. The configuration pattern is based on system properties, which can be defined on the command-line, in a properties file, or in [@AgentRunner.Config](#configuring-agentrunner) for JUnit tests:
 
 1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in layers below...
@@ -191,7 +193,15 @@ The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>S
 
 4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
 
-5. Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
+### Properties
+
+The following properties are supported by all instrumentation plugins:
+
+1. Verbose Mode: `sa.instrumentation.plugins.verbose`, `sa.instrumentation.plugin.${PLUGIN_NAME}.verbose`
+
+   Sets verbose mode for all or one plugin (Default: false). This property can also be set in an `AgentRunner` JUnit test with the `@AgentRunner.Config(verbose=true)` for all tests in a JUnit class, or `@AgentRunner.TestConfig(verbose=true)` for an individual JUnit test method.
+
+   Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
 
 ### Selecting the <ins>Tracer Plugin</ins>
 

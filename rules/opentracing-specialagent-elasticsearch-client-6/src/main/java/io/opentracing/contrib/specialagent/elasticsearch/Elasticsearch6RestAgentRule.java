@@ -29,7 +29,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class Elasticsearch6RestAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(named("org.elasticsearch.client.RestClientBuilder"))
       .transform(new Transformer() {

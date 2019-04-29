@@ -31,7 +31,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class RabbitMQAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     final Narrowable narrowable = builder
       .type(hasSuperType(named("com.rabbitmq.client.impl.AMQChannel"))
           .and(not(named("io.opentracing.contrib.rabbitmq.TracingChannel"))));

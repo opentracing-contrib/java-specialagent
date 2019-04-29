@@ -185,11 +185,19 @@ public class SpecialAgent {
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     final ArrayList<String> disabledPlugins = new ArrayList<>();
+    final Set<String> verbosePlugins = new HashSet<>();
+    boolean allVerbose = false;
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = (String)property.getKey();
       final String value = (String)property.getValue();
       if (key.startsWith("sa.instrumentation.plugin") && key.endsWith(".enable") && !Boolean.parseBoolean(value)) {
         disabledPlugins.add(key.substring(0, key.length() - 7));
+      }
+      else if (key.startsWith("sa.instrumentation.plugin") && key.endsWith(".verbose") && Boolean.parseBoolean(value)) {
+        verbosePlugins.add(key.substring(0, key.length() - 7));
+      }
+      else if ("sa.instrumentation.plugins.verbose".equals(key) && Boolean.parseBoolean(value)) {
+        allVerbose = true;
       }
     }
 
@@ -218,12 +226,13 @@ public class SpecialAgent {
 
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
-    final int count = loadDependencies(allPluginsClassLoader) + loadDependencies(ClassLoader.getSystemClassLoader());
+    final Map<String,String> nameToVersion = new HashMap<>();
+    final int count = loadDependencies(allPluginsClassLoader, nameToVersion) + loadDependencies(ClassLoader.getSystemClassLoader(), nameToVersion);
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
     loadTracer();
-    loadRules();
+    loadRules(nameToVersion);
   }
 
   static class AllPluginsClassLoader extends URLClassLoader {
@@ -294,7 +303,7 @@ public class SpecialAgent {
    *          dependencies.tgf files.
    * @return The number of loaded dependencies.tgf files.
    */
-  private static int loadDependencies(final ClassLoader classLoader) {
+  private static int loadDependencies(final ClassLoader classLoader, final Map<String,String> nameToVersion) {
     int count = 0;
     try {
       final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES_TGF);
@@ -309,7 +318,18 @@ public class SpecialAgent {
           logger.finest("Found " + DEPENDENCIES_TGF + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
 
         final URL jarUrl = SpecialAgentUtil.getSourceLocation(url, DEPENDENCIES_TGF);
+
         final String dependenciesTgf = new String(SpecialAgentUtil.readBytes(url));
+        final String firstLine = dependenciesTgf.substring(0, dependenciesTgf.indexOf('\n'));
+        final String version = firstLine.substring(firstLine.lastIndexOf(':') + 1);
+
+        final String name = AgentRuleUtil.getPluginName(jarUrl);
+        final String exists = nameToVersion.get(name);
+        if (exists != null && !exists.equals(version))
+          throw new IllegalStateException("Illegal attempt to overwrite previously defined version for: " + name);
+
+        nameToVersion.put(name, version);
+
         final URL[] dependencies = SpecialAgentUtil.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
         if (dependencies == null)
           throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
@@ -356,7 +376,7 @@ public class SpecialAgent {
    * This method loads any OpenTracing {@code AgentRule}s, delegated to the
    * instrumentation {@link Manager} in the runtime.
    */
-  private static void loadRules() {
+  private static void loadRules(final Map<String,String> nameToVersion) {
     if (allPluginsClassLoader == null) {
       logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
       return;
@@ -369,7 +389,7 @@ public class SpecialAgent {
       for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
         ruleJarToIndex.put(allPluginsClassLoader.getURLs()[i], i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, agentArgs, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
+      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, nameToVersion, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);

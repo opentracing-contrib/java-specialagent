@@ -76,9 +76,9 @@ public abstract class Manager {
    *          with all rule JARs.
    * @param ruleJarToIndex A {@code Map} of rule JAR path to its index in the
    *          {@code allRulesClassLoader} classpath.
-   * @param agentArgs The agent arguments.
+   * @param nameToVersion Map of plugin names to their version.
    * @param events Manager events to log.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<URL,Integer> ruleJarToIndex, String agentArgs, Event[] events) throws IOException;
+  abstract void loadRules(ClassLoader allRulesClassLoader, Map<URL,Integer> ruleJarToIndex, Map<String,String> nameToVersion, Event[] events) throws IOException;
 }

@@ -15,6 +15,8 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,8 +43,24 @@ public abstract class AgentRule {
     return enabled;
   }
 
+
+  static final Map<String,String> classNameToName = new HashMap<>();
+
+  public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {
+    final String allVerbose = System.getProperty("sa.instrumentation.plugins.verbose");
+    if (allVerbose != null && Boolean.parseBoolean(allVerbose))
+      return true;
+
+    final String pluginName = classNameToName.get(agentRuleClass.getName());
+    if (pluginName == null)
+      throw new IllegalStateException("Plugin name should not be null");
+
+    final String pluginVerbose = System.getProperty("sa.instrumentation.plugin." + pluginName);
+    return pluginVerbose != null && Boolean.parseBoolean(pluginVerbose);
+  }
+
   public static final Logger logger = Logger.getLogger(AgentRule.class.getName());
-  public abstract Iterable<? extends AgentBuilder> buildAgent(String agentArgs, AgentBuilder builder) throws Exception;
+  public abstract Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception;
   // ElementMatcher<? super MethodDescription> onMethod();
   // DynamicAdvice advice();
 }

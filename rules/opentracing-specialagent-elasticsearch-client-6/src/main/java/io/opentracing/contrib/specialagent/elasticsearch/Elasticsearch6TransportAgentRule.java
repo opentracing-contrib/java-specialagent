@@ -30,7 +30,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class Elasticsearch6TransportAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
       .transform(new Transformer() {
