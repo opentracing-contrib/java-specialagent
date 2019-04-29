@@ -31,7 +31,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class HttpClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     final Narrowable narrowable = builder.type(hasSuperType(named("org.apache.http.client.HttpClient")));
     return Arrays.asList(narrowable.transform(new Transformer() {
       @Override

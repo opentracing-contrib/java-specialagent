@@ -30,7 +30,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class GrpcStubAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(hasSuperType(named("io.grpc.stub.AbstractStub")))
       .transform(new Transformer() {

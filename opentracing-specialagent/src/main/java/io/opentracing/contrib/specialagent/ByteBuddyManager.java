@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
@@ -26,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,7 +69,7 @@ public class ByteBuddyManager extends Manager {
    * resources within the supplied classloader.
    */
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final String agentArgs, final Event[] events) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final Map<String,String> nameToVersion, final Event[] events) throws IOException {
     // Load ClassLoader Agent
     ClassLoaderAgent.premain(inst);
 
@@ -110,8 +112,14 @@ public class ByteBuddyManager extends Manager {
             .with(InitializationStrategy.NoOp.INSTANCE)
             .with(TypeStrategy.Default.REDEFINE);
 
+          final String jarName = AgentRuleUtil.getPluginName(ruleJar);
+          final String version = nameToVersion.get(jarName);
+          final String name = jarName.endsWith(version) ? jarName.substring(0, jarName.length() - version.length() - 1) : jarName;
+
+          AgentRule.classNameToName.put(agentClass.getName(), name);
+
           final AgentRule agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-          final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentArgs, agentBuilder);
+          final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
 
           for (final AgentBuilder builder : builders) {
             if (agentBuilder != getParent(builder))

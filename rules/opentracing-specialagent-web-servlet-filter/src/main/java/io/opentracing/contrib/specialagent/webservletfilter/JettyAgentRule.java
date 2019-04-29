@@ -29,7 +29,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class JettyAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
       .type(named("org.eclipse.jetty.servlet.ServletContextHandler"))
       .transform(new Transformer() {
