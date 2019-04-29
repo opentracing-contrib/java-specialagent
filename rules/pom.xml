@@ -49,6 +49,7 @@
     <module>opentracing-specialagent-grpc</module>
     <module>opentracing-specialagent-jedis</module>
     <module>opentracing-specialagent-apache-httpclient</module>
+    <module>opentracing-specialagent-lettuce</module>
   </modules>
   <profiles>
     <profile>
