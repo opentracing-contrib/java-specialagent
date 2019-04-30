@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
@@ -27,7 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,103 +50,16 @@ public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
   private static final String RULES_FILE = "otarules.mf";
 
-  private Instrumentation inst;
-
-  ByteBuddyManager() {
-    super(RULES_FILE);
-  }
-
-  @Override
-  void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-    this.inst = inst;
-    SpecialAgent.initialize();
-  }
-
-  /**
-   * This method loads any OpenTracing Agent rules (otarules.btm) found as
-   * resources within the supplied classloader.
-   */
-  @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final Map<String,String> nameToVersion, final Event[] events) throws IOException {
-    // Load ClassLoader Agent
-    ClassLoaderAgent.premain(inst);
-
-    // Load the Mutex Agent
-    MutexAgent.premain(inst);
-
-    // Prepare the agent rules
-    final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
-    while (enumeration.hasMoreElements()) {
-      final URL scriptUrl = enumeration.nextElement();
-      final URL ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("Dereferencing index for " + ruleJar);
-
-      final int index = ruleJarToIndex.get(ruleJar);
-
-      final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()));
-      for (String line; (line = reader.readLine()) != null;) {
-        line = line.trim();
-        if (line.length() == 0 || line.charAt(0) == '#')
-          continue;
-
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Installing rule: " + line);
-
-        try {
-          final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
-          if (!AgentRule.class.isAssignableFrom(agentClass)) {
-            logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
-            continue;
-          }
-
-          // Prepare the builder to be used to implement transformations in AgentRule(s)
-          AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(none());
-          if (AgentRuleUtil.tracerClassLoader != null)
-            agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
-
-          agentBuilder = agentBuilder
-            .with(RedefinitionStrategy.RETRANSFORMATION)
-            .with(InitializationStrategy.NoOp.INSTANCE)
-            .with(TypeStrategy.Default.REDEFINE);
-
-          final String jarName = AgentRuleUtil.getPluginName(ruleJar);
-          final String version = nameToVersion.get(jarName);
-          final String name = jarName.endsWith(version) ? jarName.substring(0, jarName.length() - version.length() - 1) : jarName;
-
-          AgentRule.classNameToName.put(agentClass.getName(), name);
-
-          final AgentRule agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-          final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
-
-          for (final AgentBuilder builder : builders) {
-            if (agentBuilder != getParent(builder))
-              throw new IllegalArgumentException("AgentBuilder instance provided in buildAgent(String,AgentBuilder) was not used");
-
-            final TransformationListener listener = new TransformationListener(index, events);
-//            if (agentRule.onEn().getOnEnter() != null)
-//              installOn(builder, agentRule.onEn().getOnEnter(), agentRule, listener, instrumentation);
-//
-//            if (agentRule.onEn().getOnExit() != null)
-//              installOn(builder, agentRule.onEn().getOnExit(), agentRule, listener, instrumentation);
-
-            builder.with(listener).installOn(inst);
-          }
+  private static void installOn(final Narrowable builder, final Class<?> advice, final AgentRule agentRule, final Listener listener, final Instrumentation instrumentation) {
+    builder
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return null;//builder.visit(Advice.to(advice).on(agentRule.onMethod()));
         }
-        catch (final UnsupportedClassVersionError | InvocationTargetException e) {
-          logger.log(Level.SEVERE, "Error initliaizing rule: " + line, e);
-        }
-        catch (final InstantiationException e) {
-          logger.log(Level.SEVERE, "Unable to instantiate: " + line, e);
-        }
-        catch (final ClassNotFoundException | IllegalAccessException e) {
-          throw new IllegalStateException(e);
-        }
-        catch (final Exception e) {
-          logger.log(Level.SEVERE, "Error invoking " + line + "#buildAgent(String) was not found", e);
-        }
-      }
-    }
+      })
+      .with(listener)
+      .installOn(instrumentation);
   }
 
   private static Object getParent(final AgentBuilder builder) {
@@ -163,16 +74,106 @@ public class ByteBuddyManager extends Manager {
     }
   }
 
-  private static void installOn(final Narrowable builder, final Class<?> advice, final AgentRule agentRule, final Listener listener, final Instrumentation instrumentation) {
-    builder
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return null;//builder.visit(Advice.to(advice).on(agentRule.onMethod()));
+  private static AgentBuilder newBuilder() {
+    // Prepare the builder to be used to implement transformations in AgentRule(s)
+    AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(none());
+    if (AgentRuleUtil.tracerClassLoader != null)
+      agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
+
+    return agentBuilder
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE);
+  }
+
+  private Instrumentation inst;
+
+  ByteBuddyManager() {
+    super(RULES_FILE);
+  }
+
+  @Override
+  void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+    this.inst = inst;
+    SpecialAgent.initialize();
+  }
+
+  @Override
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final Map<String,String> nameToVersion, final Event[] events) throws IOException {
+    AgentRule agentRule = null;
+    try {
+      // Load ClassLoader Agent
+      agentRule = new ClassLoaderAgentRule();
+      loadAgentRule(agentRule, newBuilder(), -1, events);
+
+      // Load the Mutex Agent
+      MutexAgent.premain(inst);
+
+      // Prepare the agent rules
+      final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
+      while (enumeration.hasMoreElements()) {
+        final URL scriptUrl = enumeration.nextElement();
+        final URL ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("Dereferencing index for " + ruleJar);
+
+        final int index = ruleJarToIndex.get(ruleJar);
+
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()));
+        for (String line; (line = reader.readLine()) != null;) {
+          line = line.trim();
+          if (line.length() == 0 || line.charAt(0) == '#')
+            continue;
+
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Installing rule: " + line);
+
+          final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
+          if (!AgentRule.class.isAssignableFrom(agentClass)) {
+            logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
+            continue;
+          }
+
+          final String jarName = AgentRuleUtil.getPluginName(ruleJar);
+          final String version = nameToVersion.get(jarName);
+          final String name = jarName.endsWith(version) ? jarName.substring(0, jarName.length() - version.length() - 1) : jarName;
+
+          AgentRule.classNameToName.put(agentClass.getName(), name);
+
+          agentRule = (AgentRule)agentClass.getConstructor().newInstance();
+          loadAgentRule(agentRule, newBuilder(), index, events);
         }
-      })
-      .with(listener)
-      .installOn(instrumentation);
+      }
+    }
+    catch (final UnsupportedClassVersionError | InvocationTargetException e) {
+      logger.log(Level.SEVERE, "Error initliaizing rule: " + agentRule, e);
+    }
+    catch (final InstantiationException e) {
+      logger.log(Level.SEVERE, "Unable to instantiate: " + agentRule, e);
+    }
+    catch (final ClassNotFoundException | IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    }
+    catch (final Exception e) {
+      logger.log(Level.SEVERE, "Error invoking " + agentRule + "#buildAgent(String) was not found", e);
+    }
+  }
+
+  private void loadAgentRule(final AgentRule agentRule, final AgentBuilder agentBuilder, final int index, final Event[] events) throws Exception {
+    final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
+    for (final AgentBuilder builder : builders) {
+      if (agentBuilder != getParent(builder))
+        throw new IllegalArgumentException("AgentBuilder instance provided by AgentRule#buildAgent(AgentBuilder) was not used");
+
+      final TransformationListener listener = new TransformationListener(index, events);
+//      if (agentRule.onEn().getOnEnter() != null)
+//        installOn(builder, agentRule.onEn().getOnEnter(), agentRule, listener, instrumentation);
+//
+//      if (agentRule.onEn().getOnExit() != null)
+//        installOn(builder, agentRule.onEn().getOnExit(), agentRule, listener, instrumentation);
+
+      builder.with(listener).installOn(inst);
+    }
   }
 
   class TransformationListener implements AgentBuilder.Listener {
@@ -195,7 +196,7 @@ public class ByteBuddyManager extends Manager {
       if (events[Event.TRANSFORMATION.ordinal()] != null)
         logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
-      if (!SpecialAgent.linkRule(index, classLoader))
+      if (index != -1 && !SpecialAgent.linkRule(index, classLoader))
         throw new IllegalStateException("Disallowing transformation due to incompatibility");
     }
 

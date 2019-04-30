@@ -40,7 +40,7 @@ import net.bytebuddy.utility.JavaModule;
  * {@link SpecialAgent#findClass(ClassLoader,String)} method to override its returned
  * value.
  * <p>
- * This class is used for testing of {@link ClassLoaderAgent}.
+ * This class is used for testing of {@link ClassLoaderAgentRule}.
  *
  * @author Seva Safris
  */

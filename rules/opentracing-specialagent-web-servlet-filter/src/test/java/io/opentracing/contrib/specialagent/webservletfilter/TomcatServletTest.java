@@ -68,7 +68,7 @@ public class TomcatServletTest {
     final Context appContext = tomcatServer.addWebapp("", applicationDir.getAbsolutePath());
 
     // Following triggers creation of NoPluggabilityServletContext object during initialization
-    ((StandardContext) appContext).addApplicationLifecycleListener(new SCL());
+    ((StandardContext)appContext).addApplicationLifecycleListener(new SCL());
 
     Tomcat.addServlet(appContext, "helloWorldServlet", new MockServlet());
     appContext.addServletMappingDecoded("/hello", "helloWorldServlet");
