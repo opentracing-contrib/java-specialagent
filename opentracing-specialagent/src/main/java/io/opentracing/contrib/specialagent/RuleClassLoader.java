@@ -65,11 +65,12 @@ class RuleClassLoader extends URLClassLoader {
       if (!path.endsWith(".class") || path.startsWith("META-INF/") || path.startsWith("module-info"))
         return;
 
+      final String className = path.substring(0, path.length() - 6).replace('/', '.');
       try {
-        Class.forName(path.substring(0, path.length() - 6).replace('/', '.'), false, classLoader);
+        Class.forName(className, false, classLoader);
       }
       catch (final ClassNotFoundException e) {
-        logger.log(Level.SEVERE, "Failed to load class in " + classLoader, e);
+        logger.log(Level.SEVERE, "Failed to load class " + className + " in " + classLoader, e);
       }
     }
   };
@@ -88,6 +89,11 @@ class RuleClassLoader extends URLClassLoader {
    */
   RuleClassLoader(final URL[] urls, final ClassLoader parent) {
     super(urls, parent);
+  }
+
+  @Override
+  protected Class<?> findClass(String name) throws ClassNotFoundException {
+    return super.findClass(name);
   }
 
   /**

@@ -32,7 +32,7 @@ public abstract class Manager {
     DISCOVERY,
     ERROR,
     IGNORED,
-    TRANSFORMATION;
+    TRANSFORMATION
   }
 
   /** The configuration file name. **/

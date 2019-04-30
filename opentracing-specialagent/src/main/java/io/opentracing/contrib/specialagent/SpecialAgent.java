@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -49,6 +50,7 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
+@SuppressWarnings("restriction")
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
@@ -84,11 +86,10 @@ public class SpecialAgent {
     }
   }
 
-  private static final ClassLoaderMap<Boolean> classLoaderToCompatibility = new ClassLoaderMap<>();
-  private static final ClassLoaderMap<RuleClassLoader> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
+  private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
+  private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
 
-  private static String agentArgs;
   private static AllPluginsClassLoader allPluginsClassLoader;
 
   // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
@@ -160,7 +161,6 @@ public class SpecialAgent {
    */
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     BootLoaderAgent.premain(inst);
-    SpecialAgent.agentArgs = agentArgs;
     SpecialAgent.inst = inst;
     instrumenter.manager.premain(null, inst);
   }
@@ -185,20 +185,11 @@ public class SpecialAgent {
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
     final ArrayList<String> disabledPlugins = new ArrayList<>();
-    final Set<String> verbosePlugins = new HashSet<>();
-    boolean allVerbose = false;
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = (String)property.getKey();
       final String value = (String)property.getValue();
-      if (key.startsWith("sa.instrumentation.plugin") && key.endsWith(".enable") && !Boolean.parseBoolean(value)) {
+      if (key.startsWith("sa.instrumentation.plugin") && key.endsWith(".enable") && !Boolean.parseBoolean(value))
         disabledPlugins.add(key.substring(0, key.length() - 7));
-      }
-      else if (key.startsWith("sa.instrumentation.plugin") && key.endsWith(".verbose") && Boolean.parseBoolean(value)) {
-        verbosePlugins.add(key.substring(0, key.length() - 7));
-      }
-      else if ("sa.instrumentation.plugins.verbose".equals(key) && Boolean.parseBoolean(value)) {
-        allVerbose = true;
-      }
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
@@ -495,14 +486,27 @@ public class SpecialAgent {
 
   @SuppressWarnings("resource")
   public static boolean linkRule(final int index, final ClassLoader classLoader) {
-    Boolean compatible = classLoaderToCompatibility.get(classLoader);
+    Map<Integer,Boolean> indexToCompatible = classLoaderToCompatibility.get(classLoader);
+    Boolean compatible;
+    if (indexToCompatible != null) {
+      compatible = indexToCompatible.get(index);
+    }
+    else {
+      classLoaderToCompatibility.put(classLoader, indexToCompatible = new HashMap<>());
+      compatible = false;
+    }
+
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("SpecialAgent#linkRule(" + index + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible);
+
     if (compatible != null && compatible)
       return true;
 
     // Find the Rule Path (identified by index passed to this method)
     final URL rulePath = allPluginsClassLoader.getURLs()[index];
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("  Rule Path: " + rulePath);
+    final String pluginName = logger.isLoggable(Level.FINE) ? AgentRuleUtil.getPluginName(rulePath) : null;
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("  Rule Path: " + rulePath);
 
     // Now find all the paths that rulePath depends on, by reading dependencies.tgf
     final URL[] rulePaths = ruleToDependencies.get(rulePath);
@@ -510,18 +514,18 @@ public class SpecialAgent {
       throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + rulePath);
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("new " + RuleClassLoader.class.getSimpleName() + "([\n" + SpecialAgentUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
+      logger.finest("[" + pluginName + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + SpecialAgentUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
 
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
     final RuleClassLoader ruleClassLoader = new RuleClassLoader(rulePaths, classLoader);
     compatible = ruleClassLoader.isCompatible(classLoader);
-    classLoaderToCompatibility.put(classLoader, compatible);
+    indexToCompatible.put(index, compatible);
     if (!compatible) {
       try {
         ruleClassLoader.close();
       }
       catch (final IOException e) {
-        logger.log(Level.WARNING, "Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + SpecialAgentUtil.getIdentityCode(ruleClassLoader), e);
+        logger.log(Level.WARNING, "[" + pluginName + "] Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + SpecialAgentUtil.getIdentityCode(ruleClassLoader), e);
       }
 
       return false;
@@ -529,7 +533,7 @@ public class SpecialAgent {
 
     if (classLoader == null) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("Target class loader is bootstrap, so adding rule JARs to the bootstrap class loader directly");
+        logger.finer("[" + pluginName + "] Target class loader is bootstrap, so adding rule JARs to the bootstrap class loader directly");
 
       for (final URL path : rulePaths) {
         try {
@@ -537,13 +541,13 @@ public class SpecialAgent {
           inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
-          logger.log(Level.SEVERE, "Failed to add path to bootstrap class loader: " + path.getPath(), e);
+          logger.log(Level.SEVERE, "[" + pluginName + "] Failed to add path to bootstrap class loader: " + path.getPath(), e);
         }
       }
     }
     else if (classLoader == ClassLoader.getSystemClassLoader()) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("Target class loader is system, so adding rule JARs to the system class loader directly");
+        logger.finer("[" + pluginName + "] Target class loader is system, so adding rule JARs to the system class loader directly");
 
       for (final URL path : rulePaths) {
         try {
@@ -551,18 +555,30 @@ public class SpecialAgent {
           inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
-          logger.log(Level.SEVERE, "Failed to add path to system class loader: " + path.getPath(), e);
+          logger.log(Level.SEVERE, "[" + pluginName + "] Failed to add path to system class loader: " + path.getPath(), e);
         }
       }
     }
 
-    // Associate the ruleClassLoader with the target class's classLoader
-    classLoaderToRuleClassLoader.put(classLoader, ruleClassLoader);
+    // Associate the RuleClassLoader with the target class's class loader
+    List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
+    if (ruleClassLoaders == null)
+      classLoaderToRuleClassLoader.put(classLoader, ruleClassLoaders = new ArrayList<>());
+
+    ruleClassLoaders.add(ruleClassLoader);
 
     // Attempt to preload classes if the callstack is not coming from ClassLoader#defineClass
-    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
-      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName()))
+    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("[" + pluginName + "] Preload of instrumentation classes deferred to SpecialAgent#findClass(...)");
+
         return true;
+      }
+    }
+
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("[" + pluginName + "] Preload of instrumentation classes called from SpecialAgent#linkRule(...)");
 
     ruleClassLoader.preLoad(classLoader);
     return true;
@@ -572,7 +588,7 @@ public class SpecialAgent {
    * Returns the bytecode of the {@code Class} by the name of {@code name}, if
    * the {@code classLoader} matched a rule {@code ClassLoader} that contains
    * OpenTracing instrumentation classes intended to be loaded into
-   * {@code classLoader}. This method is called by the {@link ClassLoaderAgent}.
+   * {@code classLoader}. This method is called by the {@link ClassLoaderAgentRule}.
    * This method returns {@code null} if it cannot locate the bytecode for the
    * requested {@code Class}, or if it has already been called for
    * {@code classLoader} and {@code name}.
@@ -587,43 +603,44 @@ public class SpecialAgent {
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     // Check if the class loader matches a ruleClassLoader
-    final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoader == null) {
+    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
+    if (ruleClassLoaders == null) {
       if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): NO RuleClassLoader");
+        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
 
       return null;
     }
 
-    // Ensure the `RuleClassLoader` is preloaded
-    ruleClassLoader.preLoad(classLoader);
+    for (final RuleClassLoader ruleClassLoader : ruleClassLoaders) {
+      // Ensure the `RuleClassLoader` is preloaded
+      ruleClassLoader.preLoad(classLoader);
 
-    // Check that the resourceName has not already been retrieved by this method
-    // (this may be a moot check, because the JVM won't call findClass() twice
-    // for the same class)
-    final String resourceName = name.replace('.', '/').concat(".class");
-    if (ruleClassLoader.markFindResource(classLoader, resourceName)) {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): REDUNDANT CALL");
+      final String resourceName = name.replace('.', '/').concat(".class");
+      final URL resource = ruleClassLoader.getResource(resourceName);
+      if (resource != null) {
+        // Check that the resourceName has not already been retrieved by this method
+        // (this may be a moot check, because the JVM won't call findClass() twice
+        // for the same class)
+        if (ruleClassLoader.markFindResource(classLoader, resourceName)) {
+          if (logger.isLoggable(Level.FINEST))
+            logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): REDUNDANT CALL");
 
-      return null;
+          return null;
+        }
+
+        // Return the resource's bytes
+        final byte[] bytecode = SpecialAgentUtil.readBytes(resource);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
+
+        return bytecode;
+      }
     }
 
-    // Return null if the resource does not exist in the ruleClassLoader
-    final URL resource = ruleClassLoader.getResource(resourceName);
-    if (resource == null) {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): null");
-
-      return null;
-    }
-
-    // Return the resource's bytes
-    final byte[] bytecode = SpecialAgentUtil.readBytes(resource);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
+      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): Not found in " + ruleClassLoaders.size() + " RuleClassLoader(s)");
 
-    return bytecode;
+    return null;
   }
 
   public static URL findResource(final ClassLoader classLoader, final String name) {
@@ -631,8 +648,17 @@ public class SpecialAgent {
       logger.finest(">>>>>>>> findResource(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
-    final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);
-    return ruleClassLoader == null ? null : ruleClassLoader.findResource(name);
+    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
+    if (ruleClassLoaders == null)
+      return null;
+
+    for (final RuleClassLoader ruleClassLoader : ruleClassLoaders) {
+      final URL resource = ruleClassLoader.findResource(name);
+      if (resource != null)
+        return resource;
+    }
+
+    return null;
   }
 
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
@@ -640,11 +666,16 @@ public class SpecialAgent {
       logger.finest(">>>>>>>> findResources(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
-    final RuleClassLoader ruleClassLoader = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoader == null)
+    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
+    if (ruleClassLoaders == null)
       return null;
 
-    final Enumeration<URL> resources = ruleClassLoader.findResources(name);
-    return resources != null && resources.hasMoreElements() ? resources : null;
+    for (final RuleClassLoader ruleClassLoader : ruleClassLoaders) {
+      final Enumeration<URL> resources = ruleClassLoader.findResources(name);
+      if (resources.hasMoreElements())
+        return resources;
+    }
+
+    return null;
   }
 }

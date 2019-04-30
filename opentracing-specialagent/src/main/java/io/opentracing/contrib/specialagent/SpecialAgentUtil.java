@@ -474,7 +474,7 @@ public final class SpecialAgentUtil {
    * @param obj The object.
    * @return The hexadecimal representation of an object's identity hash code.
    */
-  static String getIdentityCode(final Object obj) {
+  public static String getIdentityCode(final Object obj) {
     return obj == null ? "null" : obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16);
   }
 

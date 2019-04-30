@@ -17,22 +17,19 @@ package io.opentracing.contrib.specialagent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
@@ -48,47 +45,34 @@ import net.bytebuddy.utility.JavaModule;
  *
  * @author Seva Safris
  */
-public class ClassLoaderAgent {
-  private static final Logger logger = Logger.getLogger(ClassLoaderAgent.class.getName());
+public class ClassLoaderAgentRule extends AgentRule {
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
-  public static void premain(final Instrumentation inst) {
+  @Override
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n");
 
-    final Narrowable builder = new AgentBuilder.Default()
-      .ignore(none())
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
-      .type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(AllPluginsClassLoader.class)))));
-
-    builder
-      .transform(new Transformer() {
+    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(AllPluginsClassLoader.class)))));
+    return Arrays.asList(
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           final Advice advice = locatorProxy != null ? Advice.to(FindClass.class, locatorProxy) : Advice.to(FindClass.class);
           return builder.visit(advice.on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
-        }})
-      .installOn(inst);
-
-    builder
-      .transform(new Transformer() {
+        }}),
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindClass.class);
+          final Advice advice = locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindResource.class);
           return builder.visit(advice.on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
-        }})
-      .installOn(inst);
-
-    builder
-      .transform(new Transformer() {
+        }}),
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindClass.class);
+          final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class);
           return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
-        }})
-      .installOn(inst);
+        }}));
   }
 
   public static class FindClass {
@@ -97,7 +81,9 @@ public class ClassLoaderAgent {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-      if (returned != null || !mutex.get().add(arg))
+//      System.err.println(">>>>>>># findClass(" + SpecialAgentUtil.getIdentityCode(thiz) + ", \"" + arg + "\"): " + returned);
+      final Set<String> visited;
+      if (returned != null || !(visited = mutex.get()).add(arg))
         return;
 
       try {
@@ -116,7 +102,7 @@ public class ClassLoaderAgent {
         AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
       }
       finally {
-        mutex.get().remove(arg);
+        visited.remove(arg);
       }
     }
   }
@@ -126,7 +112,8 @@ public class ClassLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (returned != null || !mutex.get().add(arg))
+      final Set<String> visited;
+      if (returned != null || !(visited = mutex.get()).add(arg))
         return;
 
       try {
@@ -138,7 +125,7 @@ public class ClassLoaderAgent {
         AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
       }
       finally {
-        mutex.get().remove(arg);
+        visited.remove(arg);
       }
     }
   }
@@ -148,7 +135,8 @@ public class ClassLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      if (!mutex.get().add(arg))
+      final Set<String> visited;
+      if (!(visited = mutex.get()).add(arg))
         return;
 
       try {
@@ -162,7 +150,7 @@ public class ClassLoaderAgent {
         AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
       }
       finally {
-        mutex.get().remove(arg);
+        visited.remove(arg);
       }
     }
   }
