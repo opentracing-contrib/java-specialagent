@@ -81,6 +81,8 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 17. [GRPC](https://github.com/opentracing-contrib/java-grpc)
 18. [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
 19. [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient)
+20. [Spring Web](https://github.com/opentracing-contrib/java-spring-web)
+21. [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web)
 
 ## Goals
 
