@@ -30,8 +30,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class LettuceAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs,
-      final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
         .type(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection")))
         .transform(new Transformer() {
@@ -44,8 +43,8 @@ public class LettuceAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(origin)) {
+    if (isEnabled(origin))
       returned = LettuceAgentIntercept.getAsyncCommands(returned);
-    }
+
   }
 }

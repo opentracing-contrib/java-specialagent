@@ -30,26 +30,22 @@ import net.bytebuddy.utility.JavaModule;
 
 public class LettuceClusterAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs,
-      final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
         .type(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection")))
         .transform(new Transformer() {
           @Override
-          public Builder<?> transform(final Builder<?> builder,
-              final TypeDescription typeDescription,
-              final ClassLoader classLoader, final JavaModule module) {
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
             return builder.visit(Advice.to(LettuceClusterAgentRule.class).on(named("async")));
           }
         }));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin,
-      @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(origin)) {
+  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(origin))
       returned = LettuceAgentIntercept.getAsyncClusterCommands(returned);
-    }
+
   }
 
 }
