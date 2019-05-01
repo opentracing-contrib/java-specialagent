@@ -94,7 +94,7 @@ public class HttpClientAgentIntercept {
     }
   }
 
-  public static void onError(Throwable thrown) {
+  public static void onError(final Throwable thrown) {
     final Context context = contextHolder.get();
     if (context == null)
       return;
