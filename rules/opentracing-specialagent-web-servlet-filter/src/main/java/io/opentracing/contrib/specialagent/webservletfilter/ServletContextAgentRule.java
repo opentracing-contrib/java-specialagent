@@ -29,7 +29,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ServletContextAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
       .type(hasSuperType(named("javax.servlet.ServletContext"))
         // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext

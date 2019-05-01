@@ -31,7 +31,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class OkHttpAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     final Narrowable narrowable = builder.type(named("okhttp3.OkHttpClient"));
     return Arrays.asList(
       narrowable.transform(new Transformer() {
@@ -49,6 +49,7 @@ public class OkHttpAgentRule extends AgentRule {
   public static class Interceptors {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      isVerbose(OkHttpAgentRule.class);
       if (isEnabled(origin))
         returned = OkHttpAgentIntercept.exit(returned);
     }

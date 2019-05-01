@@ -34,7 +34,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ExecutorAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
       .type(isSubTypeOf(Executor.class))
       .transform(new Transformer() {
@@ -49,7 +49,7 @@ public class ExecutorAgentRule extends AgentRule {
     if (!isEnabled(origin))
       return;
 
-    if (ConcurrentAgentMode.isVerbose()) {
+    if (isVerbose(ExecutorAgentRule.class)) {
       final Span span = GlobalTracer.get().buildSpan("execute").withTag(Tags.COMPONENT, "java-concurrent").start();
       arg = new TracedRunnable(arg, span, true);
       span.finish();

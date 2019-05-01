@@ -15,7 +15,7 @@ import net.bytebuddy.utility.JavaModule;
 
 public class GrpcServerBuilderAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs, final AgentBuilder builder) {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(hasSuperType(named("io.grpc.ServerBuilder")))
       .transform(new Transformer() {

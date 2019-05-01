@@ -51,8 +51,8 @@ public class ExecutorTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=true)
   public void testExecuteVerbose(final MockTracer tracer) throws InterruptedException {
-    System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.execute(new TestRunnable(tracer, countDownLatch));
 
@@ -61,8 +61,8 @@ public class ExecutorTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void testExecuteSilent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.execute(new TestRunnable(tracer, countDownLatch));
 
@@ -71,10 +71,9 @@ public class ExecutorTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void testExecuteSilentWithParent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-
     try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.execute(new TestRunnable(tracer, countDownLatch));
     }

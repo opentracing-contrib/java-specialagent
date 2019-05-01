@@ -53,7 +53,7 @@ public class BootLoaderAgent {
         // BootLoaderAgent @Advice classes
         FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
-        ClassLoaderAgent.FindClass.class, ClassLoaderAgent.FindResource.class, ClassLoaderAgent.FindResources.class,
+        ClassLoaderAgentRule.FindClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
     }
@@ -132,7 +132,8 @@ public class BootLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (returned != null || !mutex.get().add(arg))
+      final Set<String> visited;
+      if (returned != null || !(visited = mutex.get()).add(arg))
         return;
 
       try {
@@ -159,7 +160,7 @@ public class BootLoaderAgent {
         AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
       }
       finally {
-        mutex.get().remove(arg);
+        visited.remove(arg);
       }
     }
   }
@@ -169,7 +170,8 @@ public class BootLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      if (!mutex.get().add(arg))
+      final Set<String> visited = mutex.get();
+      if (!visited.add(arg))
         return;
 
       try {
@@ -200,7 +202,7 @@ public class BootLoaderAgent {
         AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
       }
       finally {
-        mutex.get().remove(arg);
+        visited.remove(arg);
       }
     }
   }

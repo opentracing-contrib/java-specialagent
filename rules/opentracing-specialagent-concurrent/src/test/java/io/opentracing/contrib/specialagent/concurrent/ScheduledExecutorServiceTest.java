@@ -48,14 +48,13 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
 
   @After
   public void after() {
-    if (executorService != null) {
+    if (executorService != null)
       executorService.shutdownNow();
-    }
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=true)
   public void scheduleRunnableTestVerbose(MockTracer tracer) throws InterruptedException {
-    System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     countDownLatch.await();
@@ -63,8 +62,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleRunnableTestSilent(MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     countDownLatch.await();
@@ -72,8 +71,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleRunnableTestSilentWithParent(MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.schedule(new TestRunnable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
@@ -84,8 +83,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=true)
   public void scheduleCallableTestVerbose(final MockTracer tracer) throws InterruptedException {
-    System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
@@ -94,8 +93,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleCallableTestSilent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
@@ -104,10 +103,9 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleCallableTestSilentWithParent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-
     try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.schedule(new TestCallable(tracer, countDownLatch), 0, TimeUnit.MILLISECONDS);
     }
@@ -117,8 +115,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=true)
   public void scheduleAtFixedRateTestVerbose(final MockTracer tracer) throws InterruptedException {
-    System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
@@ -127,8 +125,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleAtFixedRateTestSilent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
@@ -137,10 +135,9 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleAtFixedRateTestSilentWithParent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-
     try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.scheduleAtFixedRate(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     }
@@ -150,8 +147,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=true)
   public void scheduleWithFixedDelayTestVerbose(final MockTracer tracer) throws InterruptedException {
-    System.setProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE, "true");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
@@ -160,8 +157,8 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleWithFixedDelayTestSilent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
@@ -170,10 +167,9 @@ public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   }
 
   @Test
+  @AgentRunner.TestConfig(verbose=false)
   public void scheduleWithFixedDelayTestSilentWithParent(final MockTracer tracer) throws InterruptedException {
-    System.clearProperty(ConcurrentAgentMode.CONCURRENT_VERBOSE_MODE);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
-
     try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
       executorService.scheduleWithFixedDelay(new TestRunnable(tracer, countDownLatch), 0, 10_000, TimeUnit.MILLISECONDS);
     }

@@ -62,13 +62,13 @@ public class TomcatServletTest {
     final File baseDir = new File("tomcat");
     tomcatServer.setBaseDir(baseDir.getAbsolutePath());
 
-    final File applicationDir = new File(baseDir + "/webapps", "/ROOT");
+    final File applicationDir = new File(new File(baseDir, "webapps"), "ROOT");
     applicationDir.mkdirs();
 
     final Context appContext = tomcatServer.addWebapp("", applicationDir.getAbsolutePath());
 
     // Following triggers creation of NoPluggabilityServletContext object during initialization
-    ((StandardContext) appContext).addApplicationLifecycleListener(new SCL());
+    ((StandardContext)appContext).addApplicationLifecycleListener(new SCL());
 
     Tomcat.addServlet(appContext, "helloWorldServlet", new MockServlet());
     appContext.addServletMappingDecoded("/hello", "helloWorldServlet");
@@ -89,12 +89,12 @@ public class TomcatServletTest {
 
   public static class SCL implements ServletContextListener {
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
+    public void contextInitialized(final ServletContextEvent sce) {
       // NOOP
     }
 
     @Override
-    public void contextDestroyed(ServletContextEvent sce) {
+    public void contextDestroyed(final ServletContextEvent sce) {
       // NOOP
     }
   }
