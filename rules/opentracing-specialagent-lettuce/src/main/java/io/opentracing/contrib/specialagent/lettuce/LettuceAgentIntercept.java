@@ -23,21 +23,19 @@ import io.opentracing.contrib.redis.lettuce.TracingRedisAsyncCommands;
 import io.opentracing.util.GlobalTracer;
 
 public class LettuceAgentIntercept {
-
   @SuppressWarnings("unchecked")
-  public static Object getAsyncCommands(Object returned) {
-    if (returned instanceof TracingRedisAsyncCommands) {
+  public static Object getAsyncCommands(final Object returned) {
+    if (returned instanceof TracingRedisAsyncCommands)
       return returned;
-    }
-    return new TracingRedisAsyncCommands((RedisAsyncCommands) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
 
+    return new TracingRedisAsyncCommands<>((RedisAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 
   @SuppressWarnings("unchecked")
-  public static Object getAsyncClusterCommands(Object returned) {
-    if (returned instanceof TracingRedisAdvancedClusterAsyncCommands) {
+  public static Object getAsyncClusterCommands(final Object returned) {
+    if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
       return returned;
-    }
-    return new TracingRedisAdvancedClusterAsyncCommands((RedisAdvancedClusterAsyncCommands) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+
+    return new TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 }

@@ -15,11 +15,11 @@
 
 package io.opentracing.contrib.specialagent.lettuce;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -32,19 +32,17 @@ public class LettuceAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-        .type(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(LettuceAgentRule.class).on(named("async")));
-          }
-        }));
+      .type(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(LettuceAgentRule.class).on(named("async")));
+        }}));
   }
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
     if (isEnabled(origin))
       returned = LettuceAgentIntercept.getAsyncCommands(returned);
-
   }
 }
