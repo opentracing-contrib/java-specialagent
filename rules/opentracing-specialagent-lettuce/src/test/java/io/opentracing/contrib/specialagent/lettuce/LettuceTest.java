@@ -1,0 +1,98 @@
+/* Copyright 2019 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.opentracing.contrib.specialagent.lettuce;
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import io.lettuce.core.ConnectionFuture;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.codec.StringCodec;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import redis.embedded.RedisServer;
+
+@RunWith(AgentRunner.class)
+public class LettuceTest {
+  private static final String address = "redis://localhost";
+  private RedisServer server;
+  private RedisClient client;
+
+  @Before
+  public void before(final MockTracer tracer) throws IOException {
+    tracer.reset();
+
+    server = new RedisServer();
+    server.start();
+    client = RedisClient.create(address);
+  }
+
+  @After
+  public void after() {
+    server.stop();
+    client.shutdown();
+  }
+
+  @Test
+  public void testSync(final MockTracer tracer) {
+    try (final StatefulRedisConnection<String,String> connection = client.connect()) {
+      final RedisCommands<String,String> commands = connection.sync();
+      assertEquals("OK", commands.set("key", "value"));
+      assertEquals("value", commands.get("key"));
+    }
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(2, spans.size());
+  }
+
+  @Test
+  public void testConnectAsync(final MockTracer tracer) throws Exception {
+    final ConnectionFuture<StatefulRedisConnection<String,String>> connectionFuture = client.connectAsync(StringCodec.UTF8, RedisURI.create(address));
+    try (final StatefulRedisConnection<String,String> connection = connectionFuture.get(10, TimeUnit.SECONDS)) {
+      final RedisCommands<String,String> commands = connection.sync();
+      assertEquals("OK", commands.set("key", "value"));
+      assertEquals("value", commands.get("key"));
+    }
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(2, spans.size());
+  }
+
+  @Test
+  public void testAsync(final MockTracer tracer) throws Exception {
+    try (final StatefulRedisConnection<String,String> connection = client.connect()) {
+      final RedisAsyncCommands<String,String> commands = connection.async();
+      assertEquals("OK", commands.set("key2", "value2").get(15, TimeUnit.SECONDS));
+      assertEquals("value2", commands.get("key2").get(15, TimeUnit.SECONDS));
+    }
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(2, spans.size());
+  }
+}
