@@ -111,16 +111,16 @@ The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are 
 
 * To use the <ins>SpecialAgent</ins> on an application, first download the JAR:
 
-   **Latest RELEASE**
+   **[1.1.0][main-release]**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST.jar "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+   wget -O opentracing-specialagent-1.1.0.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.1.0/opentracing-specialagent-1.1.0.jar"
    ```
 
-   **Latest SNAPSHOT**
+   **1.1.1-SNAPSHOT**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+   wget -O opentracing-specialagent-1.1.1-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
    ```
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
@@ -156,7 +156,7 @@ The <ins>SpecialAgent</ins> uses [Java’s Instrumentation mechanism](https://do
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-LATEST.jar -jar myapp.jar
+java -javaagent:opentracing-specialagent-1.1.0.jar -jar myapp.jar
 ```
 
 This command statically attaches <ins>SpecialAgent</ins> into the application in `myapp.jar`.
@@ -172,12 +172,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 2. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-LATEST.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.1.0.jar <PID>
     ```
 
 3. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-LATEST.jar <PID>
+    java -jar opentracing-specialagent-1.1.0.jar <PID>
     ```
 
 ## Configuration
