@@ -15,16 +15,14 @@
 
 package io.opentracing.contrib.specialagent.spring.webmvc;
 
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 import io.opentracing.contrib.specialagent.spring.webmvc.copied.TracingHandlerInterceptor;
 import io.opentracing.util.GlobalTracer;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 public class SpringWebMvcAgentIntercept {
-
-
-  public static void getInterceptors(Object thiz) {
-    InterceptorRegistry registry = (InterceptorRegistry) thiz;
+  public static void getInterceptors(final Object thiz) {
+    final InterceptorRegistry registry = (InterceptorRegistry)thiz;
     registry.addInterceptor(new TracingHandlerInterceptor(GlobalTracer.get()));
   }
 }

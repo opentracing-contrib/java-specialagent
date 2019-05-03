@@ -14,43 +14,47 @@
  */
 package io.opentracing.contrib.specialagent.spring.web;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.mock.MockTracer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
+@SuppressWarnings("deprecation")
 public class SpringWebTest {
-
   @Before
-  public void before(MockTracer tracer) {
+  public void before(final MockTracer tracer) {
     tracer.reset();
   }
 
   @Test
   public void test(final MockTracer tracer) {
-    RestTemplate restTemplate = new RestTemplate();
+    final RestTemplate restTemplate = new RestTemplate();
 
     try {
       restTemplate.getForEntity("http://localhost:12345", String.class);
-    } catch (Exception ignore) {
+    }
+    catch (final Exception ignore) {
 
     }
 
     try {
       restTemplate.getForObject("http://localhost:12345", String.class);
-    } catch (Exception ignore) {
+    }
+    catch (final Exception ignore) {
 
     }
 
@@ -58,16 +62,16 @@ public class SpringWebTest {
   }
 
   @Test
-  public void testAsync(final MockTracer tracer) throws InterruptedException {
-    AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+  public void testAsync(final MockTracer tracer) {
+    final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
 
     try {
       restTemplate.getForEntity("http://localhost:12345", String.class).get(15, TimeUnit.SECONDS);
-    } catch (Exception ignore) {
+    }
+    catch (final Exception ignore) {
     }
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
-
     assertEquals(1, tracer.finishedSpans().size());
   }
 
