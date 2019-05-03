@@ -50,6 +50,8 @@
     <module>opentracing-specialagent-jedis</module>
     <module>opentracing-specialagent-apache-httpclient</module>
     <module>opentracing-specialagent-lettuce</module>
+    <module>opentracing-specialagent-spring-web</module>
+    <module>opentracing-specialagent-spring-webmvc</module>
   </modules>
   <profiles>
     <profile>
