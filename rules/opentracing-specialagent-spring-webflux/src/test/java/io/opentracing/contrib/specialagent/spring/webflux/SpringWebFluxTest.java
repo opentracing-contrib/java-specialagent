@@ -31,7 +31,6 @@ import reactor.core.publisher.Mono;
 @Config(isolateClassLoader = false)
 public class SpringWebFluxTest {
   private static final ReactiveWebServerApplicationContext APPLICATION_CONTEXT = new ReactiveWebServerApplicationContext();
-  private static int SERVER_PORT;
   private static TestRestTemplate testRestTemplate;
 
   @Before
@@ -50,9 +49,9 @@ public class SpringWebFluxTest {
     APPLICATION_CONTEXT.registerBean("webHandler", WebHandler.class, () ->
         SpringWebFluxTest::handler);
     APPLICATION_CONTEXT.refresh();
-    SERVER_PORT = APPLICATION_CONTEXT.getWebServer().getPort();
+    int serverPort = APPLICATION_CONTEXT.getWebServer().getPort();
     testRestTemplate = new TestRestTemplate(new RestTemplateBuilder()
-        .rootUri("http://127.0.0.1:" + SERVER_PORT));
+        .rootUri("http://127.0.0.1:" + serverPort));
   }
 
   private static Mono<Void> handler(final ServerWebExchange serverWebExchange) {

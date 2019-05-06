@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.spring.webflux.SpringWebFluxAgentRule
+io.opentracing.contrib.specialagent.spring.webflux.SpringWebFluxClientAgentRule
 io.opentracing.contrib.specialagent.spring.webflux.SpringWebFluxChainAgentRule

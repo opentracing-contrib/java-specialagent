@@ -27,7 +27,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringWebFluxAgentRule extends AgentRule {
+public class SpringWebFluxClientAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
@@ -38,7 +38,7 @@ public class SpringWebFluxAgentRule extends AgentRule {
           public Builder<?> transform(final Builder<?> builder,
               final TypeDescription typeDescription, final ClassLoader classLoader,
               final JavaModule module) {
-            return builder.visit(Advice.to(SpringWebFluxAgentRule.class).on(named("build")));
+            return builder.visit(Advice.to(SpringWebFluxClientAgentRule.class).on(named("build")));
           }
         }));
   }
@@ -49,6 +49,5 @@ public class SpringWebFluxAgentRule extends AgentRule {
     if (isEnabled(origin)) {
       SpringWebFluxAgentIntercept.client(thiz);
     }
-
   }
 }

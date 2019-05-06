@@ -32,13 +32,8 @@ import org.springframework.web.server.WebFilter;
 
 public class SpringWebFluxAgentIntercept {
 
+  @SuppressWarnings("unchecked")
   public static Object filters(Object arg) {
-    try {
-      Class.forName("reactor.core.publisher.Mono");
-    } catch (ClassNotFoundException e) {
-      return arg;
-    }
-
     List<WebFilter> filters = (List<WebFilter>) arg;
     List<WebFilter> newFilters = new ArrayList<>(filters);
     newFilters.add(new TracingWebFilter(
