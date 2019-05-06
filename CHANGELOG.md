@@ -1,9 +1,19 @@
 # Changes by Version
 
+## v1.1.1 (2019-05-03)
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Apache HttpClient, Redis Client Lettuce, Spring Web, Spring Web MVC.
+* Addition of configurable "General Verbose Mode" in `AgentRule`.
+* Fix class loading issues seen in Tomcat and Elasticsearch6.
+* Fix Mongo Driver rule in lieu of upgrade to OT API v0.32.0.
+* Fix `OkHttp` rule to also instrument default constructor.
+* Now reporting code test coverage on Coveralls.
+* Declared support for OpenJDK.
+* Improved documentation.
+
 ## v1.1.0 (2019-04-19)
 * Place `Tracer` instances into an isolated class loader.
 * Upgrade to OpenTracing API 0.32.0.
-* Support instrumentation plugins: Jedis, RabbitMQ, RabbitMQ Spring, gRPC, and Apache Thrift.
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Jedis, RabbitMQ, RabbitMQ Spring, gRPC, and Apache Thrift.
 * Upgraded `opentracing-specialagent-api`.
 * Improved logging: see intercept events on `Level.FINER`.
 
@@ -26,4 +36,4 @@
 * Improvements to `AgentRunner` runtime, Fingerprint algorithm, logging and exception behavior.
 
 ## v0.9.0 (2019-03-01)
-* Initial release
+* Initial release.

@@ -45,11 +45,11 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
     </dependency>
     ```
 
-2. **Important note!**
+1. **Important note!**
 
     The <ins>Instrumentation Plugin</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the plugin to be instrumentable (i.e. if the plugin finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
 
-3. **Implement the `AgentRule` interface**
+1. **Implement the `AgentRule` interface**
 
     The `AgentRule` interface defines one method:
 
@@ -106,7 +106,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
         }
     ```
 
-4. **Create a `otarules.mf` file**
+1. **Create a `otarules.mf` file**
 
     The `otarules.mf` file identifies the classes that implement `AgentRule`, so that the <ins>SpecialAgent</ins> knows to load them during startup.
 
@@ -120,7 +120,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 
     Put the file in `src/main/resources` for it to be found by <ins>SpecialAgent</ins>.
 
-5. **Implement a JUnit test that uses `AgentRunner`**
+1. **Implement a JUnit test that uses `AgentRunner`**
 
     Please refer to the [Test Usage](https://github.com/opentracing-contrib/java-specialagent/#test-usage) section in the <ins>SpecialAgent</ins>.
 
@@ -130,8 +130,8 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 The <ins>SpecialAgent</ins> uses the JUnit Runner API to implement a lightweight test methodology that can be easily applied to modules that implement instrumentation for 3rd-party plugins. This runner is named `AgentRunner`, and allows developers to implement tests using vanilla JUnit patterns, transparently providing the following behavior:
 
 1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
-2. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
-3. Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
+1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
+1. Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
 
 The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> module. It can be imported with the following dependency spec:
 
@@ -194,8 +194,8 @@ Upon execution of the test class, in either the IDE or with Maven, the `AgentRun
 The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotation. The annotation supports the following properties:
 
 1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>Default: `WARNING`.
-2. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>Default: `{}`.
-3. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>Default: `true`.
+1. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>Default: `{}`.
+1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>Default: `true`.
 
 #### Packaging
 
@@ -206,9 +206,9 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
     * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the <ins>SpecialAgent</ins> package, as all of the <ins>Instrumentation Plugins</ins> as contained within it.
     * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
     * Many of the currently implemented <ins>Instrumentation Plugins</ins> _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the <ins>Instrumentation Plugin</ins> artifact. An example of this can be seen with the [Mongo Driver Plugin](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-mongo-driver/pom.xml#L37-L44).
-2. The package must contain a `fingerprint.bin` file. This file provides the <ins>SpecialAgent</ins> with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the <ins>SpecialAgent</ins> to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
+1. The package must contain a `fingerprint.bin` file. This file provides the <ins>SpecialAgent</ins> with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the <ins>SpecialAgent</ins> to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
     1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-okhttp/pom.xml) as an example.
-    2. Next, include the following plugin in the project's POM:
+    1. Next, include the following plugin in the project's POM:
         ```xml
         <plugin>
           <groupId>io.opentracing.contrib.specialagent</groupId>
@@ -227,7 +227,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
           </executions>
         </plugin>
         ```
-3. The package must contain a `dependencies.tgf` file. This file allows the <ins>SpecialAgent</ins> to distinguish <ins>Instrumentation Plugin</ins> dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
+1. The package must contain a `dependencies.tgf` file. This file allows the <ins>SpecialAgent</ins> to distinguish <ins>Instrumentation Plugin</ins> dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
     ```xml
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>

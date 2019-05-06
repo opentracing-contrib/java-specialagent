@@ -63,36 +63,39 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 > The plugins have <ins>Instrumentation Rules</ins> implemented.
 
 1. [OkHttp3][java-okhttp]
-2. [JDBC API (`java.sql`)][java-jdbc]
-3. [Concurrent API (`java.util.concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
-4. [Java Web Servlet API (`javax.servlet`)](https://github.com/opentracing-contrib/java-web-servlet-filter)
-5. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
-6. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
-7. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
-8. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
-9. [JMS API (`javax.jms` v1 & v2)][java-jms]
-10. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
-11. [RxJava 2](https://github.com/opentracing-contrib/java-rxjava)
-12. [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client)
-13. [AsyncHttpClient](https://github.com/opentracing-contrib/java-asynchttpclient)
-14. [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client)
-15. [RabbitMQ Spring](https://github.com/opentracing-contrib/java-spring-rabbitmq)
-16. [Thrift](https://github.com/opentracing-contrib/java-thrift)
-17. [GRPC](https://github.com/opentracing-contrib/java-grpc)
-18. [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
-19. [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient)
+1. [JDBC API (`java.sql`)][java-jdbc]
+1. [Concurrent API (`java.util.concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
+1. [Java Web Servlet API (`javax.servlet`)](https://github.com/opentracing-contrib/java-web-servlet-filter)
+1. [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver)
+1. [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing)
+1. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
+1. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
+1. [JMS API (`javax.jms` v1 & v2)][java-jms]
+1. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
+1. [RxJava 2](https://github.com/opentracing-contrib/java-rxjava)
+1. [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client)
+1. [AsyncHttpClient](https://github.com/opentracing-contrib/java-asynchttpclient)
+1. [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client)
+1. [RabbitMQ Spring](https://github.com/opentracing-contrib/java-spring-rabbitmq)
+1. [Thrift](https://github.com/opentracing-contrib/java-thrift)
+1. [GRPC](https://github.com/opentracing-contrib/java-grpc)
+1. [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
+1. [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient)
+1. [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce)
+1. [Spring Web](https://github.com/opentracing-contrib/java-spring-web)
+1. [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web)
 
 ## Goals
 
 1. The <ins>SpecialAgent</ins> must allow any <ins>Instrumentation Plugin</ins> available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an <ins>Instrumentation Plugin</ins> exists.
-2. The <ins>SpecialAgent</ins> must automatically install the <ins>Instrumentation Plugin</ins> for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
-3. The <ins>SpecialAgent</ins> must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the <ins>SpecialAgent</ins>, and cannot apply to the code of the <ins>Instrumentation Plugins</ins> made available in [opentracing-contrib][opentracing-contrib].
-4. The <ins>SpecialAgent</ins> must support static and dynamic attach to applications running on JVM versions 1.7, 1.8, 9, and 11.
-5. The <ins>SpecialAgent</ins> must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
+1. The <ins>SpecialAgent</ins> must automatically install the <ins>Instrumentation Plugin</ins> for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
+1. The <ins>SpecialAgent</ins> must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the <ins>SpecialAgent</ins>, and cannot apply to the code of the <ins>Instrumentation Plugins</ins> made available in [opentracing-contrib][opentracing-contrib].
+1. The <ins>SpecialAgent</ins> must support static and dynamic attach to applications running on JVM versions 1.7, 1.8, 9, and 11.
+1. The <ins>SpecialAgent</ins> must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
    1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
-   2. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
-   3. Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
-6. The <ins>SpecialAgent</ins> must provide a means by which <ins>Instrumentation Plugins</ins> can be configured before use on a target application.
+   1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
+   1. Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
+1. The <ins>SpecialAgent</ins> must provide a means by which <ins>Instrumentation Plugins</ins> can be configured before use on a target application.
 
 ## Non-Goals
 
@@ -110,16 +113,16 @@ The <ins>SpecialAgent</ins> has 2 artifacts: main and test. These artifacts are 
 
 * To use the <ins>SpecialAgent</ins> on an application, first download the JAR:
 
-   **Latest RELEASE**
+   **[1.1.0][main-release]**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST.jar "https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+   wget -O opentracing-specialagent-1.1.0.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.1.0/opentracing-specialagent-1.1.0.jar"
    ```
 
-   **Latest SNAPSHOT**
+   **1.1.1-SNAPSHOT**
 
    ```bash
-   wget -O opentracing-specialagent-LATEST-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+   wget -O opentracing-specialagent-1.1.1-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
    ```
 
     This is the main artifact that contains within it the <ins>Instrumentation Plugins</ins> from the [opentracing-contrib][opentracing-contrib] organization for which <ins>Instrumentation Rules</ins> have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
@@ -155,7 +158,7 @@ The <ins>SpecialAgent</ins> uses [Java’s Instrumentation mechanism](https://do
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-LATEST.jar -jar myapp.jar
+java -javaagent:opentracing-specialagent-1.1.0.jar -jar myapp.jar
 ```
 
 This command statically attaches <ins>SpecialAgent</ins> into the application in `myapp.jar`.
@@ -169,14 +172,14 @@ Dynamically attaching to a Java application involves the use of a running applic
     jps
     ```
 
-2. For jdk1.8
+1. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-LATEST.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.1.0.jar <PID>
     ```
 
-3. For jdk9+
+1. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-LATEST.jar <PID>
+    java -jar opentracing-specialagent-1.1.0.jar <PID>
     ```
 
 ## Configuration
@@ -187,11 +190,11 @@ The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>S
 
 1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in layers below...
 
-2. The [@AgentRunner.Config](#configuring-agentrunner) annotation allows one to define log level and transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in layers below...
+1. The [@AgentRunner.Config](#configuring-agentrunner) annotation allows one to define log level and transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in layers below...
 
-3. The `-Dconfig=${PROPERTIES_FILE}` command-line argument can be specified for <ins>SpecialAgent</ins> to load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below...
+1. The `-Dconfig=${PROPERTIES_FILE}` command-line argument can be specified for <ins>SpecialAgent</ins> to load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below...
 
-4. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
+1. The <ins>SpecialAgent</ins> has a `default.properties` file that defines default values for properties that need to be defined.
 
 ### Properties
 
@@ -212,11 +215,11 @@ The <ins>SpecialAgent</ins> supports OpenTracing-compatible tracers. There are 2
     The <ins>SpecialAgent</ins> includes the collowing <ins>Tracer Plugins</ins>:
 
     1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
-    2. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
+    1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
 
     The `-Dsa.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which <ins>Tracer Plugin</ins> will be used. The value of `${TRACER_PLUGIN}` is the short name of the <ins>Tracer Plugin</ins>, i.e. `jaeger` or `lightstep`.
 
-2. **External <ins>Tracer Plugins</ins>**
+1. **External <ins>Tracer Plugins</ins>**
 
     The <ins>SpecialAgent</ins> allows external <ins>Tracer Plugins</ins> to be attached to the runtime.
 
@@ -247,7 +250,7 @@ The <ins>SpecialAgent</ins> is built in 2 passes that utilize different profiles
     mvn clean install
     ```
 
-2. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.1.0.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.1.0.jar`][main-release] will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the <ins>Instrumentation Rules</ins> into [`opentracing-specialagent-1.1.0.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.1.0.jar`][main-release] will contain the built rules inside it.
 
     _**Note**: If you do not run this step, the [`opentracing-specialagent-1.1.0.jar`][main-release] from the previous step will not contain any <ins>Instrumentation Plugins</ins> within it!_
 
