@@ -43,11 +43,11 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
         }));
   }
 
-  @Advice.OnMethodExit
-  public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false,
-      typing = Typing.DYNAMIC) Object returned) {
+  @Advice.OnMethodEnter
+  public static void enter(final @Advice.Origin String origin,
+      @Advice.Argument(typing = Typing.DYNAMIC, readOnly = false, value = 0) Object filters) {
     if (isEnabled(origin)) {
-      returned = SpringWebFluxAgentIntercept.ept(returned);
+      filters = SpringWebFluxAgentIntercept.filters(filters);
     }
 
   }
