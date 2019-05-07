@@ -15,12 +15,11 @@
 
 package io.opentracing.contrib.specialagent.redisson;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -32,8 +31,7 @@ import net.bytebuddy.utility.JavaModule;
 public class RedissonAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
-        .type(hasSuperType(named("org.redisson.Redisson"))).transform(new Transformer() {
+    return Arrays.asList(builder.type(hasSuperType(named("org.redisson.Redisson"))).transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(RedissonAgentRule.class).on(named("create")));
@@ -41,10 +39,9 @@ public class RedissonAgentRule extends AgentRule {
     }));
   }
 
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = RedissonAgentIntercept.exit(returned);
-    }
-
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(origin))
+      returned = RedissonAgentIntercept.exit(returned);
+  }
 }

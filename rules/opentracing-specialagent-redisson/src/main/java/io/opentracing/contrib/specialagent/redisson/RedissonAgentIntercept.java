@@ -15,14 +15,14 @@
 
 package io.opentracing.contrib.specialagent.redisson;
 
-import io.opentracing.contrib.redis.redisson.TracingRedissonClient;
-import io.opentracing.util.GlobalTracer;
 import org.redisson.api.RedissonClient;
 
-public class RedissonAgentIntercept {
+import io.opentracing.contrib.redis.redisson.TracingRedissonClient;
+import io.opentracing.util.GlobalTracer;
 
-  public static Object exit(Object returned) {
-    RedissonClient redissonClient = (RedissonClient) returned;
+public class RedissonAgentIntercept {
+  public static Object exit(final Object returned) {
+    final RedissonClient redissonClient = (RedissonClient)returned;
     return new TracingRedissonClient(redissonClient, GlobalTracer.get(), false);
   }
 }
