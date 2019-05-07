@@ -84,6 +84,7 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 1. [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce)
 1. [Spring Web](https://github.com/opentracing-contrib/java-spring-web)
 1. [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web)
+1. [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson)
 
 ## Goals
 
