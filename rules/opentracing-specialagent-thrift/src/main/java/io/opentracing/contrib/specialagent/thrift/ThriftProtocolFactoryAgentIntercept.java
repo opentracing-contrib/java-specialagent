@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.thrift.protocol.TProtocol;
 
+import io.opentracing.Tracer;
 import io.opentracing.thrift.SpanHolder;
 import io.opentracing.thrift.SpanProtocol;
 import io.opentracing.util.GlobalTracer;
@@ -27,29 +28,30 @@ public class ThriftProtocolFactoryAgentIntercept {
   private static final ConcurrentLinkedQueue<SpanHolder> spanHolders = new ConcurrentLinkedQueue<>();
 
   public static Object exit(final Object protocol) {
-    if (callerHasClass("org.apache.thrift.async.TAsyncMethodCall", 5)) {
-      final SpanHolder spanHolder;
-      if (Thread.currentThread().getName().startsWith("TAsyncClientManager#SelectorThread")) {
-        spanHolder = spanHolders.poll();
-        if (spanHolder != null) {
-          GlobalTracer.get().scopeManager().activate(spanHolder.getSpan(), true);
-        }
-      }
-      else {
-        spanHolder = new SpanHolder();
-        spanHolders.add(spanHolder);
-      }
+    if (!callerHasClass("org.apache.thrift.async.TAsyncMethodCall", 5))
+      return protocol;
 
-      return new SpanProtocol((TProtocol)protocol, GlobalTracer.get(), spanHolder, false);
+    final Tracer tracer = GlobalTracer.get();
+    final SpanHolder spanHolder;
+    if (Thread.currentThread().getName().startsWith("TAsyncClientManager#SelectorThread")) {
+      spanHolder = spanHolders.poll();
+      if (spanHolder != null) {
+        tracer.scopeManager().activate(spanHolder.getSpan(), true);
+      }
+    }
+    else {
+      spanHolder = new SpanHolder();
+      spanHolders.add(spanHolder);
     }
 
-    return protocol;
+    return new SpanProtocol((TProtocol)protocol, tracer, spanHolder, false);
   }
 
   // FIXME: Look at AgentRuleUtil#callerEquals
   static boolean callerHasClass(final String className, final int frameMaxIndex) {
     final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    for (int i = 2; i < frameMaxIndex + 2; ++i) {
+    final int limit = frameMaxIndex + 2;
+    for (int i = 2; i < limit; ++i) {
       if (stackTraceElements.length < i)
         return false;
 

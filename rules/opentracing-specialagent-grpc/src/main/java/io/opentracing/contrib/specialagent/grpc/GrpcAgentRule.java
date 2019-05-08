@@ -28,21 +28,43 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class GrpcStubAgentRule extends AgentRule {
+public class GrpcAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
+      .type(named("io.grpc.util.MutableHandlerRegistry"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Registry.class).on(named("addService").and(takesArguments(1))));
+        }})
+      .type(hasSuperType(named("io.grpc.ServerBuilder")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Registry.class).on(named("addService").and(takesArguments(1))));
+        }})
       .type(hasSuperType(named("io.grpc.stub.AbstractStub")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(GrpcStubAgentRule.class).on(named("getChannel")));
+          return builder.visit(Advice.to(Stub.class).on(named("getChannel")));
         }}));
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(origin))
-      returned = GrpcStubAgentIntercept.build(returned);
+  public static class Registry {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object service) {
+      if (isEnabled(origin))
+        service = GrpcAgentIntercept.addService(service);
+    }
+  }
+
+  public static class Stub {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(origin))
+        returned = GrpcAgentIntercept.build(returned);
+    }
   }
 }

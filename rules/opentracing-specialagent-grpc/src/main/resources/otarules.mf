@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.grpc.GrpcRegistryAgentRule
-io.opentracing.contrib.specialagent.grpc.GrpcStubAgentRule
-io.opentracing.contrib.specialagent.grpc.GrpcServerBuilderAgentRule
+io.opentracing.contrib.specialagent.grpc.GrpcAgentRule

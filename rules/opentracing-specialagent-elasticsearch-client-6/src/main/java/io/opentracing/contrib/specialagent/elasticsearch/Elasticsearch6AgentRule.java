@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.thrift;
+package io.opentracing.contrib.specialagent.elasticsearch;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -28,21 +28,37 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ThriftProtocolFactoryAgentRule extends AgentRule {
+public class Elasticsearch6AgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
+      .type(named("org.elasticsearch.client.RestClientBuilder"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ThriftProtocolFactoryAgentRule.class).on(named("getProtocol")));
+          return builder.visit(Advice.to(Rest.class).on(named("build")));
+        }})
+      .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Transport.class).on(named("doExecute").and(takesArguments(3))));
         }}));
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(origin))
-      returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
+  public static class Rest {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(origin))
+        Elasticsearch6AgentIntercept.rest(thiz);
+    }
+  }
+
+  public static class Transport {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
+      if (isEnabled(origin))
+        listener = Elasticsearch6AgentIntercept.transport(request, listener);
+    }
   }
 }

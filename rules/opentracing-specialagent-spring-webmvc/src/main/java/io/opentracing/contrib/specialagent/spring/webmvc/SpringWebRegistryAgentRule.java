@@ -31,12 +31,13 @@ import net.bytebuddy.utility.JavaModule;
 public class SpringWebRegistryAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder.type(named("org.springframework.web.servlet.config.annotation.InterceptorRegistry")).transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
-      }
-    }));
+    return Arrays.asList(builder
+      .type(named("org.springframework.web.servlet.config.annotation.InterceptorRegistry"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
+        }}));
   }
 
   @Advice.OnMethodEnter

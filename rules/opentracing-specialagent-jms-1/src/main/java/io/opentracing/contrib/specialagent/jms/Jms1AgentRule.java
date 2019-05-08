@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -32,20 +31,20 @@ import net.bytebuddy.utility.JavaModule;
 public class Jms1AgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    final Narrowable narrowable = builder
-      .type(hasSuperType(named("javax.jms.Session")));
-
-    return Arrays.asList(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(Producer.class).on(named("createProducer").and(returns(named("javax.jms.MessageProducer")))));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(Consumer.class).on(named("createConsumer").and(returns(named("javax.jms.MessageConsumer")))));
-      }
-    }));
+    return Arrays.asList(builder
+      .type(hasSuperType(named("javax.jms.Session")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Producer.class).on(named("createProducer").and(returns(named("javax.jms.MessageProducer")))));
+        }
+      })
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Consumer.class).on(named("createConsumer").and(returns(named("javax.jms.MessageConsumer")))));
+        }
+      }));
   }
 
   public static class Producer {

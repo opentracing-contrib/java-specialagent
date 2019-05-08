@@ -31,6 +31,12 @@ public class ServletContextAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
+      .type(named("org.eclipse.jetty.servlet.ServletContextHandler"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Jetty.class).on(isConstructor()));
+        }})
       .type(hasSuperType(named("javax.servlet.ServletContext"))
         // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
         .and(not(nameStartsWith("org.eclipse.jetty")))
@@ -41,13 +47,23 @@ public class ServletContextAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ServletContextAgentRule.class).on(isConstructor()));
+          return builder.visit(Advice.to(ServletContext.class).on(isConstructor()));
         }}));
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(origin))
-      ServletContextAgentIntercept.exit(thiz);
+  public static class Jetty {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(origin))
+        JettyAgentIntercept.exit(thiz);
+    }
+  }
+
+  public static class ServletContext {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(origin))
+        ServletContextAgentIntercept.exit(thiz);
+    }
   }
 }

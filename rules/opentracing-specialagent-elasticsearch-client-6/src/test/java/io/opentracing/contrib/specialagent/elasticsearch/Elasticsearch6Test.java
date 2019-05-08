@@ -91,7 +91,7 @@ public class Elasticsearch6Test {
   }
 
   @Before
-  public void before(MockTracer tracer) {
+  public void before(final MockTracer tracer) {
     tracer.reset();
   }
 

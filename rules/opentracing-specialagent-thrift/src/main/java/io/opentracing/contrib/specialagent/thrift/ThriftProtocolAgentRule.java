@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -31,35 +30,33 @@ import net.bytebuddy.utility.JavaModule;
 public class ThriftProtocolAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    final Narrowable narrowable = builder
-      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocol")));
-
-    return Arrays.asList(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(WriteMessageBegin.class).on(named("writeMessageBegin")));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(WriteMessageEnd.class).on(named("writeMessageEnd")));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(WriteFieldStop.class).on(named("writeFieldStop")));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(ReadMessageBegin.class).on(named("readMessageBegin")));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(ReadMessageEnd.class).on(named("readMessageEnd")));
-      }
-    }));
+    return Arrays.asList(builder
+      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocol")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(WriteMessageBegin.class).on(named("writeMessageBegin")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(WriteMessageEnd.class).on(named("writeMessageEnd")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(WriteFieldStop.class).on(named("writeFieldStop")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ReadMessageBegin.class).on(named("readMessageBegin")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ReadMessageEnd.class).on(named("readMessageEnd")));
+        }}));
   }
 
   public static class WriteMessageBegin {
