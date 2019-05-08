@@ -13,27 +13,30 @@ This file contains the operational instructions for the use and development of <
 
 ## Definitions
 
+> The following terms are used throughout this documentation.
+
 #### <ins>SpecialAgent</ins>
 
-A Java agent that automatically instruments distinct 3rd-party libraries in Java applications via the OpenTracing API. The <ins>SpecialAgent</ins> supports Oracle Java and OpenJDK. When building <ins>SpecialAgent</ins> from source, only Oracle Java is supported.
+The <ins>SpecialAgent</ins> is software that attaches to Java applications, and automatically instruments 3rd-party libraries integrated in the application. The <ins>SpecialAgent</ins> uses the OpenTracing API for [<ins>Instrumentation Plugins</ins>](#supported-instrumentation-plugins) that instrument 3rd-party libraries, as well as [<ins>Tracer Plugins</ins>](#supported-tracer-plugins) that implement OpenTracing tracer service providers. Both the [<ins>Instrumentation Plugins</ins>](#supported-instrumentation-plugins), as well as the [<ins>Tracer Plugins</ins>](#supported-tracer-plugins) are open-source, and are developed and supported by the OpenTracing community.
+
+The <ins>SpecialAgent</ins> supports Oracle Java and OpenJDK. When building <ins>SpecialAgent</ins> from source, only Oracle Java is supported.
 
 #### <ins>Tracer</ins>
 
-Vendor implementation of the `io.opentracing.Tracer` interface.
+Service provider of the OpenTracing standard, providing an implementation of the `io.opentracing.Tracer` interface.
 
 Examples:
 * [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
 * [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
-* [DataDog Tracer](https://github.com/DataDog/dd-trace-java)
 * [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
-_<ins>Tracers</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
+<sub>_<ins>Tracers</ins> **are not** coupled to the <ins>SpecialAgent</ins>._</sub>
 
 #### <ins>Tracer Plugin</ins>
 
 A bridge providing automatic discovery of <ins>Tracers</ins> in a runtime instrumented with the OpenTracing API. This bridge implements the `TracerFactory` interface of [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver/blob/master/opentracing-tracerresolver/), and is distributed as a single "fat JAR" that can be conveniently added to the classpath of a Java process.
 
-_<ins>Tracer Plugins</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
+<sub>_<ins>Tracer Plugins</ins> **are not** coupled to the <ins>SpecialAgent</ins>._</sub>
 
 #### <ins>Instrumentation Plugin</ins>
 
@@ -44,7 +47,7 @@ Examples:
 * [`opentracing-contrib/java-jdbc`][java-jdbc]
 * [`opentracing-contrib/java-jms`][java-jms]
 
-_<ins>Instrumentation Plugins</ins> **ARE NOT** coupled to the <ins>SpecialAgent</ins>._
+<sub>_<ins>Instrumentation Plugins</ins> **are not** coupled to the <ins>SpecialAgent</ins>._</sub>
 
 #### <ins>Instrumentation Rules</ins>
 
@@ -56,11 +59,27 @@ Examples:
 * [`rules/opentracing-specialagent-jms-1`][specialagent-jms-1]
 * [`rules/opentracing-specialagent-jms-2`][specialagent-jms-2]
 
-_<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>._
+<sub>_<ins>Instrumentation Rules</ins> **are** coupled to the <ins>SpecialAgent</ins>._</sub>
+
+## Goals
+
+1. The <ins>SpecialAgent</ins> must allow any <ins>Instrumentation Plugin</ins> available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an <ins>Instrumentation Plugin</ins> exists.
+1. The <ins>SpecialAgent</ins> must automatically install the <ins>Instrumentation Plugin</ins> for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
+1. The <ins>SpecialAgent</ins> must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the <ins>SpecialAgent</ins>, and cannot apply to the code of the <ins>Instrumentation Plugins</ins> made available in [opentracing-contrib][opentracing-contrib].
+1. The <ins>SpecialAgent</ins> must support static and dynamic attach to applications running on JVM versions 1.7, 1.8, 9, and 11.
+1. The <ins>SpecialAgent</ins> must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
+   1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
+   1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
+   1. Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
+1. The <ins>SpecialAgent</ins> must provide a means by which <ins>Instrumentation Plugins</ins> can be configured before use on a target application.
+
+## Non-Goals
+
+1. The <ins>SpecialAgent</ins> is not designed to modify application code, beyond the installation of <ins>Instrumentation Plugins</ins>. For example, there is no facility for dynamically tracing arbitrary code.
 
 ## Supported <ins>Instrumentation Plugins</ins>
 
-> The plugins have <ins>Instrumentation Rules</ins> implemented.
+> The following plugins have <ins>Instrumentation Rules</ins> implemented.
 
 1. [OkHttp3][java-okhttp]
 1. [JDBC API (`java.sql`)][java-jdbc]
@@ -86,21 +105,12 @@ _<ins>Instrumentation Rules</ins> **ARE** coupled to the <ins>SpecialAgent</ins>
 1. [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web)
 1. [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson)
 
-## Goals
+## Supported <ins>Tracer Plugins</ins>
 
-1. The <ins>SpecialAgent</ins> must allow any <ins>Instrumentation Plugin</ins> available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an <ins>Instrumentation Plugin</ins> exists.
-1. The <ins>SpecialAgent</ins> must automatically install the <ins>Instrumentation Plugin</ins> for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
-1. The <ins>SpecialAgent</ins> must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the <ins>SpecialAgent</ins>, and cannot apply to the code of the <ins>Instrumentation Plugins</ins> made available in [opentracing-contrib][opentracing-contrib].
-1. The <ins>SpecialAgent</ins> must support static and dynamic attach to applications running on JVM versions 1.7, 1.8, 9, and 11.
-1. The <ins>SpecialAgent</ins> must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
-   1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
-   1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
-   1. Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
-1. The <ins>SpecialAgent</ins> must provide a means by which <ins>Instrumentation Plugins</ins> can be configured before use on a target application.
+> The following OpenTracing tracer service providers have <ins>Tracer Plugins</ins> implemented.
 
-## Non-Goals
-
-1. The <ins>SpecialAgent</ins> is not designed to modify application code, beyond the installation of <ins>Instrumentation Plugins</ins>. For example, there is no facility for dynamically tracing arbitrary code.
+1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
+1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
 
 ## Operation
 
