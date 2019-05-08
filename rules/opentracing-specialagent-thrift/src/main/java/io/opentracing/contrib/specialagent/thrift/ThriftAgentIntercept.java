@@ -15,11 +15,14 @@
 
 package io.opentracing.contrib.specialagent.thrift;
 
+import org.apache.thrift.TProcessor;
+
 import io.opentracing.Scope;
 import io.opentracing.thrift.DefaultClientSpanDecorator;
+import io.opentracing.thrift.SpanProcessor;
 import io.opentracing.util.GlobalTracer;
 
-public class ThriftAsyncMethodCallbackAgentIntercept {
+public class ThriftAgentIntercept {
   public static void onComplete() {
     final Scope scope = GlobalTracer.get().scopeManager().active();
     if (scope != null)
@@ -32,5 +35,9 @@ public class ThriftAsyncMethodCallbackAgentIntercept {
       new DefaultClientSpanDecorator().onError((Throwable)exception, scope.span());
       scope.close();
     }
+  }
+
+  public static Object getProcessor(final Object processor) {
+    return new SpanProcessor((TProcessor)processor);
   }
 }

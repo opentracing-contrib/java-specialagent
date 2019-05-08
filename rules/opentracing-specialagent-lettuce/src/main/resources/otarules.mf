@@ -13,4 +13,3 @@
 # limitations under the License.
 
 io.opentracing.contrib.specialagent.lettuce.LettuceAgentRule
-io.opentracing.contrib.specialagent.lettuce.LettuceClusterAgentRule

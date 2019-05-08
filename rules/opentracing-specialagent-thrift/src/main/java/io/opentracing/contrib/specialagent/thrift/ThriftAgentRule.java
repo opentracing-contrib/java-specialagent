@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.lettuce;
+package io.opentracing.contrib.specialagent.thrift;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -28,37 +28,66 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class LettuceAgentRule extends AgentRule {
+public class ThriftAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection")))
+      .type(hasSuperType(named("org.apache.thrift.async.AsyncMethodCallback")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StatefulRedis.class).on(named("async")));
+          return builder.visit(Advice.to(AsyncMethodCallback.OnComplete.class).on(named("onComplete")));
         }})
-      .type(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StatefulRedisCluster.class).on(named("async")));
+          return builder.visit(Advice.to(AsyncMethodCallback.OnError.class).on(named("onError")));
+        }})
+      .type(named("org.apache.thrift.TProcessorFactory"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Processor.class).on(named("getProcessor")));
+        }})
+      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ProtocolFactory.class).on(named("getProtocol")));
         }}));
   }
 
-  public static class StatefulRedis {
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = LettuceAgentIntercept.getAsyncCommands(returned);
+  public static class AsyncMethodCallback {
+    public static class OnComplete {
+      @Advice.OnMethodExit
+      public static void exit(final @Advice.Origin String origin) {
+        if (isEnabled(origin))
+          ThriftAgentIntercept.onComplete();
+      }
+    }
+
+    public static class OnError {
+      @Advice.OnMethodExit
+      public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exception) {
+        if (isEnabled(origin))
+          ThriftAgentIntercept.onError(exception);
+      }
     }
   }
 
-  public static class StatefulRedisCluster {
+  public static class Processor {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled(origin))
-        returned = LettuceAgentIntercept.getAsyncClusterCommands(returned);
+        returned = ThriftAgentIntercept.getProcessor(returned);
+    }
+  }
+
+  public static class ProtocolFactory {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(origin))
+        returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
     }
   }
 }

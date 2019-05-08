@@ -17,10 +17,19 @@ package io.opentracing.contrib.specialagent.grpc;
 
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
+import io.grpc.ServerServiceDefinition;
 import io.opentracing.contrib.grpc.ClientTracingInterceptor;
+import io.opentracing.contrib.grpc.ServerTracingInterceptor;
 
-public class GrpcStubAgentIntercept {
-  public static Object build(Object channel) {
+public class GrpcAgentIntercept {
+  public static Object addService(final Object service) {
+    if (service instanceof ServerServiceDefinition)
+      return new ServerTracingInterceptor().intercept((ServerServiceDefinition)service);
+
+    return service;
+  }
+
+  public static Object build(final Object channel) {
     return ClientInterceptors.intercept((Channel)channel, new ClientTracingInterceptor());
   }
 }

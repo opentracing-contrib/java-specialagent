@@ -38,7 +38,8 @@ public class TracingResponseHandler<T> implements ResponseHandler<T> {
   public T handleResponse(final HttpResponse response) throws IOException {
     try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
       return handler.handleResponse(response);
-    } finally {
+    }
+    finally {
       Tags.HTTP_STATUS.set(span, response.getStatusLine().getStatusCode());
     }
   }

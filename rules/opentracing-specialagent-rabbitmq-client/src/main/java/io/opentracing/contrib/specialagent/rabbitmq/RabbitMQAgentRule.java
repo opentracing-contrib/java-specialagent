@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -32,27 +31,24 @@ import net.bytebuddy.utility.JavaModule;
 public class RabbitMQAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    final Narrowable narrowable = builder
+    return Arrays.asList(builder
       .type(hasSuperType(named("com.rabbitmq.client.impl.AMQChannel"))
-          .and(not(named("io.opentracing.contrib.rabbitmq.TracingChannel"))));
-
-    return Arrays.asList(
-      narrowable.transform(new Transformer() {
+      .and(not(named("io.opentracing.contrib.rabbitmq.TracingChannel"))))
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnEnterPublish.class, OnExitPublish.class).on(named("basicPublish").and(takesArguments(6))));
-        }
-      }), narrowable.transform(new Transformer() {
+        }})
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnExitGet.class).on(named("basicGet")));
-        }
-      }), narrowable.transform(new Transformer() {
+        }})
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnEnterConsume.class).on(named("basicConsume").and(takesArguments(7))));
-        }
-    }));
+        }}));
   }
 
   public static class OnEnterConsume {
