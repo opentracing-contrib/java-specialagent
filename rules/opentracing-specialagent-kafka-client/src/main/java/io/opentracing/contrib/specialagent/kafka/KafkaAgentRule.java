@@ -37,8 +37,7 @@ public class KafkaAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(Consumer.class).on(named("poll").and(takesArguments(1))));
-        }}),
-      builder
+        }})
       .type(named("org.apache.kafka.clients.producer.KafkaProducer"))
       .transform(new Transformer() {
         @Override

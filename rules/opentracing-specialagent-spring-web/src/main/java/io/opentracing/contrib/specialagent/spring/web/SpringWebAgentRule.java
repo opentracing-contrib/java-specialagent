@@ -31,17 +31,34 @@ import net.bytebuddy.utility.JavaModule;
 public class SpringWebAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder.type(named("org.springframework.web.client.RestTemplate")).transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(SpringWebAgentRule.class).on(named("doExecute")));
-      }
-    }));
+    return Arrays.asList(builder
+      .type(named("org.springframework.web.client.RestTemplate"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(RestTemplate.class).on(named("doExecute")));
+        }})
+      .type(named("org.springframework.web.client.AsyncRestTemplate"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AsyncRestTemplate.class).on(named("doExecute")));
+        }}));
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
-    if (isEnabled(origin))
-      SpringWebAgentIntercept.enter(thiz);
+  public static class RestTemplate {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
+      if (isEnabled(origin))
+        SpringWebAgentIntercept.enter(thiz);
+    }
+  }
+
+  public static class AsyncRestTemplate {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
+      if (isEnabled(origin))
+        SpringWebAgentIntercept.enterAsync(thiz);
+    }
   }
 }

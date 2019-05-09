@@ -62,12 +62,16 @@ public class ByteBuddyManager extends Manager {
       .installOn(instrumentation);
   }
 
-  private static Object getParent(final AgentBuilder builder) {
+  private static void assertParent(final AgentBuilder expected, final AgentBuilder builder) {
     try {
       final Class<?> cls = Class.forName("net.bytebuddy.agent.builder.AgentBuilder$Default$Transforming");
       final Field field = cls.getDeclaredField("this$0");
       field.setAccessible(true);
-      return field.get(builder);
+      for (AgentBuilder parent = builder; (parent = (AgentBuilder)field.get(parent)) != null;)
+        if (parent == expected)
+          return;
+
+      throw new IllegalArgumentException("AgentBuilder instance provided by AgentRule#buildAgent(AgentBuilder) was not used");
     }
     catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
       throw new IllegalStateException(e);
@@ -155,16 +159,14 @@ public class ByteBuddyManager extends Manager {
       throw new IllegalStateException(e);
     }
     catch (final Exception e) {
-      logger.log(Level.SEVERE, "Error invoking " + agentRule + "#buildAgent(String) was not found", e);
+      logger.log(Level.SEVERE, "Error invoking " + agentRule + "#buildAgent(AgentBuilder) was not found", e);
     }
   }
 
   private void loadAgentRule(final AgentRule agentRule, final AgentBuilder agentBuilder, final int index, final Event[] events) throws Exception {
     final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
     for (final AgentBuilder builder : builders) {
-      if (agentBuilder != getParent(builder))
-        throw new IllegalArgumentException("AgentBuilder instance provided by AgentRule#buildAgent(AgentBuilder) was not used");
-
+//      assertParent(agentBuilder, builder);
       final TransformationListener listener = new TransformationListener(index, events);
 //      if (agentRule.onEn().getOnEnter() != null)
 //        installOn(builder, agentRule.onEn().getOnEnter(), agentRule, listener, instrumentation);

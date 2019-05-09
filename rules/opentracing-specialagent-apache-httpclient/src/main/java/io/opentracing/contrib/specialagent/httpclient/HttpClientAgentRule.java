@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -32,18 +31,15 @@ import net.bytebuddy.utility.JavaModule;
 public class HttpClientAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    final Narrowable narrowable = builder.type(hasSuperType(named("org.apache.http.client.HttpClient")));
-    return Arrays.asList(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(HttpClientAgentRule.class).on(named("execute")));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(OnException.class).on(named("execute")));
-      }
-    }));
+    return Arrays.asList(builder
+      .type(hasSuperType(named("org.apache.http.client.HttpClient")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder
+            .visit(Advice.to(HttpClientAgentRule.class).on(named("execute")))
+            .visit(Advice.to(OnException.class).on(named("execute")));
+        }}));
   }
 
   @Advice.OnMethodEnter

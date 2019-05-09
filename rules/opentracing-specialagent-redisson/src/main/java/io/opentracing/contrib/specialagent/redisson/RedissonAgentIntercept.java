@@ -13,14 +13,16 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.grpc;
+package io.opentracing.contrib.specialagent.redisson;
 
-import io.grpc.Channel;
-import io.grpc.ClientInterceptors;
-import io.opentracing.contrib.grpc.ClientTracingInterceptor;
+import org.redisson.api.RedissonClient;
 
-public class GrpcStubAgentIntercept {
-  public static Object build(Object channel) {
-    return ClientInterceptors.intercept((Channel)channel, new ClientTracingInterceptor());
+import io.opentracing.contrib.redis.redisson.TracingRedissonClient;
+import io.opentracing.util.GlobalTracer;
+
+public class RedissonAgentIntercept {
+  public static Object exit(final Object returned) {
+    final RedissonClient redissonClient = (RedissonClient)returned;
+    return new TracingRedissonClient(redissonClient, GlobalTracer.get(), false);
   }
 }

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.thrift;
+package io.opentracing.contrib.specialagent.redisson;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -28,21 +28,21 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class ThriftProtocolFactoryAgentRule extends AgentRule {
+public class RedissonAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
+      .type(hasSuperType(named("org.redisson.Redisson")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ThriftProtocolFactoryAgentRule.class).on(named("getProtocol")));
+          return builder.visit(Advice.to(RedissonAgentRule.class).on(named("create")));
         }}));
   }
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
     if (isEnabled(origin))
-      returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
+      returned = RedissonAgentIntercept.exit(returned);
   }
 }

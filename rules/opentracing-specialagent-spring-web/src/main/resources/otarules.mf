@@ -13,4 +13,3 @@
 # limitations under the License.
 
 io.opentracing.contrib.specialagent.spring.web.SpringWebAgentRule
-io.opentracing.contrib.specialagent.spring.web.SpringAsyncTemplateWebAgentRule

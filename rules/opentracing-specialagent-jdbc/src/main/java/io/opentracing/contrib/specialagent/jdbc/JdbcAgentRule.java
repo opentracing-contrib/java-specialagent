@@ -18,8 +18,7 @@ package io.opentracing.contrib.specialagent.jdbc;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Properties;
 
 import io.opentracing.contrib.specialagent.AgentRule;
@@ -45,36 +44,34 @@ public class JdbcAgentRule extends AgentRule {
       driverJunction = named("java.sql.DriverManager").or(driverJunction);
 
     final Narrowable narrowable = builder.type(driverJunction);
-    final List<Extendable> transformers = new ArrayList<>(isJdk178 ? 3 : 2);
-    transformers.add(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(DriverEnter.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
-      }}));
-    transformers.add(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(DriverExit.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
-      }}));
-
-    if (isJdk178) {
-      transformers.add(narrowable.transform(new Transformer() {
+    Extendable extendable =
+      narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(DriverManagerEnter.class).on(isPrivate().and(isStatic()).and(named("isDriverAllowed")).and(takesArgument(1, Class.class))));
-        }}));
-    }
+          return builder.visit(Advice.to(DriverEnter.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
+        }});
 
-    return transformers;
+    if (isJdk178)
+      extendable = extendable
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(DriverManagerEnter.class).on(isPrivate().and(isStatic()).and(named("isDriverAllowed")).and(takesArgument(1, Class.class))));
+          }});
+
+    return Arrays.asList(extendable, narrowable
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(DriverExit.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
+        }}));
   }
 
   public static class DriverManagerEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Class<?> caller) throws Exception {
-      if (!isEnabled(origin))
-        return;
-
-      caller = JdbcAgentIntercept.caller(caller);
+      if (isEnabled(origin))
+        caller = JdbcAgentIntercept.caller(caller);
     }
   }
 

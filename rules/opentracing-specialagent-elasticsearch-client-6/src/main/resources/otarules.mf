@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.elasticsearch.Elasticsearch6RestAgentRule
-io.opentracing.contrib.specialagent.elasticsearch.Elasticsearch6TransportAgentRule
+io.opentracing.contrib.specialagent.elasticsearch.Elasticsearch6AgentRule

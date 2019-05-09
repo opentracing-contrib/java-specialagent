@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -32,14 +31,14 @@ import net.bytebuddy.utility.JavaModule;
 public class OkHttpAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    final Narrowable narrowable = builder.type(named("okhttp3.OkHttpClient"));
-    return Arrays.asList(
-      narrowable.transform(new Transformer() {
+    return Arrays.asList(builder
+      .type(named("okhttp3.OkHttpClient"))
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(Interceptors.class).on(named("interceptors")));
-        }}),
-      narrowable.transform(new Transformer() {
+        }})
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(NetworkInterceptors.class).on(named("networkInterceptors")));

@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -32,25 +31,23 @@ import net.bytebuddy.utility.JavaModule;
 public class JedisAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    final Narrowable narrowable = builder
-      .type(hasSuperType(named("redis.clients.jedis.Connection")));
-
-    return Arrays.asList(narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(SendCommand.class).on(named("sendCommand").and(takesArgument(1, byte[][].class))));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(ReadCommandOutput.class).on(named("readProtocolWithCheckingBroken")));
-      }
-    }), narrowable.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(OnError.class).on(named("readProtocolWithCheckingBroken")));
-      }
-    }));
+    return Arrays.asList(builder
+      .type(hasSuperType(named("redis.clients.jedis.Connection")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(SendCommand.class).on(named("sendCommand").and(takesArgument(1, byte[][].class))));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ReadCommandOutput.class).on(named("readProtocolWithCheckingBroken")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(OnError.class).on(named("readProtocolWithCheckingBroken")));
+        }}));
   }
 
   public static class SendCommand {
