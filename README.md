@@ -1,4 +1,4 @@
-# Java Agent for OpenTracing,<br>with auto-instrumentation
+# Java Agent for OpenTracing
 
 > Automatically instruments 3rd-party libraries in Java applications
 
@@ -6,6 +6,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
 [![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://mvnrepository.com/artifact/io.opentracing.contrib.specialagent/opentracing-specialagent)
+
+<sub>_Note: The coverage statistic is not correct, because Jacoco cannot properly instrument code that is instrumented at the bytecode level._</sub>
 
 ## Overview
 
