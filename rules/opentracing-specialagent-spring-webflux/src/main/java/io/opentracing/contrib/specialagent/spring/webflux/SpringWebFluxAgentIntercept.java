@@ -15,42 +15,34 @@
 
 package io.opentracing.contrib.specialagent.spring.webflux;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.Builder;
+import org.springframework.web.server.WebFilter;
 
 import io.opentracing.contrib.specialagent.spring.webflux.copied.TracingExchangeFilterFunction;
 import io.opentracing.contrib.specialagent.spring.webflux.copied.TracingWebFilter;
 import io.opentracing.contrib.specialagent.spring.webflux.copied.WebClientSpanDecorator;
 import io.opentracing.contrib.specialagent.spring.webflux.copied.WebFluxSpanDecorator;
 import io.opentracing.util.GlobalTracer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.Builder;
-import org.springframework.web.server.WebFilter;
 
 public class SpringWebFluxAgentIntercept {
+  public static final Pattern pattern = Pattern.compile("");
 
   @SuppressWarnings("unchecked")
-  public static Object filters(Object arg) {
-    List<WebFilter> filters = (List<WebFilter>) arg;
-    List<WebFilter> newFilters = new ArrayList<>(filters);
-    newFilters.add(new TracingWebFilter(
-        GlobalTracer.get(),
-        Integer.MIN_VALUE,
-        Pattern.compile(""),
-        Collections.emptyList(),
-        Arrays.asList(new WebFluxSpanDecorator.StandardTags(),
-            new WebFluxSpanDecorator.WebFluxTags())));
-
-    return Collections.unmodifiableList(newFilters);
+  public static Object filters(final Object arg) {
+    final List<WebFilter> filters = new ArrayList<>((List<WebFilter>)arg);
+    filters.add(new TracingWebFilter(GlobalTracer.get(), Integer.MIN_VALUE, pattern, Collections.emptyList(), Arrays.asList(new WebFluxSpanDecorator.StandardTags(), new WebFluxSpanDecorator.WebFluxTags())));
+    return Collections.unmodifiableList(filters);
   }
 
-  public static void client(Object thiz) {
-    WebClient.Builder builder = (Builder) thiz;
-    builder.filter(new TracingExchangeFilterFunction(GlobalTracer.get(),
-        Collections.singletonList(new WebClientSpanDecorator.StandardTags())));
-
+  public static void client(final Object thiz) {
+    final WebClient.Builder builder = (Builder)thiz;
+    builder.filter(new TracingExchangeFilterFunction(GlobalTracer.get(), Collections.singletonList(new WebClientSpanDecorator.StandardTags())));
   }
 }
