@@ -105,6 +105,7 @@ Examples:
 1. [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce)
 1. [Spring Web](https://github.com/opentracing-contrib/java-spring-web)
 1. [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web)
+1. [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web)
 1. [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson)
 
 ## Supported <ins>Tracer Plugins</ins>
