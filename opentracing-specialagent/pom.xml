@@ -216,6 +216,18 @@
           <scope>provided</scope>
         </dependency>
         <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-grizzly-ahc</artifactId>
+          <version>0.1.0</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-reactor</artifactId>
+          <version>0.1.0</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-hazelcast</artifactId>
           <version>${project.version}</version>

@@ -507,6 +507,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   /**
    * Overridden because the stock implementation does not remove null values,
    * which ends up causing a NullPointerException later down a callstack.
+   * {@inheritDoc}
    */
   @Override
   protected List<TestRule> getTestRules(final Object target) {
