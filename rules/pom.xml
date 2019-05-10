@@ -54,6 +54,7 @@
     <module>opentracing-specialagent-spring-webmvc</module>
     <module>opentracing-specialagent-spring-webflux</module>
     <module>opentracing-specialagent-redisson</module>
+    <module>opentracing-specialagent-hazelcast</module>
   </modules>
   <profiles>
     <profile>
