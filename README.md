@@ -108,6 +108,7 @@ Examples:
 1. [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web)
 1. [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson)
 1. [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server)
+1. [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast)
 
 ## Supported <ins>Tracer Plugins</ins>
 
