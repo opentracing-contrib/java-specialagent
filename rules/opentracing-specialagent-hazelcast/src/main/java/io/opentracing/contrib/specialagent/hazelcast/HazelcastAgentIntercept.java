@@ -15,26 +15,27 @@
 
 package io.opentracing.contrib.specialagent.hazelcast;
 
-import com.hazelcast.core.HazelcastInstance;
-import io.opentracing.contrib.hazelcast.TracingHazelcastInstance;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.hazelcast.core.HazelcastInstance;
+
+import io.opentracing.contrib.hazelcast.TracingHazelcastInstance;
+
 public class HazelcastAgentIntercept {
   public static Object exit(final Object returned) {
-    return new TracingHazelcastInstance((HazelcastInstance) returned, false);
+    return new TracingHazelcastInstance((HazelcastInstance)returned, false);
   }
 
   @SuppressWarnings("unchecked")
-  public static Object getAllHazelcastInstances(Object returned) {
-    if (returned == null) {
+  public static Object getAllHazelcastInstances(final Object returned) {
+    if (returned == null)
       return null;
-    }
-    Set<HazelcastInstance> instances = (Set<HazelcastInstance>) returned;
-    Set<HazelcastInstance> tracingInstances = new HashSet<>();
-    for (HazelcastInstance instance : instances) {
+
+    final Set<HazelcastInstance> instances = (Set<HazelcastInstance>)returned;
+    final Set<HazelcastInstance> tracingInstances = new HashSet<>();
+    for (final HazelcastInstance instance : instances)
       tracingInstances.add(new TracingHazelcastInstance(instance, false));
-    }
 
     return tracingInstances;
   }

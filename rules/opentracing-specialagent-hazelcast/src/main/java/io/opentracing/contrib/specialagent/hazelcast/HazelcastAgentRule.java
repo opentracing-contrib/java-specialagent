@@ -15,11 +15,11 @@
 
 package io.opentracing.contrib.specialagent.hazelcast;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -33,31 +33,26 @@ public class HazelcastAgentRule extends AgentRule {
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
       .type(hasSuperType(named("com.hazelcast.core.Hazelcast")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder,final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("newHazelcastInstance")));
-          }
-        })
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
-            return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("getHazelcastInstanceByName")));
-          }
-        })
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
-            return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("getOrCreateHazelcastInstance")));
-          }
-        })
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
-            return builder.visit(Advice.to(AllInstances.class).on(named("getAllHazelcastInstances")));
-          }
-        })
-    );
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("newHazelcastInstance")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("getHazelcastInstanceByName")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("getOrCreateHazelcastInstance")));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AllInstances.class).on(named("getAllHazelcastInstances")));
+        }}));
   }
 
   @Advice.OnMethodExit
