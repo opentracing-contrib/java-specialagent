@@ -323,7 +323,7 @@ public class SpecialAgent {
 
         final URL[] dependencies = SpecialAgentUtil.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
         if (dependencies == null)
-          throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
+          throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered: " + url + "\nPlease file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
         boolean foundReference = false;
         for (final URL dependency : dependencies) {
