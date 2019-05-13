@@ -39,8 +39,9 @@
 <samp>&nbsp;&nbsp;</samp>6 [Supported Plugins](#6-supported-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.2 [<ins>Tracer Plugins</ins>](#62-tracer-plugins)<br>
-<samp>&nbsp;&nbsp;</samp>7 [Contributing](#7-contributing)<br>
-<samp>&nbsp;&nbsp;</samp>8 [License](#8-license)
+<samp>&nbsp;&nbsp;</samp>7 [Credits](#7-credits)<br>
+<samp>&nbsp;&nbsp;</samp>8 [Contributing](#8-contributing)<br>
+<samp>&nbsp;&nbsp;</samp>9 [License](#9-license)
 
 ## 1 Introduction
 
@@ -327,13 +328,39 @@ The following OpenTracing tracer service providers have [<ins>Tracer Plugins</in
 1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
 1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
 
-## 7 Contributing
+## 7 Credits
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Thank you to the following contributors for developing instrumentation plugins:
+
+* [Sergei Malafeev](https://github.com/malafeev)
+* [Jose Montoya](https://github.com/jam01)
+* [Przemyslaw Maciolek](https://github.com/pmaciolek)
+
+Thank you to the following contributors for developing tracer plugins:
+
+* [Carlos Alberto Cortez](https://github.com/carlosalberto)
+
+Thank you to the following developers for filing issues and helping us fix them:
+
+* [Louis-Etienne](https://github.com/ledor473)
+* [Marcos Trejo Munguia](https://github.com/mtrejo)
+* [@kaushikdeb](https://github.com/kaushikdeb)
+* [@deepakgoenka](https://github.com/deepakgoenka)
+* [@etsangsplk](https://github.com/etsangsplk)
+
+Thank you to the following individuals for noticing typographic errors and sending PRs:
+
+* [Daniel Rodriguez Hernandez](https://github.com/drodriguezhdez)
+
+Finally, thanks for all of the feedback! Please share your comments [as an issue](https://github.com/opentracing-contrib/java-specialagent/issues)!
+
+## 8 Contributing
+
+Pull requests are welcome. For major changes, please [open an issue](https://github.com/opentracing-contrib/java-specialagent/issues) first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-## 8 License
+## 9 License
 
 This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
