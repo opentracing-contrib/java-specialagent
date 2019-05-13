@@ -36,6 +36,28 @@
       </activation>
       <build>
         <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <!-- Phase must be generate-resources for the maven-resources-plugin to acknowledge the
+              <outputDirectory> of this execution, which is defined as a <resource> above. Specifying a
+              different phase results in a JAR that does not include the dependencies generated in the
+              <outputDirectory>. -->
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/dependencies/META-INF/opentracing-specialagent</outputDirectory>
+              <includeScope>provided</includeScope>
+              <excludeScope>test</excludeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
             <artifactId>agentrule-maven-plugin</artifactId>
@@ -417,22 +439,6 @@
             <configuration>
               <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
               <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-dependencies</id>
-            <!-- Phase must be generate-resources for the maven-resources-plugin to acknowledge the
-              <outputDirectory> of this execution, which is defined as a <resource> above. Specifying a
-              different phase results in a JAR that does not include the dependencies generated in the
-              <outputDirectory>. -->
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/dependencies/META-INF/opentracing-specialagent</outputDirectory>
-              <includeScope>provided</includeScope>
-              <excludeScope>test</excludeScope>
             </configuration>
           </execution>
           <execution>
