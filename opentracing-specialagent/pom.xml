@@ -231,6 +231,7 @@
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>opentracing-specialagent-hazelcast</artifactId>
           <version>${project.version}</version>
+          <scope>provided</scope>
         </dependency>
       </dependencies>
     </profile>

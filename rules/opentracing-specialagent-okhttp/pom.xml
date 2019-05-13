@@ -42,6 +42,10 @@
           <groupId>com.squareup.okhttp3</groupId>
           <artifactId>okhttp</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-concurrent</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>

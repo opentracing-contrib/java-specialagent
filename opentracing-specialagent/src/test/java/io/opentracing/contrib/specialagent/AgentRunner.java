@@ -15,7 +15,9 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -25,9 +27,13 @@ import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -407,24 +413,42 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   private int delta = Integer.MAX_VALUE;
 
-  static File getManifestFile() {
+  private static File getManifestFile() {
     return new File(CWD, "target/classes/META-INF/opentracing-specialagent/TEST-MANIFEST.MF");
   }
 
   @Override
   public void run(final RunNotifier notifier) {
     super.run(notifier);
-    if (delta == 0) {
-      try {
-        final File manifestFile = getManifestFile();
-        manifestFile.getParentFile().mkdirs();
-        final Path path = manifestFile.toPath();
-        if (!Files.exists(path))
-          Files.createFile(path);
+    if (delta != 0)
+      return;
+
+    try {
+      final String className = getTestClass().getName();
+      final File manifestFile = getManifestFile();
+      manifestFile.getParentFile().mkdirs();
+      final Path path = manifestFile.toPath();
+      final OpenOption openOption;
+      if (Files.exists(path)) {
+        // Check if the test class name is mentioned in the manifest
+        try (final BufferedReader reader = new BufferedReader(new FileReader(manifestFile))) {
+          String line;
+          while ((line = reader.readLine()) != null)
+            if (line.equals(className))
+              return;
+        }
+
+        openOption = StandardOpenOption.APPEND;
       }
-      catch (final IOException e) {
-        throw new IllegalStateException(e);
+      else {
+        openOption = StandardOpenOption.CREATE;
       }
+
+      // Add the test class name to the manifest
+      Files.write(path, (className + "\n").getBytes(), openOption);
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
