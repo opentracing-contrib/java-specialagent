@@ -219,7 +219,7 @@ The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is include
 
 ## 4 Definitions
 
-> The following terms are used throughout this documentation.
+The following terms are used throughout this documentation.
 
 #### 4.1 <ins>SpecialAgent</ins>
 
@@ -289,7 +289,7 @@ Examples:
 
 ### 6.1 [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
 
-> The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
+The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
 
 1. [OkHttp3][java-okhttp]
 1. [JDBC API (`java.sql`)][java-jdbc]
@@ -322,7 +322,7 @@ Examples:
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
-> The following OpenTracing tracer service providers have [<ins>Tracer Plugins</ins>](#43-tracer-plugin) implemented.
+The following OpenTracing tracer service providers have [<ins>Tracer Plugins</ins>](#43-tracer-plugin) implemented.
 
 1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
 1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
