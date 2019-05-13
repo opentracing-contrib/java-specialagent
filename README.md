@@ -17,7 +17,7 @@
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.1 [In Application](#211-in-application)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.1.1 [Stable](#2111-stable)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.1.2 [Development](#2112-development)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2 [For Development](#211-for-development)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2 [For Development](#212-for-development)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1 [Building](#2121-building)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2 [Usage](#22-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.1 [Static Attach](#221-static-attach)<br>
@@ -25,8 +25,8 @@
 <samp>&nbsp;&nbsp;</samp>3 [Configuration](#3-configuration)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.1 [Overview](#31-overview)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2 [Properties](#32-properties)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.3 [Selecting the <ins>Tracer Plugin</ins>](#33-selecting)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4 [Disabling <ins>Instrumentation Plugins</ins>](#34-disabling)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.3 [Selecting the <ins>Tracer Plugin</ins>](#33-selecting-the-tracer-plugin)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4 [Disabling <ins>Instrumentation Plugins</ins>](#34-disabling-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;</samp>4 [Definitions](#4-definitions)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.1 [<ins>SpecialAgent</ins>](#41-specialagent)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.2 [<ins>Tracer</ins>](#42-tracer)<br>
@@ -40,7 +40,7 @@
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.2 [<ins>Tracer Plugins</ins>](#62-tracer-plugins)<br>
 <samp>&nbsp;&nbsp;</samp>7 [Contributing](#7-contributing)<br>
-<samp>&nbsp;&nbsp;</samp>8 [License](#7-license)
+<samp>&nbsp;&nbsp;</samp>8 [License](#8-license)
 
 ## 1 Introduction
 
@@ -143,7 +143,7 @@ java -javaagent:opentracing-specialagent-1.1.1.jar -jar myapp.jar
 
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
 
-### 2.2.2 Dynamic Attach
+#### 2.2.2 Dynamic Attach
 
 Dynamically attaching to a Java application involves the use of a running application’s PID, after the application’s startup. The following commands can be used as an example:
 
