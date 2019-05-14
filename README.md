@@ -111,6 +111,7 @@ Examples:
 1. [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc)
 1. [Reactor](https://github.com/opentracing-contrib/java-reactor)
 1. [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast)
+1. [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached)
 
 ## Supported <ins>Tracer Plugins</ins>
 

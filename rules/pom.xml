@@ -55,6 +55,7 @@
     <module>opentracing-specialagent-spring-webflux</module>
     <module>opentracing-specialagent-redisson</module>
     <module>opentracing-specialagent-hazelcast</module>
+    <module>opentracing-specialagent-spymemcached</module>
   </modules>
   <profiles>
     <profile>
