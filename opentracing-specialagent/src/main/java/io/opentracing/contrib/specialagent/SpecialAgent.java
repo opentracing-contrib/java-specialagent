@@ -611,7 +611,9 @@ public class SpecialAgent {
       return null;
     }
 
-    for (final RuleClassLoader ruleClassLoader : ruleClassLoaders) {
+    final int size = ruleClassLoaders.size();
+    for (int i = 0; i < size; ++i) {
+      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
       // Ensure the `RuleClassLoader` is preloaded
       ruleClassLoader.preLoad(classLoader);
 
@@ -638,7 +640,7 @@ public class SpecialAgent {
     }
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): Not found in " + ruleClassLoaders.size() + " RuleClassLoader(s)");
+      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): Not found in " + size + " RuleClassLoader(s)");
 
     return null;
   }
