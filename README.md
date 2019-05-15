@@ -320,6 +320,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc)
 1. [Reactor](https://github.com/opentracing-contrib/java-reactor)
 1. [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast)
+1. [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached)
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
