@@ -15,30 +15,35 @@
 
 package io.opentracing.contrib.specialagent.spymemcached;
 
-import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockTracer;
 import java.net.InetSocketAddress;
-import net.spy.memcached.MemcachedClient;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockTracer;
+import net.spy.memcached.MemcachedClient;
+
 @RunWith(AgentRunner.class)
 public class SpymemcachedTest {
-
   @Test
-  public void test(MockTracer tracer) throws Exception {
-    MemcachedClient client = new MemcachedClient(new InetSocketAddress("localhost", 11211));
+  public void test(final MockTracer tracer) throws Exception {
+    final MemcachedClient client = new MemcachedClient(new InetSocketAddress("localhost", 11211));
 
     try {
       client.set("key", 2, 2).get();
-    } catch (Exception ignore) {
     }
+    catch (final Exception ignore) {
+    }
+
     try {
       client.get("key");
-    } catch (Exception ignore) {
     }
+    catch (final Exception ignore) {
+    }
+
     assertEquals(2, tracer.finishedSpans().size());
   }
 }

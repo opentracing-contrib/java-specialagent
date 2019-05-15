@@ -18,14 +18,13 @@ import io.opentracing.Span;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StoreOperation;
 
-public class TracingStoreOperationCallback extends TracingOperationCallback implements
-    StoreOperation.Callback {
-  public TracingStoreOperationCallback(OperationCallback operationCallback, Span span) {
+public class TracingStoreOperationCallback extends TracingOperationCallback implements StoreOperation.Callback {
+  public TracingStoreOperationCallback(final OperationCallback operationCallback, final Span span) {
     super(operationCallback, span);
   }
 
   @Override
-  public void gotData(String key, long cas) {
-    ((StoreOperation.Callback) operationCallback).gotData(key, cas);
+  public void gotData(final String key, final long cas) {
+    ((StoreOperation.Callback)operationCallback).gotData(key, cas);
   }
 }

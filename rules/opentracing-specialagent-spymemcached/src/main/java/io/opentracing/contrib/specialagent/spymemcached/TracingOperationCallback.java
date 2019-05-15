@@ -15,10 +15,11 @@
 
 package io.opentracing.contrib.specialagent.spymemcached;
 
-import io.opentracing.Span;
-import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 
@@ -26,14 +27,14 @@ public class TracingOperationCallback implements OperationCallback {
   protected final OperationCallback operationCallback;
   private final Span span;
 
-  public TracingOperationCallback(OperationCallback operationCallback, Span span) {
+  public TracingOperationCallback(final OperationCallback operationCallback, final Span span) {
     this.operationCallback = operationCallback;
     this.span = span;
   }
 
   @Override
-  public void receivedStatus(OperationStatus status) {
-    Map<String, Object> event = new HashMap<>();
+  public void receivedStatus(final OperationStatus status) {
+    final Map<String,Object> event = new HashMap<>();
     event.put("status", status.getStatusCode());
     span.log(event);
     operationCallback.receivedStatus(status);
@@ -43,14 +44,15 @@ public class TracingOperationCallback implements OperationCallback {
   public void complete() {
     try {
       operationCallback.complete();
-    } finally {
+    }
+    finally {
       span.finish();
     }
   }
 
-  void onError(Throwable thrown) {
+  void onError(final Throwable thrown) {
     Tags.ERROR.set(span, Boolean.TRUE);
-    final HashMap<String, Object> errorLogs = new HashMap<>(2);
+    final HashMap<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", thrown);
     span.log(errorLogs);

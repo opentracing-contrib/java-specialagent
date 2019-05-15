@@ -12,21 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.spymemcached;
 
 import io.opentracing.Span;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationCallback;
 
-public class TracingGetsOperationCallback extends TracingOperationCallback implements
-    GetsOperation.Callback {
-  public TracingGetsOperationCallback(OperationCallback operationCallback,
-      Span span) {
+public class TracingGetsOperationCallback extends TracingOperationCallback implements GetsOperation.Callback {
+  public TracingGetsOperationCallback(final OperationCallback operationCallback, final Span span) {
     super(operationCallback, span);
   }
 
   @Override
-  public void gotData(String key, int flags, long cas, byte[] data) {
-    ((GetsOperation.Callback) operationCallback).gotData(key, flags, cas, data);
+  public void gotData(final String key, final int flags, final long cas, final byte[] data) {
+    ((GetsOperation.Callback)operationCallback).gotData(key, flags, cas, data);
   }
 }

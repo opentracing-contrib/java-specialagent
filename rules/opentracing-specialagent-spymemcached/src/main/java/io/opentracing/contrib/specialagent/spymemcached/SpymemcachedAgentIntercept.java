@@ -12,13 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.spymemcached;
+
+import java.util.Collection;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.Collection;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
 
@@ -26,71 +28,63 @@ public class SpymemcachedAgentIntercept {
   private static final String DB_TYPE = "memcached";
   private static final String COMPONENT_NAME = "java-memcached";
 
-  public static Object store(Object storeType, Object key, Object callback) {
-    Span span = spanBuilder(storeType.toString())
-        .withTag("key", key.toString()).start();
-
-    return new TracingStoreOperationCallback((OperationCallback) callback, span);
+  public static Object store(final Object storeType, final Object key, final Object callback) {
+    final Span span = spanBuilder(storeType.toString()).withTag("key", key.toString()).start();
+    return new TracingStoreOperationCallback((OperationCallback)callback, span);
   }
 
-  public static Object get(Object key, Object callback) {
-    SpanBuilder spanBuilder = spanBuilder("get");
+  @SuppressWarnings("unchecked")
+  public static Object get(final Object key, final Object callback) {
+    final SpanBuilder spanBuilder = spanBuilder("get");
 
-    if (key instanceof Collection) {
-      spanBuilder.withTag("keys", String.join(",", (Collection) key));
-    } else {
+    if (key instanceof Collection)
+      spanBuilder.withTag("keys", String.join(",", (Collection<? extends CharSequence>)key));
+    else
       spanBuilder.withTag("key", key.toString()).start();
-    }
-    Span span = spanBuilder.start();
 
-    return new TracingGetOperationCallback((GetOperation.Callback) callback, span);
+    final Span span = spanBuilder.start();
+    return new TracingGetOperationCallback((GetOperation.Callback)callback, span);
   }
 
-  private static SpanBuilder spanBuilder(String operation) {
-    return GlobalTracer.get().buildSpan(operation)
-        .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.DB_TYPE.getKey(), DB_TYPE);
+  private static SpanBuilder spanBuilder(final String operation) {
+    return GlobalTracer.get()
+      .buildSpan(operation)
+      .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.DB_TYPE.getKey(), DB_TYPE);
   }
 
-  public static Object delete(Object key, Object callback) {
-    Span span = spanBuilder("delete")
-        .withTag("key", key.toString()).start();
-    return new TracingDeleteOperationCallback((OperationCallback) callback, span);
+  public static Object delete(final Object key, final Object callback) {
+    final Span span = spanBuilder("delete").withTag("key", key.toString()).start();
+    return new TracingDeleteOperationCallback((OperationCallback)callback, span);
   }
 
-  public static void exception(Throwable thrown, Object callback) {
-    TracingOperationCallback tracingOperationCallback = (TracingOperationCallback) callback;
+  public static void exception(final Throwable thrown, final Object callback) {
+    final TracingOperationCallback tracingOperationCallback = (TracingOperationCallback)callback;
     tracingOperationCallback.onError(thrown);
   }
 
-  public static Object getAndTouch(Object key, Object callback) {
-    Span span = spanBuilder("getAndTouch")
-        .withTag("key", key.toString()).start();
-
-    return new TracingGetAndTouchOperationCallback((OperationCallback) callback, span);
+  public static Object getAndTouch(final Object key, final Object callback) {
+    final Span span = spanBuilder("getAndTouch").withTag("key", key.toString()).start();
+    return new TracingGetAndTouchOperationCallback((OperationCallback)callback, span);
   }
 
-  public static Object gets(Object key, Object callback) {
-    Span span = spanBuilder("gets")
-        .withTag("key", key.toString()).start();
-
-    return new TracingGetsOperationCallback((OperationCallback) callback, span);
+  public static Object gets(final Object key, final Object callback) {
+    final Span span = spanBuilder("gets").withTag("key", key.toString()).start();
+    return new TracingGetsOperationCallback((OperationCallback)callback, span);
   }
 
-  public static Object tracingCallback(String operation, Object key, Object callback) {
+  public static Object tracingCallback(final String operation, final Object key, final Object callback) {
     final SpanBuilder spanBuilder = spanBuilder(operation);
-    if (key != null) {
+    if (key != null)
       spanBuilder.withTag("key", key.toString());
-    }
-    Span span = spanBuilder.start();
-    return new TracingOperationCallback((OperationCallback) callback, span);
+
+    final Span span = spanBuilder.start();
+    return new TracingOperationCallback((OperationCallback)callback, span);
   }
 
-  public static Object cas(Object key, Object callback) {
-    Span span = spanBuilder("cas")
-        .withTag("key", key.toString()).start();
-
-    return new TracingStoreOperationCallback((OperationCallback) callback, span);
+  public static Object cas(final Object key, final Object callback) {
+    final Span span = spanBuilder("cas").withTag("key", key.toString()).start();
+    return new TracingStoreOperationCallback((OperationCallback)callback, span);
   }
 }
