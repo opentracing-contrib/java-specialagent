@@ -15,16 +15,16 @@
 
 package io.opentracing.contrib.specialagent.jdbi;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class JdbiAgentRule extends AgentRule {
@@ -41,10 +41,9 @@ public class JdbiAgentRule extends AgentRule {
 
   public static class Create {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
       if (isEnabled(origin))
         JdbiAgentIntercept.create(returned);
     }
   }
-
 }
