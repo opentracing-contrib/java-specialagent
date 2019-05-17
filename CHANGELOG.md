@@ -1,5 +1,13 @@
 # Changes by Version
 
+## v1.1.2 (2019-05-17)
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Redis, Spring Web Flux, Grizzly HTTP Server, Grizzly AsyncHttpClient, Reactor, Hazelcast, Spymemcached.
+* Upgraded Jaeger Agent Plugin to support OT API 0.32.0.
+* Startup performance improvement.
+* Improved documentation.
+* Bug fixes.
+
+
 ## v1.1.1 (2019-05-03)
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Apache HttpClient, Redis Client Lettuce, Spring Web, Spring Web MVC.
 * Addition of configurable "General Verbose Mode" in `AgentRule`.
