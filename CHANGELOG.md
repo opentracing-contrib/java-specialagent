@@ -7,7 +7,6 @@
 * Improved documentation.
 * Bug fixes.
 
-
 ## v1.1.1 (2019-05-03)
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Apache HttpClient, Redis Client Lettuce, Spring Web, Spring Web MVC.
 * Addition of configurable "General Verbose Mode" in `AgentRule`.
