@@ -58,6 +58,7 @@
     <module>opentracing-specialagent-spymemcached</module>
     <module>opentracing-specialagent-jdbi</module>
     <module>opentracing-specialagent-feign</module>
+    <module>opentracing-specialagent-spring-messaging</module>
   </modules>
   <profiles>
     <profile>

@@ -51,6 +51,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import io.opentracing.contrib.specialagent.Manager.Event;
+import net.bytebuddy.description.modifier.EnumerationState;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -573,23 +574,25 @@ public final class SpecialAgentUtil {
           Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
           // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-          final boolean isInstruPlugin = isInstruPlugin(file);
+          final Boolean isInstruPlugin = isInstruPlugin(file);
+          boolean includeJar = true;
+          if (isInstruPlugin != null) {
+            // Next, see if it is included or excluded
+            includeJar = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
+            final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
+            for (final Map.Entry<String,Boolean> plugin : plugins.entrySet()) {
+              final String pluginName = plugin.getKey();
+              if (jarFileName.startsWith(pluginName + "-")) {
+                includeJar = plugin.getValue();
+                if (logger.isLoggable(Level.FINER))
+                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (includeJar ? "en" : "dis") + "abled");
 
-          // Next, see if it is included or excluded
-          boolean includePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-          final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
-          for (final Map.Entry<String,Boolean> plugin : plugins.entrySet()) {
-            final String pluginName = plugin.getKey();
-            if (jarFileName.startsWith(pluginName + "-")) {
-              includePlugin = plugin.getValue();
-              if (logger.isLoggable(Level.FINER))
-                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (includePlugin ? "en" : "dis") + "abled");
-
-              break;
+                break;
+              }
             }
           }
 
-          if (includePlugin)
+          if (includeJar)
             urls.add(file.toURI().toURL());
           else
             file.delete();
@@ -619,14 +622,19 @@ public final class SpecialAgentUtil {
     }
   }
 
-  private static boolean isInstruPlugin(final File file) throws IOException {
+  private static Boolean isInstruPlugin(final File file) throws IOException {
     try (final JarFile jarFile = new JarFile(file)) {
       final Enumeration<JarEntry> entries = jarFile.entries();
-      while (entries.hasMoreElements())
-        if ("otarules.mf".equals(entries.nextElement().getName()))
+      while (entries.hasMoreElements()) {
+        final String entry = entries.nextElement().getName();
+        if ("otarules.mf".equals(entry))
           return true;
 
-      return false;
+        if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
+          return false;
+      }
+
+      return null;
     }
   }
 
