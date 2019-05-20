@@ -36,6 +36,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
@@ -509,22 +510,38 @@ public final class SpecialAgentUtil {
    * temporary directory and file resources it created.
    *
    * @param path The prefix path to match when finding resources.
-   * @param excludes A set of rule names to exclude.
+   * @param instruPlugins Map of instrumentation plugin name to boolean
+   *          specifying whether it should be included in the runtime.
+   * @param tracerPlugins Map of tracer plugin name to boolean specifying
+   *          whether it should be included in the runtime.
    * @return A {@code List} of {@code URL} objects having a prefix path that
    *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path, final Collection<String> excludes) {
+  static Set<URL> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       final Set<URL> urls = new HashSet<>();
       if (!resources.hasMoreElements())
         return urls;
 
+      final boolean allInstruEnabled = !instruPlugins.containsKey(null) || instruPlugins.get(null);
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
+
+      final boolean allTracerEnabled = !tracerPlugins.containsKey(null) || tracerPlugins.get(null);
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
+
+      final Set<URL> visitedResources = new HashSet<>();
       File destDir = null;
       do {
         final URL resource = resources.nextElement();
+        if (visitedResources.contains(resource))
+          continue;
+
+        visitedResources.add(resource);
         final URLConnection connection = resource.openConnection();
         // Only consider resources that are inside JARs
         if (!(connection instanceof JarURLConnection))
@@ -540,7 +557,6 @@ public final class SpecialAgentUtil {
         jarURLConnection.setUseCaches(false);
         final JarFile jarFile = jarURLConnection.getJarFile();
         final Enumeration<JarEntry> entries = jarFile.entries();
-        OUT:
         while (entries.hasMoreElements()) {
           final String entry = entries.nextElement().getName();
           if (entry.length() <= path.length() || !entry.startsWith(path))
@@ -548,22 +564,35 @@ public final class SpecialAgentUtil {
 
           final int slash = entry.lastIndexOf('/');
           final String jarFileName = entry.substring(slash + 1);
-          for (final String exclude : excludes) {
-            if (jarFileName.startsWith(exclude + "-")) {
-              if (logger.isLoggable(Level.FINER))
-                logger.finer("Plugin " + exclude + " is disabled");
 
-              continue OUT;
-            }
-          }
-
+          // First, extract the JAR into a temp dir
           final File subDir = new File(destDir, entry.substring(0, slash));
           subDir.mkdirs();
           final File file = new File(subDir, jarFileName);
-
           final URL url = new URL(resource, entry.substring(path.length()));
           Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-          urls.add(file.toURI().toURL());
+
+          // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
+          final boolean isInstruPlugin = isInstruPlugin(file);
+
+          // Next, see if it is included or excluded
+          boolean includePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
+          final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
+          for (final Map.Entry<String,Boolean> plugin : plugins.entrySet()) {
+            final String pluginName = plugin.getKey();
+            if (jarFileName.startsWith(pluginName + "-")) {
+              includePlugin = plugin.getValue();
+              if (logger.isLoggable(Level.FINER))
+                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (includePlugin ? "en" : "dis") + "abled");
+
+              break;
+            }
+          }
+
+          if (includePlugin)
+            urls.add(file.toURI().toURL());
+          else
+            file.delete();
         }
       }
       while (resources.hasMoreElements());
@@ -587,6 +616,17 @@ public final class SpecialAgentUtil {
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  private static boolean isInstruPlugin(final File file) throws IOException {
+    try (final JarFile jarFile = new JarFile(file)) {
+      final Enumeration<JarEntry> entries = jarFile.entries();
+      while (entries.hasMoreElements())
+        if ("otarules.mf".equals(entries.nextElement().getName()))
+          return true;
+
+      return false;
     }
   }
 

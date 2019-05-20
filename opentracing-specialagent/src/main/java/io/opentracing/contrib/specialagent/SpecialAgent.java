@@ -184,16 +184,33 @@ public class SpecialAgent {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final ArrayList<String> disabledPlugins = new ArrayList<>();
+    final Map<String,String> properties = new HashMap<>();
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
-      final String key = (String)property.getKey();
-      final String value = (String)property.getValue();
-      if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".enable") && !Boolean.parseBoolean(value))
-        disabledPlugins.add(key.substring(26, key.length() - 7));
+      final String key = String.valueOf(property.getKey());
+      final String value = properties.get(key);
+      if (value != null && !value.equals(property.getValue()))
+        throw new IllegalStateException("System property " + key + " is specified twice with different values");
+
+      properties.put(key, property.getValue() == null ? null : String.valueOf(property.getValue()));
+    }
+
+    final HashMap<String,Boolean> instruPlugins = new HashMap<>();
+    final HashMap<String,Boolean> tracerPlugins = new HashMap<>();
+    for (final Map.Entry<String,String> property : properties.entrySet()) {
+      final String key = property.getKey();
+      final String value = property.getValue();
+      if ("sa.instrumentation.plugins.enable".equals(key))
+        instruPlugins.put(null, Boolean.parseBoolean(value));
+      else if ("sa.tracer.plugins.enable".equals(key))
+        tracerPlugins.put(null, Boolean.parseBoolean(value));
+      else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".enable"))
+        instruPlugins.put(key.substring(26, key.length() - 7), Boolean.parseBoolean(value));
+      else if (key.startsWith("sa.tracer.plugin.") && key.endsWith(".enable"))
+        tracerPlugins.put(key.substring(17, key.length() - 7), Boolean.parseBoolean(value));
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
-    final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", disabledPlugins);
+    final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", instruPlugins, tracerPlugins);
     if (logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 

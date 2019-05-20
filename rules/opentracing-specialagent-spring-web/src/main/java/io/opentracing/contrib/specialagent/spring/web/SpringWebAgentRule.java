@@ -49,7 +49,7 @@ public class SpringWebAgentRule extends AgentRule {
   public static class RestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
-      if (isEnabled(origin))
+//      if (isEnabled(origin))
         SpringWebAgentIntercept.enter(thiz);
     }
   }
@@ -57,7 +57,7 @@ public class SpringWebAgentRule extends AgentRule {
   public static class AsyncRestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
-      if (isEnabled(origin))
+//      if (isEnabled(origin))
         SpringWebAgentIntercept.enterAsync(thiz);
     }
   }
