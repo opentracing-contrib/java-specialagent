@@ -27,6 +27,7 @@
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2 [Properties](#32-properties)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.3 [Selecting the <ins>Tracer Plugin</ins>](#33-selecting-the-tracer-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4 [Disabling <ins>Instrumentation Plugins</ins>](#34-disabling-instrumentation-plugins)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.5 [Disabling <ins>Tracer Plugins</ins>](#35-disabling-tracer-plugins)<br>
 <samp>&nbsp;&nbsp;</samp>4 [Definitions](#4-definitions)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.1 [<ins>SpecialAgent</ins>](#41-specialagent)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.2 [<ins>Tracer</ins>](#42-tracer)<br>
@@ -210,13 +211,39 @@ _**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the
 
 ### 3.4 Disabling [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) enabled by default, but allows the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) to be disabled. To disable a plugin, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) enabled by default, and allows them to be disabled.
+
+To disable _all **instrumentation** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+
+```
+sa.instrumentation.plugins.enable=false
+```
+
+To disable _an individual **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
 sa.instrumentation.plugin.${PLUGIN_NAME}.enable=false
 ```
 
 The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is included in the [<ins>SpecialAgent</ins>](#41-specialagent), such as `opentracing-specialagent-okhttp` or `opentracing-specialagent-web-servlet-filter`.
+
+### 3.5 Disabling [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
+
+The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Tracer Plugins</ins>](#43-tracer-plugin) enabled by default, and allows them to be disabled.
+
+To disable _all **tracer** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+
+```
+sa.tracer.plugins.enable=false
+```
+
+To disable _an individual **tracer** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+
+```
+sa.tracer.plugin.${SHORT_NAME}.enable=false
+```
+
+The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep` or `jaeger`.
 
 ## 4 Definitions
 
