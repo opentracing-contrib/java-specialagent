@@ -11,13 +11,13 @@
 
 <samp>&nbsp;&nbsp;</samp>1 [Introduction](#1-introduction)<br>
 <samp>&nbsp;&nbsp;</samp>2 [Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>](#2-developing-instrumentation-rules-for-specialagent)<br>
-<samp>&nbsp;&nbsp;</samp>3 [Implementing the <ins>Instrumentation Rules</ins>](#2-implementing-the-instrumentation-rules)<br>
+<samp>&nbsp;&nbsp;</samp>3 [Implementing the <ins>Instrumentation Rules</ins>](#3-implementing-the-instrumentation-rules)<br>
 <samp>&nbsp;&nbsp;</samp>4 [Usage](#4-usage)<br>
 <samp>&nbsp;&nbsp;</samp>5 [`AgentRunner` Usage](#5-agentrunner-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1 [Configuring `AgentRunner`](#51-configuring-agentrunner)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.1 [Packaging](#511-packaging)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.2 [Testing](#512-testing)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.3 [Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>](#512-including-the-instrumentation-rule-in-the-specialagent)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.3 [Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>](#513-including-the-instrumentation-rule-in-the-specialagent)<br>
 <samp>&nbsp;&nbsp;</samp>6 [Debugging](#6-debugging)<br>
 <samp>&nbsp;&nbsp;</samp>7 [Contributing](#7-contributing)<br>
 <samp>&nbsp;&nbsp;</samp>8 [License](#8-license)
