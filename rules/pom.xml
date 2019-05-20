@@ -57,6 +57,7 @@
     <module>opentracing-specialagent-hazelcast</module>
     <module>opentracing-specialagent-spymemcached</module>
     <module>opentracing-specialagent-jdbi</module>
+    <module>opentracing-specialagent-feign</module>
   </modules>
   <profiles>
     <profile>
