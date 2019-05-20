@@ -22,16 +22,12 @@ import feign.opentracing.TracingClient;
 import io.opentracing.util.GlobalTracer;
 
 public class FeignAgentIntercept {
-
-  public static Object client(Object client) {
-    if(client instanceof TracingClient) {
-      return client;
-    }
-    return new TracingClient((Client) client, GlobalTracer.get());
+  public static Object client(final Object client) {
+    return client instanceof TracingClient ? client : new TracingClient((Client)client, GlobalTracer.get());
   }
 
-  public static Object builder(Object returned) {
-    Feign.Builder builder = (Builder) returned;
+  public static Object builder(final Object returned) {
+    final Feign.Builder builder = (Builder)returned;
     builder.client(new TracingClient(new Client.Default(null, null), GlobalTracer.get()));
     return returned;
   }
