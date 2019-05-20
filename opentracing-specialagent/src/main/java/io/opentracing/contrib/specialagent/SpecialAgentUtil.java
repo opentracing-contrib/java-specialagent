@@ -548,9 +548,14 @@ public final class SpecialAgentUtil {
 
           final int slash = entry.lastIndexOf('/');
           final String jarFileName = entry.substring(slash + 1);
-          for (final String exclude : excludes)
-            if (jarFileName.startsWith(exclude + "-"))
+          for (final String exclude : excludes) {
+            if (jarFileName.startsWith(exclude + "-")) {
+              if (logger.isLoggable(Level.FINER))
+                logger.finer("Plugin " + exclude + " is disabled");
+
               continue OUT;
+            }
+          }
 
           final File subDir = new File(destDir, entry.substring(0, slash));
           subDir.mkdirs();

@@ -188,8 +188,8 @@ public class SpecialAgent {
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = (String)property.getKey();
       final String value = (String)property.getValue();
-      if (key.startsWith("sa.instrumentation.plugin") && key.endsWith(".enable") && !Boolean.parseBoolean(value))
-        disabledPlugins.add(key.substring(0, key.length() - 7));
+      if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".enable") && !Boolean.parseBoolean(value))
+        disabledPlugins.add(key.substring(26, key.length() - 7));
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
