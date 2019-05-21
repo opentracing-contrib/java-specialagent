@@ -27,6 +27,7 @@
   <name>SpecialAgent Rule for Feign</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-feign</url>
   <properties>
+    <feign.version>10.2.3</feign.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
@@ -45,9 +46,15 @@
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-core</artifactId>
-      <version>10.2.0</version>
+      <version>${feign.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.github.openfeign</groupId>
+      <artifactId>feign-okhttp</artifactId>
+      <version>${feign.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
