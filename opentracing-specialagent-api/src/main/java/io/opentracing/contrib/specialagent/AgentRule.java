@@ -55,7 +55,7 @@ public abstract class AgentRule {
     if (pluginName == null)
       throw new IllegalStateException("Plugin name should not be null");
 
-    final String pluginVerbose = System.getProperty("sa.instrumentation.plugin." + pluginName);
+    final String pluginVerbose = System.getProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
     return pluginVerbose != null && Boolean.parseBoolean(pluginVerbose);
   }
 
