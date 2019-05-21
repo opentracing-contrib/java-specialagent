@@ -31,9 +31,8 @@ public class HystrixTest {
   }
 
   @Test
-  @AgentRunner.TestConfig(verbose=true)
   public void test(MockTracer tracer) {
-    final Feign feign  = HystrixFeign.builder()
+    final Feign feign = HystrixFeign.builder()
         .client(new TracingClient(new Client.Default(null, null), GlobalTracer.get()))
         .retryer(new Retryer.Default(100, SECONDS.toMillis(1), 2))
         .build();
@@ -51,12 +50,12 @@ public class HystrixTest {
   }
 
   private static void test(final Feign feign, final MockTracer tracer) {
-    final StringEntityRequest entity = feign.newInstance(new Target.HardCodedTarget<>(StringEntityRequest.class, "http://localhost:12345"));
+    final StringEntityRequest entity = feign.newInstance(
+        new Target.HardCodedTarget<>(StringEntityRequest.class, "http://localhost:12345"));
     try {
       final String res = entity.get();
       System.out.println(res);
-    }
-    catch (final Exception ignore) {
+    } catch (final Exception ignore) {
     }
 
     assertEquals(2, tracer.finishedSpans().size());
