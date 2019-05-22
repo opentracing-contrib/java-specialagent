@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.1.3-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.rules</groupId>
   <artifactId>rules</artifactId>
@@ -29,35 +29,35 @@
   <name>SpecialAgent Rules</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules</url>
   <modules>
-    <module>opentracing-specialagent-okhttp</module>
-    <module>opentracing-specialagent-jdbc</module>
-    <module>opentracing-specialagent-concurrent</module>
-    <module>opentracing-specialagent-mongo-driver</module>
-    <module>opentracing-specialagent-web-servlet-filter</module>
-    <module>opentracing-specialagent-camel</module>
-    <module>opentracing-specialagent-aws-sdk</module>
-    <module>opentracing-specialagent-cassandra-driver</module>
-    <module>opentracing-specialagent-jms-1</module>
-    <module>opentracing-specialagent-jms-2</module>
-    <module>opentracing-specialagent-elasticsearch-client-6</module>
-    <module>opentracing-specialagent-rxjava-2</module>
-    <module>opentracing-specialagent-kafka-client</module>
-    <module>opentracing-specialagent-asynchttpclient</module>
-    <module>opentracing-specialagent-rabbitmq-client</module>
-    <module>opentracing-specialagent-spring-rabbitmq</module>
-    <module>opentracing-specialagent-thrift</module>
-    <module>opentracing-specialagent-grpc</module>
-    <module>opentracing-specialagent-jedis</module>
-    <module>opentracing-specialagent-apache-httpclient</module>
-    <module>opentracing-specialagent-lettuce</module>
-    <module>opentracing-specialagent-spring-web</module>
-    <module>opentracing-specialagent-spring-webmvc</module>
-    <module>opentracing-specialagent-spring-webflux</module>
-    <module>opentracing-specialagent-redisson</module>
-    <module>opentracing-specialagent-hazelcast</module>
-    <module>opentracing-specialagent-spymemcached</module>
-    <module>opentracing-specialagent-jdbi</module>
-    <module>opentracing-specialagent-feign</module>
+    <module>specialagent-okhttp</module>
+    <module>specialagent-jdbc</module>
+    <module>specialagent-concurrent</module>
+    <module>specialagent-mongo-driver</module>
+    <module>specialagent-web-servlet-filter</module>
+    <module>specialagent-camel</module>
+    <module>specialagent-aws-sdk</module>
+    <module>specialagent-cassandra-driver</module>
+    <module>specialagent-jms-1</module>
+    <module>specialagent-jms-2</module>
+    <module>specialagent-elasticsearch-client-6</module>
+    <module>specialagent-rxjava-2</module>
+    <module>specialagent-kafka-client</module>
+    <module>specialagent-asynchttpclient</module>
+    <module>specialagent-rabbitmq-client</module>
+    <module>specialagent-spring-rabbitmq</module>
+    <module>specialagent-thrift</module>
+    <module>specialagent-grpc</module>
+    <module>specialagent-jedis</module>
+    <module>specialagent-apache-httpclient</module>
+    <module>specialagent-lettuce</module>
+    <module>specialagent-spring-web</module>
+    <module>specialagent-spring-webmvc</module>
+    <module>specialagent-spring-webflux</module>
+    <module>specialagent-redisson</module>
+    <module>specialagent-hazelcast</module>
+    <module>specialagent-spymemcached</module>
+    <module>specialagent-jdbi</module>
+    <module>specialagent-feign</module>
   </modules>
   <profiles>
     <profile>

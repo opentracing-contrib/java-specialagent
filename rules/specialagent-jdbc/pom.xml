@@ -19,27 +19,24 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent</groupId>
-    <artifactId>specialagent</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+    <artifactId>rules</artifactId>
     <version>1.2.0-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-api</artifactId>
-  <name>OpenTracing SpecialAgent API</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api</url>
+  <artifactId>specialagent-jdbc</artifactId>
+  <name>SpecialAgent Rule for JDBC</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc</url>
   <dependencies>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy</artifactId>
-      <scope>provided</scope>
+      <!-- https://github.com/opentracing-contrib/java-jdbc -->
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-jdbc</artifactId>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy-agent</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.197</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018 The OpenTracing Authors
+  Copyright 2019 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,27 +19,40 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent</groupId>
-    <artifactId>specialagent</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+    <artifactId>rules</artifactId>
     <version>1.2.0-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-api</artifactId>
-  <name>OpenTracing SpecialAgent API</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api</url>
+  <artifactId>specialagent-jdbi</artifactId>
+  <name>SpecialAgent Rule for JDBI 3</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbi</url>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
   <dependencies>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy</artifactId>
-      <scope>provided</scope>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-jdbi3</artifactId>
+      <version>0.6.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jdbi</groupId>
+          <artifactId>jdbi3-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy-agent</artifactId>
+      <groupId>org.jdbi</groupId>
+      <artifactId>jdbi3-core</artifactId>
+      <version>3.6.0</version>
       <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.199</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

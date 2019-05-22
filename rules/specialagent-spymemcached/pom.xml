@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018 The OpenTracing Authors
+  Copyright 2019 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,28 +19,24 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent</groupId>
-    <artifactId>specialagent</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+    <artifactId>rules</artifactId>
     <version>1.2.0-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-api</artifactId>
-  <name>OpenTracing SpecialAgent API</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api</url>
+  <artifactId>specialagent-spymemcached</artifactId>
+  <name>SpecialAgent Rule for Spymemcached</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spymemcached</url>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
   <dependencies>
     <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy</artifactId>
+      <groupId>net.spy</groupId>
+      <artifactId>spymemcached</artifactId>
+      <version>2.12.3</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy-agent</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>

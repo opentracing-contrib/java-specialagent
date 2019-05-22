@@ -1,5 +1,5 @@
 1825983295 io.opentracing.contrib:opentracing-specialagent2:test-jar:tests:0.0.0-SNAPSHOT
-2102909877 io.opentracing.contrib:opentracing-specialagent-okhttp:jar:0.0.0-SNAPSHOT
+2102909877 io.opentracing.contrib:specialagent-okhttp:jar:0.0.0-SNAPSHOT
 1603662305 io.opentracing.contrib:opentracing-okhttp3:jar:0.1.0:compile
 1730813026 io.opentracing:opentracing-api:jar:0.32.0:compile
 2121443020 io.opentracing:opentracing-noop:jar:0.32.0:compile
