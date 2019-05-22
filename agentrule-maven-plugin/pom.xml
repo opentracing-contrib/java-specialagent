@@ -133,6 +133,7 @@
                 </goals>
                 <phase>generate-test-resources</phase>
                 <configuration>
+                  <name>test</name>
                   <destFile>${project.build.directory}/generated-test-resources/fingerprint.bin</destFile>
                 </configuration>
               </execution>

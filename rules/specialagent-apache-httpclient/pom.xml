@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>apache-httpclient</sa.plugin.name>
   </properties>
   <dependencies>
     <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->

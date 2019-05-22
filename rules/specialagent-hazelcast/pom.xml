@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>hazelcast</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>elasticsearch-client-6</sa.plugin.name>
     <version.apache.logging>2.11.2</version.apache.logging>
   </properties>
   <dependencies>

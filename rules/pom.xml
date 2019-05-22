@@ -89,7 +89,7 @@
                 </goals>
                 <phase>process-classes</phase>
                 <configuration>
-                  <destFile>${project.build.outputDirectory}/fingerprint.bin</destFile>
+                  <name>${sa.plugin.name}</name>
                 </configuration>
               </execution>
             </executions>

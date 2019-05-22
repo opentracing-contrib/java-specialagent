@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>camel</sa.plugin.name>
     <version.org.apache.camel>2.23.2</version.org.apache.camel>
   </properties>
   <dependencies>

@@ -289,9 +289,8 @@ public class SpecialAgent {
           logger.finest("Found " + TRACER_FACTORY + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
 
         final String jarPath = SpecialAgentUtil.getSourceLocation(url, TRACER_FACTORY).getPath();
-        final String artifactName = SpecialAgentUtil.getName(jarPath);
-        final int dash = artifactName.indexOf('-');
-        final String tracerName = dash == -1 ? artifactName : artifactName.substring(0, dash);
+        final String fileName = SpecialAgentUtil.getName(jarPath);
+        final String tracerName = fileName.substring(0, fileName.lastIndexOf('.'));
         if (name.equals(tracerName))
           return new URL("file", null, jarPath);
       }

@@ -26,6 +26,9 @@
   <artifactId>specialagent-jdbc</artifactId>
   <name>SpecialAgent Rule for JDBC</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc</url>
+  <properties>
+    <sa.plugin.name>jdbc</sa.plugin.name>
+  </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jdbc -->

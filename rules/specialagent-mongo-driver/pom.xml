@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>mongo-driver</sa.plugin.name>
     <version.org.mongodb.mongo-java-driver>3.10.1</version.org.mongodb.mongo-java-driver>
   </properties>
   <dependencies>

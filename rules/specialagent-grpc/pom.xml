@@ -29,6 +29,7 @@
   <properties>
     <grpc.version>1.19.0</grpc.version>
     <protobuf.version>3.7.0</protobuf.version>
+    <sa.plugin.name>grpc</sa.plugin.name>
   </properties>
   <build>
     <extensions>

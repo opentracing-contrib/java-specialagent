@@ -26,6 +26,9 @@
   <artifactId>specialagent-rxjava-2</artifactId>
   <name>SpecialAgent Rule for RxJava 2</name>
   <url>https://github.com/opentracing-contrib/java-rxjava/tree/master/opentracing-rxjava-2</url>
+  <properties>
+    <sa.plugin.name>rxjava-2</sa.plugin.name>
+  </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-rxjava -->

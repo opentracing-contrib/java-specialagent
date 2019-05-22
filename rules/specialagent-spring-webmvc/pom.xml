@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>spring-webmvc</sa.plugin.name>
     <spring.version>5.1.6.RELEASE</spring.version>
     <version.jetty>9.3.15.v20161220</version.jetty>
   </properties>

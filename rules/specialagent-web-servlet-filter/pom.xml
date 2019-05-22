@@ -29,6 +29,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>web-servlet-filter</sa.plugin.name>
     <version.org.apache.tomcat.embed>8.5.40</version.org.apache.tomcat.embed>
     <version.org.eclipse.jetty>9.3.15.v20161220</version.org.eclipse.jetty>
   </properties>

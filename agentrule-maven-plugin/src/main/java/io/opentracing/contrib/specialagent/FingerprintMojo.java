@@ -136,21 +136,32 @@ public final class FingerprintMojo extends AbstractMojo {
     return depth == 0 ? null : new URL[depth];
   }
 
-  @Parameter(property="destFile", required=true)
-  private File destFile;
-
   @Parameter(defaultValue="${project}", required=true, readonly=true)
   private MavenProject project;
 
   @Parameter(defaultValue="${localRepository}")
   private ArtifactRepository localRepository;
 
+  @Parameter(defaultValue="${sa.plugin.name}")
+  private String name;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    if ("pom".equalsIgnoreCase(project.getPackaging()))
+      return;
+
+    if (name == null || name.length() == 0)
+      throw new MojoExecutionException("The parameter 'name' is missing or invalid");
+
     try {
+      final File destFile = new File(project.getBuild().getOutputDirectory(), "fingerprint.bin");
+      destFile.getParentFile().mkdirs();
+      final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
+      if (!nameFile.createNewFile())
+        throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
+
       // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, project.getArtifacts().iterator(), 0);
-      destFile.getParentFile().mkdirs();
       if (optionalDeps == null) {
         getLog().warn("No dependencies were found with (scope=*, optional=true), " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
         new LibraryFingerprint().toFile(destFile);

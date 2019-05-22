@@ -51,7 +51,6 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import io.opentracing.contrib.specialagent.Manager.Event;
-import net.bytebuddy.description.modifier.EnumerationState;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -527,11 +526,11 @@ public final class SpecialAgentUtil {
       if (!resources.hasMoreElements())
         return urls;
 
-      final boolean allInstruEnabled = !instruPlugins.containsKey(null) || instruPlugins.get(null);
+      final boolean allInstruEnabled = !instruPlugins.containsKey(null) || instruPlugins.remove(null);
       if (logger.isLoggable(Level.FINER))
         logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
 
-      final boolean allTracerEnabled = !tracerPlugins.containsKey(null) || tracerPlugins.get(null);
+      final boolean allTracerEnabled = !tracerPlugins.containsKey(null) || tracerPlugins.remove(null);
       if (logger.isLoggable(Level.FINER))
         logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
 
@@ -557,33 +556,34 @@ public final class SpecialAgentUtil {
         final JarURLConnection jarURLConnection = (JarURLConnection)connection;
         jarURLConnection.setUseCaches(false);
         final JarFile jarFile = jarURLConnection.getJarFile();
-        final Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-          final String entry = entries.nextElement().getName();
-          if (entry.length() <= path.length() || !entry.startsWith(path))
+        final Enumeration<JarEntry> jarEntries = jarFile.entries();
+        while (jarEntries.hasMoreElements()) {
+          final String jarEntry = jarEntries.nextElement().getName();
+          if (jarEntry.length() <= path.length() || !jarEntry.startsWith(path))
             continue;
 
-          final int slash = entry.lastIndexOf('/');
-          final String jarFileName = entry.substring(slash + 1);
+          final int slash = jarEntry.lastIndexOf('/');
+          final String jarFileName = jarEntry.substring(slash + 1);
 
           // First, extract the JAR into a temp dir
-          final File subDir = new File(destDir, entry.substring(0, slash));
+          final File subDir = new File(destDir, jarEntry.substring(0, slash));
           subDir.mkdirs();
           final File file = new File(subDir, jarFileName);
-          final URL url = new URL(resource, entry.substring(path.length()));
+          final URL url = new URL(resource, jarEntry.substring(path.length()));
           Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
           // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-          final Boolean isInstruPlugin = isInstruPlugin(file);
+          final Plugin plugin = Plugin.getPlugin(file);
           boolean includeJar = true;
-          if (isInstruPlugin != null) {
+          if (plugin != null) {
+            final boolean isInstruPlugin = plugin.type == Plugin.Type.INSTRUMENTATION;
             // Next, see if it is included or excluded
             includeJar = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
             final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
-            for (final Map.Entry<String,Boolean> plugin : plugins.entrySet()) {
-              final String pluginName = plugin.getKey();
-              if (jarFileName.startsWith(pluginName + "-")) {
-                includeJar = plugin.getValue();
+            for (final Map.Entry<String,Boolean> entry : plugins.entrySet()) {
+              final String pluginName = entry.getKey();
+              if (pluginName.equals(plugin.name)) {
+                includeJar = entry.getValue();
                 if (logger.isLoggable(Level.FINER))
                   logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (includeJar ? "en" : "dis") + "abled");
 
@@ -622,19 +622,34 @@ public final class SpecialAgentUtil {
     }
   }
 
-  private static Boolean isInstruPlugin(final File file) throws IOException {
-    try (final JarFile jarFile = new JarFile(file)) {
-      final Enumeration<JarEntry> entries = jarFile.entries();
-      while (entries.hasMoreElements()) {
-        final String entry = entries.nextElement().getName();
-        if ("otarules.mf".equals(entry))
-          return true;
+  private static class Plugin {
+    private static enum Type {
+      INSTRUMENTATION,
+      TRACER
+    }
 
-        if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
-          return false;
+    private static Plugin getPlugin(final File file) throws IOException {
+      try (final JarFile jarFile = new JarFile(file)) {
+        final Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+          final String entry = entries.nextElement().getName();
+          if (entry.startsWith("sa.plugin.name."))
+            return new Plugin(Type.INSTRUMENTATION, entry.substring(15));
+
+          if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
+            return new Plugin(Type.TRACER, file.getName().substring(0, file.getName().length() - 4));
+        }
+
+        return null;
       }
+    }
 
-      return null;
+    private final Type type;
+    private final String name;
+
+    private Plugin(final Type type, final String name) {
+      this.type = type;
+      this.name = name;
     }
   }
 

@@ -26,6 +26,9 @@
   <artifactId>specialagent-aws-sdk</artifactId>
   <name>SpecialAgent Rule for AWS SDK</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-aws-sdk</url>
+  <properties>
+    <sa.plugin.name>aws-sdk</sa.plugin.name>
+  </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-aws-sdk -->

@@ -67,7 +67,7 @@
                 <goals>
                   <goal>verify</goal>
                 </goals>
-                <phase>verify</phase>
+                <phase>prepare-package</phase>
               </execution>
             </executions>
           </plugin>
@@ -231,7 +231,7 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!--dependency>
           <groupId>io.opentracing.contrib</groupId>
           <artifactId>opentracing-grizzly-http-server</artifactId>
           <version>0.1.0</version>
@@ -248,7 +248,7 @@
           <artifactId>opentracing-reactor</artifactId>
           <version>0.1.0</version>
           <scope>provided</scope>
-        </dependency>
+        </dependency-->
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-hazelcast</artifactId>
