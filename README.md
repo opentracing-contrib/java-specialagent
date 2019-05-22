@@ -225,7 +225,7 @@ To disable _an individual **instrumentation** plugin_, specify a system property
 sa.instrumentation.plugin.${PLUGIN_NAME}.enable=false
 ```
 
-The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is included in the [<ins>SpecialAgent</ins>](#41-specialagent), such as `specialagent-okhttp` or `specialagent-web-servlet-filter`.
+The value of `${PLUGIN_NAME}` is the name of the plugin as declared in the plugin's POM. The names follow a consice pattern, such as `okhttp` for the `specialagent-okhttp` plugin artifactId, and `web-servlet-filter` for the `specialagent-web-servlet-filter` plugin artifactId.
 
 ### 3.5 Disabling [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 

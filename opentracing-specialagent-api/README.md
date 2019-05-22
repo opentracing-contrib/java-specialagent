@@ -240,7 +240,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
             </goals>
             <phase>process-classes</phase>
             <configuration>
-              <name>NAME OF THE PLUGIN</name>
+              <name>**NAME OF THE PLUGIN**</name>
               <destFile>${project.build.outputDirectory}/fingerprint.bin</destFile>
             </configuration>
           </execution>
