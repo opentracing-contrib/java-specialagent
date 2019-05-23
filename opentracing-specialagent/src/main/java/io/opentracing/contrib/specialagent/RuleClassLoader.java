@@ -172,7 +172,10 @@ class RuleClassLoader extends URLClassLoader {
 
     try {
       final URL fpURL = getResource(FINGERPRINT_FILE);
-      final LibraryFingerprint fingerprint = fpURL == null ? null : LibraryFingerprint.fromFile(fpURL);
+      if (fpURL == null)
+        throw new IllegalStateException(FINGERPRINT_FILE + " was not found for plugin that is loading the following classpath: " + SpecialAgentUtil.toIndentedString(getURLs()));
+
+      final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
       compatible = isCompatible(fingerprint, classLoader);
       compatibility.put(classLoader, compatible);
       return compatible;
