@@ -58,8 +58,8 @@ class LibraryFingerprint extends Fingerprint {
     }
   }
 
-  private final ClassFingerprint[] classes;
   private final Manifest manifest;
+  private final ClassFingerprint[] classes;
 
   /**
    * Creates a new {@code LibraryFingerprint} with the specified {@code URL}

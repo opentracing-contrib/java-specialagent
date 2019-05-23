@@ -72,9 +72,9 @@ wget -O opentracing-specialagent-1.1.2.jar "http://central.maven.org/maven2/io/o
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.1.3-SNAPSHOT</ins>.
+The latest development release is: <ins>1.2.0-SNAPSHOT</ins>.
 ```bash
-wget -O opentracing-specialagent-1.1.3-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.2.0-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 This is the main artifact that contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
@@ -87,13 +87,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.1.2</version> <!--version>1.1.3-SNAPSHOT<version-->
+  <version>1.1.2</version> <!--version>1.2.0-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.1.2</version> <!--version>1.1.3-SNAPSHOT<version-->
+  <version>1.1.2</version> <!--version>1.2.0-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -225,7 +225,7 @@ To disable _an individual **instrumentation** plugin_, specify a system property
 sa.instrumentation.plugin.${PLUGIN_NAME}.enable=false
 ```
 
-The value of `${PLUGIN_NAME}` is the `artifactId` of the plugin as it is included in the [<ins>SpecialAgent</ins>](#41-specialagent), such as `opentracing-specialagent-okhttp` or `opentracing-specialagent-web-servlet-filter`.
+The value of `${PLUGIN_NAME}` is the name of the plugin as declared in the plugin's POM. The names follow a consice pattern, such as `okhttp` for the `specialagent-okhttp` plugin artifactId, and `web-servlet-filter` for the `specialagent-web-servlet-filter` plugin artifactId.
 
 ### 3.5 Disabling [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
@@ -288,10 +288,10 @@ Examples:
 A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements the auto-instrumentation rules for [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) via the [`opentracing-specialagent-api`][api].
 
 Examples:
-* [`rules/opentracing-specialagent-okhttp`][specialagent-okhttp]
-* [`rules/opentracing-specialagent-jdbc`][specialagent-jdbc]
-* [`rules/opentracing-specialagent-jms-1`][specialagent-jms-1]
-* [`rules/opentracing-specialagent-jms-2`][specialagent-jms-2]
+* [`rules/specialagent-okhttp`][specialagent-okhttp]
+* [`rules/specialagent-jdbc`][specialagent-jdbc]
+* [`rules/specialagent-jms-1`][specialagent-jms-1]
+* [`rules/specialagent-jms-2`][specialagent-jms-2]
 
 <sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -399,11 +399,11 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.1.2/opentracing-specialagent-1.1.2.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.1.3-SNAPSHOT
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.2.0-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
-[specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jdbc
-[specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-1
-[specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-jms-2
-[specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/opentracing-specialagent-okhttp
+[specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc
+[specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-1
+[specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-2
+[specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-okhttp
 [test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.1.0/opentracing-specialagent-1.1.0-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.1.3-SNAPSHOT
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.2.0-SNAPSHOT

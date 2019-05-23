@@ -212,9 +212,9 @@ Upon execution of the test class, in either the IDE or with Maven, the `AgentRun
 
 The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotation. The annotation supports the following properties:
 
-1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>Default: `WARNING`.
-1. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>Default: `{}`.
-1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>Default: `true`.
+1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>**Default:** `WARNING`.
+1. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>**Default:** `{ERROR}`.
+1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>**Default:** `true`.
 
 #### 5.1.1 Packaging
 
@@ -224,9 +224,9 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
    * The dependencies for the 3rd-party libraries are not necessary when the plugin is applied to a target application, as the application must already have these dependencies for the plugin to be used.
    * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the <ins>SpecialAgent</ins> package, as all of the <ins>Instrumentation Plugins</ins> as contained within it.
    * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
-   * Many of the currently implemented <ins>Instrumentation Plugins</ins> _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the <ins>Instrumentation Plugin</ins> artifact. An example of this can be seen with the [Mongo Driver Plugin](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-mongo-driver/pom.xml#L37-L44).
+   * Many of the currently implemented <ins>Instrumentation Plugins</ins> _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the <ins>Instrumentation Plugin</ins> artifact. An example of this can be seen with the [Mongo Driver Plugin](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-mongo-driver/pom.xml#L37-L44).
 1. The package must contain a `fingerprint.bin` file. This file provides the <ins>SpecialAgent</ins> with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the <ins>SpecialAgent</ins> to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
-   1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/opentracing-specialagent-okhttp/pom.xml) as an example.
+   1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-okhttp/pom.xml) as an example.
    1. Next, include the following plugin in the project's POM:
       ```xml
       <plugin>
@@ -240,12 +240,13 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
             </goals>
             <phase>process-classes</phase>
             <configuration>
-              <destFile>${project.build.outputDirectory}/fingerprint.bin</destFile>
+              <name>**NAME OF THE PLUGIN**</name>
             </configuration>
           </execution>
         </executions>
       </plugin>
       ```
+      The `<name>` property is specifies the name of the plugin. This name will be used by users to configure the plugin.
 1. The package must contain a `dependencies.tgf` file. This file allows the <ins>SpecialAgent</ins> to distinguish <ins>Instrumentation Plugin</ins> dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
    ```xml
    <plugin>
