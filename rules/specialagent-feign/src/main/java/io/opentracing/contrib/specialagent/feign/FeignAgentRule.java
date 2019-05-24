@@ -32,38 +32,32 @@ public class FeignAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(
-        builder
-            .type(hasSuperType(named("feign.Client")).and(not(named("feign.Client$Default"))))
-            .transform(new Transformer() {
-              @Override
-              public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-                return builder.visit(Advice.to(FeignClient.class).on(named("execute").and(not(isAbstract())).and(takesArguments(2))));
-            }}),
-        builder
-            .type(named("feign.Client$Default"))
-            .transform(new Transformer() {
-              @Override
-              public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-                return builder.visit(Advice.to(FeignClient.class).on(named("execute").and(takesArguments(2))));
-              }})
-        );
+      builder
+        .type(hasSuperType(named("feign.Client")).and(not(named("feign.Client$Default"))))
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(FeignClient.class).on(named("execute").and(not(isAbstract())).and(takesArguments(2))));
+        }}),
+      builder
+        .type(named("feign.Client$Default"))
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(FeignClient.class).on(named("execute").and(takesArguments(2))));
+          }})
+      );
   }
 
   public static class FeignClient {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin,
-        @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request,
-        @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object options) {
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request, final @Advice.Argument(value = 1) Object options) {
       if (isEnabled(origin))
         request = FeignAgentIntercept.onRequest(request, options);
     }
 
     @Advice.OnMethodExit(onThrowable = Exception.class)
-    public static void exit(final @Advice.Origin String origin,
-        @Advice.Thrown(typing = Typing.DYNAMIC) Exception thrown,
-        @Advice.Return(typing = Typing.DYNAMIC) Object response,
-        @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request,
-        @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object options) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Exception thrown, @Advice.Return Object response, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object options) {
       if (isEnabled(origin))
         FeignAgentIntercept.onResponse(response, request, options, thrown);
     }

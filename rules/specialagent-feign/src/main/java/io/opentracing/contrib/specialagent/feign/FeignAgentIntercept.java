@@ -15,6 +15,10 @@
 
 package io.opentracing.contrib.specialagent.feign;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import feign.Request;
 import feign.Request.Options;
 import feign.Response;
@@ -25,27 +29,24 @@ import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FeignAgentIntercept {
+  private static final StandardTags standardTags = new StandardTags();
+  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
+
   private static class Context {
     private Scope scope;
     private Span span;
   }
-  private static final StandardTags standardTags = new StandardTags();
-  private static ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   public static Object onRequest(Object arg1, Object arg2) {
-    Request request = (Request) arg1;
-    Options options = (Options) arg2;
+    Request request = (Request)arg1;
+    final Span span = GlobalTracer.get()
+      .buildSpan(request.method())
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+      .start();
 
-    Span span = GlobalTracer.get().buildSpan(request.method())
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-        .start();
-
-    standardTags.onRequest(request, options, span);
+    standardTags.onRequest(request, (Options)arg2, span);
 
     request = inject(span.context(), request);
 
@@ -59,26 +60,20 @@ public class FeignAgentIntercept {
   }
 
   private static Request inject(SpanContext spanContext, Request request) {
-    Map<String, Collection<String>> headersWithTracingContext = new HashMap<>(request.headers());
-    GlobalTracer.get().inject(spanContext, Format.Builtin.HTTP_HEADERS,
-        new HttpHeadersInjectAdapter(headersWithTracingContext));
-    return request
-        .create(request.method(), request.url(), headersWithTracingContext, request.body(),
-            request.charset());
+    final Map<String,Collection<String>> headersWithTracingContext = new HashMap<>(request.headers());
+    GlobalTracer.get().inject(spanContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(headersWithTracingContext));
+    return request.create(request.method(), request.url(), headersWithTracingContext, request.body(), request.charset());
   }
 
-  public static void onResponse(Object arg1, Object arg2, Object arg3, Exception ex) {
-    Response response = (Response) arg1;
-    Request request = (Request) arg2;
-    Options options = (Options) arg3;
+  public static void onResponse(final Object arg1, final Object arg2, final Object arg3, Exception e) {
+    final Response response = (Response)arg1;
+    final Request request = (Request)arg2;
+    final Options options = (Options)arg3;
+    if (e == null)
+      standardTags.onResponse(response, options, GlobalTracer.get().activeSpan());
+    else
+      standardTags.onError(e, request, GlobalTracer.get().activeSpan());
 
-    if (ex != null) {
-      standardTags.onError(ex, request, GlobalTracer.get().activeSpan());
-      finish();
-      return;
-    }
-
-    standardTags.onResponse(response, options, GlobalTracer.get().activeSpan());
     finish();
   }
 

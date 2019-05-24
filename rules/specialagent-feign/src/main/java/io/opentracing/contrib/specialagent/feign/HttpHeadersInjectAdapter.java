@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.feign;
 
 import java.util.ArrayList;
@@ -27,19 +28,17 @@ import io.opentracing.propagation.TextMap;
  * @author Pavol Loffay
  */
 class HttpHeadersInjectAdapter implements TextMap {
+  private Map<String,Collection<String>> headers;
 
-  private Map<String, Collection<String>> headers;
-
-  public HttpHeadersInjectAdapter(Map<String, Collection<String>> headers) {
-    if (headers == null) {
+  public HttpHeadersInjectAdapter(final Map<String,Collection<String>> headers) {
+    if (headers == null)
       throw new NullPointerException("Headers should not be null!");
-    }
 
     this.headers = headers;
   }
 
   @Override
-  public void put(String key, String value) {
+  public void put(final String key, final String value) {
     Collection<String> values = headers.get(key);
     if (values == null) {
       values = new ArrayList<>(1);
@@ -50,7 +49,7 @@ class HttpHeadersInjectAdapter implements TextMap {
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
+  public Iterator<Map.Entry<String,String>> iterator() {
     throw new UnsupportedOperationException("This class should be used only with tracer#inject()");
   }
 }

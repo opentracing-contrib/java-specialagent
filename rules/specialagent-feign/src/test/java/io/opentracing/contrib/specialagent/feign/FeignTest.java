@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.feign;
 
 import static org.junit.Assert.*;
 
-import feign.okhttp.OkHttpClient;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -31,8 +29,10 @@ import feign.Headers;
 import feign.RequestLine;
 import feign.Retryer;
 import feign.Target;
+import feign.okhttp.OkHttpClient;
 import io.opentracing.Scope;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
