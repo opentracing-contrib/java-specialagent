@@ -349,6 +349,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast)
 1. [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached)
 1. [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing)
+1. [Hystrix](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
