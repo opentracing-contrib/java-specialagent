@@ -19,13 +19,13 @@ import feign.opentracing.hystrix.TracingConcurrencyStrategy;
 import io.opentracing.util.GlobalTracer;
 
 public class HystrixAgentIntercept {
-  private static volatile boolean enabled;
+  private static volatile boolean registered;
 
   public static void exit() {
-    if (enabled) {
+    if (registered)
       return;
-    }
-    enabled = true;
+
+    registered = true;
     TracingConcurrencyStrategy.register(GlobalTracer.get());
   }
 }
