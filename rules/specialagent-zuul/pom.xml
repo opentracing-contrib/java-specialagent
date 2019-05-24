@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+    <artifactId>rules</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>specialagent-zuul</artifactId>
+  <name>SpecialAgent Rule for Netflix Zuul</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-zuul</url>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.plugin.name>zuul</sa.plugin.name>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.netflix.zuul</groupId>
+      <artifactId>zuul-core</artifactId>
+      <version>1.3.1</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+
+  </dependencies>
+
+</project>

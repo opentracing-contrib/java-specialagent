@@ -59,6 +59,7 @@
     <module>specialagent-jdbi</module>
     <module>specialagent-feign</module>
     <module>specialagent-hystrix</module>
+    <module>specialagent-zuul</module>
   </modules>
   <profiles>
     <profile>
