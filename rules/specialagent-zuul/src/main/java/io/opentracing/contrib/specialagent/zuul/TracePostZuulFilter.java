@@ -15,6 +15,7 @@ package io.opentracing.contrib.specialagent.zuul;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import java.util.HashMap;
@@ -59,6 +60,10 @@ public class TracePostZuulFilter extends ZuulFilter {
 
       if (ctx.getRouteHost() != null) {
         span.setTag(ROUTE_HOST_TAG, ctx.getRouteHost().toString());
+      }
+      final Object scopeObject = ctx.get(TracePreZuulFilter.CONTEXT_SCOPE_KEY);
+      if (scopeObject instanceof Scope) {
+        ((Scope) scopeObject).close();
       }
 
       span.finish();

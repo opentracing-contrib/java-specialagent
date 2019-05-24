@@ -15,6 +15,7 @@ package io.opentracing.contrib.specialagent.zuul;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -25,6 +26,7 @@ class TracePreZuulFilter extends ZuulFilter {
   static final String TYPE = "pre";
   private static final String COMPONENT_NAME = "zuul";
   static final String CONTEXT_SPAN_KEY = TracePreZuulFilter.class.getName();
+  static final String CONTEXT_SCOPE_KEY = TracePreZuulFilter.class.getName() + "-scope";
 
   private final Tracer tracer;
 
@@ -60,6 +62,9 @@ class TracePreZuulFilter extends ZuulFilter {
         new TextMapAdapter(ctx.getZuulRequestHeaders()));
 
     ctx.set(CONTEXT_SPAN_KEY, span);
+
+    final Scope scope = tracer.activateSpan(span);
+    ctx.set(CONTEXT_SCOPE_KEY, scope);
 
     return null;
   }
