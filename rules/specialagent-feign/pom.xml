@@ -27,10 +27,10 @@
   <name>SpecialAgent Rule for Feign</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-feign</url>
   <properties>
-    <feign.version>10.2.3</feign.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>feign</sa.plugin.name>
+    <feign.version>10.2.3</feign.version>
   </properties>
   <dependencies>
     <dependency>

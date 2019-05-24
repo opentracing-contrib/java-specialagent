@@ -1,16 +1,18 @@
-/**
- * Copyright 2017-2019 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.zuul;
 
 import com.netflix.zuul.ZuulFilter;
@@ -22,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TracePostZuulFilter extends ZuulFilter {
-  static final String TYPE = "post";
   private static final String ROUTE_HOST_TAG = "route.host";
+  static final String TYPE = "post";
 
   @Override
   public String filterType() {
@@ -42,29 +44,26 @@ public class TracePostZuulFilter extends ZuulFilter {
 
   @Override
   public Object run() {
-    RequestContext ctx = RequestContext.getCurrentContext();
-
-    Object spanObject = ctx.get(TracePreZuulFilter.CONTEXT_SPAN_KEY);
+    final RequestContext context = RequestContext.getCurrentContext();
+    final Object spanObject = context.get(TracePreZuulFilter.CONTEXT_SPAN_KEY);
     if (spanObject instanceof Span) {
-      Span span = (Span) spanObject;
-      span.setTag(Tags.HTTP_STATUS.getKey(), ctx.getResponseStatusCode());
-
-      if (ctx.getThrowable() != null) {
-        onError(ctx.getThrowable(), span);
-      } else {
-        Object error = ctx.get("error.exception");
-        if (error instanceof Exception) {
-          onError((Exception) error, span);
-        }
+      final Span span = (Span) spanObject;
+      span.setTag(Tags.HTTP_STATUS.getKey(), context.getResponseStatusCode());
+      if (context.getThrowable() != null) {
+        onError(context.getThrowable(), span);
+      }
+      else {
+        final Object error = context.get("error.exception");
+        if (error instanceof Exception)
+          onError((Exception)error, span);
       }
 
-      if (ctx.getRouteHost() != null) {
-        span.setTag(ROUTE_HOST_TAG, ctx.getRouteHost().toString());
-      }
-      final Object scopeObject = ctx.get(TracePreZuulFilter.CONTEXT_SCOPE_KEY);
-      if (scopeObject instanceof Scope) {
-        ((Scope) scopeObject).close();
-      }
+      if (context.getRouteHost() != null)
+        span.setTag(ROUTE_HOST_TAG, context.getRouteHost().toString());
+
+      final Object scopeObject = context.get(TracePreZuulFilter.CONTEXT_SCOPE_KEY);
+      if (scopeObject instanceof Scope)
+        ((Scope)scopeObject).close();
 
       span.finish();
     }
@@ -72,18 +71,16 @@ public class TracePostZuulFilter extends ZuulFilter {
     return null;
   }
 
-  private static void onError(Throwable throwable, Span span) {
+  private static void onError(final Throwable t, final Span span) {
     Tags.ERROR.set(span, Boolean.TRUE);
-
-    if (throwable != null) {
-      span.log(errorLogs(throwable));
-    }
+    if (t != null)
+      span.log(errorLogs(t));
   }
 
-  private static Map<String, Object> errorLogs(Throwable throwable) {
-    Map<String, Object> errorLogs = new HashMap<>(2);
+  private static Map<String,Object> errorLogs(final Throwable t) {
+    final Map<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", throwable);
+    errorLogs.put("error.object", t);
     return errorLogs;
   }
 }

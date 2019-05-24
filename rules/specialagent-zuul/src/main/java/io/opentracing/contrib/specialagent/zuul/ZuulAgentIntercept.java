@@ -15,20 +15,20 @@
 
 package io.opentracing.contrib.specialagent.zuul;
 
-import com.netflix.zuul.ZuulFilter;
-import io.opentracing.util.GlobalTracer;
 import java.util.List;
 
+import com.netflix.zuul.ZuulFilter;
+
+import io.opentracing.util.GlobalTracer;
+
 public class ZuulAgentIntercept {
-
-  public static Object exit(Object returned, Object arg) {
-    List<ZuulFilter> filters = (List<ZuulFilter>) returned;
-    if (arg.equals(TracePreZuulFilter.TYPE)) {
+  public static Object exit(final Object returned, final Object arg) {
+    final List<ZuulFilter> filters = (List<ZuulFilter>)returned;
+    if (arg.equals(TracePreZuulFilter.TYPE))
       filters.add(new TracePreZuulFilter(GlobalTracer.get()));
-
-    } else if (arg.equals(TracePostZuulFilter.TYPE)) {
+    else if (arg.equals(TracePostZuulFilter.TYPE))
       filters.add(new TracePostZuulFilter());
-    }
+
     return returned;
   }
 }
