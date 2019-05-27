@@ -450,6 +450,11 @@
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.2</version>
+          <configuration>
+            <includes>
+              <include>io/opentracing/contrib/specialagent/**</include>
+            </includes>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.eluder.coveralls</groupId>
