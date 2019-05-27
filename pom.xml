@@ -59,6 +59,70 @@
   </modules>
   <profiles>
     <profile>
+      <id>tools.jar</id>
+      <activation>
+        <jdk>(,1.8]</jdk>
+      </activation>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.6.0</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+    <profile>
+      <id>maven.test.skip</id>
+      <activation>
+        <property>
+          <name>maven.test.skip</name>
+        </property>
+      </activation>
+      <properties>
+        <skipTests>true</skipTests>
+        <skipITests>true</skipITests>
+      </properties>
+    </profile>
+    <profile>
+      <id>skipTests</id>
+      <activation>
+        <property>
+          <name>skipTests</name>
+        </property>
+      </activation>
+      <properties>
+        <skipITests>true</skipITests>
+      </properties>
+    </profile>
+    <profile>
+      <id>!skipITests</id>
+      <activation>
+        <property>
+          <name>!skipITests</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <configuration>
+                  <skipITs>${maven.test.skip}</skipITs>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>report</id>
       <build>
         <plugins>
@@ -67,16 +131,20 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>default-prepare-agent</id>
+                <id>prepare-agent</id>
                 <goals>
                   <goal>prepare-agent</goal>
                 </goals>
               </execution>
               <execution>
+                <id>report</id>
                 <phase>install</phase>
                 <goals>
                   <goal>report</goal>
                 </goals>
+                <configuration>
+                  <skip>${skipTests}</skip>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -103,6 +171,57 @@
                 </goals>
                 <configuration>
                   <skip>true</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>invoke-maven-plugin-test</id>
+      <activation>
+        <property>
+          <name>!maven.test.skip</name>
+        </property>
+        <file>
+          <exists>src/main/resources/META-INF/plexus/components.xml</exists>
+        </file>
+      </activation>
+      <properties>
+        <maven.test.skip>true</maven.test.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>install</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <pom>pom.xml</pom>
+                  <noLog>true</noLog>
+                  <streamLogs>true</streamLogs>
+                  <showErrors>true</showErrors>
+                  <properties>
+                    <argLine>${argLine}</argLine>
+                    <skipTests>${skipTests}</skipTests>
+                    <skipITests>${skipITests}</skipITests>
+                    <repoToken>${repoToken}</repoToken>
+                  </properties>
+                  <mavenOpts>${argLine}</mavenOpts>
+                  <goals>
+                    <goal>install</goal>
+                  </goals>
+                  <profiles>
+                    <profile>!report</profile>
+                    <profile>!invoke-maven-plugin-test</profile>
+                    <profile>maven-plugin-test</profile>
+                  </profiles>
                 </configuration>
               </execution>
             </executions>
