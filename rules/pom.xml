@@ -60,6 +60,7 @@
     <module>specialagent-feign</module>
     <module>specialagent-hystrix</module>
     <module>specialagent-zuul</module>
+    <module>specialagent-spring-kafka</module>
   </modules>
   <profiles>
     <profile>
