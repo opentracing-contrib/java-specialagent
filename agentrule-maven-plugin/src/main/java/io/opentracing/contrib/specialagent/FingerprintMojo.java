@@ -157,6 +157,9 @@ public final class FingerprintMojo extends AbstractMojo {
       final File destFile = new File(project.getBuild().getOutputDirectory(), "fingerprint.bin");
       destFile.getParentFile().mkdirs();
       final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
+      if (nameFile.exists())
+        throw new MojoExecutionException("File unexpectedly exists: " + nameFile.getAbsolutePath());
+
       if (!nameFile.createNewFile())
         throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
 
