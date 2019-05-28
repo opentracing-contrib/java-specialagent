@@ -87,8 +87,7 @@ public final class SpecialAgentUtil {
       else
         continue;
 
-      final boolean match = names.contains(artifact);
-      if (match) {
+      if (names.contains(artifact)) {
         final URL result = new URL(string);
         final URL[] results = filterUrlFileNames(urls, names, i + 1, depth + 1);
         results[depth] = result;
@@ -412,15 +411,15 @@ public final class SpecialAgentUtil {
   }
 
   /**
-   * Returns string representation of the specified array.
+   * Returns string representation of the specified collection.
    * <p>
    * This method differentiates itself from the algorithm in
    * {@link Collection#toString()} by formatting the output to separate entries
-   * onto new lines, indented with 2 spaces. If the specified array is null,
-   * this method returns the string {@code "null"}. If the length of the
-   * specified array is 0, this method returns {@code ""}.
+   * onto new lines, indented with 2 spaces. If the specified collection is
+   * null, this method returns the string {@code "null"}. If the size of the
+   * specified collection is 0, this method returns {@code ""}.
    *
-   * @param l The array.
+   * @param l The collection.
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Collection#toString()}.
    */
