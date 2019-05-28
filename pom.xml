@@ -49,7 +49,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
-    <version.bytebuddy>1.9.12</version.bytebuddy>
+    <version.bytebuddy>1.9.13</version.bytebuddy>
+    <version.maven>3.6.1</version.maven>
     <version.opentracing>0.32.0</version.opentracing>
     <jaeger-client-bundle>jaeger</jaeger-client-bundle>
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
@@ -478,7 +479,7 @@
     <dependency>
       <groupId>com.lightstep.tracer</groupId>
       <artifactId>lightstep-tracer-jre-bundle</artifactId>
-      <version>0.16.0</version>
+      <version>0.16.1</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -519,7 +520,7 @@
       <dependency>
         <groupId>io.opentracing.contrib</groupId>
         <artifactId>opentracing-tracerresolver</artifactId>
-        <version>0.1.6</version>
+        <version>0.1.7</version>
       </dependency>
 
       <dependency>
@@ -536,17 +537,17 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
-        <version>3.6.0</version>
+        <version>${version.maven}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
-        <version>3.6.0</version>
+        <version>${version.maven}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-compat</artifactId>
-        <version>3.6.0</version>
+        <version>${version.maven}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
