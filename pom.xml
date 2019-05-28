@@ -57,6 +57,7 @@
   </properties>
   <modules>
     <module>opentracing-specialagent</module>
+    <module>agentrule-maven-plugin</module>
   </modules>
   <profiles>
     <profile>
@@ -238,7 +239,6 @@
         </property>
       </activation>
       <modules>
-        <module>agentrule-maven-plugin</module>
         <module>opentracing-specialagent-api</module>
         <module>rules</module>
       </modules>
