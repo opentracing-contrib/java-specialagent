@@ -209,6 +209,7 @@
                   <noLog>true</noLog>
                   <streamLogs>true</streamLogs>
                   <showErrors>true</showErrors>
+                  <skipInvocation>${skipTests}</skipInvocation>
                   <properties>
                     <argLine>${argLine}</argLine>
                     <skipTests>${skipTests}</skipTests>
@@ -250,6 +251,9 @@
           <name>assemble</name>
         </property>
       </activation>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
       <build>
         <plugins>
           <plugin>
