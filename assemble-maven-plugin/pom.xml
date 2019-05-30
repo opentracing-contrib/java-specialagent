@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018 The OpenTracing Authors
+  Copyright 2019 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@
     <artifactId>specialagent</artifactId>
     <version>1.2.0-SNAPSHOT</version>
   </parent>
-  <artifactId>agentrule-maven-plugin</artifactId>
+  <artifactId>assemble-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <name>AgentRule Maven Plugin for SpecialAgent</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/agentrule-maven-plugin</url>
+  <name>Assemble Maven Plugin for SpecialAgent</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/assemble-maven-plugin</url>
   <build>
     <plugins>
       <plugin>
@@ -34,7 +34,7 @@
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
-          <goalPrefix>agentrule</goalPrefix>
+          <goalPrefix>assemble</goalPrefix>
         </configuration>
         <executions>
           <execution>
@@ -62,7 +62,7 @@
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
-            <artifactId>agentrule-maven-plugin</artifactId>
+            <artifactId>assemble-maven-plugin</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -79,27 +79,15 @@
         </plugins>
       </build-->
     </profile>
-    <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>!assemble</name>
-        </property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent</groupId>
-          <artifactId>opentracing-specialagent</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
   </profiles>
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>${version.maven}</version>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>opentracing-specialagent-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
@@ -107,23 +95,9 @@
       <version>3.6.0</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>${version.maven}</version>
-    </dependency>
-    <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
       <scope>test</scope>
     </dependency>
-    <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
-    <dependency>
-      <groupId>javax.el</groupId>
-      <artifactId>javax.el-api</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
-      <optional>true</optional>
-    </dependency>
-    <!-- [end] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [end] -->
   </dependencies>
 </project>

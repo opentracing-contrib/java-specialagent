@@ -173,7 +173,7 @@ class RuleClassLoader extends URLClassLoader {
     try {
       final URL fpURL = getResource(FINGERPRINT_FILE);
       if (fpURL == null)
-        throw new IllegalStateException(FINGERPRINT_FILE + " was not found for plugin that is loading the following classpath: " + SpecialAgentUtil.toIndentedString(getURLs()));
+        throw new IllegalStateException(FINGERPRINT_FILE + " was not found for plugin that is loading the following classpath: " + AssembleUtil.toIndentedString(getURLs()));
 
       final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
       compatible = isCompatible(fingerprint, classLoader);
@@ -189,25 +189,25 @@ class RuleClassLoader extends URLClassLoader {
     if (fingerprint != null) {
       final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
       if (errors != null) {
-        logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + SpecialAgentUtil.toIndentedString(errors) + " in: " + SpecialAgentUtil.toIndentedString(getURLs()));
+        logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
         return false;
       }
 
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
+        logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
 
       return true;
     }
 
     if (failOnEmptyFingerprint) {
-      logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
+      logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
       compatibility.put(classLoader, false);
       return false;
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + SpecialAgentUtil.toIndentedString(getURLs()));
+      logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
   }

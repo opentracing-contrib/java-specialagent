@@ -309,12 +309,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @throws IOException If an I/O error has occurred.
    */
   private static List<String> findRulePaths(final URL dependenciesUrl) throws IOException {
-    final String dependenciesTgf = dependenciesUrl == null ? null : new String(SpecialAgentUtil.readBytes(dependenciesUrl));
+    final String dependenciesTgf = dependenciesUrl == null ? null : new String(AssembleUtil.readBytes(dependenciesUrl));
 
     final List<String> rulePaths = new ArrayList<>();
     final URL[] classpath = SpecialAgentUtil.classPathToURLs(System.getProperty("java.class.path"));
 
-    final URL[] dependencies = SpecialAgentUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
+    final URL[] dependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
     if (dependencies == null)
       throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
@@ -326,12 +326,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     // The JARs with classes in the Boot-Path are already excluded due to their
     // provided scope.
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("rulePaths of forked process will be:\n" + SpecialAgentUtil.toIndentedString(rulePaths));
+      logger.finest("rulePaths of forked process will be:\n" + AssembleUtil.toIndentedString(rulePaths));
 
     System.setProperty(SpecialAgent.RULE_PATH_ARG, SpecialAgentUtil.toString(rulePaths.toArray(), ":"));
 
     // Add scope={"test", "provided"}, optional=true to rulePaths
-    final URL[] testDependencies = SpecialAgentUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
+    final URL[] testDependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
     if (testDependencies == null)
       throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 

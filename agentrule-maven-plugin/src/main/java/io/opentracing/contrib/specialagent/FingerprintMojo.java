@@ -55,7 +55,7 @@ import io.opentracing.contrib.specialagent.Link.Manifest;
  * and class types).</li>
  * </ol>
  */
-@Mojo(name="fingerprint", defaultPhase=LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution=ResolutionScope.TEST)
+@Mojo(name="fingerprint", defaultPhase=LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(goal="fingerprint")
 public final class FingerprintMojo extends AbstractMojo {
   /**
@@ -139,10 +139,10 @@ public final class FingerprintMojo extends AbstractMojo {
   @Parameter(defaultValue="${project}", required=true, readonly=true)
   private MavenProject project;
 
-  @Parameter(defaultValue="${localRepository}")
+  @Parameter(defaultValue="${localRepository}", required=true, readonly=true)
   private ArtifactRepository localRepository;
 
-  @Parameter(defaultValue="${sa.plugin.name}")
+  @Parameter(defaultValue="${sa.plugin.name}", required=true, readonly=true)
   private String name;
 
   @Override

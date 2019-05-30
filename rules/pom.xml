@@ -65,6 +65,9 @@
     <profile>
       <id>default</id>
       <activation>
+        <file>
+          <exists>src</exists>
+        </file>
         <property>
           <name>!assemble</name>
         </property>
