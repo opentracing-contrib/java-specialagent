@@ -17,26 +17,26 @@
   <components>
     <component>
       <role>org.apache.maven.lifecycle.Lifecycle</role>
-      <role-hint>fingerprint</role-hint>
+      <role-hint>assemble</role-hint>
       <implementation>org.apache.maven.lifecycle.Lifecycle</implementation>
       <configuration>
-        <id>fingerprint</id>
+        <id>assemble</id>
         <default-phases>
-          <generate-resources>io.opentracing.contrib.specialagent:assemble-maven-plugin:fingerprint</generate-resources>
+          <generate-resources>io.opentracing.contrib.specialagent:assemble-maven-plugin:assemble</generate-resources>
         </default-phases>
       </configuration>
     </component>
     <component>
       <role>org.apache.maven.lifecycle.Lifecycle</role>
-      <role-hint>fingerprint</role-hint>
+      <role-hint>assemble</role-hint>
       <implementation>org.apache.maven.lifecycle.Lifecycle</implementation>
       <configuration>
-        <id>fingerprint</id>
+        <id>assemble</id>
         <phases>
-          <phase>fingerprint</phase>
+          <phase>assemble</phase>
         </phases>
         <default-phases>
-          <fingerprint>io.opentracing.contrib.specialagent:assemble-maven-plugin:fingerprint</fingerprint>
+          <assemble>io.opentracing.contrib.specialagent:assemble-maven-plugin:assemble</assemble>
         </default-phases>
       </configuration>
     </component>
