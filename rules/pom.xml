@@ -60,12 +60,16 @@
     <module>specialagent-feign</module>
     <module>specialagent-hystrix</module>
     <module>specialagent-zuul</module>
+    <module>specialagent-spring-kafka</module>
     <module>specialagent-spring-scheduling</module>
   </modules>
   <profiles>
     <profile>
       <id>default</id>
       <activation>
+        <file>
+          <exists>src</exists>
+        </file>
         <property>
           <name>!assemble</name>
         </property>
@@ -122,22 +126,6 @@
             </goals>
             <configuration>
               <skip>${assemble}</skip>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>tree</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <outputType>tgf</outputType>
-              <outputFile>${project.build.directory}/generated-resources/dependencies.tgf</outputFile>
             </configuration>
           </execution>
         </executions>

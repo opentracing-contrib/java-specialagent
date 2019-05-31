@@ -42,7 +42,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import com.google.common.io.Files;
 
-@Mojo(name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresDependencyResolution = ResolutionScope.TEST)
+@Mojo(name = "verify", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "verify")
 public final class VerifyMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
