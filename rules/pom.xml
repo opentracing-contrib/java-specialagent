@@ -61,6 +61,7 @@
     <module>specialagent-hystrix</module>
     <module>specialagent-zuul</module>
     <module>specialagent-spring-kafka</module>
+    <module>specialagent-spring-scheduling</module>
   </modules>
   <profiles>
     <profile>
