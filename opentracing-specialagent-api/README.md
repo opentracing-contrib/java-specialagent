@@ -247,25 +247,6 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
       </plugin>
       ```
       The `<name>` property is specifies the name of the plugin. This name will be used by users to configure the plugin.
-1. The package must contain a `dependencies.tgf` file. This file allows the <ins>SpecialAgent</ins> to distinguish <ins>Instrumentation Plugin</ins> dependency JARs from test JARs and API JARs. To generate this file, include the following plugin in the project's POM:
-   ```xml
-   <plugin>
-     <groupId>org.apache.maven.plugins</groupId>
-     <artifactId>maven-dependency-plugin</artifactId>
-     <executions>
-       <execution>
-         <goals>
-           <goal>tree</goal>
-         </goals>
-         <phase>generate-resources</phase>
-         <configuration>
-           <outputType>tgf</outputType>
-           <outputFile>${project.build.directory}/generated-resources/dependencies.tgf</outputFile>
-         </configuration>
-       </execution>
-     </executions>
-   </plugin>
-   ```
 
 #### 5.1.2 Testing
 
