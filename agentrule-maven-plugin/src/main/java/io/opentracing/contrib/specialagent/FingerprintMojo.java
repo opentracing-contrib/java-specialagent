@@ -159,9 +159,9 @@ public final class FingerprintMojo extends TreeMojo {
     super.execute();
   }
 
-  private void createFingerprintBin() throws MojoExecutionException {
+  private void createFingerprintBin() throws MojoExecutionException, MojoFailureException {
     try {
-      final File destFile = new File(getProject().getBuild().getOutputDirectory(), "fingerprint.bin");
+      final File destFile = new File(getProject().getBuild().getOutputDirectory(), RuleClassLoader.FINGERPRINT_FILE);
       destFile.getParentFile().mkdirs();
       final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
       if (!nameFile.exists() && !nameFile.createNewFile())
@@ -190,7 +190,7 @@ public final class FingerprintMojo extends TreeMojo {
       fingerprint.toFile(destFile);
     }
     catch (final IOException e) {
-      throw new MojoExecutionException(null, e);
+      throw new MojoFailureException(null, e);
     }
   }
 
