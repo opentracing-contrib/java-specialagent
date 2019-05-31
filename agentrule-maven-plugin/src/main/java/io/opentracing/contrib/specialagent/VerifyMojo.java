@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,9 +42,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
-import com.google.common.io.Files;
-
-@Mojo(name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresDependencyResolution = ResolutionScope.TEST)
+@Mojo(name = "verify", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "verify")
 public final class VerifyMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -101,7 +101,7 @@ public final class VerifyMojo extends AbstractMojo {
         if (!hasOtaRulesMf) {
           final String rename = renames.get(file.getName());
           if (rename != null)
-            Files.move(file, new File(file.getParentFile(), rename));
+            Files.move(file.toPath(), new File(file.getParentFile(), rename).toPath());
 
           continue;
         }

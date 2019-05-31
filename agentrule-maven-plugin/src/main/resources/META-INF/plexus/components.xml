@@ -1,12 +1,12 @@
 <!--
   Copyright 2018 The OpenTracing Authors
-  
+
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
       http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,26 +17,29 @@
   <components>
     <component>
       <role>org.apache.maven.lifecycle.Lifecycle</role>
-      <role-hint>fingerprint</role-hint>
+      <role-hint>agentrule</role-hint>
       <implementation>org.apache.maven.lifecycle.Lifecycle</implementation>
       <configuration>
-        <id>fingerprint</id>
+        <id>agentrule</id>
         <default-phases>
-          <generate-resources>io.opentracing.contrib.specialagent:agentplugin-maven-plugin:fingerprint</generate-resources>
+          <generate-sources>io.opentracing.contrib.specialagent:agentrule-maven-plugin:fingerprint</generate-sources>
+          <prepare-package>io.opentracing.contrib.specialagent:agentrule-maven-plugin:verify</prepare-package>
         </default-phases>
       </configuration>
     </component>
     <component>
       <role>org.apache.maven.lifecycle.Lifecycle</role>
-      <role-hint>fingerprint</role-hint>
+      <role-hint>agentrule</role-hint>
       <implementation>org.apache.maven.lifecycle.Lifecycle</implementation>
       <configuration>
-        <id>fingerprint</id>
+        <id>agentrule</id>
         <phases>
           <phase>fingerprint</phase>
+          <phase>verify</phase>
         </phases>
         <default-phases>
-          <fingerprint>io.opentracing.contrib.specialagent:agentplugin-maven-plugin:fingerprint</fingerprint>
+          <fingerprint>io.opentracing.contrib.specialagent:agentrule-maven-plugin:fingerprint</fingerprint>
+          <verify>io.opentracing.contrib.specialagent:agentrule-maven-plugin:verify</verify>
         </default-phases>
       </configuration>
     </component>

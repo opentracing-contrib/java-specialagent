@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.2.0 (2019-05-31)
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Feign, Zuul, Spring Kafka, Spring Scheduling.
+* Upgrade to SpecialAgent API, requiring AgentRule(s) to explicitly specify a name for the instrumentation plugin.
+* Improved configuration spec utilizing short names for instrumentation plugins.
+* Fix to bug regarding dependency resolution of a plugin's dependency graph.
+* Improved API documentation.
+
 ## v1.1.2 (2019-05-17)
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Redis, Spring Web Flux, Grizzly HTTP Server, Grizzly AsyncHttpClient, Reactor, Hazelcast, Spymemcached.
 * Upgraded Jaeger Agent Plugin to support OT API 0.32.0.

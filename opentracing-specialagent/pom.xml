@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent</artifactId>
   <name>OpenTracing SpecialAgent</name>
@@ -37,24 +37,19 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
+            <groupId>io.opentracing.contrib.specialagent</groupId>
+            <artifactId>assemble-maven-plugin</artifactId>
+            <version>${project.version}</version>
             <executions>
               <execution>
-                <id>copy-dependencies</id>
                 <!-- Phase must be generate-resources for the maven-resources-plugin to acknowledge the
                   <outputDirectory> of this execution, which is defined as a <resource> above. Specifying a
                   different phase results in a JAR that does not include the dependencies generated in the
                   <outputDirectory>. -->
                 <phase>generate-resources</phase>
                 <goals>
-                  <goal>copy-dependencies</goal>
+                  <goal>assemble</goal>
                 </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/dependencies/META-INF/opentracing-specialagent</outputDirectory>
-                  <includeScope>provided</includeScope>
-                  <excludeScope>test</excludeScope>
-                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -287,6 +282,18 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-spring-kafka</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-spring-scheduling</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-spring-websocket</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
@@ -344,6 +351,12 @@
     <!-- Use <optional>true</optional> instead of <scope>provided</scope>
       for OT libs so they make it into both the main and test JARs. -->
 
+    <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>opentracing-specialagent-util</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>

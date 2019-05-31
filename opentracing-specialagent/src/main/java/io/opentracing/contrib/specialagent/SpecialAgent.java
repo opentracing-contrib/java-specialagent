@@ -211,7 +211,7 @@ public class SpecialAgent {
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
     final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", instruPlugins, tracerPlugins);
-    if (logger.isLoggable(Level.FINER))
+    if (pluginJarUrls.size() == 0 && logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
     try {
@@ -230,7 +230,7 @@ public class SpecialAgent {
         pluginJarUrls.add(rulePath);
 
     if (logger.isLoggable(Level.FINER))
-      logger.finer("Loading " + pluginJarUrls.size() + " rule paths:\n" + SpecialAgentUtil.toIndentedString(pluginJarUrls));
+      logger.finer("Loading " + pluginJarUrls.size() + " rule paths:\n" + AssembleUtil.toIndentedString(pluginJarUrls));
 
     allPluginsClassLoader = new AllPluginsClassLoader(pluginJarUrls);
 
@@ -326,7 +326,7 @@ public class SpecialAgent {
 
         final URL jarUrl = SpecialAgentUtil.getSourceLocation(url, DEPENDENCIES_TGF);
 
-        final String dependenciesTgf = new String(SpecialAgentUtil.readBytes(url));
+        final String dependenciesTgf = new String(AssembleUtil.readBytes(url));
         final String firstLine = dependenciesTgf.substring(0, dependenciesTgf.indexOf('\n'));
         final String version = firstLine.substring(firstLine.lastIndexOf(':') + 1);
 
@@ -337,7 +337,10 @@ public class SpecialAgent {
 
         nameToVersion.put(name, version);
 
-        final URL[] dependencies = SpecialAgentUtil.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
+        final URL[] dependencies = AssembleUtil.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("  URLs from " + DEPENDENCIES_TGF + ": " + AssembleUtil.toIndentedString(dependencies));
+
         if (dependencies == null)
           throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered: " + url + "\nPlease file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
@@ -358,7 +361,7 @@ public class SpecialAgent {
             }
 
             if (logger.isLoggable(Level.FINEST))
-              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":\n" + SpecialAgentUtil.toIndentedString(dependencies));
+              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":\n" + AssembleUtil.toIndentedString(dependencies));
 
             ++count;
             ruleToDependencies.put(jarUrl, dependencies);
@@ -367,7 +370,7 @@ public class SpecialAgent {
         }
 
         if (!foundReference)
-          throw new IllegalStateException("Could not find a rule JAR referenced in " + jarUrl + DEPENDENCIES_TGF + " from: \n" + SpecialAgentUtil.toIndentedString(dependencies));
+          throw new IllegalStateException("Could not find a rule JAR referenced in " + jarUrl + DEPENDENCIES_TGF + " from: \n" + AssembleUtil.toIndentedString(dependencies));
       }
     }
     catch (final IOException e) {
@@ -530,7 +533,7 @@ public class SpecialAgent {
       throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + rulePath);
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("[" + pluginName + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + SpecialAgentUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
+      logger.finest("[" + pluginName + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + AssembleUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
 
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
     final RuleClassLoader ruleClassLoader = new RuleClassLoader(rulePaths, classLoader);
@@ -647,7 +650,7 @@ public class SpecialAgent {
         }
 
         // Return the resource's bytes
-        final byte[] bytecode = SpecialAgentUtil.readBytes(resource);
+        final byte[] bytecode = AssembleUtil.readBytes(resource);
         if (logger.isLoggable(Level.FINEST))
           logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
 

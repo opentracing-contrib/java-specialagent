@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
   </parent>
   <artifactId>agentrule-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
@@ -58,7 +58,7 @@
   <profiles>
     <profile>
       <id>maven-plugin-test</id>
-      <build>
+      <!--build>
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
@@ -77,7 +77,7 @@
             </executions>
           </plugin>
         </plugins>
-      </build>
+      </build-->
     </profile>
     <profile>
       <id>default</id>
@@ -97,19 +97,13 @@
   </profiles>
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>${version.maven}</version>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
       <version>3.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>${version.maven}</version>
     </dependency>
     <dependency>
       <artifactId>junit</artifactId>
