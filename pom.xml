@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Java SpecialAgent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
@@ -58,6 +58,10 @@
   </properties>
   <modules>
     <module>opentracing-specialagent-api</module>
+    <module>opentracing-specialagent-util</module>
+    <module>assemble-maven-plugin</module>
+    <module>opentracing-specialagent</module>
+    <module>agentrule-maven-plugin</module>
   </modules>
   <profiles>
     <profile>
@@ -239,6 +243,9 @@
           <name>!assemble</name>
         </property>
       </activation>
+      <modules>
+        <module>rules</module>
+      </modules>
     </profile>
     <profile>
       <id>assemble</id>
