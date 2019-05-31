@@ -12,12 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.spring.scheduling;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -30,20 +32,17 @@ public class SpringAsyncAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-        .type(named("org.springframework.aop.interceptor.AsyncExecutionInterceptor"))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(SpringAsyncAgentRule.class).on(named("invoke")));
-          }
-        }));
+      .type(named("org.springframework.aop.interceptor.AsyncExecutionInterceptor"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(SpringAsyncAgentRule.class).on(named("invoke")));
+        }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin,
-      @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
+  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
     if (isEnabled(origin))
       arg = SpringSchedulingAgentIntercept.invoke(arg);
   }
-
 }

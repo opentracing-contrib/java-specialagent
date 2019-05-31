@@ -12,20 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.spring.scheduling;
+
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
+
+import org.aopalliance.intercept.MethodInvocation;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Method;
-import org.aopalliance.intercept.MethodInvocation;
 
 public class TracingMethodInvocation implements MethodInvocation {
   private final MethodInvocation invocation;
 
-  public TracingMethodInvocation(MethodInvocation invocation) {
+  public TracingMethodInvocation(final MethodInvocation invocation) {
     this.invocation = invocation;
   }
 
@@ -41,18 +45,22 @@ public class TracingMethodInvocation implements MethodInvocation {
 
   @Override
   public Object proceed() throws Throwable {
-    Span span = GlobalTracer.get().buildSpan(invocation.getMethod().getName())
-        .withTag(Tags.COMPONENT.getKey(), "spring-async")
-        .withTag("class", invocation.getMethod().getDeclaringClass().getSimpleName())
-        .withTag("method", invocation.getMethod().getName())
-        .start();
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = tracer
+      .buildSpan(invocation.getMethod().getName())
+      .withTag(Tags.COMPONENT.getKey(), "spring-async")
+      .withTag("class", invocation.getMethod().getDeclaringClass().getSimpleName())
+      .withTag("method", invocation.getMethod().getName())
+      .start();
 
-    try (Scope ignored = GlobalTracer.get().activateSpan(span)) {
+    try (final Scope ignored = tracer.activateSpan(span)) {
       return invocation.proceed();
-    } catch (Exception ex) {
-      SpringSchedulingAgentIntercept.captureException(span, ex);
-      throw ex;
-    } finally {
+    }
+    catch (final Exception e) {
+      SpringSchedulingAgentIntercept.captureException(span, e);
+      throw e;
+    }
+    finally {
       span.finish();
     }
   }
@@ -66,5 +74,4 @@ public class TracingMethodInvocation implements MethodInvocation {
   public AccessibleObject getStaticPart() {
     return invocation.getStaticPart();
   }
-
 }

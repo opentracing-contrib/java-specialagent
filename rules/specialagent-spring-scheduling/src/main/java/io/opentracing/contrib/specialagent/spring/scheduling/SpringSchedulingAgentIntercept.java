@@ -15,14 +15,17 @@
 
 package io.opentracing.contrib.specialagent.spring.scheduling;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 
 public class SpringSchedulingAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -32,45 +35,46 @@ public class SpringSchedulingAgentIntercept {
     private Span span;
   }
 
-  public static void enter(Object thiz) {
-    ScheduledMethodRunnable runnable = (ScheduledMethodRunnable) thiz;
-    Span span = GlobalTracer.get().buildSpan(runnable.getMethod().getName())
-        .withTag(Tags.COMPONENT.getKey(), "spring-scheduled")
-        .withTag("class", runnable.getTarget().getClass().getSimpleName())
-        .withTag("method", runnable.getMethod().getName())
-        .start();
+  public static void enter(final Object thiz) {
+    final ScheduledMethodRunnable runnable = (ScheduledMethodRunnable)thiz;
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = tracer
+      .buildSpan(runnable.getMethod().getName())
+      .withTag(Tags.COMPONENT.getKey(), "spring-scheduled")
+      .withTag("class", runnable.getTarget().getClass().getSimpleName())
+      .withTag("method", runnable.getMethod().getName())
+      .start();
 
-    final Scope scope = GlobalTracer.get().activateSpan(span);
+    final Scope scope = tracer.activateSpan(span);
     final Context context = new Context();
     contextHolder.set(context);
     context.scope = scope;
     context.span = span;
-
   }
 
-  public static void exit(Throwable thrown) {
+  public static void exit(final Throwable thrown) {
     final Context context = contextHolder.get();
-    if (context != null) {
-      if (thrown != null) {
-        captureException(context.span, thrown);
-      }
-      context.scope.close();
-      context.span.finish();
-      contextHolder.remove();
-    }
+    if (context == null)
+      return;
+
+    if (thrown != null)
+      captureException(context.span, thrown);
+
+    context.scope.close();
+    context.span.finish();
+    contextHolder.remove();
   }
 
-  static void captureException(Span span, Throwable ex) {
-    Map<String, Object> exceptionLogs = new HashMap<>();
+  static void captureException(final Span span, final Throwable t) {
+    final Map<String,Object> exceptionLogs = new HashMap<>();
     exceptionLogs.put("event", Tags.ERROR.getKey());
-    exceptionLogs.put("error.object", ex);
+    exceptionLogs.put("error.object", t);
     span.log(exceptionLogs);
     Tags.ERROR.set(span, true);
   }
 
-
-  public static Object invoke(Object arg) {
-    MethodInvocation invocation = (MethodInvocation) arg;
+  public static Object invoke(final Object arg) {
+    final MethodInvocation invocation = (MethodInvocation)arg;
     return new TracingMethodInvocation(invocation);
   }
 }
