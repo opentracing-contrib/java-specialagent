@@ -130,22 +130,6 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>tree</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <outputType>tgf</outputType>
-              <outputFile>${project.build.directory}/generated-resources/dependencies.tgf</outputFile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
