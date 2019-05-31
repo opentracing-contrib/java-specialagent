@@ -60,6 +60,7 @@
     <module>specialagent-feign</module>
     <module>specialagent-hystrix</module>
     <module>specialagent-zuul</module>
+    <module>specialagent-spring-websocket</module>
   </modules>
   <profiles>
     <profile>
