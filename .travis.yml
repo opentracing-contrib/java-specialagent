@@ -27,7 +27,7 @@ script:
       [ "$TRAVIS_BRANCH" = "master" ] &&
       [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
-    mvn install && cd agentrule-maven-plugin && mvn -P deploy deploy;
+    mvn install && cd opentracing-specialagent-api && mvn -P deploy deploy;
   else
     mvn install;
   fi'
