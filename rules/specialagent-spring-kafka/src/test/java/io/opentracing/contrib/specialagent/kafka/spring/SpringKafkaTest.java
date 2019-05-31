@@ -12,21 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.kafka.spring;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -46,14 +43,18 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.util.GlobalTracer;
+
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
 public class SpringKafkaTest {
   private static final AtomicInteger counter = new AtomicInteger();
 
   @ClassRule
-  public static final EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(2, true, 2,
-      "messages");
+  public static final EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(2, true, 2, "messages");
 
   @Before
   public void before(final MockTracer tracer) {
@@ -61,9 +62,9 @@ public class SpringKafkaTest {
   }
 
   @Test
-  public void test(MockTracer tracer) {
+  public void test(final MockTracer tracer) {
     final ApplicationContext context = new AnnotationConfigApplicationContext(KafkaConfiguration.class);
-    KafkaTemplate<Integer, String> kafkaTemplate = context.getBean(KafkaTemplate.class);
+    KafkaTemplate<Integer,String> kafkaTemplate = context.getBean(KafkaTemplate.class);
     kafkaTemplate.send("spring", "message");
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
@@ -74,34 +75,27 @@ public class SpringKafkaTest {
   @Configuration
   @EnableKafka
   public static class KafkaConfiguration {
-
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<Integer, String>
-    kafkaListenerContainerFactory() {
-      ConcurrentKafkaListenerContainerFactory<Integer, String> factory =
-          new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<Integer,String> kafkaListenerContainerFactory() {
+      final ConcurrentKafkaListenerContainerFactory<Integer,String> factory = new ConcurrentKafkaListenerContainerFactory<>();
       factory.setConsumerFactory(consumerFactory());
       return factory;
     }
 
     @Bean
-    public ConsumerFactory<Integer, String> consumerFactory() {
-      final Map<String, Object> consumerProps = KafkaTestUtils
-          .consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
+    public ConsumerFactory<Integer,String> consumerFactory() {
+      final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
       consumerProps.put("auto.offset.reset", "earliest");
-
       return new DefaultKafkaConsumerFactory<>(consumerProps);
     }
 
-
     @Bean
-    public ProducerFactory<Integer, String> producerFactory() {
-      return new DefaultKafkaProducerFactory<>(
-          KafkaTestUtils.producerProps(embeddedKafkaRule.getEmbeddedKafka()));
+    public ProducerFactory<Integer,String> producerFactory() {
+      return new DefaultKafkaProducerFactory<>(KafkaTestUtils.producerProps(embeddedKafkaRule.getEmbeddedKafka()));
     }
 
     @Bean
-    public KafkaTemplate<Integer, String> kafkaTemplate() {
+    public KafkaTemplate<Integer,String> kafkaTemplate() {
       return new KafkaTemplate<>(producerFactory());
     }
 
@@ -111,11 +105,9 @@ public class SpringKafkaTest {
       assertEquals("message", message);
       counter.incrementAndGet();
     }
-
   }
 
   private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
     return () -> tracer.finishedSpans().size();
   }
-
 }
