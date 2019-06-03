@@ -12,31 +12,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.spring.websocket;
 
-import io.opentracing.propagation.TextMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.springframework.messaging.simp.stomp.StompHeaders;
 
+import io.opentracing.propagation.TextMap;
 
 public class StompHeadersInjectAdapter implements TextMap {
-
   private final StompHeaders headers;
 
-  public StompHeadersInjectAdapter(StompHeaders headers) {
+  public StompHeadersInjectAdapter(final StompHeaders headers) {
     this.headers = headers;
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
-    throw new UnsupportedOperationException(
-        StompHeadersInjectAdapter.class.getName() + " should only be used with Tracer.inject()");
+  public Iterator<Map.Entry<String,String>> iterator() {
+    throw new UnsupportedOperationException(StompHeadersInjectAdapter.class.getName() + " should only be used with Tracer.inject()");
   }
 
   @Override
-  public void put(String key, String value) {
+  public void put(final String key, final String value) {
     headers.add(key, value);
   }
-
 }

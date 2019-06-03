@@ -15,59 +15,62 @@
 
 package io.opentracing.contrib.specialagent.spring.websocket;
 
-import io.opentracing.Span;
-import io.opentracing.propagation.Format;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.messaging.support.ChannelInterceptor;
 
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
+
 public class SpringWebSocketAgentIntercept {
   private static final ThreadLocal<Span> spanHolder = new ThreadLocal<>();
 
-  public static void clientInboundChannel(Object returned) {
-    AbstractSubscribableChannel channel = (AbstractSubscribableChannel) returned;
-    List<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
-    interceptors.add(new TracingChannelInterceptor(GlobalTracer.get(),
-        Tags.SPAN_KIND_SERVER));
+  public static void clientInboundChannel(final Object returned) {
+    final AbstractSubscribableChannel channel = (AbstractSubscribableChannel) returned;
+    final List<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
+    interceptors.add(new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_SERVER));
     channel.setInterceptors(interceptors);
   }
 
-  public static void clientOutboundChannel(Object returned) {
-    AbstractSubscribableChannel channel = (AbstractSubscribableChannel) returned;
-    List<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
-    interceptors.add(new TracingChannelInterceptor(GlobalTracer.get(),
-        Tags.SPAN_KIND_CLIENT));
+  public static void clientOutboundChannel(final Object returned) {
+    final AbstractSubscribableChannel channel = (AbstractSubscribableChannel) returned;
+    final List<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
+    interceptors.add(new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_CLIENT));
     channel.setInterceptors(interceptors);
   }
 
-  public static void sendEnter(Object arg) {
-    StompHeaders headers = (StompHeaders) arg;
-    final Span span = GlobalTracer.get().buildSpan(headers.getDestination())
-        .withTag(Tags.COMPONENT, "stomp-session")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-        .start();
-    GlobalTracer.get()
-        .inject(span.context(), Format.Builtin.TEXT_MAP, new StompHeadersInjectAdapter(headers));
+  public static void sendEnter(final Object arg) {
+    final Tracer tracer = GlobalTracer.get();
+    final StompHeaders headers = (StompHeaders)arg;
+    final Span span = tracer.buildSpan(headers.getDestination())
+      .withTag(Tags.COMPONENT, "stomp-session")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
+      .start();
+
+    tracer.inject(span.context(), Format.Builtin.TEXT_MAP, new StompHeadersInjectAdapter(headers));
     spanHolder.set(span);
   }
 
-  public static void sendExit(Throwable thrown) {
+  public static void sendExit(final Throwable thrown) {
     final Span span = spanHolder.get();
-    if (span == null) {
+    if (span == null)
       return;
-    }
+
     if (thrown != null) {
       Tags.ERROR.set(span, Boolean.TRUE);
-      final HashMap<String, Object> errorLogs = new HashMap<>(2);
+      final HashMap<String,Object> errorLogs = new HashMap<>(2);
       errorLogs.put("event", Tags.ERROR.getKey());
       errorLogs.put("error.object", thrown);
       span.log(errorLogs);
     }
+
     span.finish();
     spanHolder.remove();
   }

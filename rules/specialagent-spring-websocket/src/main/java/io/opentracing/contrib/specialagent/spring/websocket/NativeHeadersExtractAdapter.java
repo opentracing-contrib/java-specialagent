@@ -14,20 +14,19 @@
  */
 package io.opentracing.contrib.specialagent.spring.websocket;
 
-import io.opentracing.propagation.TextMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import io.opentracing.propagation.TextMap;
 
 public final class NativeHeadersExtractAdapter implements TextMap {
+  private final Map<String,String> headers = new HashMap<>();
 
-  private final Map<String, String> headers = new HashMap<>();
-
-  public NativeHeadersExtractAdapter(Map<String, List<String>> nativeHeaders) {
-    for (Entry<String, List<String>> entry : nativeHeaders.entrySet()) {
+  public NativeHeadersExtractAdapter(final Map<String,List<String>> nativeHeaders) {
+    for (final Entry<String,List<String>> entry : nativeHeaders.entrySet()) {
       if (entry.getValue() != null && entry.getValue().size() == 1) {
         this.headers.put(entry.getKey(), entry.getValue().get(0));
       }
@@ -35,13 +34,12 @@ public final class NativeHeadersExtractAdapter implements TextMap {
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
+  public Iterator<Map.Entry<String,String>> iterator() {
     return headers.entrySet().iterator();
   }
 
   @Override
-  public void put(String key, String value) {
-    throw new UnsupportedOperationException(
-        "TextMapInjectAdapter should only be used with Tracer.extract()");
+  public void put(final String key, final String value) {
+    throw new UnsupportedOperationException("TextMapInjectAdapter should only be used with Tracer.extract()");
   }
 }

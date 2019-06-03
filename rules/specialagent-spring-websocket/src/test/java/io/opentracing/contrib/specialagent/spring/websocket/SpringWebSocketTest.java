@@ -14,12 +14,10 @@
  */
 package io.opentracing.contrib.specialagent.spring.websocket;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockTracer;
 import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +28,11 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.DelegatingWebSocketMessageBrokerConfiguration;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
 public class SpringWebSocketTest {
-
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();
@@ -40,29 +40,25 @@ public class SpringWebSocketTest {
 
   @Test
   public void testInterceptors() {
-    DelegatingWebSocketMessageBrokerConfiguration configuration = new DelegatingWebSocketMessageBrokerConfiguration();
-    final List<ChannelInterceptor> inboundInterceptors = configuration.clientInboundChannel()
-        .getInterceptors();
+    final DelegatingWebSocketMessageBrokerConfiguration configuration = new DelegatingWebSocketMessageBrokerConfiguration();
+    final List<ChannelInterceptor> inboundInterceptors = configuration.clientInboundChannel().getInterceptors();
 
-    ChannelInterceptor inboundInterceptor = inboundInterceptors.get(inboundInterceptors.size() - 1);
+    final ChannelInterceptor inboundInterceptor = inboundInterceptors.get(inboundInterceptors.size() - 1);
     assertTrue(inboundInterceptor instanceof TracingChannelInterceptor);
 
-
-    final List<ChannelInterceptor> outboundInterceptors = configuration.clientOutboundChannel()
-        .getInterceptors();
-
-    ChannelInterceptor outboundInterceptor = outboundInterceptors.get(inboundInterceptors.size() - 1);
+    final List<ChannelInterceptor> outboundInterceptors = configuration.clientOutboundChannel().getInterceptors();
+    final ChannelInterceptor outboundInterceptor = outboundInterceptors.get(inboundInterceptors.size() - 1);
     assertTrue(outboundInterceptor instanceof TracingChannelInterceptor);
   }
 
   @Test
-  public void testSend(MockTracer tracer) {
-    StompSession stompSession = new DefaultStompSession(new StompSessionHandlerAdapter() {
-    }, new StompHeaders());
+  public void testSend(final MockTracer tracer) {
+    final StompSession stompSession = new DefaultStompSession(new StompSessionHandlerAdapter() {}, new StompHeaders());
 
     try {
       stompSession.send("endpoint", "Hello");
-    } catch (Exception ignore) {
+    }
+    catch (final Exception ignore) {
     }
 
     assertEquals(1, tracer.finishedSpans().size());
