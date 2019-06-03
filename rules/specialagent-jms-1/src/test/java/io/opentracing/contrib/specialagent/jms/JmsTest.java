@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -36,15 +35,16 @@ import javax.jms.TextMessage;
 
 import org.junit.Test;
 
-import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 import io.opentracing.contrib.jms.TracingMessageProducer;
+import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 //NOTE: This class is copied from specialagent-jms-2.
 //NOTE: It should be a 100% duplicate!
 public abstract class JmsTest {
-  static final Logger logger = Logger.getLogger(JmsTest.class.getName());
+  static final Logger logger = Logger.getLogger(JmsTest.class);
 
   Session session;
   Connection connection;

@@ -21,7 +21,6 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.logging.Level;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;

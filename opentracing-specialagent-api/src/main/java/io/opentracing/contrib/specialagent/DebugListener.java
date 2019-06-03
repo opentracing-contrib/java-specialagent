@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.util.logging.Logger;
-
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
@@ -29,7 +27,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class DebugListener implements AgentBuilder.Listener {
-  public static final Logger logger = Logger.getLogger(DebugListener.class.getName());
+  public static final Logger logger = Logger.getLogger(DebugListener.class);
 
   @Override
   public void onDiscovery(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {

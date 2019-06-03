@@ -23,7 +23,6 @@ import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Set;
-import java.util.logging.Level;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;

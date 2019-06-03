@@ -36,8 +36,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
 import io.opentracing.contrib.specialagent.Manager.Event;
@@ -48,7 +46,7 @@ import io.opentracing.contrib.specialagent.Manager.Event;
  * @author Seva Safris
  */
 public final class SpecialAgentUtil {
-  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class.getName());
+  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
 
   static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();

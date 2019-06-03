@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -44,7 +42,7 @@ import java.util.zip.ZipInputStream;
  * @author Seva Safris
  */
 class RuleClassLoader extends URLClassLoader {
-  private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
+  private static final Logger logger = Logger.getLogger(RuleClassLoader.class);
 
   public static final String FINGERPRINT_FILE = "fingerprint.bin";
   static final ClassLoader BOOT_LOADER_PROXY = new URLClassLoader(new URL[0], null);
