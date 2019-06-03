@@ -343,6 +343,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Spring Web](https://github.com/opentracing-contrib/java-spring-web)
 1. [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web)
 1. [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web)
+1. [Spring WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter)
 1. [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson)
 1. [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server)
 1. [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc)

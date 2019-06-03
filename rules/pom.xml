@@ -62,6 +62,7 @@
     <module>specialagent-zuul</module>
     <module>specialagent-spring-kafka</module>
     <module>specialagent-spring-scheduling</module>
+    <module>specialagent-spring-websocket</module>
   </modules>
   <profiles>
     <profile>
