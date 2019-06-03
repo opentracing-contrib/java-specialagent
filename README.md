@@ -328,6 +328,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk)
 1. [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver)
 1. [JMS API (`javax.jms` v1 & v2)][java-jms]
+1. [JMS Spring](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring)
 1. [Elasticsearch6 Client](https://github.com/opentracing-contrib/java-elasticsearch-client)
 1. [RxJava 2](https://github.com/opentracing-contrib/java-rxjava)
 1. [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client)
