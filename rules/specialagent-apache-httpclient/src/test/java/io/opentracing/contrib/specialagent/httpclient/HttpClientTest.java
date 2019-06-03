@@ -67,6 +67,8 @@ public class HttpClientTest {
       assertEquals(HttpClientAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertEquals(HttpGet.METHOD_NAME, span.tags().get(Tags.HTTP_METHOD.getKey()));
       assertEquals(url, span.tags().get(Tags.HTTP_URL.getKey()));
+      assertEquals("localhost", span.tags().get(Tags.PEER_HOSTNAME.getKey()));
+      assertEquals(12345, span.tags().get(Tags.PEER_PORT.getKey()));
     }
   }
 }
