@@ -41,23 +41,23 @@ public class HttpClientTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final CloseableHttpClient httpclient = HttpClients.createDefault();
+    final CloseableHttpClient httpClient = HttpClients.createDefault();
     final String url = "http://localhost:12345";
 
     try {
-      httpclient.execute(new HttpGet(url));
+      httpClient.execute(new HttpGet(url));
     }
     catch (final Exception ignore) {
     }
 
     try {
-      httpclient.execute(HttpHost.create(url), new BasicHttpRequest("GET", url));
+      httpClient.execute(HttpHost.create(url), new BasicHttpRequest("GET", url));
     }
     catch (final Exception ignore) {
     }
 
     try {
-      httpclient.execute(new HttpGet(url), (ResponseHandler<Object>)response -> "done");
+      httpClient.execute(new HttpGet(url), (ResponseHandler<Object>)response -> "done");
     }
     catch (final Exception ignore) {
     }

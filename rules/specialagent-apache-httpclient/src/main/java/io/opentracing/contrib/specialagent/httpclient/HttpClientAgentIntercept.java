@@ -61,10 +61,11 @@ public class HttpClientAgentIntercept {
 
     if (request instanceof HttpUriRequest) {
       final URI uri = ((HttpUriRequest)request).getURI();
-      Tags.PEER_HOSTNAME.set(span, uri.getHost());
-      Tags.PEER_PORT.set(span, uri.getPort() == -1 ? 80 : uri.getPort());
-    } else if(arg0 instanceof HttpHost) {
-      final HttpHost httpHost = (HttpHost) arg0;
+      span.setTag(Tags.PEER_HOSTNAME, uri.getHost());
+      span.setTag(Tags.PEER_PORT, uri.getPort() == -1 ? 80 : uri.getPort());
+    }
+    else if (arg0 instanceof HttpHost) {
+      final HttpHost httpHost = (HttpHost)arg0;
       span.setTag(Tags.PEER_HOSTNAME, httpHost.getHostName());
       span.setTag(Tags.PEER_PORT, httpHost.getPort() == -1 ? 80: httpHost.getPort());
     }
