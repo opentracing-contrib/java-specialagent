@@ -41,23 +41,23 @@ public class HttpClientTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final CloseableHttpClient httpclient = HttpClients.createDefault();
+    final CloseableHttpClient httpClient = HttpClients.createDefault();
     final String url = "http://localhost:12345";
 
     try {
-      httpclient.execute(new HttpGet(url));
+      httpClient.execute(new HttpGet(url));
     }
     catch (final Exception ignore) {
     }
 
     try {
-      httpclient.execute(HttpHost.create(url), new BasicHttpRequest("GET", url));
+      httpClient.execute(HttpHost.create(url), new BasicHttpRequest("GET", url));
     }
     catch (final Exception ignore) {
     }
 
     try {
-      httpclient.execute(new HttpGet(url), (ResponseHandler<Object>)response -> "done");
+      httpClient.execute(new HttpGet(url), (ResponseHandler<Object>)response -> "done");
     }
     catch (final Exception ignore) {
     }
@@ -67,6 +67,8 @@ public class HttpClientTest {
       assertEquals(HttpClientAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertEquals(HttpGet.METHOD_NAME, span.tags().get(Tags.HTTP_METHOD.getKey()));
       assertEquals(url, span.tags().get(Tags.HTTP_URL.getKey()));
+      assertEquals("localhost", span.tags().get(Tags.PEER_HOSTNAME.getKey()));
+      assertEquals(12345, span.tags().get(Tags.PEER_PORT.getKey()));
     }
   }
 }
