@@ -31,7 +31,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>jms-2</sa.plugin.name>
     <artemis.version>2.7.0</artemis.version>
-    <opentracing.jms.version>0.1.0</opentracing.jms.version>
+    <opentracing.jms.version>0.1.2</opentracing.jms.version>
   </properties>
   <dependencies>
     <dependency>
@@ -66,7 +66,7 @@
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
-          <artifactId>javax.jms-api</artifactId>
+          <artifactId>jms-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

@@ -53,11 +53,12 @@
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-common</artifactId>
-      <version>0.1.1</version>
+      <version>0.1.2</version>
+      <scope>provided</scope> <!-- It's a hack because we already have it from jms-1/jms-2 -->
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>
-          <artifactId>javax.jms-api</artifactId>
+          <artifactId>jms-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

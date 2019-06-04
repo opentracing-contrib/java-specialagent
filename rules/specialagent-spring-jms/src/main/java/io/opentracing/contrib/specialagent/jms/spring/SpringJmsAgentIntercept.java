@@ -20,6 +20,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.jms.common.SpanContextContainer;
 import io.opentracing.contrib.jms.common.TracingMessageUtils;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -52,7 +53,15 @@ public class SpringJmsAgentIntercept {
 
     final Message message = (Message) msg;
 
-    final SpanContext spanContext = TracingMessageUtils.extract(message, GlobalTracer.get());
+    SpanContext spanContext = null;
+    if (message instanceof SpanContextContainer) {
+      SpanContextContainer spanContextContainer = (SpanContextContainer) message;
+      spanContext = spanContextContainer.getSpanContext();
+    }
+    if (spanContext == null) {
+      spanContext = TracingMessageUtils.extract(message, GlobalTracer.get());
+    }
+
     if (spanContext != null) {
       builder.addReference(References.FOLLOWS_FROM, spanContext);
     }
