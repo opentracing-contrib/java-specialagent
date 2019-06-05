@@ -85,12 +85,12 @@ public class AgentRunnerUtil {
           throw new IllegalStateException("There is already a registered global Tracer.");
       }
 
-      if (logger.isLoggable(Level.FINEST)) {
-        logger.finest("Registering tracer for AgentRunner: " + tracer);
-        logger.finest("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
-        logger.finest("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
-        logger.finest("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
-        logger.finest("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
+      if (logger.isLoggable(Level.FINER)) {
+        logger.finer("Registering tracer for AgentRunner: " + tracer);
+        logger.finer("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
+        logger.finer("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+        logger.finer("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
+        logger.finer("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
       }
 
       return AgentRunnerUtil.tracer = tracer;

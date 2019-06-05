@@ -104,7 +104,7 @@ public class ByteBuddyManager extends Manager {
   }
 
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> urlToPluginMeta) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> fileeToPluginManifest) throws IOException {
     AgentRule agentRule = null;
     try {
       // Load ClassLoader Agent
@@ -139,7 +139,7 @@ public class ByteBuddyManager extends Manager {
             continue;
           }
 
-          final PluginManifest pluginManifest = urlToPluginMeta.get(ruleJar);
+          final PluginManifest pluginManifest = fileeToPluginManifest.get(ruleJar);
 
           AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
 

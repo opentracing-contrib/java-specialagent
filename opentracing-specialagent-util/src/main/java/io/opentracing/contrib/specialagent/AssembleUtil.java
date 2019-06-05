@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.util.Arrays;
@@ -43,20 +42,18 @@ public final class AssembleUtil {
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
 
   /**
-   * Filters the specified array of URL objects by checking if the file name of
-   * the URL is included in the specified {@code Set} of string names.
+   * Filters the specified array of {@code File} objects by checking if the file
+   * name is included in the specified set of files to match.
    *
-   * @param files The array of URL objects to filter.
-   * @param matches The set of {@code File} objects whose names are to be matched
-   *          by the specified array of URL objects.
+   * @param files The array of {@code File} objects to filter.
+   * @param matches The set of {@code File} objects whose names are to be
+   *          matched by the specified array of URL objects.
    * @param index The index value for stack tracking (must be called with 0).
    * @param depth The depth value for stack tracking (must be called with 0).
-   * @return An array of {@code URL} objects that have file names that belong to
-   *         the specified {@code Set} of string names.
-   * @throws MalformedURLException If a parsed URL fails to comply with the
-   *           specific syntax of the associated protocol.
+   * @return An array of {@code File} objects that have file names that belong
+   *         to the specified files to match.
    */
-  private static File[] filterUrlFileNames(final File[] files, final Set<File> matches, final int index, final int depth) throws MalformedURLException {
+  private static File[] filterUrlFileNames(final File[] files, final Set<File> matches, final int index, final int depth) {
     for (int i = index; i < files.length; ++i) {
       final File file = files[i];
       final String artifact;
@@ -92,17 +89,19 @@ public final class AssembleUtil {
   }
 
   /**
-   * Filter the specified array of URL objects to return the Instrumentation
-   * Rule URLs as specified by the Dependency TGF file at {@code dependencyUrl}.
+   * Filter the specified array of {@code File} objects to return the
+   * Instrumentation Rule files as specified by the Dependency TGF file at
+   * {@code dependencyUrl}.
    *
-   * @param files The array of File objects to filter.
+   * @param files The array of {@code File} objects to filter.
    * @param dependenciesTgf The contents of the TGF file that specify the
    *          dependencies.
    * @param includeOptional Whether to include dependencies marked as
    *          {@code (optional)}.
    * @param scopes An array of Maven scopes to include in the returned set, or
    *          {@code null} to include all scopes.
-   * @return An array of URL objects representing Instrumentation Rule URLs
+   * @return An array of {@code File} objects representing Instrumentation Rule
+   *         files.
    * @throws IOException If an I/O error has occurred.
    */
   public static File[] filterRuleURLs(final File[] files, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
@@ -254,7 +253,7 @@ public final class AssembleUtil {
     }
   }
 
-  private static ZipEntry getEntryFromJar(final ZipFile zipFile, final String name) throws IOException {
+  private static ZipEntry getEntryFromJar(final ZipFile zipFile, final String name) {
     final Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
     while (enumeration.hasMoreElements()) {
       final ZipEntry entry = enumeration.nextElement();
@@ -280,10 +279,10 @@ public final class AssembleUtil {
     final Set<String> locations = new LinkedHashSet<>();
     for (final Class<?> cls : classes) {
       final String resourceName = cls.getName().replace('.', '/').concat(".class");
-      final Enumeration<URL> urls = classLoader.getResources(resourceName);
-      while (urls.hasMoreElements()) {
-        final String path = urls.nextElement().getFile();
-        locations.add(path.startsWith("file:") ? path.substring(5, path.indexOf('!')) : path.substring(0, path.length() - resourceName.length() - 1));
+      final Enumeration<URL> resources = classLoader.getResources(resourceName);
+      while (resources.hasMoreElements()) {
+        final String resource = resources.nextElement().getFile();
+        locations.add(resource.startsWith("file:") ? resource.substring(5, resource.indexOf('!')) : resource.substring(0, resource.length() - resourceName.length() - 1));
       }
     }
 
@@ -411,15 +410,15 @@ public final class AssembleUtil {
    * Recursively process each sub-path of the specified directory.
    *
    * @param dir The directory to process.
-   * @param predicate The predicate defining the test process.
-   * @return {@code true} if the specified predicate returned {@code true} for
-   *         each sub-path to which it was applied, otherwise {@code false}.
+   * @param function The function defining the test process, which returns a
+   *          {@link FileVisitResult} to direct the recursion process.
+   * @return A {@link FileVisitResult} to direct the recursion process.
    */
-  public static FileVisitResult recurseDir(final File dir, final Function<File,FileVisitResult> predicate) {
+  public static FileVisitResult recurseDir(final File dir, final Function<File,FileVisitResult> function) {
     final File[] files = dir.listFiles();
     if (files != null) {
       for (final File file : files) {
-        final FileVisitResult result = recurseDir(file, predicate);
+        final FileVisitResult result = recurseDir(file, function);
         if (result == FileVisitResult.SKIP_SIBLINGS)
           break;
 
@@ -431,7 +430,7 @@ public final class AssembleUtil {
       }
     }
 
-    return predicate.apply(dir);
+    return function.apply(dir);
   }
 
   private AssembleUtil() {

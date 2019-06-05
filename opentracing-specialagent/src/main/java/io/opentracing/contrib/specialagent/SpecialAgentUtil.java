@@ -260,12 +260,14 @@ public final class SpecialAgentUtil {
    *          specifying whether it should be included in the runtime.
    * @param tracerPlugins Map of tracer plugin name to boolean specifying
    *          whether it should be included in the runtime.
+   * @param fileToPluginManifest Map between a JAR file and the associated
+   *          {@link PluginManifest}.
    * @return A {@code List} of {@code URL} objects having a prefix path that
    *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<File> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins, final Map<File,PluginManifest> urlToPluginMeta) {
+  static Set<File> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins, final Map<File,PluginManifest> fileToPluginManifest) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       final Set<File> urls = new HashSet<>();
@@ -339,7 +341,7 @@ public final class SpecialAgentUtil {
           }
 
           if (includeJar) {
-            urlToPluginMeta.put(file, plugin);
+            fileToPluginManifest.put(file, plugin);
             urls.add(file);
           }
           else {

@@ -73,13 +73,14 @@ public abstract class Manager {
    * Loads the rules of this {@code Manager} and associates relevant state in
    * the specified arguments.
    *
-   * @param allRulesClassLoader The {@code ClassLoader} having a classpath
-   *          with all rule JARs.
+   * @param allRulesClassLoader The {@code ClassLoader} having a classpath with
+   *          all rule JARs.
    * @param ruleJarToIndex A {@code Map} of rule JAR path to its index in the
    *          {@code allRulesClassLoader} classpath.
-   * @param nameToVersion Map of plugin names to their version.
    * @param events Manager events to log.
+   * @param fileToPluginManifest Map between a JAR file and the associated
+   *          {@link PluginManifest}.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, Map<File,PluginManifest> urlToPluginMeta) throws IOException;
+  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, Map<File,PluginManifest> fileToPluginManifest) throws IOException;
 }

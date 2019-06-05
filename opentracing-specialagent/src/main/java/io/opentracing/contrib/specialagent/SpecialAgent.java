@@ -86,7 +86,7 @@ public class SpecialAgent {
     }
   }
 
-  private static final Map<File,PluginManifest> urlToPluginManifest = new HashMap<>();
+  private static final Map<File,PluginManifest> fileToPluginManifest = new HashMap<>();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
@@ -211,7 +211,7 @@ public class SpecialAgent {
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
-    final Set<File> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", instruPlugins, tracerPlugins, urlToPluginManifest);
+    final Set<File> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", instruPlugins, tracerPlugins, fileToPluginManifest);
     if (pluginJarUrls.size() == 0 && logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
@@ -229,17 +229,17 @@ public class SpecialAgent {
     if (rulePaths != null) {
       for (final File rulePath : rulePaths) {
         pluginJarUrls.add(rulePath);
-        PluginManifest pluginManifest = urlToPluginManifest.get(rulePath);
+        PluginManifest pluginManifest = fileToPluginManifest.get(rulePath);
         if (pluginManifest == null)
-          urlToPluginManifest.put(rulePath, pluginManifest = PluginManifest.getPluginManifest(new File(rulePath.getPath())));
+          fileToPluginManifest.put(rulePath, pluginManifest = PluginManifest.getPluginManifest(new File(rulePath.getPath())));
       }
     }
 
-    // Audit the urlToPluginManifest map to make sure there's a PluginManifest registered for each plugin URL
+    // Audit the fileToPluginManifest map to make sure there's a PluginManifest registered for each plugin URL
     for (final File pluginJar : pluginJarUrls) {
-      PluginManifest pluginManifest = urlToPluginManifest.get(pluginJar);
+      PluginManifest pluginManifest = fileToPluginManifest.get(pluginJar);
       if (pluginManifest == null)
-        urlToPluginManifest.put(pluginJar, pluginManifest = PluginManifest.getPluginManifest(new File(pluginJar.getPath())));
+        fileToPluginManifest.put(pluginJar, pluginManifest = PluginManifest.getPluginManifest(new File(pluginJar.getPath())));
     }
 
     if (logger.isLoggable(Level.FINER))
@@ -349,9 +349,9 @@ public class SpecialAgent {
         final String firstLine = dependenciesTgf.substring(0, dependenciesTgf.indexOf('\n'));
         final String version = firstLine.substring(firstLine.lastIndexOf(':') + 1);
 
-        final PluginManifest pluginManifest = urlToPluginManifest.get(jarFile);
+        final PluginManifest pluginManifest = fileToPluginManifest.get(jarFile);
         if (pluginManifest == null)
-          throw new IllegalStateException("Expected to find PluginManifest for file: " + jarFile + " in: " + urlToPluginManifest.keySet());
+          throw new IllegalStateException("Expected to find PluginManifest for file: " + jarFile + " in: " + fileToPluginManifest.keySet());
 
         final String exists = nameToVersion.get(pluginManifest.name);
         if (exists != null && !exists.equals(version))
@@ -421,7 +421,7 @@ public class SpecialAgent {
       for (int i = 0; i < allPluginsClassLoader.getFiles().length; ++i)
         ruleJarToIndex.put(allPluginsClassLoader.getFiles()[i], i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), urlToPluginManifest);
+      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -540,7 +540,7 @@ public class SpecialAgent {
     if (compatible != null && compatible) {
       if (logger.isLoggable(Level.FINER)) {
         final File rulePath = allPluginsClassLoader.getFiles()[index];
-        final PluginManifest pluginManifest = urlToPluginManifest.get(rulePath);
+        final PluginManifest pluginManifest = fileToPluginManifest.get(rulePath);
         logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible);
       }
 
@@ -549,7 +549,7 @@ public class SpecialAgent {
 
     // Find the Rule Path (identified by index passed to this method)
     final File rulePath = allPluginsClassLoader.getFiles()[index];
-    final PluginManifest pluginManifest = urlToPluginManifest.get(rulePath);
+    final PluginManifest pluginManifest = fileToPluginManifest.get(rulePath);
 
     if (logger.isLoggable(Level.FINER))
       logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible + ", RulePath: " + rulePath);
