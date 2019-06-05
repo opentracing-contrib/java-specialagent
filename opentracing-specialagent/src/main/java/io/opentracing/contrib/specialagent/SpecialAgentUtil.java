@@ -27,9 +27,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +59,7 @@ public final class SpecialAgentUtil {
       final FileOutputStream fos = new FileOutputStream(zipPath.toFile());
       final JarOutputStream jos = new JarOutputStream(fos);
     ) {
-      recurseDir(dir, new Predicate<File>() {
+      AssembleUtil.recurseDir(dir, new Predicate<File>() {
         @Override
         public boolean test(final File t) {
           if (t.isFile()) {
@@ -103,12 +105,18 @@ public final class SpecialAgentUtil {
    * @throws IllegalArgumentException If the specified resource path is not the
    *           suffix of the specified URL.
    */
-  static URL getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
+  static File getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
     final String string = url.toString();
     if (!string.endsWith(resourcePath))
       throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
 
-    return new URL(string.startsWith("jar:") ? string.substring(4, string.lastIndexOf('!')) : string.substring(0, string.length() - resourcePath.length()));
+    if (string.startsWith("jar:"))
+      return new File(string.substring(4, string.lastIndexOf('!')));
+
+    if (string.startsWith("file:"))
+      return new File(string.substring(5, string.length() - resourcePath.length()));
+
+    throw new UnsupportedOperationException("Unsupported protocol: " + url.getProtocol());
   }
 
   /**
@@ -159,6 +167,33 @@ public final class SpecialAgentUtil {
     return builder.toString();
   }
 
+  public static URL[] toURLs(final Collection<File> files) {
+    try {
+      final URL[] urls = new URL[files.size()];
+      final Iterator<File> iterator = files.iterator();
+      for (int i = 0; iterator.hasNext(); ++i)
+        urls[i] = iterator.next().toURI().toURL();
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final File ... files) {
+    try {
+      final URL[] urls = new URL[files.length];
+      for (int i = 0; i < files.length; ++i)
+        urls[i] = files[i].toURI().toURL();
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   /**
    * Returns an array of {@code URL} objects representing each path entry in the
    * specified {@code classpath}.
@@ -168,21 +203,16 @@ public final class SpecialAgentUtil {
    * @return An array of {@code URL} objects representing each path entry in the
    *         specified {@code classpath}.
    */
-  public static URL[] classPathToURLs(final String classpath) {
+  public static File[] classPathToFiles(final String classpath) {
     if (classpath == null)
       return null;
 
     final String[] paths = classpath.split(File.pathSeparator);
-    final URL[] libs = new URL[paths.length];
-    try {
-      for (int i = 0; i < paths.length; ++i)
-        libs[i] = new File(paths[i]).toURI().toURL();
-    }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
+    final File[] files = new File[paths.length];
+    for (int i = 0; i < paths.length; ++i)
+      files[i] = new File(paths[i]);
 
-    return libs;
+    return files;
   }
 
   /**
@@ -235,10 +265,10 @@ public final class SpecialAgentUtil {
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins) {
+  static Set<File> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins, final Map<File,PluginManifest> urlToPluginMeta) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
-      final Set<URL> urls = new HashSet<>();
+      final Set<File> urls = new HashSet<>();
       if (!resources.hasMoreElements())
         return urls;
 
@@ -285,14 +315,14 @@ public final class SpecialAgentUtil {
           final File subDir = new File(destDir, jarEntry.substring(0, slash));
           subDir.mkdirs();
           final File file = new File(subDir, jarFileName);
-          final URL url = new URL(resource, jarEntry.substring(path.length()));
-          Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          final URL jarUrl = new URL(resource, jarEntry.substring(path.length()));
+          Files.copy(jarUrl.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
           // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-          final Plugin plugin = Plugin.getPlugin(file);
+          final PluginManifest plugin = PluginManifest.getPluginManifest(file);
           boolean includeJar = true;
           if (plugin != null) {
-            final boolean isInstruPlugin = plugin.type == Plugin.Type.INSTRUMENTATION;
+            final boolean isInstruPlugin = plugin.type == PluginManifest.Type.INSTRUMENTATION;
             // Next, see if it is included or excluded
             includeJar = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
             final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
@@ -308,10 +338,13 @@ public final class SpecialAgentUtil {
             }
           }
 
-          if (includeJar)
-            urls.add(file.toURI().toURL());
-          else
+          if (includeJar) {
+            urlToPluginMeta.put(file, plugin);
+            urls.add(file);
+          }
+          else {
             file.delete();
+          }
         }
       }
       while (resources.hasMoreElements());
@@ -321,7 +354,7 @@ public final class SpecialAgentUtil {
         Runtime.getRuntime().addShutdownHook(new Thread() {
           @Override
           public void run() {
-            recurseDir(targetDir, new Predicate<File>() {
+            AssembleUtil.recurseDir(targetDir, new Predicate<File>() {
               @Override
               public boolean test(final File t) {
                 return t.delete();
@@ -336,55 +369,6 @@ public final class SpecialAgentUtil {
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private static class Plugin {
-    private static enum Type {
-      INSTRUMENTATION,
-      TRACER
-    }
-
-    private static Plugin getPlugin(final File file) throws IOException {
-      try (final JarFile jarFile = new JarFile(file)) {
-        final Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-          final String entry = entries.nextElement().getName();
-          if (entry.startsWith("sa.plugin.name."))
-            return new Plugin(Type.INSTRUMENTATION, entry.substring(15));
-
-          if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
-            return new Plugin(Type.TRACER, file.getName().substring(0, file.getName().length() - 4));
-        }
-
-        return null;
-      }
-    }
-
-    private final Type type;
-    private final String name;
-
-    private Plugin(final Type type, final String name) {
-      this.type = type;
-      this.name = name;
-    }
-  }
-
-  /**
-   * Recursively process each sub-path of the specified directory.
-   *
-   * @param dir The directory to process.
-   * @param predicate The predicate defining the test process.
-   * @return {@code true} if the specified predicate returned {@code true} for
-   *         each sub-path to which it was applied, otherwise {@code false}.
-   */
-  public static boolean recurseDir(final File dir, final Predicate<File> predicate) {
-    final File[] files = dir.listFiles();
-    if (files != null)
-      for (final File file : files)
-        if (!recurseDir(file, predicate))
-          return false;
-
-    return predicate.test(dir);
   }
 
   /**

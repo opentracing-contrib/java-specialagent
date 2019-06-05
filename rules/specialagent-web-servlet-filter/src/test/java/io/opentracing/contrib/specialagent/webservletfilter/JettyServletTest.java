@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config.Log;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

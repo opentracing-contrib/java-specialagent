@@ -86,6 +86,7 @@ public class SpecialAgent {
     }
   }
 
+  private static final Map<File,PluginManifest> urlToPluginManifest = new HashMap<>();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
@@ -210,7 +211,7 @@ public class SpecialAgent {
     }
 
     // Add plugin JARs from META-INF/opentracing-specialagent/
-    final Set<URL> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", instruPlugins, tracerPlugins);
+    final Set<File> pluginJarUrls = SpecialAgentUtil.findJarResources("META-INF/opentracing-specialagent/", instruPlugins, tracerPlugins, urlToPluginManifest);
     if (pluginJarUrls.size() == 0 && logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under META-INF/opentracing-specialagent/");
 
@@ -224,10 +225,22 @@ public class SpecialAgent {
       throw new IllegalStateException(e);
     }
 
-    final URL[] rulePaths = SpecialAgentUtil.classPathToURLs(System.getProperty(RULE_PATH_ARG));
-    if (rulePaths != null)
-      for (final URL rulePath : rulePaths)
+    final File[] rulePaths = SpecialAgentUtil.classPathToFiles(System.getProperty(RULE_PATH_ARG));
+    if (rulePaths != null) {
+      for (final File rulePath : rulePaths) {
         pluginJarUrls.add(rulePath);
+        PluginManifest pluginManifest = urlToPluginManifest.get(rulePath);
+        if (pluginManifest == null)
+          urlToPluginManifest.put(rulePath, pluginManifest = PluginManifest.getPluginManifest(new File(rulePath.getPath())));
+      }
+    }
+
+    // Audit the urlToPluginManifest map to make sure there's a PluginManifest registered for each plugin URL
+    for (final File pluginJar : pluginJarUrls) {
+      PluginManifest pluginManifest = urlToPluginManifest.get(pluginJar);
+      if (pluginManifest == null)
+        urlToPluginManifest.put(pluginJar, pluginManifest = PluginManifest.getPluginManifest(new File(pluginJar.getPath())));
+    }
 
     if (logger.isLoggable(Level.FINER))
       logger.finer("Loading " + pluginJarUrls.size() + " rule paths:\n" + AssembleUtil.toIndentedString(pluginJarUrls));
@@ -240,27 +253,33 @@ public class SpecialAgent {
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
     loadTracer();
-    loadRules(nameToVersion);
+    loadRules();
   }
 
   static class AllPluginsClassLoader extends URLClassLoader {
-    private final Set<URL> urls;
+    private final Set<File> files;
+    private final File[] filesArray;
 
-    public AllPluginsClassLoader(final Set<URL> urls) {
+    public AllPluginsClassLoader(final Set<File> files) {
       // Override parent ClassLoader methods to avoid delegation of resource
       // resolution to bootstrap class loader
-      super(urls.toArray(new URL[urls.size()]), new ClassLoader(null) {
+      super(SpecialAgentUtil.toURLs(files), new ClassLoader(null) {
         // Overridden to ensure resources are not discovered in bootstrap class loader
         @Override
         public Enumeration<URL> getResources(final String name) throws IOException {
           return null;
         }
       });
-      this.urls = urls;
+      this.files = files;
+      this.filesArray = files.toArray(new File[files.size()]);
     }
 
-    public boolean containsPath(final URL url) {
-      return urls.contains(url);
+    public File[] getFiles() {
+      return filesArray;
+    }
+
+    public boolean containsPath(final File file) {
+      return files.contains(file);
     }
   }
 
@@ -324,20 +343,23 @@ public class SpecialAgent {
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Found " + DEPENDENCIES_TGF + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
 
-        final URL jarUrl = SpecialAgentUtil.getSourceLocation(url, DEPENDENCIES_TGF);
+        final File jarFile = SpecialAgentUtil.getSourceLocation(url, DEPENDENCIES_TGF);
 
         final String dependenciesTgf = new String(AssembleUtil.readBytes(url));
         final String firstLine = dependenciesTgf.substring(0, dependenciesTgf.indexOf('\n'));
         final String version = firstLine.substring(firstLine.lastIndexOf(':') + 1);
 
-        final String name = AgentRuleUtil.getPluginName(jarUrl);
-        final String exists = nameToVersion.get(name);
+        final PluginManifest pluginManifest = urlToPluginManifest.get(jarFile);
+        if (pluginManifest == null)
+          throw new IllegalStateException("Expected to find PluginManifest for file: " + jarFile + " in: " + urlToPluginManifest.keySet());
+
+        final String exists = nameToVersion.get(pluginManifest.name);
         if (exists != null && !exists.equals(version))
-          throw new IllegalStateException("Illegal attempt to overwrite previously defined version for: " + name);
+          throw new IllegalStateException("Illegal attempt to overwrite previously defined version for: " + pluginManifest.name);
 
-        nameToVersion.put(name, version);
+        nameToVersion.put(pluginManifest.name, version);
 
-        final URL[] dependencies = AssembleUtil.filterRuleURLs(allPluginsClassLoader.getURLs(), dependenciesTgf, false, "compile");
+        final File[] dependencies = AssembleUtil.filterRuleURLs(allPluginsClassLoader.getFiles(), dependenciesTgf, false, "compile");
         if (logger.isLoggable(Level.FINEST))
           logger.finest("  URLs from " + DEPENDENCIES_TGF + ": " + AssembleUtil.toIndentedString(dependencies));
 
@@ -345,32 +367,32 @@ public class SpecialAgent {
           throw new UnsupportedOperationException("Unsupported " + DEPENDENCIES_TGF + " encountered: " + url + "\nPlease file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
         boolean foundReference = false;
-        for (final URL dependency : dependencies) {
+        for (final File dependency : dependencies) {
           if (allPluginsClassLoader.containsPath(dependency)) {
             // When run from a test, it may happen that both the "allPluginsClassLoader"
             // and SystemClassLoader have the same path, leading to the same dependencies.tgf
             // file to be processed twice. This check asserts the previously registered
             // dependencies are correct.
             foundReference =  true;
-            final URL[] registered = ruleToDependencies.get(dependency);
+            final File[] registered = ruleToDependencies.get(dependency);
             if (registered != null) {
-              if (registered == ruleToDependencies.get(jarUrl))
+              if (registered == ruleToDependencies.get(jarFile))
                 continue;
 
-              throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple rule JARs with " + DEPENDENCIES_TGF + " referencing the same rule JAR? Offending JAR: " + jarUrl);
+              throw new IllegalStateException("Dependencies already registered for " + dependency + " Are there multiple rule JARs with " + DEPENDENCIES_TGF + " referencing the same rule JAR? Offending JAR: " + jarFile);
             }
 
             if (logger.isLoggable(Level.FINEST))
-              logger.finest("Registering dependencies for " + jarUrl + " and " + dependency + ":\n" + AssembleUtil.toIndentedString(dependencies));
+              logger.finest("Registering dependencies for " + jarFile + " and " + dependency + ":\n" + AssembleUtil.toIndentedString(dependencies));
 
             ++count;
-            ruleToDependencies.put(jarUrl, dependencies);
+            ruleToDependencies.put(jarFile, dependencies);
             ruleToDependencies.put(dependency, dependencies);
           }
         }
 
         if (!foundReference)
-          throw new IllegalStateException("Could not find a rule JAR referenced in " + jarUrl + DEPENDENCIES_TGF + " from: \n" + AssembleUtil.toIndentedString(dependencies));
+          throw new IllegalStateException("Could not find a rule JAR referenced in " + jarFile + DEPENDENCIES_TGF + " from: \n" + AssembleUtil.toIndentedString(dependencies));
       }
     }
     catch (final IOException e) {
@@ -380,13 +402,13 @@ public class SpecialAgent {
     return count;
   }
 
-  private static final Map<URL,URL[]> ruleToDependencies = new HashMap<>();
+  private static final Map<File,File[]> ruleToDependencies = new HashMap<>();
 
   /**
    * This method loads any OpenTracing {@code AgentRule}s, delegated to the
    * instrumentation {@link Manager} in the runtime.
    */
-  private static void loadRules(final Map<String,String> nameToVersion) {
+  private static void loadRules() {
     if (allPluginsClassLoader == null) {
       logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
       return;
@@ -395,11 +417,11 @@ public class SpecialAgent {
     try {
       // Create map from rule jar URL to its index in
       // allPluginsClassLoader.getURLs()
-      final Map<URL,Integer> ruleJarToIndex = new HashMap<>();
-      for (int i = 0; i < allPluginsClassLoader.getURLs().length; ++i)
-        ruleJarToIndex.put(allPluginsClassLoader.getURLs()[i], i);
+      final Map<File,Integer> ruleJarToIndex = new HashMap<>();
+      for (int i = 0; i < allPluginsClassLoader.getFiles().length; ++i)
+        ruleJarToIndex.put(allPluginsClassLoader.getFiles()[i], i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, nameToVersion, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)));
+      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), urlToPluginManifest);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -515,28 +537,33 @@ public class SpecialAgent {
       compatible = false;
     }
 
-    if (logger.isLoggable(Level.FINER))
-      logger.finer("SpecialAgent#linkRule(" + index + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible);
+    if (compatible != null && compatible) {
+      if (logger.isLoggable(Level.FINER)) {
+        final File rulePath = allPluginsClassLoader.getFiles()[index];
+        final PluginManifest pluginManifest = urlToPluginManifest.get(rulePath);
+        logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible);
+      }
 
-    if (compatible != null && compatible)
       return true;
+    }
 
     // Find the Rule Path (identified by index passed to this method)
-    final URL rulePath = allPluginsClassLoader.getURLs()[index];
-    final String pluginName = logger.isLoggable(Level.FINE) ? AgentRuleUtil.getPluginName(rulePath) : null;
+    final File rulePath = allPluginsClassLoader.getFiles()[index];
+    final PluginManifest pluginManifest = urlToPluginManifest.get(rulePath);
+
     if (logger.isLoggable(Level.FINER))
-      logger.finer("  Rule Path: " + rulePath);
+      logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible + ", RulePath: " + rulePath);
 
     // Now find all the paths that rulePath depends on, by reading dependencies.tgf
-    final URL[] rulePaths = ruleToDependencies.get(rulePath);
+    final File[] rulePaths = ruleToDependencies.get(rulePath);
     if (rulePaths == null)
       throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + rulePath);
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("[" + pluginName + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + AssembleUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
+      logger.finest("[" + pluginManifest.name + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + AssembleUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
 
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
-    final RuleClassLoader ruleClassLoader = new RuleClassLoader(rulePaths, classLoader);
+    final RuleClassLoader ruleClassLoader = new RuleClassLoader(classLoader, rulePaths);
     compatible = ruleClassLoader.isCompatible(classLoader);
     indexToCompatible.put(index, compatible);
     if (!compatible) {
@@ -544,7 +571,7 @@ public class SpecialAgent {
         ruleClassLoader.close();
       }
       catch (final IOException e) {
-        logger.log(Level.WARNING, "[" + pluginName + "] Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + SpecialAgentUtil.getIdentityCode(ruleClassLoader), e);
+        logger.log(Level.WARNING, "[" + pluginManifest.name + "] Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + SpecialAgentUtil.getIdentityCode(ruleClassLoader), e);
       }
 
       return false;
@@ -552,29 +579,28 @@ public class SpecialAgent {
 
     if (classLoader == null) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("[" + pluginName + "] Target class loader is bootstrap, so adding rule JARs to the bootstrap class loader directly");
+        logger.finer("[" + pluginManifest.name + "] Target class loader is bootstrap, so adding rule JARs to the bootstrap class loader directly");
 
-      for (final URL path : rulePaths) {
+      for (final File path : rulePaths) {
         try {
           final File file = new File(path.getPath());
           inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
-          logger.log(Level.SEVERE, "[" + pluginName + "] Failed to add path to bootstrap class loader: " + path.getPath(), e);
+          logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to bootstrap class loader: " + path.getPath(), e);
         }
       }
     }
     else if (classLoader == ClassLoader.getSystemClassLoader()) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("[" + pluginName + "] Target class loader is system, so adding rule JARs to the system class loader directly");
+        logger.finer("[" + pluginManifest.name + "] Target class loader is system, so adding rule JARs to the system class loader directly");
 
-      for (final URL path : rulePaths) {
+      for (final File file : rulePaths) {
         try {
-          final File file = new File(path.getPath());
           inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
-          logger.log(Level.SEVERE, "[" + pluginName + "] Failed to add path to system class loader: " + path.getPath(), e);
+          logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to system class loader: " + file, e);
         }
       }
     }
@@ -590,14 +616,14 @@ public class SpecialAgent {
     for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
       if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
         if (logger.isLoggable(Level.FINER))
-          logger.finer("[" + pluginName + "] Preload of instrumentation classes deferred to SpecialAgent#findClass(...)");
+          logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes deferred to SpecialAgent#findClass(...)");
 
         return true;
       }
     }
 
     if (logger.isLoggable(Level.FINER))
-      logger.finer("[" + pluginName + "] Preload of instrumentation classes called from SpecialAgent#linkRule(...)");
+      logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes called from SpecialAgent#linkRule(...)");
 
     ruleClassLoader.preLoad(classLoader);
     return true;

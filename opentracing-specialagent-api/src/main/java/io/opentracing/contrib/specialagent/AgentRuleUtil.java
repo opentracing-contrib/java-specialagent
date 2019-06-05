@@ -16,7 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Array;
-import java.net.URL;
 
 /**
  * Utility functions for subclasses of {@link AgentRule}.
@@ -209,23 +208,6 @@ public final class AgentRuleUtil {
     }
 
     return false;
-  }
-
-  public static String getPluginName(final URL url) {
-    final String path = url.getPath();
-    final String name;
-    if (path.endsWith("-tests.jar"))
-      name = path.substring(0, path.length() - 10);
-    else if (path.endsWith(".jar"))
-      name = path.substring(0, path.length() - 4);
-    else if (path.endsWith("/target/test-classes/"))
-      name = path.substring(0, path.length() - 21);
-    else if (path.endsWith("/target/classes/"))
-      name = path.substring(0, path.length() - 16);
-    else
-      throw new UnsupportedOperationException("Unsupported path: " + path);
-
-    return name.substring(name.lastIndexOf('/') + 1);
   }
 
   private AgentRuleUtil() {

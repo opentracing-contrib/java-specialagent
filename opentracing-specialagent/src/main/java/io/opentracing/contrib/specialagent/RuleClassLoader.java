@@ -84,11 +84,11 @@ class RuleClassLoader extends URLClassLoader {
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs
    * and parent {@code ClassLoader}.
    *
-   * @param urls The classpath URLs.
    * @param parent The parent {@code ClassLoader}.
+   * @param files The classpath URLs.
    */
-  RuleClassLoader(final URL[] urls, final ClassLoader parent) {
-    super(urls, parent);
+  RuleClassLoader(final ClassLoader parent, final File ... files) {
+    super(SpecialAgentUtil.toURLs(files), parent);
   }
 
   @Override
@@ -130,7 +130,7 @@ class RuleClassLoader extends URLClassLoader {
       else {
         final File dir = new File(URI.create(pathUrl.toString()));
         final Path path = dir.toPath();
-        SpecialAgentUtil.recurseDir(dir, new Predicate<File>() {
+        AssembleUtil.recurseDir(dir, new Predicate<File>() {
           @Override
           public boolean test(final File file) {
             final String name = path.relativize(file.toPath()).toString();

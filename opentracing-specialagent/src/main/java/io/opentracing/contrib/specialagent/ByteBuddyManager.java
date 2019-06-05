@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
@@ -103,7 +104,7 @@ public class ByteBuddyManager extends Manager {
   }
 
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final Map<String,String> nameToVersion, final Event[] events) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> urlToPluginMeta) throws IOException {
     AgentRule agentRule = null;
     try {
       // Load ClassLoader Agent
@@ -117,7 +118,7 @@ public class ByteBuddyManager extends Manager {
       final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
       while (enumeration.hasMoreElements()) {
         final URL scriptUrl = enumeration.nextElement();
-        final URL ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
+        final File ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Dereferencing index for " + ruleJar);
 
@@ -138,11 +139,9 @@ public class ByteBuddyManager extends Manager {
             continue;
           }
 
-          final String jarName = AgentRuleUtil.getPluginName(ruleJar);
-          final String version = nameToVersion.get(jarName);
-          final String name = jarName.endsWith(version) ? jarName.substring(0, jarName.length() - version.length() - 1) : jarName;
+          final PluginManifest pluginManifest = urlToPluginMeta.get(ruleJar);
 
-          AgentRule.classNameToName.put(agentClass.getName(), name);
+          AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
 
           agentRule = (AgentRule)agentClass.getConstructor().newInstance();
           loadAgentRule(agentRule, newBuilder(), index, events);

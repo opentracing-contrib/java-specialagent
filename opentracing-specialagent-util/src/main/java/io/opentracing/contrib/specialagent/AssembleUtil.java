@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -45,8 +46,8 @@ public final class AssembleUtil {
    * Filters the specified array of URL objects by checking if the file name of
    * the URL is included in the specified {@code Set} of string names.
    *
-   * @param urls The array of URL objects to filter.
-   * @param files The set of {@code File} objects whose names are to be matched
+   * @param files The array of URL objects to filter.
+   * @param matches The set of {@code File} objects whose names are to be matched
    *          by the specified array of URL objects.
    * @param index The index value for stack tracking (must be called with 0).
    * @param depth The depth value for stack tracking (must be called with 0).
@@ -55,28 +56,27 @@ public final class AssembleUtil {
    * @throws MalformedURLException If a parsed URL fails to comply with the
    *           specific syntax of the associated protocol.
    */
-  private static URL[] filterUrlFileNames(final URL[] urls, final Set<File> files, final int index, final int depth) throws MalformedURLException {
-    for (int i = index; i < urls.length; ++i) {
-      final String string = urls[i].toString();
+  private static File[] filterUrlFileNames(final File[] files, final Set<File> matches, final int index, final int depth) throws MalformedURLException {
+    for (int i = index; i < files.length; ++i) {
+      final File file = files[i];
       final String artifact;
-      if (string.endsWith("/target/classes/"))
-        artifact = getArtifactFile(new File(string.substring(5, string.length() - 16)));
-      else if (string.endsWith(".jar"))
-        artifact = string.substring(string.lastIndexOf('/') + 1);
+      if (file.isDirectory() && "target".equals(file.getParentFile().getName()) && "classes".equals(file.getName()))
+        artifact = getArtifactFile(file.getParentFile().getParentFile());
+      else if (file.isFile() && file.getName().endsWith(".jar"))
+        artifact = file.getName();
       else
         continue;
 
-      for (final File file : files) {
-        if (artifact.equals(file.getName())) {
-          final URL result = new URL(string);
-          final URL[] results = filterUrlFileNames(urls, files, i + 1, depth + 1);
-          results[depth] = result;
+      for (final File match : matches) {
+        if (artifact.equals(match.getName())) {
+          final File[] results = filterUrlFileNames(files, matches, i + 1, depth + 1);
+          results[depth] = file;
           return results;
         }
       }
     }
 
-    return depth == 0 ? null : new URL[depth];
+    return depth == 0 ? null : new File[depth];
   }
 
   private static String getArtifactFile(final File dir) {
@@ -95,7 +95,7 @@ public final class AssembleUtil {
    * Filter the specified array of URL objects to return the Instrumentation
    * Rule URLs as specified by the Dependency TGF file at {@code dependencyUrl}.
    *
-   * @param urls The array of URL objects to filter.
+   * @param files The array of File objects to filter.
    * @param dependenciesTgf The contents of the TGF file that specify the
    *          dependencies.
    * @param includeOptional Whether to include dependencies marked as
@@ -105,9 +105,9 @@ public final class AssembleUtil {
    * @return An array of URL objects representing Instrumentation Rule URLs
    * @throws IOException If an I/O error has occurred.
    */
-  public static URL[] filterRuleURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
-    final Set<File> files = selectFromTgf(dependenciesTgf, includeOptional, scopes);
-    return filterUrlFileNames(urls, files, 0, 0);
+  public static File[] filterRuleURLs(final File[] files, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
+    final Set<File> matches = selectFromTgf(dependenciesTgf, includeOptional, scopes);
+    return filterUrlFileNames(files, matches, 0, 0);
   }
 
   /**
@@ -208,7 +208,7 @@ public final class AssembleUtil {
       if ("#".equals(token))
         break;
 
-      final boolean isOptional = token.endsWith("(optional)");
+      final boolean isOptional = token.endsWith(" (optional)");
       if (isOptional) {
         if (!includeOptional)
           continue;
@@ -219,9 +219,6 @@ public final class AssembleUtil {
       // groupId
       final int start = token.indexOf(' ');
       int end = token.indexOf(' ', start + 1);
-      if (end != -1 && end == token.indexOf(" (optional)", end))
-        end = token.indexOf(' ', end + 11);
-
       if (end == -1)
         end = token.length();
 
@@ -390,6 +387,51 @@ public final class AssembleUtil {
     }
 
     return builder.toString();
+  }
+
+  /**
+   * Recursively process each sub-path of the specified directory.
+   *
+   * @param dir The directory to process.
+   * @param predicate The predicate defining the test process.
+   * @return {@code true} if the specified predicate returned {@code true} for
+   *         each sub-path to which it was applied, otherwise {@code false}.
+   */
+  public static boolean recurseDir(final File dir, final Predicate<File> predicate) {
+    final File[] files = dir.listFiles();
+    if (files != null)
+      for (final File file : files)
+        if (!recurseDir(file, predicate))
+          return false;
+
+    return predicate.test(dir);
+  }
+
+  /**
+   * Recursively process each sub-path of the specified directory.
+   *
+   * @param dir The directory to process.
+   * @param predicate The predicate defining the test process.
+   * @return {@code true} if the specified predicate returned {@code true} for
+   *         each sub-path to which it was applied, otherwise {@code false}.
+   */
+  public static FileVisitResult recurseDir(final File dir, final Function<File,FileVisitResult> predicate) {
+    final File[] files = dir.listFiles();
+    if (files != null) {
+      for (final File file : files) {
+        final FileVisitResult result = recurseDir(file, predicate);
+        if (result == FileVisitResult.SKIP_SIBLINGS)
+          break;
+
+        if (result == FileVisitResult.TERMINATE)
+          return result;
+
+        if (result == FileVisitResult.SKIP_SUBTREE)
+          return FileVisitResult.SKIP_SIBLINGS;
+      }
+    }
+
+    return predicate.apply(dir);
   }
 
   private AssembleUtil() {

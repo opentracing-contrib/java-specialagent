@@ -97,7 +97,7 @@ public class SpecialAgentAgent {
         if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
           classpath += "/";
 
-        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
+        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(null, new File(classpath))) {
           final URL resource = ruleClassLoader.findResource(arg.replace('.', '/').concat(".class"));
           if (resource != null)
             returned = AssembleUtil.readBytes(resource);
@@ -124,7 +124,7 @@ public class SpecialAgentAgent {
         if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
           classpath += "/";
 
-        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
+        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(null, new File(classpath))) {
           returned = ruleClassLoader.findResource(arg);
         }
 
@@ -149,7 +149,7 @@ public class SpecialAgentAgent {
         if (!classpath.endsWith(".jar") && !classpath.endsWith("/"))
           classpath += "/";
 
-        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(new URL[] {new URL("file", null, classpath)}, null)) {
+        try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(null, new File(classpath))) {
           returned = ruleClassLoader.getResources(arg); // Why is findResources(arg) not returning expected results?
           returned.hasMoreElements(); // For some reason, if I don't call this, the returned value does not have any elements!!!!
         }

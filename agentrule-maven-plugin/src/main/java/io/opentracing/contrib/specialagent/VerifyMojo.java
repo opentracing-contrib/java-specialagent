@@ -84,8 +84,7 @@ public final class VerifyMojo extends AbstractMojo {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
             final String entry = entries.nextElement().getName();
-            if ("otarules.mf".equals(entry)) // Deliberately unlinked from
-                                             // ByteBuddyManager#RULES_FILE
+            if ("otarules.mf".equals(entry)) // Deliberately unlinked from ByteBuddyManager#RULES_FILE
               hasOtaRulesMf = true;
             else if ("fingerprint.bin".equals(entry))
               hasFingerprintBin = true;
@@ -101,7 +100,7 @@ public final class VerifyMojo extends AbstractMojo {
         if (!hasOtaRulesMf) {
           final String rename = renames.get(file.getName());
           if (rename != null)
-            Files.move(file.toPath(), new File(file.getParentFile(), rename).toPath());
+            Files.move(file.toPath(), new File(file.getParentFile(), rename).toPath(), StandardCopyOption.REPLACE_EXISTING);
 
           continue;
         }

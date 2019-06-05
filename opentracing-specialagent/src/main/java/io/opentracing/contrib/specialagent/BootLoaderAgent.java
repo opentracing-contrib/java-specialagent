@@ -71,7 +71,8 @@ public class BootLoaderAgent {
 
     if (jarFiles != null)
       for (final JarFile jarFile : jarFiles)
-        BootLoaderAgent.jarFiles.add(jarFile);
+        if (jarFile != null)
+          BootLoaderAgent.jarFiles.add(jarFile);
 
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())

@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
@@ -80,5 +81,5 @@ public abstract class Manager {
    * @param events Manager events to log.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<URL,Integer> ruleJarToIndex, Map<String,String> nameToVersion, Event[] events) throws IOException;
+  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, Map<File,PluginManifest> urlToPluginMeta) throws IOException;
 }
