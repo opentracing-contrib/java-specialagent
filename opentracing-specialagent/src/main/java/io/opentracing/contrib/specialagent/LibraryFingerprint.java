@@ -51,7 +51,10 @@ class LibraryFingerprint extends Fingerprint {
   static LibraryFingerprint fromFile(final URL url) throws IOException {
     try (final ObjectInputStream in = new ObjectInputStream(url.openStream())) {
       final LibraryFingerprint libraryFingerprint = (LibraryFingerprint)in.readObject();
-      return libraryFingerprint == null || libraryFingerprint.manifest == null ? null : libraryFingerprint;
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("LibraryFingerprint#fromFile(\"" + url + "\"): " + libraryFingerprint);
+
+      return libraryFingerprint.manifest == null ? null : libraryFingerprint;
     }
     catch (final ClassNotFoundException e) {
       throw new UnsupportedOperationException(e);
@@ -77,7 +80,7 @@ class LibraryFingerprint extends Fingerprint {
    */
   LibraryFingerprint(final ClassLoader parent, final Manifest manifest, final URL ... urls) throws IOException {
     if (urls.length == 0)
-      throw new IllegalArgumentException("Number of arguments must be greater than 0");
+      throw new IllegalArgumentException("Number of URLs must be greater than 0");
 
     this.manifest = Objects.requireNonNull(manifest);
     try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
@@ -100,7 +103,7 @@ class LibraryFingerprint extends Fingerprint {
    * @param file The {@code File} to which to export.
    * @throws IOException If an I/O error has occurred.
    */
-  public void toFile(final File file) throws IOException {
+  void toFile(final File file) throws IOException {
     try (final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
       out.writeObject(this);
     }
@@ -113,7 +116,7 @@ class LibraryFingerprint extends Fingerprint {
    * @return The {@code ClassFingerprint} array of this
    *         {@code LibraryFingerprint}.
    */
-  public ClassFingerprint[] getClasses() {
+  ClassFingerprint[] getClasses() {
     return this.classes;
   }
 
@@ -122,7 +125,7 @@ class LibraryFingerprint extends Fingerprint {
    *
    * @return The {@code Manifest} of this {@code LibraryFingerprint}.
    */
-  public Manifest getManifest() {
+  Manifest getManifest() {
     return this.manifest;
   }
 
@@ -136,7 +139,7 @@ class LibraryFingerprint extends Fingerprint {
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */
-  public FingerprintError[] isCompatible(final ClassLoader classLoader) {
+  FingerprintError[] isCompatible(final ClassLoader classLoader) {
     return isCompatible(classLoader, new Fingerprinter(manifest), 0, 0);
   }
 

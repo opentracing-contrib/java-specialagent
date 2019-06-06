@@ -183,11 +183,13 @@ public final class FingerprintMojo extends TreeMojo {
       // bridges/links between the 3rd-Party Library to itself).
       compileDeps[0] = new File(getProject().getBuild().getOutputDirectory()).toURI().toURL();
 
-      final Manifest manifest = Link.createManifest(compileDeps);
+      final Manifest manifest = Link.createManifest(compileDeps, optionalDeps);
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, getProject().getArtifacts().iterator(), 0);
       final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), manifest, optionalDeps);
       fingerprint.toFile(destFile);
+      if (getLog().isDebugEnabled())
+        getLog().debug(fingerprint.toString());
     }
     catch (final IOException e) {
       throw new MojoFailureException(null, e);
@@ -196,11 +198,10 @@ public final class FingerprintMojo extends TreeMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    if ("pom".equalsIgnoreCase(getProject().getPackaging()))
+    if ("pom".equalsIgnoreCase(getProject().getPackaging())) {
+      getLog().info("Skipping for \"pom\" module.");
       return;
-
-    if (name == null || name.length() == 0)
-      throw new MojoExecutionException("The parameter 'name' is missing or invalid");
+    }
 
     createDependenciesTgf();
     createFingerprintBin();

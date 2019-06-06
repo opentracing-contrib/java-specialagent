@@ -110,8 +110,8 @@ public final class SpecialAgentUtil {
     if (!string.endsWith(resourcePath))
       throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
 
-    if (string.startsWith("jar:"))
-      return new File(string.substring(4, string.lastIndexOf('!')));
+    if (string.startsWith("jar:file:"))
+      return new File(string.substring(9, string.lastIndexOf('!')));
 
     if (string.startsWith("file:"))
       return new File(string.substring(5, string.length() - resourcePath.length()));

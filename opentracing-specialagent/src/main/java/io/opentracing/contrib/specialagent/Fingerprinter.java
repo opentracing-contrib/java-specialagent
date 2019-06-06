@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -86,6 +88,8 @@ class Fingerprinter extends ClassVisitor {
       return null;
     }
   }
+
+  private static final Logger logger = Logger.getLogger(Fingerprinter.class.getName());
 
   /**
    * Tests whether the {@code ACC_SYNTHETIC} bit is set in the specified access
@@ -191,6 +195,9 @@ class Fingerprinter extends ClassVisitor {
    * @throws IOException If an I/O error has occurred.
    */
   ClassFingerprint fingerprint(final ClassLoader classLoader, final String resourcePath) throws IOException {
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(SpecialAgentUtil.getIdentityCode(this) + "#fingerprint(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + resourcePath + "\")");
+
     final String name = resourcePath.substring(0, resourcePath.length() - 6).replace('/', '.');
     final Link link = manifest.getLink(name);
     if (link == null)
@@ -200,8 +207,9 @@ class Fingerprinter extends ClassVisitor {
       new ClassReader(in).accept(this, 0);
       return className == null ? null : new ClassFingerprint(className, superClass, SpecialAgentUtil.sort(constructors.size() == 0 ? null : constructors.toArray(new ConstructorFingerprint[constructors.size()])), SpecialAgentUtil.sort(methods.size() == 0 ? null : methods.toArray(new MethodFingerprint[methods.size()])), SpecialAgentUtil.sort(fields.size() == 0 ? null : fields.toArray(new FieldFingerprint[fields.size()])));
     }
-    catch (final IOException e) {
-      if (!"Class not found".equals(e.getMessage()))
+    catch (final Exception e) {
+      logger.log(Level.SEVERE, resourcePath, e);
+      if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
         throw e;
 
       return null;
@@ -217,7 +225,7 @@ class Fingerprinter extends ClassVisitor {
 
   @Override
   public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
-    if (!Modifier.isInterface(access) && !isSynthetic(access) && !Modifier.isPrivate(access)) {
+    if (!isSynthetic(access) && !Modifier.isPrivate(access)) {
       final String className = Type.getObjectType(name).getClassName();
       if (manifest.getLink(className) != null) {
         this.className = className;

@@ -527,14 +527,14 @@ public class SpecialAgent {
 
   @SuppressWarnings("resource")
   public static boolean linkRule(final int index, final ClassLoader classLoader) {
-    Map<Integer,Boolean> indexToCompatible = classLoaderToCompatibility.get(classLoader);
+    Map<Integer,Boolean> indexToCompatibility = classLoaderToCompatibility.get(classLoader);
     Boolean compatible;
-    if (indexToCompatible != null) {
-      compatible = indexToCompatible.get(index);
+    if (indexToCompatibility != null) {
+      compatible = indexToCompatibility.get(index);
     }
     else {
-      classLoaderToCompatibility.put(classLoader, indexToCompatible = new HashMap<>());
-      compatible = false;
+      classLoaderToCompatibility.put(classLoader, indexToCompatibility = new HashMap<>());
+      compatible = null;
     }
 
     if (compatible != null && compatible) {
@@ -565,7 +565,7 @@ public class SpecialAgent {
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
     final RuleClassLoader ruleClassLoader = new RuleClassLoader(classLoader, rulePaths);
     compatible = ruleClassLoader.isCompatible(classLoader);
-    indexToCompatible.put(index, compatible);
+    indexToCompatibility.put(index, compatible);
     if (!compatible) {
       try {
         ruleClassLoader.close();

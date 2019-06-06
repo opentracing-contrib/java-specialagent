@@ -22,10 +22,12 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.opentracing.contrib.specialagent.Link.Manifest;
 
+@Ignore
 public class FingerprintTest {
   private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
 

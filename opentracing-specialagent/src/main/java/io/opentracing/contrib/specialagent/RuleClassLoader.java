@@ -185,13 +185,14 @@ class RuleClassLoader extends URLClassLoader {
     }
   }
 
-  private boolean isCompatible(final LibraryFingerprint fingerprint, final ClassLoader classLoader) {
+  private boolean isCompatible(final LibraryFingerprint fingerprint, final ClassLoader classLoader) throws IOException {
     if (fingerprint != null) {
       final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
       if (errors != null) {
-        logger.warning("Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
+        logger.warning("FIXME: Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
-        return false;
+        close();
+        return true;
       }
 
       if (logger.isLoggable(Level.FINE))
@@ -203,6 +204,7 @@ class RuleClassLoader extends URLClassLoader {
     if (failOnEmptyFingerprint) {
       logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
       compatibility.put(classLoader, false);
+      close();
       return false;
     }
 

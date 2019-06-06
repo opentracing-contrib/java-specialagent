@@ -92,6 +92,19 @@ class Link implements Serializable {
   static class Manifest implements Serializable {
     private transient final ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM5) {
       @Override
+      public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
+        addClass(Type.getObjectType(name));
+        if (superName != null && !"java/lang/Object".equals(superName))
+          addClass(Type.getObjectType(superName));
+
+        if (interfaces != null)
+          for (int i = 0; i < interfaces.length; ++i)
+            addClass(Type.getObjectType(interfaces[i]));
+
+        super.visit(version, access, name, signature, superName, interfaces);
+      }
+
+      @Override
       public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         if (logger.isLoggable(Level.FINEST))
           logger.finest(name + " " + desc);
@@ -311,29 +324,39 @@ class Link implements Serializable {
     };
 
     private static boolean isPrimitive(final Type type) {
-      String name = type.getClassName();
-      if (name.endsWith("[]"))
-        name = name.substring(0, name.length() - 2);
+      if (type.getSort() == Type.ARRAY)
+        throw new IllegalArgumentException("Type cannot be an array type");
 
+      String name = type.getClassName();
       return "boolean".equals(name) || "byte".equals(name) || "char".equals(name) || "short".equals(name) || "int".equals(name) || "long".equals(name);
     }
 
     private static final long serialVersionUID = -6324404954794150472L;
     private static final String[] excludePrefixes = {"io.opentracing.", "java.", "javax.", "net.bytebuddy."};
+    private transient final Map<String,ClassLoader> references = new HashMap<>();
     private final Map<String,Link> links = new HashMap<>();
 
-    private Link addClass(final Type type) {
+    private Link addClass(Type type) {
+      if (type.getSort() == Type.ARRAY) {
+        final String className = type.getClassName();
+        type = Type.getObjectType(className.substring(0, className.length() - 2));
+      }
+
       if (isPrimitive(type))
         return null;
 
       final String className = type.getClassName();
+      if (className.endsWith("ChannelInterceptor"))
+        System.out.println();
       for (int i = 0; i < excludePrefixes.length; ++i)
         if (className.startsWith(excludePrefixes[i]))
           return null;
 
       Link link = links.get(className);
-      if (link == null)
+      if (link == null) {
         links.put(className, link = new Link(className));
+        include(type);
+      }
 
       return link;
     }
@@ -360,12 +383,24 @@ class Link implements Serializable {
       return links.get(className);
     }
 
-    void include(final ClassLoader classLoader, final String classResource) throws IOException {
-      try (final InputStream in = classLoader.getResourceAsStream(classResource)) {
+    void include(final ClassLoader classLoader, final String resource) {
+      try (final InputStream in = classLoader.getResourceAsStream(resource)) {
         new ClassReader(in).accept(classVisitor, 0);
       }
       catch (final IllegalArgumentException e) {
       }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    private void include(final Type type) {
+      final String resource = type.getInternalName() + ".class";
+      final ClassLoader classLoader = references.get(resource);
+      if (classLoader != null)
+        include(classLoader, resource);
+      else
+        logger.warning("Unable to find location of: " + resource);
     }
 
     @Override
@@ -374,43 +409,53 @@ class Link implements Serializable {
     }
   }
 
-  public static Manifest createManifest(final URL[] urls) throws IOException {
-    final Manifest manifest = new Manifest();
-    final URLClassLoader classLoader = new URLClassLoader(urls, null);
-    for (final URL url : classLoader.getURLs()) {
-      if (url.getPath().endsWith(".jar")) {
-        try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
-          for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
-            final String name = entry.getName();
-            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info"))
-              manifest.include(classLoader, name);
+  private static boolean isClass(final String resource) {
+    return resource.endsWith(".class") && !resource.startsWith("META-INF/") && !resource.startsWith("module-info");
+  }
+
+  private static void hi(final Manifest manifest, final URLClassLoader classLoader, final URL url, final boolean include) throws IOException {
+    if (url.getPath().endsWith(".jar")) {
+      try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
+        for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
+          final String resource = entry.getName();
+          if (isClass(resource)) {
+            manifest.references.put(resource, classLoader);
+            if (include)
+              manifest.include(classLoader, resource);
           }
         }
       }
-      else {
-        final File file = new File(url.getPath());
-        final Path path = file.toPath();
-        AssembleUtil.recurseDir(file, new Predicate<File>() {
-          @Override
-          public boolean test(final File t) {
-            if (t.isDirectory())
-              return true;
-
-            final String name = path.relativize(t.toPath()).toString();
-            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
-              try {
-                manifest.include(classLoader, name);
-              }
-              catch (final IOException e) {
-                throw new IllegalStateException(e);
-              }
-            }
-
-            return true;
-          }
-        });
-      }
     }
+    else {
+      final File file = new File(url.getPath());
+      final Path path = file.toPath();
+      AssembleUtil.recurseDir(file, new Predicate<File>() {
+        @Override
+        public boolean test(final File t) {
+          if (!t.isDirectory()) {
+            final String resource = path.relativize(t.toPath()).toString();
+            if (isClass(resource)) {
+              manifest.references.put(resource, classLoader);
+              if (include)
+                manifest.include(classLoader, resource);
+            }
+          }
+
+          return true;
+        }
+      });
+    }
+  }
+
+  static Manifest createManifest(final URL[] urls, final URL[] optionalDeps) throws IOException {
+    final Manifest manifest = new Manifest();
+    final URLClassLoader cl = new URLClassLoader(optionalDeps, null);
+    for (final URL url : optionalDeps)
+      hi(manifest, cl, url, false);
+
+    final URLClassLoader classLoader = new URLClassLoader(urls, null);
+    for (final URL url : urls)
+      hi(manifest, classLoader, url, true);
 
     return manifest;
   }
