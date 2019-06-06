@@ -15,34 +15,42 @@
 
 package io.opentracing.contrib.specialagent.rabbitmq;
 
-import static io.opentracing.contrib.rabbitmq.TracingUtils.inject;
+import static io.opentracing.contrib.rabbitmq.TracingUtils.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.GetResponse;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RabbitMQAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   private static class Context {
-    private Scope scope;
-    private Span span;
+    private final Scope scope;
+    private final Span span;
+
+    private Context(final Scope scope, final Span span) {
+      this.scope = scope;
+      this.span = span;
+    }
   }
 
   public static void exitGet(final Object response, final Object queue, final Throwable thrown) {
-    final Span span = TracingUtils.buildChildSpan(((GetResponse) response).getProps(), (String) queue, GlobalTracer.get());
-    if(thrown != null) {
+    final Span span = TracingUtils.buildChildSpan(((GetResponse)response).getProps(), (String)queue, GlobalTracer.get());
+    if (thrown != null)
       captureException(span, thrown);
-    }
+
     span.finish();
   }
 
@@ -50,39 +58,36 @@ public class RabbitMQAgentIntercept {
     finish(thrown);
   }
 
-  public static BasicProperties enterPublish(final Object exchange, final Object routingKey,
-      final Object props) {
-    final AMQP.BasicProperties properties = (BasicProperties) props;
-    final Span span = TracingUtils
-        .buildSpan((String) exchange, (String) routingKey, properties, GlobalTracer.get());
+  public static BasicProperties enterPublish(final Object exchange, final Object routingKey, final Object props) {
+    final AMQP.BasicProperties properties = (BasicProperties)props;
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = TracingUtils.buildSpan((String)exchange, (String)routingKey, properties, tracer);
 
-    final Scope scope = GlobalTracer.get().activateSpan(span);
-    final Context context = new Context();
-    contextHolder.set(context);
-    context.scope = scope;
-    context.span = span;
+    final Scope scope = tracer.activateSpan(span);
+    contextHolder.set(new Context(scope, span));
 
-    return inject(properties, span, GlobalTracer.get());
+    return inject(properties, span, tracer);
   }
 
   public static Object enterConsume(final Object callback, final Object queue) {
-    return new TracingConsumer((Consumer) callback, (String) queue, GlobalTracer.get());
+    return new TracingConsumer((Consumer)callback, (String)queue, GlobalTracer.get());
   }
 
-  private static void finish(Throwable thrown) {
+  private static void finish(final Throwable thrown) {
     final Context context = contextHolder.get();
-    if (context != null) {
-      if (thrown != null) {
-        captureException(context.span, thrown);
-      }
-      context.scope.close();
-      context.span.finish();
-      contextHolder.remove();
-    }
+    if (context == null)
+      return;
+
+    if (thrown != null)
+      captureException(context.span, thrown);
+
+    context.scope.close();
+    context.span.finish();
+    contextHolder.remove();
   }
 
   private static void captureException(final Span span, final Throwable thrown) {
-    final Map<String, Object> exceptionLogs = new HashMap<>();
+    final Map<String,Object> exceptionLogs = new HashMap<>();
     exceptionLogs.put("event", Tags.ERROR.getKey());
     exceptionLogs.put("error.object", thrown);
     span.log(exceptionLogs);

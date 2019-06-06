@@ -53,7 +53,7 @@ public class RabbitMQAgentRule extends AgentRule {
 
   public static class OnEnterConsume {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object queue, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object queue, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
       if (isEnabled(origin))
         callback = RabbitMQAgentIntercept.enterConsume(callback, queue);
     }
@@ -61,7 +61,7 @@ public class RabbitMQAgentRule extends AgentRule {
 
   public static class OnEnterPublish {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object exchange, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object routingKey, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exchange, final @Advice.Argument(value = 1) Object routingKey, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
       if (isEnabled(origin))
         props = RabbitMQAgentIntercept.enterPublish(exchange, routingKey, props);
     }
@@ -69,7 +69,7 @@ public class RabbitMQAgentRule extends AgentRule {
 
   public static class OnExitPublish {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
       if (isEnabled(origin))
         RabbitMQAgentIntercept.exitPublish(thrown);
     }
@@ -77,7 +77,7 @@ public class RabbitMQAgentRule extends AgentRule {
 
   public static class OnExitGet {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object queue,  final @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.Argument(value = 0) Object queue, final @Advice.Return Object returned) {
       if (isEnabled(origin))
         RabbitMQAgentIntercept.exitGet(returned, queue, thrown);
     }
