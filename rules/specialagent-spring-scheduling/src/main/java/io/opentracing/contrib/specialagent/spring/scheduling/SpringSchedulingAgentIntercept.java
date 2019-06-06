@@ -41,7 +41,7 @@ public class SpringSchedulingAgentIntercept {
     final Span span = tracer
       .buildSpan(runnable.getMethod().getName())
       .withTag(Tags.COMPONENT.getKey(), "spring-scheduled")
-      .withTag("class", runnable.getTarget().getClass().getSimpleName())
+      .withTag("class", runnable.getClass().getSimpleName())
       .withTag("method", runnable.getMethod().getName())
       .start();
 
