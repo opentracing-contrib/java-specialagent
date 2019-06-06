@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentracing.contrib.specialagent.rabbitmq.spring;
+package io.opentracing.contrib.specialagent.jms.spring;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -27,27 +27,27 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringRabbitMQAgentRule extends AgentRule {
+public class SpringJmsMQAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.amqp.core.MessageListener")))
+      .type(hasSuperType(named("org.springframework.jms.listener.SessionAwareMessageListener")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringRabbitMQAgentRule.class).on(named("onMessage")));
+          return builder.visit(Advice.to(SpringJmsMQAgentRule.class).on(named("onMessage").and(takesArguments(2))));
         }}));
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
     if (isEnabled(origin))
-      SpringRabbitMQAgentIntercept.onMessageEnter(message);
+      SpringJmsAgentIntercept.onMessageEnter(message);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
     if (isEnabled(origin))
-      SpringRabbitMQAgentIntercept.onMessageExit(thrown);
+      SpringJmsAgentIntercept.onMessageExit(thrown);
   }
 }
