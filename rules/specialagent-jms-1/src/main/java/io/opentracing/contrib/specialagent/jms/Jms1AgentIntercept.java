@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent.jms;
 
-import io.opentracing.util.GlobalTracer;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 
 import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.util.GlobalTracer;
 
 public class Jms1AgentIntercept {
   private static boolean isJms2;

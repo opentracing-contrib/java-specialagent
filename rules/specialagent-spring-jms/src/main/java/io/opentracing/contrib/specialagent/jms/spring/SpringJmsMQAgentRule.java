@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.jms.spring;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
@@ -24,14 +25,12 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringJmsMQAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.jms.listener.SessionAwareMessageListener")))
+    return Arrays.asList(builder.type(hasSuperType(named("org.springframework.jms.listener.SessionAwareMessageListener")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -46,7 +45,7 @@ public class SpringJmsMQAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
     if (isEnabled(origin))
       SpringJmsAgentIntercept.onMessageExit(thrown);
   }

@@ -24,7 +24,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringKafkaAgentRule extends AgentRule {
@@ -46,7 +45,7 @@ public class SpringKafkaAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
     if (isEnabled(origin))
       SpringKafkaAgentIntercept.onMessageExit(thrown);
   }

@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent.jms;
 
-import io.opentracing.util.GlobalTracer;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 import io.opentracing.contrib.jms2.TracingMessageProducer;
+import io.opentracing.util.GlobalTracer;
 
 public class Jms2AgentIntercept {
   private static boolean isJms2;
@@ -36,14 +36,14 @@ public class Jms2AgentIntercept {
   }
 
   public static Object createProducer(final Object thiz) {
-    if(!isJms2)
+    if (!isJms2)
       return thiz;
 
     return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
   }
 
   public static Object createConsumer(final Object thiz) {
-    if(!isJms2)
+    if (!isJms2)
       return thiz;
 
     return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz, GlobalTracer.get(), true);
