@@ -13,23 +13,22 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rabbitmq.spring;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.amqp.core.Message;
+package io.opentracing.contrib.specialagent.jms.spring;
 
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.propagation.Format.Builtin;
+import io.opentracing.contrib.jms.common.SpanContextContainer;
+import io.opentracing.contrib.jms.common.TracingMessageUtils;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import java.util.HashMap;
+import java.util.Map;
+import javax.jms.Message;
 
-public class SpringRabbitMQAgentIntercept {
+public class SpringJmsAgentIntercept {
   private static class Context {
     private int counter = 1;
     private Scope scope;
@@ -48,16 +47,23 @@ public class SpringRabbitMQAgentIntercept {
     contextHolder.set(context);
 
     final SpanBuilder builder = GlobalTracer.get()
-      .buildSpan("onMessage")
-      .withTag(Tags.COMPONENT, "spring-rabbitmq")
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
+        .buildSpan("onMessage")
+        .withTag(Tags.COMPONENT, "spring-jms")
+        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
 
-    final Message message = (Message)msg;
-    if (message.getMessageProperties() != null) {
-      final Map<String,Object> headers = message.getMessageProperties().getHeaders();
-      final SpanContext spanContext = GlobalTracer.get().extract(Builtin.TEXT_MAP, new HeadersMapExtractAdapter(headers));
-      if (spanContext != null)
-        builder.addReference(References.FOLLOWS_FROM, spanContext);
+    final Message message = (Message) msg;
+
+    SpanContext spanContext = null;
+    if (message instanceof SpanContextContainer) {
+      SpanContextContainer spanContextContainer = (SpanContextContainer) message;
+      spanContext = spanContextContainer.getSpanContext();
+    }
+    if (spanContext == null) {
+      spanContext = TracingMessageUtils.extract(message, GlobalTracer.get());
+    }
+
+    if (spanContext != null) {
+      builder.addReference(References.FOLLOWS_FROM, spanContext);
     }
 
     final Span span = builder.start();
