@@ -15,20 +15,19 @@
 
 package io.opentracing.contrib.specialagent.httpclient;
 
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.propagation.Format.Builtin;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 import java.net.URI;
 import java.util.HashMap;
-
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
-
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.propagation.Format.Builtin;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 
 public class HttpClientAgentIntercept {
   private static class Context {
@@ -40,6 +39,12 @@ public class HttpClientAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   public static Object[] enter(final Object arg0, final Object arg1, final Object arg2) {
+    if (AgentRuleUtil.callerEquals(1, 5, "com.amazonaws.http.apache.client.impl.SdkHttpClient.execute")) {
+      // skip embedded Apache HttpClient in AWS SDK Client because it breaks request signature and
+      // AWS SDK is traced by aws-sdk rule
+      return null;
+    }
+
     final HttpRequest request = arg0 instanceof HttpRequest ? (HttpRequest)arg0 : arg1 instanceof HttpRequest ? (HttpRequest)arg1 : null;
     if (request == null)
       return null;
@@ -62,12 +67,12 @@ public class HttpClientAgentIntercept {
     if (request instanceof HttpUriRequest) {
       final URI uri = ((HttpUriRequest)request).getURI();
       span.setTag(Tags.PEER_HOSTNAME, uri.getHost());
-      span.setTag(Tags.PEER_PORT, uri.getPort() == -1 ? 80 : uri.getPort());
+      setPeerPort(uri.getPort(), span);
     }
     else if (arg0 instanceof HttpHost) {
       final HttpHost httpHost = (HttpHost)arg0;
       span.setTag(Tags.PEER_HOSTNAME, httpHost.getHostName());
-      span.setTag(Tags.PEER_PORT, httpHost.getPort() == -1 ? 80: httpHost.getPort());
+      setPeerPort(httpHost.getPort(), span);
     }
 
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request));
@@ -79,6 +84,11 @@ public class HttpClientAgentIntercept {
       return new Object[] {null, new TracingResponseHandler<>((ResponseHandler<?>)arg2, span)};
 
     return null;
+  }
+
+  private static void setPeerPort(int port, Span span) {
+    if (port != -1)
+      span.setTag(Tags.PEER_PORT, port);
   }
 
   public static void exit(final Object returned) {
