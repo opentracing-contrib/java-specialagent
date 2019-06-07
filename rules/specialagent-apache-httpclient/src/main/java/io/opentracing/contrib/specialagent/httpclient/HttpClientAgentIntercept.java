@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.httpclient;
 
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import java.net.URI;
 import java.util.HashMap;
 
@@ -40,6 +41,12 @@ public class HttpClientAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   public static Object[] enter(final Object arg0, final Object arg1, final Object arg2) {
+    if (AgentRuleUtil.callerEquals(1, 5, "com.amazonaws.http.apache.client.impl.SdkHttpClient.execute")) {
+      // skip embedded Apache HttpClient in AWS SDK Client because it breaks request signature and
+      // AWS SDK is traced by aws-sdk rule
+      return null;
+    }
+
     final HttpRequest request = arg0 instanceof HttpRequest ? (HttpRequest)arg0 : arg1 instanceof HttpRequest ? (HttpRequest)arg1 : null;
     if (request == null)
       return null;
