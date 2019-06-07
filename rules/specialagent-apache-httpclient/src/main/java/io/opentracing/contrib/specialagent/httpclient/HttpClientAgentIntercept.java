@@ -15,19 +15,21 @@
 
 package io.opentracing.contrib.specialagent.httpclient;
 
+import java.net.URI;
+import java.util.HashMap;
+
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpUriRequest;
+
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.net.URI;
-import java.util.HashMap;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpUriRequest;
 
 public class HttpClientAgentIntercept {
   private static class Context {
@@ -40,8 +42,8 @@ public class HttpClientAgentIntercept {
 
   public static Object[] enter(final Object arg0, final Object arg1, final Object arg2) {
     if (AgentRuleUtil.callerEquals(1, 5, "com.amazonaws.http.apache.client.impl.SdkHttpClient.execute")) {
-      // skip embedded Apache HttpClient in AWS SDK Client because it breaks request signature and
-      // AWS SDK is traced by aws-sdk rule
+      // skip embedded Apache HttpClient in AWS SDK Client, because it breaks
+      // request signature and AWS SDK gets traced by the aws-sdk rule
       return null;
     }
 
@@ -59,20 +61,19 @@ public class HttpClientAgentIntercept {
     contextHolder.set(context);
 
     final Tracer tracer = GlobalTracer.get();
-    final Span span = tracer.buildSpan(request.getRequestLine().getMethod())
+    final Span span = tracer
+      .buildSpan(request.getRequestLine().getMethod())
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
       .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
       .withTag(Tags.HTTP_URL, request.getRequestLine().getUri()).start();
 
     if (request instanceof HttpUriRequest) {
       final URI uri = ((HttpUriRequest)request).getURI();
-      span.setTag(Tags.PEER_HOSTNAME, uri.getHost());
-      setPeerPort(uri.getPort(), span);
+      setPeerHostPort(span, uri.getHost(), uri.getPort());
     }
     else if (arg0 instanceof HttpHost) {
       final HttpHost httpHost = (HttpHost)arg0;
-      span.setTag(Tags.PEER_HOSTNAME, httpHost.getHostName());
-      setPeerPort(httpHost.getPort(), span);
+      setPeerHostPort(span, httpHost.getHostName(), httpHost.getPort());
     }
 
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request));
@@ -86,7 +87,8 @@ public class HttpClientAgentIntercept {
     return null;
   }
 
-  private static void setPeerPort(int port, Span span) {
+  private static void setPeerHostPort(final Span span, final String host, final int port) {
+    span.setTag(Tags.PEER_HOSTNAME, host);
     if (port != -1)
       span.setTag(Tags.PEER_PORT, port);
   }
@@ -116,11 +118,10 @@ public class HttpClientAgentIntercept {
     if (--context.counter != 0)
       return;
 
-    Tags.ERROR.set(context.span, Boolean.TRUE);
-
     final HashMap<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", thrown);
+    context.span.setTag(Tags.ERROR, Boolean.TRUE);
     context.span.log(errorLogs);
     context.span.finish();
     contextHolder.remove();
