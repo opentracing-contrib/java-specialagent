@@ -15,16 +15,9 @@
 
 package io.opentracing.contrib.specialagent.lettuce;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
 
 import io.lettuce.core.ConnectionFuture;
 import io.lettuce.core.RedisClient;
@@ -33,9 +26,20 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.codec.StringCodec;
+import io.lettuce.core.pubsub.RedisPubSubAdapter;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import redis.embedded.RedisServer;
 
 @RunWith(AgentRunner.class)
@@ -57,6 +61,26 @@ public class LettuceTest {
   public void after() {
     server.stop();
     client.shutdown();
+  }
+
+  @Test
+  public void testPubSub(final MockTracer tracer) {
+    StatefulRedisPubSubConnection<String, String> connection = client.connectPubSub();
+
+    connection.addListener(new RedisPubSubAdapter<>());
+
+    RedisPubSubCommands<String, String> commands = connection.sync();
+    commands.subscribe("channel");
+
+    final RedisCommands<String, String> commands2 = client.connect().sync();
+    commands2.publish("channel", "msg");
+
+    client.shutdown();
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(4));
+
+    List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(4, spans.size());
   }
 
   @Test
@@ -94,5 +118,9 @@ public class LettuceTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
+  }
+
+  private Callable<Integer> reportedSpansSize(MockTracer tracer) {
+    return () -> tracer.finishedSpans().size();
   }
 }
