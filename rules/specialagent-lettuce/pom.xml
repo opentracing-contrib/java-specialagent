@@ -23,7 +23,7 @@
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-lettuce</artifactId>
-      <version>0.1.2</version>
+      <version>0.1.7</version>
       <exclusions>
         <exclusion>
           <groupId>io.lettuce</groupId>
