@@ -32,8 +32,8 @@ public class LettuceAgentIntercept {
     if (returned instanceof TracingRedisAsyncCommands)
       return returned;
 
-    if(returned instanceof RedisPubSubAsyncCommands)
-      return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<Object,Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    if (returned instanceof RedisPubSubAsyncCommands)
+      return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
 
     return new TracingRedisAsyncCommands<>((RedisAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
@@ -47,7 +47,7 @@ public class LettuceAgentIntercept {
   }
 
   @SuppressWarnings("unchecked")
-  public static Object addPubSubListener(Object arg) {
+  public static Object addPubSubListener(final Object arg) {
     if (arg instanceof TracingRedisPubSubListener)
         return arg;
 
