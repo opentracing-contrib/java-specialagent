@@ -40,7 +40,7 @@
 <samp>&nbsp;&nbsp;</samp>6 [Supported Plugins](#6-supported-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.2 [<ins>Tracer Plugins</ins>](#62-tracer-plugins)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.3 [<ins>Instrumented libraries by existing rules</ins>](#63-instrumented-libs)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.3 [<ins>Instrumented libraries by existing rules</ins>](#63-instrumented-libraries-by-existing-rules)<br>
 <samp>&nbsp;&nbsp;</samp>7 [Credits](#7-credits)<br>
 <samp>&nbsp;&nbsp;</samp>8 [Contributing](#8-contributing)<br>
 <samp>&nbsp;&nbsp;</samp>9 [License](#9-license)
