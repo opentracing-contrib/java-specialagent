@@ -40,6 +40,7 @@
 <samp>&nbsp;&nbsp;</samp>6 [Supported Plugins](#6-supported-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.2 [<ins>Tracer Plugins</ins>](#62-tracer-plugins)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.3 [<ins>Instrumented libraries by existing rules</ins>](#63-instrumented-libraries-by-existing-rules)<br>
 <samp>&nbsp;&nbsp;</samp>7 [Credits](#7-credits)<br>
 <samp>&nbsp;&nbsp;</samp>8 [Contributing](#8-contributing)<br>
 <samp>&nbsp;&nbsp;</samp>9 [License](#9-license)
@@ -362,6 +363,14 @@ The following OpenTracing tracer service providers have [<ins>Tracer Plugins</in
 
 1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
 1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
+
+### 6.3 [<ins>Instrumented libraries by existing rules</ins>](#46-instrumented-libs)
+
+The following libraries are instrumented by existing [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule).
+
+1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
+1. [JDBI](https://github.com/opentracing-contrib/java-jdbi)
+1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
 
 ## 7 Credits
 
