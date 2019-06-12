@@ -41,12 +41,17 @@
           <groupId>org.redisson</groupId>
           <artifactId>redisson</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-redis-common</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-common</artifactId>
       <version>${opentracing.redis.version}</version>
+      <scope>provided</scope> <!-- It is added in lettuce rule -->
     </dependency>
     <dependency>
       <groupId>org.redisson</groupId>
