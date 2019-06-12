@@ -76,9 +76,9 @@ public class LettuceTest {
     final RedisCommands<String,String> commands2 = client.connect().sync();
     commands2.publish("channel", "msg");
 
-    client.shutdown();
-
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(4));
+
+    client.shutdown();
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(4, spans.size());

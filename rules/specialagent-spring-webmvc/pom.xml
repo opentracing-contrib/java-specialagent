@@ -38,6 +38,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-web-servlet-filter</artifactId>
       <version>0.4.0</version>
+      <scope>provided</scope> <!-- It is added in web-servlet-filter rule -->
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
