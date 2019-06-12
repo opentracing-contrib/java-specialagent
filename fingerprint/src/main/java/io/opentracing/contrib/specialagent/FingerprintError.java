@@ -24,14 +24,14 @@ class FingerprintError {
   /**
    * An enum representing the reason for the error.
    */
-  public static enum Reason {
+  static enum Reason {
     MISSING,
     MISMATCH
   }
 
   private final Reason reason;
-  private final ClassFingerprint a;
-  private final ClassFingerprint b;
+  private final ClassFingerprint expected;
+  private final ClassFingerprint actual;
 
   /**
    * Creates a new {@code FingerprintError} with the specified {@code Reason}
@@ -39,18 +39,18 @@ class FingerprintError {
    * occurred.
    *
    * @param reason The reason for the error.
-   * @param a The first {@code ClassFingerprint} object.
-   * @param b The second {@code ClassFingerprint} object, or {@code null} if the
+   * @param expected The expected {@code ClassFingerprint} object.
+   * @param actual The actual {@code ClassFingerprint} object, or {@code null} if the
    *          fingerprint is missing.
    */
-  FingerprintError(final Reason reason, final ClassFingerprint a, final ClassFingerprint b) {
+  FingerprintError(final Reason reason, final ClassFingerprint expected, final ClassFingerprint actual) {
     this.reason = reason;
-    this.a = a;
-    this.b = b;
+    this.expected = expected;
+    this.actual = actual;
   }
 
   @Override
   public String toString() {
-    return reason == Reason.MISSING ? " " + reason + " " + a.getName() : (reason + " " + a.getName() + " (a <> b):\n(a) " + a.toString().replace("\n", "\n    ") + "\n(b) " + b.toString().replace("\n", "\n    "));
+    return reason == Reason.MISSING ? " " + reason + " " + expected.getName() : (reason + " " + expected.getName() + " (expected <> actual):\n(expected) " + expected.toString().replace("\n", "\n    ") + "\n(actual) " + actual.toString().replace("\n", "\n    "));
   }
 }

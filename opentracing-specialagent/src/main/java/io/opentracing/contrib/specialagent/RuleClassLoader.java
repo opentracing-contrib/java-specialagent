@@ -80,15 +80,19 @@ class RuleClassLoader extends URLClassLoader {
     failOnEmptyFingerprint = property != null && !"false".equalsIgnoreCase(property);
   }
 
+  private final PluginManifest pluginManifest;
+
   /**
-   * Creates a new {@code RuleClassLoader} with the specified classpath URLs
-   * and parent {@code ClassLoader}.
+   * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
+   * parent {@code ClassLoader}.
    *
+   * @param pluginManifest The {@link PluginManifest}.
    * @param parent The parent {@code ClassLoader}.
    * @param files The classpath URLs.
    */
-  RuleClassLoader(final ClassLoader parent, final File ... files) {
+  RuleClassLoader(final PluginManifest pluginManifest, final ClassLoader parent, final File ... files) {
     super(SpecialAgentUtil.toURLs(files), parent);
+    this.pluginManifest = pluginManifest;
   }
 
   @Override
@@ -111,7 +115,7 @@ class RuleClassLoader extends URLClassLoader {
 
     preLoaded = true;
     if (logger.isLoggable(Level.FINE))
-      logger.fine("RuleClassLoader<" + SpecialAgentUtil.getIdentityCode(this) + ">#preLoad(ClassLoader<" + SpecialAgentUtil.getIdentityCode(classLoader) + ">)");
+      logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(ClassLoader<" + AssembleUtil.getNameId(classLoader) + ">)");
 
     // Call Class.forName(...) for each class in ruleClassLoader to load in
     // the caller's class loader
@@ -171,10 +175,7 @@ class RuleClassLoader extends URLClassLoader {
       return compatible;
 
     try {
-      final URL fpURL = getResource(FINGERPRINT_FILE);
-      if (fpURL == null)
-        throw new IllegalStateException(FINGERPRINT_FILE + " was not found for plugin that is loading the following classpath: " + AssembleUtil.toIndentedString(getURLs()));
-
+      final URL fpURL = pluginManifest.getFingerprint();
       final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
       compatible = isCompatible(fingerprint, classLoader);
       compatibility.put(classLoader, compatible);
@@ -189,27 +190,27 @@ class RuleClassLoader extends URLClassLoader {
     if (fingerprint != null) {
       final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
       if (errors != null) {
-        logger.warning("FIXME: Disallowing instrumentation due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
+        logger.warning("FIXME: Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
         close();
-        return true;
+        return false;
       }
 
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Allowing instrumentation due to \"" + FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
+        logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
 
       return true;
     }
 
     if (failOnEmptyFingerprint) {
-      logger.warning("Disallowing instrumentation due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
       compatibility.put(classLoader, false);
       close();
       return false;
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Allowing instrumentation due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
   }

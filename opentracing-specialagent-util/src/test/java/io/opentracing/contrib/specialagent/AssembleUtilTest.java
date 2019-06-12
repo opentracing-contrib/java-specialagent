@@ -33,6 +33,160 @@ import io.opentracing.noop.NoopTracer;
  */
 public class AssembleUtilTest {
   @Test
+  public void testRetain() {
+    String[] a, b, r;
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(a, r);
+
+    a = new String[] {"b", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(a, r);
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(b, r);
+
+    a = new String[] {"a", "b", "c"};
+    b = new String[] {"a", "b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(a, r);
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "c"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(b, r);
+
+    a = new String[] {"a", "b", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(a, r);
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(b, r);
+
+    a = new String[] {"a", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(a, r);
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(b, r);
+
+    a = new String[] {"a", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(a, r);
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(b, r);
+
+    a = new String[] {"a", "c", "d"};
+    b = new String[] {"a", "b", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(new String[] {"a", "d"}, r);
+
+    a = new String[] {"a", "b", "d"};
+    b = new String[] {"a", "c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(new String[] {"a", "d"}, r);
+
+    a = new String[] {"c", "d"};
+    b = new String[] {"a", "b", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(new String[] {"d"}, r);
+
+    a = new String[] {"a", "b"};
+    b = new String[] {"a", "c"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertArrayEquals(new String[] {"a"}, r);
+
+    a = new String[] {"a", "b"};
+    b = new String[] {"c", "d"};
+    r = AssembleUtil.retain(a, b, 0, 0, 0);
+    assertNull(r);
+  }
+
+  @Test
+  public void testContainsAll() {
+    String[] a, b;
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertTrue(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"b", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"b", "c", "d"};
+    assertTrue(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "c"};
+    assertTrue(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "b", "d"};
+    assertTrue(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "c", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "c", "d"};
+    assertTrue(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "d"};
+    b = new String[] {"a", "b", "c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "c", "d"};
+    b = new String[] {"a", "d"};
+    assertTrue(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "c", "d"};
+    b = new String[] {"a", "b", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b", "d"};
+    b = new String[] {"a", "c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"c", "d"};
+    b = new String[] {"a", "b", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b"};
+    b = new String[] {"a", "c"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+
+    a = new String[] {"a", "b"};
+    b = new String[] {"c", "d"};
+    assertFalse(AssembleUtil.containsAll(a, b));
+  }
+
+  @Test
   public void testGetRulePathsAll() throws IOException {
     final Set<String> expected = new HashSet<>();
     expected.add("bcprov-jdk15on-1.50.jar");

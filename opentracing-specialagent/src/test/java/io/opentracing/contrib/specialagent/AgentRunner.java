@@ -334,7 +334,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("rulePaths of forked process will be:\n" + AssembleUtil.toIndentedString(rulePaths));
 
-    System.setProperty(SpecialAgent.RULE_PATH_ARG, SpecialAgentUtil.toString(rulePaths.toArray(), ":"));
+    System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
 
     // Add scope={"test", "provided"}, optional=true to rulePaths
     final File[] testDependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");

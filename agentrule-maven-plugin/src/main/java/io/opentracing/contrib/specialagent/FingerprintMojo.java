@@ -37,8 +37,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
 import org.codehaus.plexus.component.repository.ComponentDependency;
 
-import io.opentracing.contrib.specialagent.Link.Manifest;
-
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
  * instrumentation plugins. The implementation uses introspection to record the
@@ -183,10 +181,8 @@ public final class FingerprintMojo extends TreeMojo {
       // bridges/links between the 3rd-Party Library to itself).
       compileDeps[0] = new File(getProject().getBuild().getOutputDirectory()).toURI().toURL();
 
-      final Manifest manifest = Link.createManifest(compileDeps, optionalDeps);
-
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, getProject().getArtifacts().iterator(), 0);
-      final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), manifest, optionalDeps);
+      final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), optionalDeps);
       fingerprint.toFile(destFile);
       if (getLog().isDebugEnabled())
         getLog().debug(fingerprint.toString());

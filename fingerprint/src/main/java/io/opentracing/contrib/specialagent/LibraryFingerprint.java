@@ -23,11 +23,8 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import io.opentracing.contrib.specialagent.Link.Manifest;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a library.
@@ -54,14 +51,13 @@ class LibraryFingerprint extends Fingerprint {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("LibraryFingerprint#fromFile(\"" + url + "\"): " + libraryFingerprint);
 
-      return libraryFingerprint.manifest == null ? null : libraryFingerprint;
+      return libraryFingerprint == null ? null : libraryFingerprint;
     }
     catch (final ClassNotFoundException e) {
       throw new UnsupportedOperationException(e);
     }
   }
 
-  private final Manifest manifest;
   private final ClassFingerprint[] classes;
 
   /**
@@ -70,21 +66,18 @@ class LibraryFingerprint extends Fingerprint {
    *
    * @param parent The parent {@code ClassLoader} to use for resolution of
    *          classes that should not be part of the fingerprint.
-   * @param manifest The {@link Link.Manifest} specifying which classes, methods
-   *          and fields are to be fingerprinted.
    * @param urls The {@code URL} objects referencing JAR files.
    * @throws NullPointerException If {@code manifest} or {@code urls} is null.
    * @throws IllegalArgumentException If the number of members in {@code urls}
    *           is zero.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final ClassLoader parent, final Manifest manifest, final URL ... urls) throws IOException {
+  LibraryFingerprint(final ClassLoader parent, final URL ... urls) throws IOException {
     if (urls.length == 0)
       throw new IllegalArgumentException("Number of URLs must be greater than 0");
 
-    this.manifest = Objects.requireNonNull(manifest);
     try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
-      this.classes = new Fingerprinter(manifest).fingerprint(classLoader);
+      this.classes = new FingerprintVerifier().fingerprint(classLoader);
     }
   }
 
@@ -92,7 +85,6 @@ class LibraryFingerprint extends Fingerprint {
    * Creates a new {@code LibraryFingerprint} that is empty.
    */
   LibraryFingerprint() {
-    this.manifest = null;
     this.classes = null;
   }
 
@@ -121,15 +113,6 @@ class LibraryFingerprint extends Fingerprint {
   }
 
   /**
-   * Returns the {@code Manifest} of this {@code LibraryFingerprint}.
-   *
-   * @return The {@code Manifest} of this {@code LibraryFingerprint}.
-   */
-  Manifest getManifest() {
-    return this.manifest;
-  }
-
-  /**
    * Tests whether the runtime represented by the specified {@code ClassLoader}
    * is compatible with this fingerprint.
    *
@@ -140,7 +123,7 @@ class LibraryFingerprint extends Fingerprint {
    *         the runtime is compatible with this fingerprint,
    */
   FingerprintError[] isCompatible(final ClassLoader classLoader) {
-    return isCompatible(classLoader, new Fingerprinter(manifest), 0, 0);
+    return isCompatible(classLoader, new FingerprintVerifier(), 0, 0);
   }
 
   /**
@@ -157,7 +140,7 @@ class LibraryFingerprint extends Fingerprint {
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */
-  private FingerprintError[] isCompatible(final ClassLoader classLoader, final Fingerprinter fingerprinter, final int index, final int depth) {
+  private FingerprintError[] isCompatible(final ClassLoader classLoader, final FingerprintVerifier fingerprinter, final int index, final int depth) {
     for (int i = index; i < classes.length; ++i) {
       FingerprintError error = null;
       try {
@@ -195,6 +178,6 @@ class LibraryFingerprint extends Fingerprint {
 
   @Override
   public String toString() {
-    return "\n" + SpecialAgentUtil.toString(classes, "\n");
+    return "\n" + AssembleUtil.toString(classes, "\n");
   }
 }

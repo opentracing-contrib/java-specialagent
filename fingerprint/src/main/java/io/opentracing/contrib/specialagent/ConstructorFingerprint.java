@@ -39,35 +39,31 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
    *          signature, or {@code null} if there are no exceptions.
    */
   ConstructorFingerprint(final String[] parameterTypes, final String[] exceptionTypes) {
-    this.parameterTypes = parameterTypes;
-    this.exceptionTypes = exceptionTypes;
+    this.parameterTypes = AssembleUtil.sort(parameterTypes);
+    this.exceptionTypes = AssembleUtil.sort(exceptionTypes);
   }
 
   /**
-   * Returns the parameter type names.
-   *
    * @return The parameter type names.
    */
-  public String[] getParameterTypes() {
+  String[] getParameterTypes() {
     return this.parameterTypes;
   }
 
   /**
-   * Returns the exception type names.
-   *
    * @return The exception type names.
    */
-  public String[] getExceptionTypes() {
+  String[] getExceptionTypes() {
     return this.exceptionTypes;
   }
 
   @Override
   public int compareTo(final ConstructorFingerprint o) {
-    final int comparison = SpecialAgentUtil.compare(parameterTypes, o.parameterTypes);
+    final int comparison = AssembleUtil.compare(parameterTypes, o.parameterTypes);
     if (comparison != 0)
       return comparison;
 
-    return SpecialAgentUtil.compare(exceptionTypes, o.exceptionTypes);
+    return AssembleUtil.compare(exceptionTypes, o.exceptionTypes);
   }
 
   @Override
@@ -93,11 +89,11 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
     final StringBuilder builder = new StringBuilder();
     builder.append("(");
     if (parameterTypes != null)
-      builder.append(SpecialAgentUtil.toString(parameterTypes, ", "));
+      builder.append(AssembleUtil.toString(parameterTypes, ", "));
 
     builder.append(")");
     if (exceptionTypes != null)
-      builder.append(" throws ").append(SpecialAgentUtil.toString(exceptionTypes, ", "));
+      builder.append(" throws ").append(AssembleUtil.toString(exceptionTypes, ", "));
 
     builder.append(";");
     return builder.toString();

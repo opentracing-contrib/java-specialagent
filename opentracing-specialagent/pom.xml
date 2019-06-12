@@ -398,22 +398,6 @@
       <artifactId>byte-buddy-agent</artifactId>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>5.0.3</version>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
-    <dependency>
-      <groupId>javax.el</groupId>
-      <artifactId>javax.el-api</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
-      <optional>true</optional>
-    </dependency>
-    <!-- [end] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [end] -->
   </dependencies>
   <build>
     <resources>

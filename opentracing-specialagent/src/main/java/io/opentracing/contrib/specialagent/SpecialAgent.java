@@ -305,7 +305,7 @@ public class SpecialAgent {
 
         urls.add(url);
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + TRACER_FACTORY + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
+          logger.finest("Found " + TRACER_FACTORY + ": <" + AssembleUtil.getNameId(url) + ">" + url);
 
         final String jarPath = SpecialAgentUtil.getSourceLocation(url, TRACER_FACTORY).getPath();
         final String fileName = SpecialAgentUtil.getName(jarPath);
@@ -341,7 +341,7 @@ public class SpecialAgent {
 
         urls.add(url.toString());
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("Found " + DEPENDENCIES_TGF + ": <" + SpecialAgentUtil.getIdentityCode(url) + ">" + url);
+          logger.finest("Found " + DEPENDENCIES_TGF + ": <" + AssembleUtil.getNameId(url) + ">" + url);
 
         final File jarFile = SpecialAgentUtil.getSourceLocation(url, DEPENDENCIES_TGF);
 
@@ -541,7 +541,7 @@ public class SpecialAgent {
       if (logger.isLoggable(Level.FINER)) {
         final File rulePath = allPluginsClassLoader.getFiles()[index];
         final PluginManifest pluginManifest = fileToPluginManifest.get(rulePath);
-        logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible);
+        logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible);
       }
 
       return true;
@@ -552,7 +552,7 @@ public class SpecialAgent {
     final PluginManifest pluginManifest = fileToPluginManifest.get(rulePath);
 
     if (logger.isLoggable(Level.FINER))
-      logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + SpecialAgentUtil.getIdentityCode(classLoader) + "): compatible = " + compatible + ", RulePath: " + rulePath);
+      logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + ", RulePath: " + rulePath);
 
     // Now find all the paths that rulePath depends on, by reading dependencies.tgf
     final File[] rulePaths = ruleToDependencies.get(rulePath);
@@ -560,10 +560,10 @@ public class SpecialAgent {
       throw new IllegalStateException("No " + DEPENDENCIES_TGF + " was registered for: " + rulePath);
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("[" + pluginManifest.name + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + AssembleUtil.toIndentedString(rulePaths) + "]\n, " + SpecialAgentUtil.getIdentityCode(classLoader) + ");");
+      logger.finest("[" + pluginManifest.name + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + AssembleUtil.toIndentedString(rulePaths) + "]\n, " + AssembleUtil.getNameId(classLoader) + ");");
 
     // Create an isolated (no parent class loader) URLClassLoader with the rulePaths
-    final RuleClassLoader ruleClassLoader = new RuleClassLoader(classLoader, rulePaths);
+    final RuleClassLoader ruleClassLoader = new RuleClassLoader(pluginManifest, classLoader, rulePaths);
     compatible = ruleClassLoader.isCompatible(classLoader);
     indexToCompatibility.put(index, compatible);
     if (!compatible) {
@@ -571,7 +571,7 @@ public class SpecialAgent {
         ruleClassLoader.close();
       }
       catch (final IOException e) {
-        logger.log(Level.WARNING, "[" + pluginManifest.name + "] Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + SpecialAgentUtil.getIdentityCode(ruleClassLoader), e);
+        logger.log(Level.WARNING, "[" + pluginManifest.name + "] Failed to close " + RuleClassLoader.class.getSimpleName() + ": " + AssembleUtil.getNameId(ruleClassLoader), e);
       }
 
       return false;
@@ -651,7 +651,7 @@ public class SpecialAgent {
     final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
     if (ruleClassLoaders == null) {
       if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
+        logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
 
       return null;
     }
@@ -670,7 +670,7 @@ public class SpecialAgent {
         // for the same class)
         if (ruleClassLoader.markFindResource(classLoader, resourceName)) {
           if (logger.isLoggable(Level.FINEST))
-            logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): REDUNDANT CALL");
+            logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): REDUNDANT CALL");
 
           return null;
         }
@@ -678,21 +678,21 @@ public class SpecialAgent {
         // Return the resource's bytes
         final byte[] bytecode = AssembleUtil.readBytes(resource);
         if (logger.isLoggable(Level.FINEST))
-          logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
+          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
 
         return bytecode;
       }
     }
 
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\"): Not found in " + size + " RuleClassLoader(s)");
+      logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Not found in " + size + " RuleClassLoader(s)");
 
     return null;
   }
 
   public static URL findResource(final ClassLoader classLoader, final String name) {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findResource(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findResource(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
     final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
@@ -710,7 +710,7 @@ public class SpecialAgent {
 
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findResources(" + SpecialAgentUtil.getIdentityCode(classLoader) + ", \"" + name + "\")");
+      logger.finest(">>>>>>>> findResources(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
     final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);

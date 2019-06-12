@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A {@link NamedFingerprint} that represents the fingerprint of a
@@ -27,6 +28,7 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
   private static final long serialVersionUID = 3179458505281585557L;
 
   private final String superClass;
+  private final String[] interfaces;
   private final ConstructorFingerprint[] constructors;
   private final MethodFingerprint[] methods;
   private final FieldFingerprint[] fields;
@@ -37,6 +39,7 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
    * @param name The name of the class.
    * @param superClass The name of the super class, or {@code null} for
    *          {@code java.lang.Object}.
+   * @param interfaces The sorted array of interface type names.
    * @param constructors The sorted array of {@code ConstructorFingerprint}
    *          objects, or {@code null} if there are no constructors.
    * @param methods The sorted array of {@code MethodFingerprint} objects, or
@@ -44,12 +47,13 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
    * @param fields The sorted array of {@code FieldFingerprint} objects, or
    *          {@code null} if there are no fields.
    */
-  ClassFingerprint(final String name, final String superClass, final ConstructorFingerprint[] constructors, final MethodFingerprint[] methods, final FieldFingerprint[] fields) {
+  ClassFingerprint(final String name, final String superClass, final String[] interfaces, final List<ConstructorFingerprint> constructors, final List<MethodFingerprint> methods, final List<FieldFingerprint> fields) {
     super(name);
     this.superClass = superClass;
-    this.constructors = constructors;
-    this.methods = methods;
-    this.fields = fields;
+    this.interfaces = interfaces == null || interfaces.length == 0 ? null : AssembleUtil.sort(interfaces);
+    this.constructors = constructors == null || constructors.size() == 0 ? null : AssembleUtil.sort(constructors.toArray(new ConstructorFingerprint[constructors.size()]));
+    this.methods = methods == null || methods.size() == 0 ? null : AssembleUtil.sort(methods.toArray(new MethodFingerprint[methods.size()]));
+    this.fields = fields == null || fields.size() == 0 ? null : AssembleUtil.sort(fields.toArray(new FieldFingerprint[fields.size()]));
   }
 
   /**
@@ -59,40 +63,38 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
    * @return The name of the super {@code Class}, or {@code null} if the super
    *         class is {@code Object.class}.
    */
-  public String getSuperClass() {
+  String getSuperClass() {
     return this.superClass;
   }
 
   /**
-   * Returns an array of {@link FieldFingerprint} objects, or {@code null} if no
-   * fields are present in this fingerprint.
-   *
+   * @return The names of the interface types.
+   */
+  String[] getInterfaces() {
+    return this.interfaces;
+  }
+
+  /**
    * @return An array of {@link FieldFingerprint} objects, or {@code null} if no
    *         fields are present in this fingerprint.
    */
-  public FieldFingerprint[] getFields() {
+  FieldFingerprint[] getFields() {
     return this.fields;
   }
 
   /**
-   * Returns an array of {@link ConstructorFingerprint} objects, or {@code null}
-   * if no constructors are present in this fingerprint.
-   *
    * @return An array of {@link ConstructorFingerprint} objects, or {@code null}
    *         if no constructors are present in this fingerprint.
    */
-  public ConstructorFingerprint[] getConstructors() {
+  ConstructorFingerprint[] getConstructors() {
     return this.constructors;
   }
 
   /**
-   * Returns an array of {@link MethodFingerprint} objects, or {@code null} if
-   * no methods are present in this fingerprint.
-   *
    * @return An array of {@link MethodFingerprint} objects, or {@code null} if
    *         no methods are present in this fingerprint.
    */
-  public MethodFingerprint[] getMethods() {
+  MethodFingerprint[] getMethods() {
     return this.methods;
   }
 
@@ -110,13 +112,13 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     if (superClass != null ? !superClass.equals(o.superClass) : o.superClass != null)
       return false;
 
-    if (constructors == null ? o.constructors != null : o.constructors == null || !SpecialAgentUtil.containsAll(constructors, o.constructors))
+    if (constructors == null ? o.constructors != null : o.constructors == null || !AssembleUtil.containsAll(constructors, o.constructors))
       return false;
 
-    if (methods == null ? o.methods != null : o.methods == null || !SpecialAgentUtil.containsAll(methods, o.methods))
+    if (methods == null ? o.methods != null : o.methods == null || !AssembleUtil.containsAll(methods, o.methods))
       return false;
 
-    if (fields == null ? o.fields != null : o.fields == null || !SpecialAgentUtil.containsAll(fields, o.fields))
+    if (fields == null ? o.fields != null : o.fields == null || !AssembleUtil.containsAll(fields, o.fields))
       return false;
 
     return true;
@@ -155,13 +157,13 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
 
     builder.append(" {\n");
     if (constructors != null)
-      builder.append("  ").append(getName()).append(SpecialAgentUtil.toString(constructors, "\n  " + getName())).append('\n');
+      builder.append("  ").append(getName()).append(AssembleUtil.toString(constructors, "\n  " + getName())).append('\n');
 
     if (methods != null)
-      builder.append("  ").append(SpecialAgentUtil.toString(methods, "\n  ")).append('\n');
+      builder.append("  ").append(AssembleUtil.toString(methods, "\n  ")).append('\n');
 
     if (fields != null)
-      builder.append("  ").append(SpecialAgentUtil.toString(fields, "\n  ")).append('\n');
+      builder.append("  ").append(AssembleUtil.toString(fields, "\n  ")).append('\n');
 
     builder.append('}');
     return builder.toString();
