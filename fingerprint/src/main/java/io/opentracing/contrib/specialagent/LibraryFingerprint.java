@@ -66,18 +66,19 @@ class LibraryFingerprint extends Fingerprint {
    *
    * @param parent The parent {@code ClassLoader} to use for resolution of
    *          classes that should not be part of the fingerprint.
-   * @param urls The {@code URL} objects referencing JAR files.
+   * @param scanUrls The {@code URL} objects referencing JAR files.
    * @throws NullPointerException If {@code manifest} or {@code urls} is null.
    * @throws IllegalArgumentException If the number of members in {@code urls}
    *           is zero.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final ClassLoader parent, final URL ... urls) throws IOException {
-    if (urls.length == 0)
-      throw new IllegalArgumentException("Number of URLs must be greater than 0");
+  LibraryFingerprint(final ClassLoader parent, final URL ... scanUrls) throws IOException {
+    if (scanUrls.length == 0)
+      throw new IllegalArgumentException("Number of scan URLs must be greater than 0");
 
-    try (final URLClassLoader classLoader = new URLClassLoader(urls, parent)) {
-      this.classes = new FingerprintVerifier().fingerprint(classLoader);
+    try (final URLClassLoader classLoader = new URLClassLoader(scanUrls, parent)) {
+      this.classes = FingerprintBuilder.build(classLoader, 0, Phase.LOAD);
+      System.out.println(AssembleUtil.toIndentedString(this.classes));
     }
   }
 
@@ -123,7 +124,7 @@ class LibraryFingerprint extends Fingerprint {
    *         the runtime is compatible with this fingerprint,
    */
   FingerprintError[] isCompatible(final ClassLoader classLoader) {
-    return isCompatible(classLoader, new FingerprintVerifier(), 0, 0);
+    return classes == null ? null : isCompatible(classLoader, new FingerprintVerifier(), 0, 0);
   }
 
   /**
@@ -147,8 +148,10 @@ class LibraryFingerprint extends Fingerprint {
         final ClassFingerprint fingerprint = fingerprinter.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
         if (fingerprint == null)
           error = new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null);
-        else if (!fingerprint.compatible(classes[i]))
+        else if (!fingerprint.compatible(classes[i])) {
+          fingerprint.compatible(classes[i]);
           error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
+        }
       }
       catch (final IOException e) {
         logger.log(Level.WARNING, "Failed generate class fingerprint due to IOException -- resorting to default behavior (permit instrumentation)", e);

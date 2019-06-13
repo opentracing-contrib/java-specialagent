@@ -109,16 +109,19 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
    *         compatible with this fingerprint.
    */
   public boolean compatible(final ClassFingerprint o) {
-    if (superClass != null ? !superClass.equals(o.superClass) : o.superClass != null)
+    if (superClass == null ? o.superClass != null : o.superClass != null && !superClass.equals(o.superClass))
       return false;
 
-    if (constructors == null ? o.constructors != null : o.constructors == null || !AssembleUtil.containsAll(constructors, o.constructors))
+    if (interfaces == null ? o.interfaces != null : o.interfaces != null && !AssembleUtil.containsAll(interfaces, o.interfaces))
       return false;
 
-    if (methods == null ? o.methods != null : o.methods == null || !AssembleUtil.containsAll(methods, o.methods))
+    if (constructors == null ? o.constructors != null : o.constructors != null && !AssembleUtil.containsAll(constructors, o.constructors))
       return false;
 
-    if (fields == null ? o.fields != null : o.fields == null || !AssembleUtil.containsAll(fields, o.fields))
+    if (methods == null ? o.methods != null : o.methods != null && !AssembleUtil.containsAll(methods, o.methods))
+      return false;
+
+    if (fields == null ? o.fields != null : o.fields != null && !AssembleUtil.containsAll(fields, o.fields))
       return false;
 
     return true;
@@ -154,6 +157,9 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     builder.append("class ").append(getName());
     if (superClass != null)
       builder.append(" extends ").append(superClass);
+
+    if (interfaces != null)
+      builder.append(" implements ").append(AssembleUtil.toString(interfaces, ", "));
 
     builder.append(" {\n");
     if (constructors != null)

@@ -54,6 +54,10 @@ final class FingerprintUtil {
     return (opcode & Opcodes.INVOKESTATIC) != 0;
   }
 
+  public static boolean isInvokeSpecial(int opcode) {
+    return (opcode & Opcodes.INVOKESPECIAL) != 0;
+  }
+
   static void forEachClass(final URLClassLoader classLoader, final BiConsumer<URLClassLoader,String> consumer) throws IOException {
     for (final URL url : classLoader.getURLs()) {
       if (url.getPath().endsWith(".jar")) {

@@ -80,7 +80,7 @@ class LogSet {
     }
   }
 
-  public List<ClassFingerprint> collate() {
+  public ClassFingerprint[] collate(final Phase phase) {
     final List<Log> sorted = new ArrayList<>(map.values());
     Collections.sort(sorted, new Comparator<Log>() {
       @Override
@@ -89,7 +89,9 @@ class LogSet {
         if (comparison != 0)
           return comparison;
 
-        return o1 instanceof ClassLog ? -1 : o2 instanceof ClassLog ? 1 : 0;
+        final int c1 = o1 instanceof ClassLog ? 0 : o1 instanceof MethodLog ? 1 : 2;
+        final int c2 = o2 instanceof ClassLog ? 0 : o2 instanceof MethodLog ? 1 : 2;
+        return Integer.compare(c1, c2);
       }
     });
 
@@ -101,9 +103,12 @@ class LogSet {
     List<MethodFingerprint> methods = null;
     List<ConstructorFingerprint> constructors = null;
     for (final Log log : sorted) {
+      if (log.getPhase().ordinal() > phase.ordinal())
+        continue;
+
       if (!log.className.equals(className)) {
         if (!(log instanceof ClassLog))
-          throw new IllegalStateException();
+          throw new IllegalStateException("\n" + AssembleUtil.toIndentedString(sorted));
 
         if (className != null)
           classes.add(new ClassFingerprint(className, superClass, interfaces, constructors, methods, fields));
@@ -134,8 +139,10 @@ class LogSet {
       }
     }
 
-    classes.add(new ClassFingerprint(className, superClass, interfaces, constructors, methods, fields));
-    return classes;
+    if (className != null)
+      classes.add(new ClassFingerprint(className, superClass, interfaces, constructors, methods, fields));
+
+    return classes.toArray(new ClassFingerprint[classes.size()]);
   }
 
   public String toString(final Phase phase) {

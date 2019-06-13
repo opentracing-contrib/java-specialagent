@@ -51,6 +51,6 @@ class FingerprintError {
 
   @Override
   public String toString() {
-    return reason == Reason.MISSING ? " " + reason + " " + expected.getName() : (reason + " " + expected.getName() + " (expected <> actual):\n(expected) " + expected.toString().replace("\n", "\n    ") + "\n(actual) " + actual.toString().replace("\n", "\n    "));
+    return reason == Reason.MISSING ? " " + reason + " " + expected.getName() : (reason + " " + expected.getName() + " (expected <> actual):\n(expected) " + expected.toString().replace("\n", "\n    ") + "\n  (actual) " + actual.toString().replace("\n", "\n    "));
   }
 }

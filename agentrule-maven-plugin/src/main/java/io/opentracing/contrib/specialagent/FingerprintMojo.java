@@ -182,10 +182,15 @@ public final class FingerprintMojo extends TreeMojo {
       compileDeps[0] = new File(getProject().getBuild().getOutputDirectory()).toURI().toURL();
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, getProject().getArtifacts().iterator(), 0);
-      final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), optionalDeps);
-      fingerprint.toFile(destFile);
-      if (getLog().isDebugEnabled())
-        getLog().debug(fingerprint.toString());
+      try (
+        final URLClassLoader root = new URLClassLoader(nonOptionalDeps, null);
+        final URLClassLoader parent = new URLClassLoader(optionalDeps, root);
+      ) {
+        final LibraryFingerprint fingerprint = new LibraryFingerprint(parent, compileDeps);
+        fingerprint.toFile(destFile);
+        if (getLog().isDebugEnabled())
+          getLog().debug(fingerprint.toString());
+      }
     }
     catch (final IOException e) {
       throw new MojoFailureException(null, e);

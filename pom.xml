@@ -59,6 +59,7 @@
   <modules>
     <module>opentracing-specialagent-api</module>
     <module>opentracing-specialagent-util</module>
+    <module>fingerprint</module>
     <module>assemble-maven-plugin</module>
     <module>opentracing-specialagent</module>
     <module>agentrule-maven-plugin</module>
@@ -549,6 +550,11 @@
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-agent</artifactId>
         <version>${version.bytebuddy}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>5.0.3</version>
       </dependency>
 
       <dependency>

@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
@@ -33,7 +32,7 @@ public class FingerprintTest {
   public void test2() {
     FingerprintBuilder.debugVisitor = false;
     FingerprintBuilder.debugLog = null;
-    final List<ClassFingerprint> classFingerprints = FingerprintBuilder.build(ClassLoader.getSystemClassLoader(), FpTestClass1.class, FpTestClass2.Inner.class, FpTestClass2.class);
+    final ClassFingerprint[] classFingerprints = FingerprintBuilder.build(ClassLoader.getSystemClassLoader(), Integer.MAX_VALUE, Phase.LOAD, FpTestClass1.class, FpTestClass2.Inner.class, FpTestClass2.class);
     System.out.println(AssembleUtil.toIndentedString(classFingerprints));
   }
 

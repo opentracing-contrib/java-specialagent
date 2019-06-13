@@ -320,7 +320,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     final List<File> rulePaths = new ArrayList<>();
     final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
 
-    final File[] dependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
+    final File[] dependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
     if (dependencies == null)
       throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
@@ -337,7 +337,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
 
     // Add scope={"test", "provided"}, optional=true to rulePaths
-    final File[] testDependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
+    final File[] testDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
     if (testDependencies == null)
       throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 

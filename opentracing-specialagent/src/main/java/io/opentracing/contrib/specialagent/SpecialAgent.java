@@ -359,7 +359,7 @@ public class SpecialAgent {
 
         nameToVersion.put(pluginManifest.name, version);
 
-        final File[] dependencies = AssembleUtil.filterRuleURLs(allPluginsClassLoader.getFiles(), dependenciesTgf, false, "compile");
+        final File[] dependencies = MavenUtil.filterRuleURLs(allPluginsClassLoader.getFiles(), dependenciesTgf, false, "compile");
         if (logger.isLoggable(Level.FINEST))
           logger.finest("  URLs from " + DEPENDENCIES_TGF + ": " + AssembleUtil.toIndentedString(dependencies));
 

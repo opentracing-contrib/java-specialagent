@@ -39,7 +39,7 @@ import org.objectweb.asm.signature.SignatureVisitor;
 class Fingerprinter extends ClassVisitor {
   private static final Logger logger = Logger.getLogger(Fingerprinter.class.getName());
   private static final Pattern synthetic = Pattern.compile("access\\$\\d+");
-  private static final String[] excludePrefixes = {"java.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.w3c.dom.", "org.xml.sax.", "sun."};
+  private static final String[] excludePrefixes = {"io.opentracing.", "java.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.w3c.dom.", "org.xml.sax.", "sun."};
 
   private final Set<String> innerClassExcludes = new HashSet<>();
   private final ClassLoader classLoader;
@@ -77,9 +77,10 @@ class Fingerprinter extends ClassVisitor {
     }
   }
 
-  void analyze() {
+  void compass(final int depth) {
     filtering = true;
-    for (Log log; (log = logs.nextLog()) != null;) {
+    Log log;
+    for (int i = 0; (log = logs.nextLog()) != null && i < depth; ++i) {
       fingerprint(log.getPhase(), log.getClassName().replace('.', '/').concat(".class"));
     }
   }
@@ -149,7 +150,7 @@ class Fingerprinter extends ClassVisitor {
     this.className = type.getClassName();
 
     final ClassLog log = addClassRef(type, Phase.LOAD);
-    if (log.isResolved())
+    if (log == null || log.isResolved())
       return;
 
     if (superName == null || "java/lang/Object".equals(superName)) {
@@ -166,8 +167,11 @@ class Fingerprinter extends ClassVisitor {
     }
     else {
       this.interfaces = interfaces;
-      for (final String cls : this.interfaces)
-        addClassRef(Type.getObjectType(cls), Phase.LOAD);
+      for (int i = 0; i < interfaces.length; ++i) {
+        final Type cls = Type.getObjectType(interfaces[i]);
+        interfaces[i] = cls.getClassName();
+        addClassRef(cls, Phase.LOAD);
+      }
     }
 
     log.resolve(this.superClass, this.interfaces);
@@ -190,7 +194,10 @@ class Fingerprinter extends ClassVisitor {
     final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
     final Type type = Type.getType(desc);
     addClassRef(type, Phase.NONE);
-    final FieldLog log = addFieldRef(Type.getObjectType(className), name, Phase.CALL);
+    final FieldLog log = addFieldRef(Type.getObjectType(className), name, filtering ? Phase.NONE : Phase.CALL);
+    if (log == null)
+      return null;
+
     log.resolve(typeToClassName(type));
     if (signature != null)
       new SignatureReader(signature).accept(signatureVisitor);
@@ -219,7 +226,7 @@ class Fingerprinter extends ClassVisitor {
   @Override
   public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
     final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-    if (FingerprintUtil.isSynthetic(access))
+    if (FingerprintUtil.isSynthetic(access) || FingerprintUtil.isPrivate(access))
       return null;
 
     if (!"<clinit>".equals(name)) {
@@ -240,7 +247,7 @@ class Fingerprinter extends ClassVisitor {
       if (exceptions != null) {
         for (int i = 0; i < exceptions.length; ++i) {
           final Type type = Type.getObjectType(exceptions[i]);
-          addClassRef(type, Phase.CALL);
+          addClassRef(type, filtering ? Phase.NONE : Phase.CALL);
           exceptionTypes.add(type.getClassName());
         }
       }
@@ -269,20 +276,24 @@ class Fingerprinter extends ClassVisitor {
       @Override
       public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc, final boolean itf) {
         super.visitMethodInsn(opcode, owner, name, desc, itf);
-        if (synthetic.matcher(name).matches())
+        // Skip if INVOKESPECIAL, because the later scan via addClassRef(type..) will pick up the constructor
+        // Skipping this avoids the virtual constructors of member inner classes
+        if (synthetic.matcher(name).matches() || FingerprintUtil.isInvokeSpecial(opcode))
           return;
 
-        final String className = typeToClassName(Type.getObjectType(owner));
+        final Type type = Type.getObjectType(owner);
+        final String className = typeToClassName(type);
         if (className == null)
           return;
 
+        addClassRef(type, phase);
         logs.add(makeMethodCall(className, name, Type.getMethodType(desc), getPhase(FingerprintUtil.isInvokeStatic(opcode))));
       }
 
       @Override
       public void visitTypeInsn(final int opcode, final String type) {
         super.visitTypeInsn(opcode, type);
-        addClassRef(Type.getObjectType(type), Phase.CALL);
+        addClassRef(Type.getObjectType(type), filtering ? Phase.NONE : Phase.CALL);
       }
 
       @Override

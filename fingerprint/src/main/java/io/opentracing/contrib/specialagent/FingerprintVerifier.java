@@ -16,24 +16,15 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Modifier;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 /**
  * An ASM {@link ClassVisitor} that verifies {@link Fingerprint} objects for
@@ -41,7 +32,7 @@ import org.objectweb.asm.Type;
  *
  * @author Seva Safris
  */
-class FingerprintVerifier extends ClassVisitor {
+class FingerprintVerifier {
   private static final Logger logger = Logger.getLogger(FingerprintVerifier.class.getName());
 
   /**
@@ -49,17 +40,11 @@ class FingerprintVerifier extends ClassVisitor {
    * @throws NullPointerException If {@code manifest} is null.
    */
   FingerprintVerifier() {
-    super(Opcodes.ASM4);
+    super();
   }
 
-  private String className;
-  private String superClass;
-  private String[] interfaces;
-  private final List<ConstructorFingerprint> constructors = new ArrayList<>();
-  private final List<MethodFingerprint> methods = new ArrayList<>();
-  private final List<FieldFingerprint> fields = new ArrayList<>();
-  private final Set<String> innerClassExcludes = new HashSet<>();
   private final Map<String,ClassFingerprint> classNameToFingerprint = new HashMap<>();
+  private final Set<String> innerClassExcludes = new HashSet<>();
 
   /**
    * Fingerprints all class resources in the specified {@code ClassLoader}.
@@ -107,77 +92,6 @@ class FingerprintVerifier extends ClassVisitor {
     if (logger.isLoggable(Level.FINEST))
       logger.finest(AssembleUtil.getNameId(this) + "#fingerprint(" + AssembleUtil.getNameId(classLoader) + ", \"" + resourcePath + "\")");
 
-    try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
-      new ClassReader(in).accept(this, 0);
-      return className == null ? null : new ClassFingerprint(className, superClass, interfaces, constructors, methods, fields);
-    }
-    catch (final Exception e) {
-      logger.log(Level.SEVERE, resourcePath, e);
-      if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
-        throw e;
-
-      return null;
-    }
-    finally {
-      className = null;
-      superClass = null;
-      interfaces = null;
-      constructors.clear();
-      methods.clear();
-      fields.clear();
-    }
-  }
-
-  @Override
-  public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
-    if (!FingerprintUtil.isSynthetic(access) && !Modifier.isPrivate(access)) {
-      final String className = Type.getObjectType(name).getClassName();
-      this.className = className;
-      this.interfaces = interfaces == null || interfaces.length == 0 ? null : interfaces;
-      superClass = "java/lang/Object".equals(superName) ? null : Type.getObjectType(superName).getClassName();
-    }
-
-    super.visit(version, access, name, signature, superName, interfaces);
-  }
-
-  @Override
-  public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
-    if (Visibility.get(access) == Visibility.PRIVATE || FingerprintUtil.isSynthetic(access))
-      innerClassExcludes.add(Type.getObjectType(name).getClassName());
-
-    super.visitInnerClass(name, outerName, innerName, access);
-  }
-
-  @Override
-  public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
-    final Type[] argumentTypes = Type.getArgumentTypes(desc);
-    final String[] parameterTypes = argumentTypes.length == 0 ? null : new String[argumentTypes.length];
-    for (int i = 0; i < argumentTypes.length; ++i)
-      parameterTypes[i] = argumentTypes[i].getClassName();
-
-    final String[] exceptionTypes = exceptions == null || exceptions.length == 0 ? null : new String[exceptions.length];
-    if (exceptions != null)
-      for (int i = 0; i < exceptions.length; ++i)
-        exceptionTypes[i] = Type.getObjectType(exceptions[i]).getClassName();
-
-    if (Visibility.get(access) != Visibility.PRIVATE && !FingerprintUtil.isSynthetic(access)) {
-      if ("<init>".equals(name)) {
-        constructors.add(new ConstructorFingerprint(parameterTypes, AssembleUtil.sort(exceptionTypes)));
-      }
-      else if (!"<clinit>".equals(name)) {
-        final String returnType = Type.getMethodType(desc).getReturnType().getClassName();
-        methods.add(new MethodFingerprint(name, "void".equals(returnType) ? null : returnType, parameterTypes, AssembleUtil.sort(exceptionTypes)));
-      }
-    }
-
-    return super.visitMethod(access, name, desc, signature, exceptions);
-  }
-
-  @Override
-  public FieldVisitor visitField(final int access, final String name, final String desc, final String signature, final Object value) {
-    if (Visibility.get(access) != Visibility.PRIVATE && !FingerprintUtil.isSynthetic(access))
-      fields.add(new FieldFingerprint(name, Type.getType(desc).getClassName()));
-
-    return super.visitField(access, name, desc, signature, value);
+    return ClassScanner.fingerprint(classLoader, resourcePath, innerClassExcludes);
   }
 }

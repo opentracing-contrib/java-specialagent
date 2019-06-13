@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
-import java.util.List;
 
 class FingerprintBuilder {
   static boolean debugVisitor = false;
@@ -28,18 +27,18 @@ class FingerprintBuilder {
       System.out.println(logs.toString(debugLog));
   }
 
-  static List<ClassFingerprint> build(final ClassLoader classLoader, final Class<?> ... classes) {
+  static ClassFingerprint[] build(final ClassLoader classLoader, final int depth, final Phase phase, final Class<?> ... classes) {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     for (final Class<?> cls : classes)
       fingerprinter.fingerprint(Phase.LOAD, cls.getName().replace('.', '/').concat(".class"));
 
-    fingerprinter.analyze();
+    fingerprinter.compass(depth);
     debug(logs);
-    return logs.collate();
+    return logs.collate(phase);
   }
 
-  static List<ClassFingerprint> build(final URLClassLoader classLoader) {
+  static ClassFingerprint[] build(final URLClassLoader classLoader, final int depth, final Phase phase) {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     try {
@@ -54,9 +53,9 @@ class FingerprintBuilder {
       throw new IllegalStateException(e);
     }
 
-    fingerprinter.analyze();
+    fingerprinter.compass(depth);
     debug(logs);
-    return logs.collate();
+    return logs.collate(phase);
   }
 
   private FingerprintBuilder() {
