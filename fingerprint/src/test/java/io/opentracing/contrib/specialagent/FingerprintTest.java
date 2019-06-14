@@ -25,14 +25,20 @@ import java.util.logging.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import io.opentracing.contrib.specialagent.Link.Manifest;
-
-@Ignore
 public class FingerprintTest {
   private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
 
   @Test
-  public void test() throws IOException {
+  public void test2() throws IOException {
+    FingerprintBuilder.debugVisitor = false;
+    FingerprintBuilder.debugLog = null;
+    final ClassFingerprint[] classFingerprints = FingerprintBuilder.build(ClassLoader.getSystemClassLoader(), Integer.MAX_VALUE, Phase.LOAD, FpTestClass1.class, FpTestClass2.Inner.class, FpTestClass2.class);
+    System.out.println(AssembleUtil.toIndentedString(classFingerprints));
+  }
+
+  @Test
+  @Ignore
+  public void test1() throws IOException {
     final Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources("javax/el/ELClass.class");
     URL jarURL = null;
     while (urls.hasMoreElements() && jarURL == null) {
@@ -44,27 +50,7 @@ public class FingerprintTest {
     if (jarURL == null)
       fail("Could not find JAR resource");
 
-    final LibraryFingerprint lib = new LibraryFingerprint(ClassLoader.getSystemClassLoader(), new Manifest() {
-      private static final long serialVersionUID = -8947838103862897479L;
-      private final Link link = new Link(null) {
-        private static final long serialVersionUID = -8216092614984432920L;
-
-        @Override
-        boolean hasField(final String name) {
-          return true;
-        }
-
-        @Override
-        boolean hasMethod(final String name, final String[] parameters) {
-          return true;
-        }
-      };
-
-      @Override
-      public Link getLink(final String className) {
-        return link;
-      }
-    }, jarURL);
+    final LibraryFingerprint lib = new LibraryFingerprint(ClassLoader.getSystemClassLoader(), jarURL);
     logger.fine(lib.toString());
     assertEquals(37, lib.getClasses().length);
 

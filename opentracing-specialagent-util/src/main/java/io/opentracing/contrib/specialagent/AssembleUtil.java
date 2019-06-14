@@ -17,97 +17,27 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-
 public final class AssembleUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
-
-  /**
-   * Filters the specified array of {@code File} objects by checking if the file
-   * name is included in the specified set of files to match.
-   *
-   * @param files The array of {@code File} objects to filter.
-   * @param matches The set of {@code File} objects whose names are to be
-   *          matched by the specified array of URL objects.
-   * @param index The index value for stack tracking (must be called with 0).
-   * @param depth The depth value for stack tracking (must be called with 0).
-   * @return An array of {@code File} objects that have file names that belong
-   *         to the specified files to match.
-   */
-  private static File[] filterUrlFileNames(final File[] files, final Set<File> matches, final int index, final int depth) {
-    for (int i = index; i < files.length; ++i) {
-      final File file = files[i];
-      final String artifact;
-      if (file.isDirectory() && "target".equals(file.getParentFile().getName()) && "classes".equals(file.getName()))
-        artifact = getArtifactFile(file.getParentFile().getParentFile());
-      else if (file.isFile() && file.getName().endsWith(".jar"))
-        artifact = file.getName();
-      else
-        continue;
-
-      for (final File match : matches) {
-        if (artifact.equals(match.getName())) {
-          final File[] results = filterUrlFileNames(files, matches, i + 1, depth + 1);
-          results[depth] = file;
-          return results;
-        }
-      }
-    }
-
-    return depth == 0 ? null : new File[depth];
-  }
-
-  private static String getArtifactFile(final File dir) {
-    try {
-      final MavenXpp3Reader reader = new MavenXpp3Reader();
-      final Model model = reader.read(new FileReader(new File(dir, "pom.xml")));
-      final String version = model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();
-      return model.getArtifactId() + "-" + version + ".jar";
-    }
-    catch (final IOException | XmlPullParserException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * Filter the specified array of {@code File} objects to return the
-   * Instrumentation Rule files as specified by the Dependency TGF file at
-   * {@code dependencyUrl}.
-   *
-   * @param files The array of {@code File} objects to filter.
-   * @param dependenciesTgf The contents of the TGF file that specify the
-   *          dependencies.
-   * @param includeOptional Whether to include dependencies marked as
-   *          {@code (optional)}.
-   * @param scopes An array of Maven scopes to include in the returned set, or
-   *          {@code null} to include all scopes.
-   * @return An array of {@code File} objects representing Instrumentation Rule
-   *         files.
-   * @throws IOException If an I/O error has occurred.
-   */
-  public static File[] filterRuleURLs(final File[] files, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
-    final Set<File> matches = selectFromTgf(dependenciesTgf, includeOptional, scopes);
-    return filterUrlFileNames(files, matches, 0, 0);
-  }
 
   /**
    * Tests if the specified string is a name of a Maven scope.
@@ -350,7 +280,7 @@ public final class AssembleUtil {
       if (i > 0)
         builder.append(",\n");
 
-      builder.append("  ").append(a[i]);
+      builder.append(a[i]);
     }
 
     return builder.toString();
@@ -382,7 +312,39 @@ public final class AssembleUtil {
       if (i > 0)
         builder.append(",\n");
 
-      builder.append("  ").append(iterator.next());
+      builder.append(iterator.next());
+    }
+
+    return builder.toString();
+  }
+
+  /**
+   * Returns string representation of the specified map.
+   * <p>
+   * This method differentiates itself from the algorithm in
+   * {@link Map#toString()} by formatting the output to separate entries
+   * onto new lines, indented with 2 spaces. If the specified map is
+   * null, this method returns the string {@code "null"}. If the size of the
+   * specified map is 0, this method returns {@code ""}.
+   *
+   * @param m The map.
+   * @return An indented string representation of the specified {@code List},
+   *         using the algorithm in {@link Map#toString()}.
+   */
+  static String toIndentedString(final Map<?,?> m) {
+    if (m == null)
+      return "null";
+
+    if (m.size() == 0)
+      return "";
+
+    final StringBuilder builder = new StringBuilder();
+    final Iterator<?> iterator = m.entrySet().iterator();
+    for (int i = 0; iterator.hasNext(); ++i) {
+      if (i > 0)
+        builder.append(",\n");
+
+      builder.append(iterator.next());
     }
 
     return builder.toString();
@@ -431,6 +393,275 @@ public final class AssembleUtil {
     }
 
     return function.apply(dir);
+  }
+
+  /**
+   * Compares two {@code Object} arrays, within comparable elements,
+   * lexicographically.
+   * <p>
+   * A {@code null} array reference is considered lexicographically less than a
+   * non-{@code null} array reference. Two {@code null} array references are
+   * considered equal. A {@code null} array element is considered
+   * lexicographically than a non-{@code null} array element. Two {@code null}
+   * array elements are considered equal.
+   * <p>
+   * The comparison is consistent with {@link Arrays#equals(Object[], Object[])
+   * equals}, more specifically the following holds for arrays {@code a} and
+   * {@code b}:
+   *
+   * <pre>
+   * {@code Arrays.equals(a, b) == (Arrays.compare(a, b) == 0)}
+   * </pre>
+   *
+   * @param a The first array to compare.
+   * @param b The second array to compare.
+   * @param <T> The type of comparable array elements.
+   * @return The value {@code 0} if the first and second array are equal and
+   *         contain the same elements in the same order; a value less than
+   *         {@code 0} if the first array is lexicographically less than the
+   *         second array; and a value greater than {@code 0} if the first array
+   *         is lexicographically greater than the second array.
+   */
+  static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
+    if (a == b)
+      return 0;
+
+    // A null array is less than a non-null array
+    if (a == null || b == null)
+      return a == null ? -1 : 1;
+
+    int length = Math.min(a.length, b.length);
+    for (int i = 0; i < length; i++) {
+      final T oa = a[i];
+      final T ob = b[i];
+      if (oa != ob) {
+        // A null element is less than a non-null element
+        if (oa == null || ob == null)
+          return oa == null ? -1 : 1;
+
+        final int v = oa.compareTo(ob);
+        if (v != 0)
+          return v;
+      }
+    }
+
+    return a.length - b.length;
+  }
+
+  /**
+   * Tests whether the first specified array contains all {@link Comparable}
+   * elements in the second specified array.
+   *
+   * @param <T> Type parameter of array, which must extend {@link Comparable}.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @return {@code true} if the first specifies array contains all elements in
+   *         the second specified array.
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
+    for (int i = 0, j = 0;;) {
+      if (j == b.length)
+        return true;
+
+      if (i == a.length)
+        return false;
+
+      final int comparison = a[i].compareTo(b[j]);
+      if (comparison > 0)
+        return false;
+
+      ++i;
+      if (comparison == 0)
+        ++j;
+    }
+  }
+
+  /**
+   * Tests whether the first specifies array contains all elements in the second
+   * specified array, with comparison determined by the specified
+   * {@link Comparator}.
+   *
+   * @param <T> Type parameter of array.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @param c The {@link Comparator}.
+   * @return {@code true} if the first specifies array contains all elements in
+   *         the second specified array.
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  static <T>boolean containsAll(final T[] a, final T[] b, final Comparator<T> c) {
+    for (int i = 0, j = 0;;) {
+      if (j == b.length)
+        return true;
+
+      if (i == a.length)
+        return false;
+
+      final int comparison = c.compare(a[i], b[j]);
+      if (comparison > 0)
+        return false;
+
+      ++i;
+      if (comparison == 0)
+        ++j;
+    }
+  }
+
+  /**
+   * Returns an array of type {@code <T>} that includes only the elements that
+   * belong to the specified arrays (the specified arrays must be sorted).
+   * <p>
+   * <i><b>Note:</b> This is a recursive algorithm, implemented to take
+   * advantage of the high performance of callstack registers, but will fail due
+   * to a {@link StackOverflowError} if the number of differences between the
+   * first and second specified arrays approaches ~8000.</i>
+   *
+   * @param <T> Type parameter of array.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @param i The starting index of the first specified array (should be set to
+   *          0).
+   * @param j The starting index of the second specified array (should be set to
+   *          0).
+   * @param r The starting index of the resulting array (should be set to 0).
+   * @return An array of type {@code <T>} that includes only the elements that
+   *         belong to the first and second specified array (the specified
+   *         arrays must be sorted).
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  @SuppressWarnings("unchecked")
+  static <T extends Comparable<T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
+    for (int d = 0;; ++d) {
+      int comparison = 0;
+      if (i + d == a.length || j + d == b.length || (comparison = a[i + d].compareTo(b[j + d])) != 0) {
+        final T[] retained;
+        if (i + d == a.length || j + d == b.length)
+          retained = r + d == 0 ? null : (T[])Array.newInstance(a.getClass().getComponentType(), r + d);
+        else if (comparison < 0)
+          retained = retain(a, b, i + d + 1, j + d, r + d);
+        else
+          retained = retain(a, b, i + d, j + d + 1, r + d);
+
+        if (d > 0)
+          System.arraycopy(a, i, retained, r, d);
+
+        return retained;
+      }
+    }
+  }
+
+  /**
+   * Sorts the specified array of objects into ascending order, according to the
+   * natural ordering of its elements. All elements in the array must implement
+   * the {@link Comparable} interface. Furthermore, all elements in the array
+   * must be mutually comparable (that is, {@code e1.compareTo(e2)} must not
+   * throw a {@link ClassCastException} for any elements {@code e1} and
+   * {@code e2} in the array).
+   *
+   * @param <T> The component type of the specified array.
+   * @param array The array to be sorted.
+   * @return The specified array, which is sorted in-place (unless it is null).
+   * @see Arrays#sort(Object[])
+   */
+  static <T>T[] sort(final T[] array) {
+    if (array == null)
+      return null;
+
+    Arrays.sort(array);
+    return array;
+  }
+
+  /**
+   * Returns the name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getSimpleNameId(Object)
+   */
+  public static String getNameId(final Object obj) {
+    return obj != null ? obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
+   * Returns the simple name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The simple name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getNameId(Object)
+   */
+  public static String getSimpleNameId(final Object obj) {
+    return obj != null ? obj.getClass().getSimpleName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
+   * Returns a string representation of the specified array, using the specified
+   * delimiter between the string representation of each element. If the
+   * specified array is null, this method returns the string {@code "null"}. If
+   * the length of the specified array is 0, this method returns {@code ""}.
+   *
+   * @param a The array.
+   * @param del The delimiter.
+   * @return A string representation of the specified array, using the specified
+   *         delimiter between the string representation of each element.
+   */
+  public static String toString(final Object[] a, final String del) {
+    if (a == null)
+      return "null";
+
+    if (a.length == 0)
+      return "";
+
+    final StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < a.length; ++i) {
+      if (i > 0)
+        builder.append(del);
+
+      builder.append(String.valueOf(a[i]));
+    }
+
+    return builder.toString();
+  }
+
+  /**
+   * Returns a string representation of the specified collection, using the
+   * specified delimiter between the string representation of each element. If
+   * the specified collection is null, this method returns the string
+   * {@code "null"}. If the size of the specified collection is 0, this method
+   * returns {@code ""}.
+   *
+   * @param c The array.
+   * @param del The delimiter.
+   * @return A string representation of the specified array, using the specified
+   *         delimiter between the string representation of each element.
+   */
+  public static String toString(final Collection<?> c, final String del) {
+    if (c == null)
+      return "null";
+
+    if (c.size() == 0)
+      return "";
+
+    final StringBuilder builder = new StringBuilder();
+    final Iterator<?> iterator = c.iterator();
+    for (int i = 0; iterator.hasNext(); ++i) {
+      if (i > 0)
+        builder.append(del);
+
+      builder.append(String.valueOf(iterator.next()));
+    }
+
+    return builder.toString();
   }
 
   private AssembleUtil() {

@@ -189,13 +189,13 @@ public class ByteBuddyManager extends Manager {
     @Override
     public void onDiscovery(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
       if (events[Event.DISCOVERY.ordinal()] != null)
-        logger.severe("Event::onDiscovery(" + typeName + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
+        logger.severe("Event::onDiscovery(" + typeName + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")");
     }
 
     @Override
     public void onTransformation(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final DynamicType dynamicType) {
       if (events[Event.TRANSFORMATION.ordinal()] != null)
-        logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
+        logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
       if (index != -1 && !SpecialAgent.linkRule(index, classLoader))
         throw new IllegalStateException("Disallowing transformation due to incompatibility");
@@ -204,19 +204,19 @@ public class ByteBuddyManager extends Manager {
     @Override
     public void onIgnored(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
       if (events[Event.IGNORED.ordinal()] != null)
-        logger.severe("Event::onIgnored(" + typeDescription.getName() + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
+        logger.severe("Event::onIgnored(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")");
     }
 
     @Override
     public void onError(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final Throwable throwable) {
       if (events[Event.ERROR.ordinal()] != null)
-        logger.log(Level.SEVERE, "Event::onError(" + typeName + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")", throwable);
+        logger.log(Level.SEVERE, "Event::onError(" + typeName + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")", throwable);
     }
 
     @Override
     public void onComplete(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
       if (events[Event.COMPLETE.ordinal()] != null)
-        logger.severe("Event::onComplete(" + typeName + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
+        logger.severe("Event::onComplete(" + typeName + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")");
     }
   }
 }

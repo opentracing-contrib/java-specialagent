@@ -64,6 +64,7 @@
     <module>specialagent-spring-scheduling</module>
     <module>specialagent-spring-websocket</module>
     <module>specialagent-spring-jms</module>
+    <module>specialagent-spring-messaging</module>
   </modules>
   <profiles>
     <profile>

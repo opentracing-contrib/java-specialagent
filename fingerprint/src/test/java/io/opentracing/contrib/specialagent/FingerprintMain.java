@@ -15,25 +15,17 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.io.IOException;
+import org.junit.matchers.JUnitMatchers;
 
-import org.junit.Test;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
-
-@SuppressWarnings("unused")
-public class LinkManifestTest {
-  private Type memberField = Type.BOOLEAN_TYPE;
-  private Type memberMethod = Type.getType(LinkManifestTest.class);
-
-  static {
-    final int expandFrames = ClassReader.EXPAND_FRAMES;
-    if (expandFrames == -1)
-      throw new ExceptionInInitializerError();
-  }
-
-  @Test
-  public void test() throws IOException {
-    new Link.Manifest().include(ClassLoader.getSystemClassLoader(), getClass().getName().replace('.', '/').concat(".class"));
+public class FingerprintMain {
+  public static void main(final String[] args) {
+    final FpTestClass1 fp1 = new FpTestClass1();
+    final FpTestClass2 fp2 = new FpTestClass2();
+    fp2.instanceMethod(new JUnitMatchers());
+    fp2.schedule(new Runnable() {
+      @Override
+      public void run() {
+      }
+    });
   }
 }

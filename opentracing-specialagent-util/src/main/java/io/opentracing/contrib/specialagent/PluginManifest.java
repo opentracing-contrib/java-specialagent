@@ -17,6 +17,8 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.util.Enumeration;
@@ -29,12 +31,12 @@ public class PluginManifest {
     TRACER
   }
 
-  private static PluginManifest getPluginManifestFromEntry(final File path, final String entry) {
+  private static PluginManifest getPluginManifestFromEntry(final File file, final String entry) {
     if (entry.startsWith("sa.plugin.name."))
-      return new PluginManifest(Type.INSTRUMENTATION, entry.substring(15));
+      return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(15));
 
     if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
-      return new PluginManifest(Type.TRACER, path.getName().substring(0, path.getName().length() - 4));
+      return new PluginManifest(file, Type.TRACER, file.getName().substring(0, file.getName().length() - 4));
 
     return null;
   }
@@ -74,11 +76,22 @@ public class PluginManifest {
     }
   }
 
+  public final File file;
   public final Type type;
   public final String name;
 
-  private PluginManifest(final Type type, final String name) {
+  private PluginManifest(final File file, final Type type, final String name) {
+    this.file = file;
     this.type = type;
     this.name = name;
+  }
+
+  public URL getFingerprint() {
+    try {
+      return new URL(file.isDirectory() ? "file:" + file + "/fingerprint.bin" : "jar:file:" + file + "!/fingerprint.bin");
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
   }
 }
