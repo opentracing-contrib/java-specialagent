@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,7 +40,6 @@ import org.objectweb.asm.signature.SignatureVisitor;
 class Fingerprinter extends ClassVisitor {
   private static final Logger logger = Logger.getLogger(Fingerprinter.class.getName());
   private static final Pattern synthetic = Pattern.compile("access\\$\\d+");
-  private static final String[] excludePrefixes = {"io.opentracing.", "java.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.w3c.dom.", "org.xml.sax.", "sun."};
 
   private final Set<String> innerClassExcludes = new HashSet<>();
   private final ClassLoader classLoader;
@@ -66,18 +66,22 @@ class Fingerprinter extends ClassVisitor {
     };
   }
 
-  void fingerprint(final Phase phase, final String resourcePath) {
+  void fingerprint(final Phase phase, final String resourcePath) throws IOException {
     this.phase = phase;
     this.filtering = false;
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);
     }
     catch (final Exception e) {
-      logger.log(Level.WARNING, (e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath, e);
+      if (logger.isLoggable(Level.FINE))
+        logger.log(Level.FINE, (e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath, e);
+
+      if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
+        throw e;
     }
   }
 
-  void compass(final int depth) {
+  void compass(final int depth) throws IOException {
     filtering = true;
     Log log;
     for (int i = 0; (log = logs.nextLog()) != null && i < depth; ++i) {
@@ -111,11 +115,7 @@ class Fingerprinter extends ClassVisitor {
       return null;
 
     final String className = type.getClassName();
-    for (int i = 0; i < excludePrefixes.length; ++i)
-      if (className.startsWith(excludePrefixes[i]))
-        return null;
-
-    return className;
+    return FingerprintUtil.isExcluded(className) ? null : className;
   }
 
   private ClassLog addClassRef(final Type type, final Phase lifecyclePhase) {
@@ -193,7 +193,7 @@ class Fingerprinter extends ClassVisitor {
 
     final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
     final Type type = Type.getType(desc);
-    addClassRef(type, Phase.NONE);
+    addClassRef(type, filtering ? Phase.NONE : Phase.CALL);
     final FieldLog log = addFieldRef(Type.getObjectType(className), name, filtering ? Phase.NONE : Phase.CALL);
     if (log == null)
       return null;
@@ -229,17 +229,14 @@ class Fingerprinter extends ClassVisitor {
     if (FingerprintUtil.isSynthetic(access) || FingerprintUtil.isPrivate(access))
       return null;
 
-    if (!"<clinit>".equals(name)) {
+    if (!FingerprintUtil.isExcluded(className) && !"<clinit>".equals(name)) {
       final Type methodType = Type.getMethodType(desc);
       final Type[] argumentTypes = methodType.getArgumentTypes();
       final String[] parameterTypes = argumentTypes.length == 0 ? null : new String[argumentTypes.length];
       for (int i = 0; i < argumentTypes.length; ++i)
         parameterTypes[i] = argumentTypes[i].getClassName();
 
-      final MethodLog log = logs.add(makeMethodCall(className, name, methodType, Phase.NONE));
-      if (log.isResolved())
-        return null;
-
+      final MethodLog log = logs.add(makeMethodCall(className, name, methodType, filtering ? Phase.NONE : Phase.CALL));
       if (filtering && !logs.contains(log))
         return null;
 
@@ -299,7 +296,7 @@ class Fingerprinter extends ClassVisitor {
       @Override
       public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
         super.visitLocalVariable(name, desc, signature, start, end, index);
-        addClassRef(Type.getType(desc), Phase.NONE);
+        addClassRef(Type.getType(desc), filtering ? Phase.NONE : Phase.CALL);
         if (signature != null)
           new SignatureReader(signature).accept(signatureVisitor);
       }

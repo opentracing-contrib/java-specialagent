@@ -78,7 +78,6 @@ class LibraryFingerprint extends Fingerprint {
 
     try (final URLClassLoader classLoader = new URLClassLoader(scanUrls, parent)) {
       this.classes = FingerprintBuilder.build(classLoader, 0, Phase.LOAD);
-      System.out.println(AssembleUtil.toIndentedString(this.classes));
     }
   }
 
@@ -146,8 +145,10 @@ class LibraryFingerprint extends Fingerprint {
       FingerprintError error = null;
       try {
         final ClassFingerprint fingerprint = fingerprinter.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
-        if (fingerprint == null)
+        if (fingerprint == null) {
+          fingerprinter.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
           error = new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null);
+        }
         else if (!fingerprint.compatible(classes[i])) {
           fingerprint.compatible(classes[i]);
           error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);

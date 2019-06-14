@@ -27,7 +27,7 @@ class FingerprintBuilder {
       System.out.println(logs.toString(debugLog));
   }
 
-  static ClassFingerprint[] build(final ClassLoader classLoader, final int depth, final Phase phase, final Class<?> ... classes) {
+  static ClassFingerprint[] build(final ClassLoader classLoader, final int depth, final Phase phase, final Class<?> ... classes) throws IOException {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     for (final Class<?> cls : classes)
@@ -38,20 +38,20 @@ class FingerprintBuilder {
     return logs.collate(phase);
   }
 
-  static ClassFingerprint[] build(final URLClassLoader classLoader, final int depth, final Phase phase) {
+  static ClassFingerprint[] build(final URLClassLoader classLoader, final int depth, final Phase phase) throws IOException {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
-    try {
-      FingerprintUtil.forEachClass(classLoader, new BiConsumer<URLClassLoader,String>() {
-        @Override
-        public void accept(final URLClassLoader t, final String u) {
+    FingerprintUtil.forEachClass(classLoader, new BiConsumer<URLClassLoader,String>() {
+      @Override
+      public void accept(final URLClassLoader t, final String u) {
+        try {
           fingerprinter.fingerprint(Phase.LOAD, u);
         }
-      });
-    }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
+        catch (final IOException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    });
 
     fingerprinter.compass(depth);
     debug(logs);

@@ -190,7 +190,7 @@ class RuleClassLoader extends URLClassLoader {
     if (fingerprint != null) {
       final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
       if (errors != null) {
-        logger.warning("FIXME: Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
+        logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
         close();
         return false;

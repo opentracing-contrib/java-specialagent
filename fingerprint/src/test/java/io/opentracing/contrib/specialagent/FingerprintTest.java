@@ -29,7 +29,7 @@ public class FingerprintTest {
   private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
 
   @Test
-  public void test2() {
+  public void test2() throws IOException {
     FingerprintBuilder.debugVisitor = false;
     FingerprintBuilder.debugLog = null;
     final ClassFingerprint[] classFingerprints = FingerprintBuilder.build(ClassLoader.getSystemClassLoader(), Integer.MAX_VALUE, Phase.LOAD, FpTestClass1.class, FpTestClass2.Inner.class, FpTestClass2.class);

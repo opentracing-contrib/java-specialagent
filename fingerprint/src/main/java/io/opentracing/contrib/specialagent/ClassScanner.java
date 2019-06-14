@@ -49,7 +49,9 @@ class ClassScanner extends ClassVisitor {
       return inspector;
     }
     catch (final Exception e) {
-      logger.log(Level.SEVERE, resourcePath, e);
+      if (logger.isLoggable(Level.FINE))
+        logger.log(Level.FINE, (e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath, e);
+
       if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
         throw e;
 
@@ -59,9 +61,11 @@ class ClassScanner extends ClassVisitor {
 
   private static void scanInterfaces(final String[] interfaces, final ClassLoader classLoader, final List<MethodFingerprint> methods, final List<FieldFingerprint> fields, final Set<String> innerClassExcludes) throws IOException {
     for (final String cls : interfaces) {
-      final ClassScanner inspector = ClassScanner.scan(classLoader, cls.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
-      if (inspector != null && inspector.interfaces != null)
-        scanInterfaces(inspector.interfaces, classLoader, methods, fields, innerClassExcludes);
+      if (!FingerprintUtil.isExcluded(cls)) {
+        final ClassScanner inspector = ClassScanner.scan(classLoader, cls.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
+        if (inspector != null && inspector.interfaces != null)
+          scanInterfaces(inspector.interfaces, classLoader, methods, fields, innerClassExcludes);
+      }
     }
   }
 
@@ -85,7 +89,7 @@ class ClassScanner extends ClassVisitor {
 
   private void scanSupers() throws IOException {
     String superClass = this.superClass;
-    while (superClass != null) {
+    while (superClass != null && !FingerprintUtil.isExcluded(superClass)) {
       final ClassScanner next = ClassScanner.scan(classLoader, superClass.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
       superClass = next == null ? null : next.superClass;
     }
