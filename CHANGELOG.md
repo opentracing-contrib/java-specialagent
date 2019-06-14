@@ -2,7 +2,6 @@
 
 ## v1.3.0 (2019-06-14)
 * Officially support Spring plugins.
-* Re-integrate [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Grizzly AHC, Grizzly Http Server, Reactor.
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring Messaging, Spring WebSocket STOMP, Spring `@JmsListener`, Spring RabbitMQ.
 * Update to Apache HttpClient Plugin: Added `hostname` and `port` tags to http client spans.
 * Upgrade to SpecialAgent API in lieu of Fingerprinting Algorithm rewrite.
