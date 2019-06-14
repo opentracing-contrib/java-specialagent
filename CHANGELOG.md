@@ -1,5 +1,15 @@
 # Changes by Version
 
+## v1.3.0 (2019-06-14)
+* Officially support Spring plugins.
+* Re-integrate [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Grizzly AHC, Grizzly Http Server, Reactor.
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring Messaging, Spring WebSocket STOMP, Spring `@JmsListener`, Spring RabbitMQ.
+* Update to Apache HttpClient Plugin: Added `hostname` and `port` tags to http client spans.
+* Upgrade to SpecialAgent API in lieu of Fingerprinting Algorithm rewrite.
+* Resolve issue #86: DynamoDB Calls regarding bad headers when using LightStep.
+* Resolve issue #87: Apache HttpClient Plugin regarding default HTTP port.
+* Resolve issue #88: Redis Plugin regarding PubSub.
+
 ## v1.2.0 (2019-05-31)
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Feign, Zuul, Spring Kafka, Spring Scheduling.
 * Upgrade to SpecialAgent API, requiring AgentRule(s) to explicitly specify a name for the instrumentation plugin.
