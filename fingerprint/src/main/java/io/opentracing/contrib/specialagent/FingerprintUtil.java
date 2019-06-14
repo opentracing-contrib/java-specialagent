@@ -26,7 +26,7 @@ import java.util.zip.ZipInputStream;
 import org.objectweb.asm.Opcodes;
 
 final class FingerprintUtil {
-  private static final String[] excludePrefixes = {"io.opentracing.", "java.", "javax.crypto.", "javax.net.", "javax.security.", "javax.crypto.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.w3c.dom.", "org.xml.sax.", "sun."};
+  private static final String[] excludePrefixes = {"io.opentracing.", "java.", "javax.crypto.", "javax.net.", "javax.security.", "javax.crypto.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.jvnet.staxex.", "org.w3c.dom.", "org.xml.sax.", "sun."};
 
   static boolean isExcluded(final String className) {
     for (int i = 0; i < excludePrefixes.length; ++i)

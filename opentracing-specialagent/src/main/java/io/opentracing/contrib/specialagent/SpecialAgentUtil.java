@@ -276,6 +276,9 @@ public final class SpecialAgentUtil {
           final File subDir = new File(destDir, jarEntry.substring(0, slash));
           subDir.mkdirs();
           final File file = new File(subDir, jarFileName);
+          if (!file.isDirectory() && !file.getName().endsWith(".jar"))
+            continue;
+
           final URL jarUrl = new URL(resource, jarEntry.substring(path.length()));
           Files.copy(jarUrl.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
