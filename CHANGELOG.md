@@ -1,5 +1,8 @@
 # Changes by Version
 
+## v1.3.1 (2019-06-17)
+* Re-integrate [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Grizzly AHC, Grizzly Http Server, Reactor.
+
 ## v1.3.0 (2019-06-14)
 * Officially support Spring plugins.
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring Messaging, Spring WebSocket STOMP, Spring `@JmsListener`, Spring RabbitMQ.

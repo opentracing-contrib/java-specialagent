@@ -97,9 +97,6 @@ public final class FingerprintMojo extends TreeMojo {
     if (artifact.getClassifier() != null)
       builder.append('-').append(artifact.getClassifier());
 
-    if ("test-jar".equals(artifact.getType()))
-      builder.append("-tests");
-
     try {
       return new URL("file", "", builder.append(".jar").toString());
     }
