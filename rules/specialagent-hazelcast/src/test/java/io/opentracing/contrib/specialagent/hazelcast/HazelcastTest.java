@@ -20,13 +20,13 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Set;
 
-import com.hazelcast.client.HazelcastClient;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;

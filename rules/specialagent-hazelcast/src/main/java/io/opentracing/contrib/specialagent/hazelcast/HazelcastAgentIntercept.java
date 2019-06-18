@@ -23,17 +23,17 @@ import com.hazelcast.core.HazelcastInstance;
 import io.opentracing.contrib.hazelcast.TracingHazelcastInstance;
 
 public class HazelcastAgentIntercept {
-  public static Object exit(final Object returned) {
-    return new TracingHazelcastInstance((HazelcastInstance)returned, false);
+  public static Object getOneInstance(final Object returned) {
+    return returned == null ? null : new TracingHazelcastInstance((HazelcastInstance)returned, false);
   }
 
   @SuppressWarnings("unchecked")
-  public static Object getAllHazelcastInstances(final Object returned) {
+  public static Object getAllInstances(final Object returned) {
     if (returned == null)
       return null;
 
     final Set<HazelcastInstance> instances = (Set<HazelcastInstance>)returned;
-    final Set<HazelcastInstance> tracingInstances = new HashSet<>();
+    final Set<HazelcastInstance> tracingInstances = new HashSet<>(instances.size());
     for (final HazelcastInstance instance : instances)
       tracingInstances.add(new TracingHazelcastInstance(instance, false));
 
