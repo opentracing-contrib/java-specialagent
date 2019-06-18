@@ -52,6 +52,27 @@ public class HazelcastAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(AllInstances.class).on(named("getAllHazelcastInstances")));
+        }})
+      .type(hasSuperType(named("com.hazelcast.client.HazelcastClient")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("newHazelcastClient")));
+        }})
+      .transform(new Transformer() {
+      @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("getHazelcastClientByName")));
+        }})
+      .transform(new Transformer() {
+      @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(HazelcastAgentRule.class).on(named("getHazelcastClientByName")));
+        }})
+      .transform(new Transformer() {
+      @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AllInstances.class).on(named("getAllHazelcastClients")));
         }}));
   }
 

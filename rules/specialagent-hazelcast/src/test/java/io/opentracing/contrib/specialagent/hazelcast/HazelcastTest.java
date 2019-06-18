@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Set;
 
+import com.hazelcast.client.HazelcastClient;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -78,6 +79,12 @@ public class HazelcastTest {
   public void testGetAllHazelcastInstances(final MockTracer tracer) {
     final Set<HazelcastInstance> instances = Hazelcast.getAllHazelcastInstances();
     test(instances.iterator().next(), tracer);
+  }
+
+  @Test
+  public void testNewHazelcastClientInstance(final MockTracer tracer) {
+    HazelcastInstance hazelcast2 = HazelcastClient.newHazelcastClient();
+    test(hazelcast2, tracer);
   }
 
   private static void test(final HazelcastInstance instance, final MockTracer tracer) {
