@@ -45,7 +45,7 @@ public class JdbcTest {
       connection.close();
 
       final List<MockSpan> spans = tracer.finishedSpans();
-      assertEquals(1, spans.size());
+      assertEquals(2, spans.size());
     }
   }
 }
