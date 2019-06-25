@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,6 +26,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.CodeSource;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -33,9 +35,12 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -81,6 +86,90 @@ public final class SpecialAgentUtil {
     final File file = zipPath.toFile();
     file.deleteOnExit();
     return new JarFile(file);
+  }
+
+  private static URL getLocation(final Class<?> cls) {
+    final CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+    if (codeSource != null)
+      return codeSource.getLocation();
+
+    for (final String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+      if (arg.startsWith("-javaagent:")) {
+        try {
+          return new URL("file", null, arg.substring(11));
+        }
+        catch (final MalformedURLException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    }
+
+    final String sunJavaCommand = System.getProperty("sun.java.command");
+    if (sunJavaCommand == null)
+      return null;
+
+    final String[] parts = sunJavaCommand.split("\\s+-");
+    for (int i = 0; i < parts.length; ++i) {
+      final String part = parts[i];
+      if (part.startsWith("javaagent:")) {
+        try {
+          return new URL("file", null, part.substring(11));
+        }
+        catch (final MalformedURLException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private static Manifest getManifest(final URL location) throws IOException {
+    try (final JarInputStream in = new JarInputStream(location.openStream())) {
+      return in.getManifest();
+    }
+  }
+
+  private static String getBootClassPathManifestEntry(final URL location) throws IOException {
+    final Manifest manifest = SpecialAgentUtil.getManifest(location);
+    if (manifest == null)
+      return null;
+
+    final Attributes attributes = manifest.getMainAttributes();
+    if (attributes == null)
+      return null;
+
+    return attributes.getValue("Boot-Class-Path");
+  }
+
+  /**
+   * Asserts that the name of the JAR used on the command line matches the name
+   * for the "Boot-Class-Path" entry in META-INF/MANIFEST.MF.
+   *
+   * @throws IllegalStateException If the name is not what is expected.
+   */
+  static void assertJavaAgentJarName() {
+    try {
+      final URL location = getLocation(SpecialAgent.class);
+      if (location == null) {
+        logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+      }
+      else {
+        final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location);
+        if (bootClassPathManifestEntry == null) {
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+        }
+        else {
+          final String jarName = getName(location.toString());
+          if (!jarName.equals(bootClassPathManifestEntry))
+            throw new IllegalStateException("Name of -javaagent JAR, which is currently " + jarName + ", must be: " + bootClassPathManifestEntry);
+        }
+      }
+    }
+    catch (final IOException e) {
+      logger.log(Level.WARNING, e.getMessage(), e);
+    }
   }
 
   /**

@@ -162,6 +162,7 @@ public class SpecialAgent {
    */
   public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     BootLoaderAgent.premain(inst);
+    SpecialAgentUtil.assertJavaAgentJarName();
     SpecialAgent.inst = inst;
     instrumenter.manager.premain(null, inst);
   }
