@@ -96,7 +96,39 @@ public class SpecialAgent {
   // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
   private static final Instrumenter instrumenter = Instrumenter.BYTEBUDDY;
 
+  private static Instrumentation inst;
+
   static {
+    SpecialAgentUtil.assertJavaAgentJarName();
+  }
+
+  public static void main(final String[] args) throws Exception {
+    if (args.length != 1) {
+      System.err.println("Usage: <PID>");
+      System.exit(1);
+    }
+
+    final VirtualMachine vm = VirtualMachine.attach(args[0]);
+    final String agentPath = SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    try {
+      vm.loadAgent(agentPath, SpecialAgentUtil.getInputArguments());
+    }
+    finally {
+      vm.detach();
+    }
+  }
+
+  /**
+   * Main entrypoint to load the {@code SpecialAgent} via static attach.
+   *
+   * @param agentArgs Agent arguments.
+   * @param inst The {@code Instrumentation}.
+   * @throws Exception If an error has occurred.
+   */
+  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+    if (agentArgs != null)
+      AssembleUtil.absorbProperties(agentArgs);
+
     final String configProperty = System.getProperty("config");
     try (
       final InputStream configInputStream = SpecialAgent.class.getResourceAsStream("/default.properties");
@@ -133,36 +165,8 @@ public class SpecialAgent {
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
-  }
 
-  private static Instrumentation inst;
-
-  public static void main(final String[] args) throws Exception {
-    if (args.length != 1) {
-      System.err.println("Usage: <PID>");
-      System.exit(1);
-    }
-
-    final VirtualMachine vm = VirtualMachine.attach(args[0]);
-    final String agentPath = SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-    try {
-      vm.loadAgent(agentPath, null);
-    }
-    finally {
-      vm.detach();
-    }
-  }
-
-  /**
-   * Main entrypoint to load the {@code SpecialAgent} via static attach.
-   *
-   * @param agentArgs Agent arguments.
-   * @param inst The {@code Instrumentation}.
-   * @throws Exception If an error has occurred.
-   */
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     BootLoaderAgent.premain(inst);
-    SpecialAgentUtil.assertJavaAgentJarName();
     SpecialAgent.inst = inst;
     instrumenter.manager.premain(null, inst);
   }

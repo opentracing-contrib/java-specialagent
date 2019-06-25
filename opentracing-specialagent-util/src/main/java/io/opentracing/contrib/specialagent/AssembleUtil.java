@@ -664,6 +664,21 @@ public final class AssembleUtil {
     return builder.toString();
   }
 
+  public static void absorbProperties(final String command) {
+    final String[] parts = command.split("\\s+-");
+    for (int i = 0; i < parts.length; ++i) {
+      final String part = parts[i];
+      if (part.charAt(0) != 'D')
+        continue;
+
+      final int index = part.indexOf('=');
+      if (index == -1)
+        System.setProperty(part.substring(1), "");
+      else
+        System.setProperty(part.substring(1, index), part.substring(index + 1));
+    }
+  }
+
   private AssembleUtil() {
   }
 }

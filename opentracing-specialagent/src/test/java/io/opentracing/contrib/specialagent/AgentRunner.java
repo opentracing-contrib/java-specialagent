@@ -100,25 +100,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
   }
 
-  private static void absorbProperties() {
-    final String sunJavaCommand = System.getProperty("sun.java.command");
-    if (sunJavaCommand == null)
-      return;
-
-    final String[] parts = sunJavaCommand.split("\\s+-");
-    for (int i = 0; i < parts.length; ++i) {
-      final String part = parts[i];
-      if (part.charAt(0) != 'D')
-        continue;
-
-      final int index = part.indexOf('=');
-      if (index == -1)
-        System.setProperty(part.substring(1), "");
-      else
-        System.setProperty(part.substring(1, index), part.substring(index + 1));
-    }
-  }
-
   private static JarFile appendSourceLocationToBootstrap(final Instrumentation inst, final Class<?> cls) throws IOException {
     final JarFile jarFile = createJarFileOfSource(cls);
     inst.appendToBootstrapClassLoaderSearch(jarFile);
@@ -152,7 +133,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   static {
     System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
-    absorbProperties();
+    final String sunJavaCommand = System.getProperty("sun.java.command");
+    if (sunJavaCommand != null)
+      AssembleUtil.absorbProperties(sunJavaCommand);
+
     inst = install();
   }
 

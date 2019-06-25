@@ -88,6 +88,19 @@ public final class SpecialAgentUtil {
     return new JarFile(file);
   }
 
+  static String getInputArguments() {
+    final StringBuilder builder = new StringBuilder();
+    final Iterator<String> iterator = ManagementFactory.getRuntimeMXBean().getInputArguments().iterator();
+    for (int i = 0; iterator.hasNext(); ++i) {
+      if (i > 0)
+        builder.append(' ');
+
+      builder.append(iterator.next());
+    }
+
+    return builder.toString();
+  }
+
   private static URL getLocation(final Class<?> cls) {
     final CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
     if (codeSource != null)
