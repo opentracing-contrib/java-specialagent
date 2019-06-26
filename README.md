@@ -51,7 +51,7 @@ This file contains the operational instructions for the use and development of [
 
 ## 2 Quick Start
 
-When [<ins>SpecialAgent</ins>](#41-specialagent) attaches to an application, either statically or dynamically, it will automatically load the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) explicitly specified as dependencies in its POM.
+When [<ins>SpecialAgent</ins>](#41-specialagent) attaches to an application, either statically or dynamically, it will automatically load the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) explicitly specified as dependencies in its POM ([Project Object Model][pom]).
 
 Any exception that occurs during the execution of the bootstrap process will not adversely affect the stability of the target application. It is, however, possible that the [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) code may result in exceptions that are not properly handled, and could destabilize the target application.
 
@@ -226,7 +226,7 @@ To disable _an individual **instrumentation** plugin_, specify a system property
 sa.instrumentation.plugin.${PLUGIN_NAME}.enable=false
 ```
 
-The value of `${PLUGIN_NAME}` is the name of the plugin as declared in the plugin's POM. The names follow a consice pattern, such as `okhttp` for the `specialagent-okhttp` plugin artifactId, and `web-servlet-filter` for the `specialagent-web-servlet-filter` plugin artifactId.
+The value of `${PLUGIN_NAME}` is the name of the plugin as declared in the plugin's POM ([Project Object Model][pom]). The names follow a consice pattern, such as `okhttp` for the `specialagent-okhttp` plugin artifactId, and `web-servlet-filter` for the `specialagent-web-servlet-filter` plugin artifactId.
 
 ### 3.5 Disabling [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
@@ -416,6 +416,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.1/opentracing-specialagent-1.3.1.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.2-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
+[pom]: https://maven.apache.org/pom.html
 [specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc
 [specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-1
 [specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-2
