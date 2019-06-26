@@ -126,7 +126,7 @@ public final class SpecialAgentUtil {
       final String part = parts[i];
       if (part.startsWith("javaagent:")) {
         try {
-          return new URL("file", null, part.substring(11));
+          return new URL("file", null, part.substring(10));
         }
         catch (final MalformedURLException e) {
           throw new IllegalStateException(e);
