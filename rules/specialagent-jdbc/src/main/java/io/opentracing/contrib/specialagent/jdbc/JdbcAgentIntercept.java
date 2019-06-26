@@ -37,7 +37,6 @@ public class JdbcAgentIntercept {
     if (AgentRuleUtil.callerEquals(2, TracingDriver.class.getName() + ".connect"))
       return null;
 
-    System.out.println("hi");
     if (tracingDriver.get() == null) {
       synchronized (tracingDriver) {
         if (tracingDriver.get() == null) {
