@@ -269,6 +269,7 @@ public class AssembleUtilTest {
     expected.add("opentracing-concurrent-0.1.0.jar");
     expected.add("opentracing-okhttp3-0.1.0.jar");
     expected.add("specialagent-okhttp-0.0.0-SNAPSHOT.jar");
+    expected.add("lightstep-tracer-jre-bundle-0.16.1.jar");
     expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
     expected.add("opentracing-api-0.32.0.jar");
 
