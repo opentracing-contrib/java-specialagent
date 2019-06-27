@@ -65,7 +65,7 @@ public final class VerifyMojo extends AbstractMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    final File dir = new File(project.getBuild().getOutputDirectory(), "META-INF/opentracing-specialagent");
+    final File dir = new File(project.getBuild().getOutputDirectory(), UtilConstants.META_INF_PLUGIN_PATH);
     if (!dir.exists())
       return;
 
@@ -90,7 +90,7 @@ public final class VerifyMojo extends AbstractMojo {
               hasFingerprintBin = true;
             else if ("dependencies.tgf".equals(entry))
               hasDependenciesTgf = true;
-            else if ("META-INF/opentracing-specialagent/TEST-MANIFEST.MF".equals(entry))
+            else if (UtilConstants.META_INF_TEST_MANIFEST.equals(entry))
               hasTestManifest = true;
             else if (entry.startsWith("sa.plugin.name."))
               name = entry.substring(15);

@@ -312,34 +312,35 @@ public final class SpecialAgentUtil {
   }
 
   /**
-   * Returns a {@code List} of {@code URL} objects having a prefix path that
-   * matches {@code path}. This method will add a shutdown hook to delete any
-   * temporary directory and file resources it created.
+   * Fills the specified {@code fileToPluginManifest} map with JAR files having
+   * a prefix path that match {@code path}, and the associated
+   * {@link PluginManifest}.
+   * <p>
+   * This method will add a shutdown hook to delete any temporary directory and
+   * file resources it created.
    *
    * @param path The prefix path to match when finding resources.
-   * @param instruPlugins Map of instrumentation plugin name to boolean
+   * @param instruPluginNameToEnable Map of instrumentation plugin name to
+   *          boolean specifying whether it should be included in the runtime.
+   * @param tracerPluginNameToEnable Map of tracer plugin name to boolean
    *          specifying whether it should be included in the runtime.
-   * @param tracerPlugins Map of tracer plugin name to boolean specifying
-   *          whether it should be included in the runtime.
-   * @param fileToPluginManifest Map between a JAR file and the associated
+   * @param fileToPluginManifest The {@code Map} to be filled with JAR files
+   *          having a prefix path that match {@code path}, and the associated
    *          {@link PluginManifest}.
-   * @return A {@code List} of {@code URL} objects having a prefix path that
-   *         matches {@code path}.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<File> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins, final Map<File,PluginManifest> fileToPluginManifest) {
+  static void findJarResources(final String path, final Map<String,Boolean> instruPluginNameToEnable, final Map<String,Boolean> tracerPluginNameToEnable, final Map<File,PluginManifest> fileToPluginManifest) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
-      final Set<File> urls = new HashSet<>();
       if (!resources.hasMoreElements())
-        return urls;
+        return;
 
-      final boolean allInstruEnabled = !instruPlugins.containsKey(null) || instruPlugins.remove(null);
+      final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey(null) || instruPluginNameToEnable.remove(null);
       if (logger.isLoggable(Level.FINER))
         logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
 
-      final boolean allTracerEnabled = !tracerPlugins.containsKey(null) || tracerPlugins.remove(null);
+      final boolean allTracerEnabled = !tracerPluginNameToEnable.containsKey(null) || tracerPluginNameToEnable.remove(null);
       if (logger.isLoggable(Level.FINER))
         logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
 
@@ -385,28 +386,27 @@ public final class SpecialAgentUtil {
           Files.copy(jarUrl.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
           // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-          final PluginManifest plugin = PluginManifest.getPluginManifest(file);
-          boolean includeJar = true;
-          if (plugin != null) {
-            final boolean isInstruPlugin = plugin.type == PluginManifest.Type.INSTRUMENTATION;
+          final PluginManifest pluginManifest = PluginManifest.getPluginManifest(file);
+          boolean enablePlugin = true;
+          if (pluginManifest != null) {
+            final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
             // Next, see if it is included or excluded
-            includeJar = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-            final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
-            for (final Map.Entry<String,Boolean> entry : plugins.entrySet()) {
+            enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
+            final Map<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
+            for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
               final String pluginName = entry.getKey();
-              if (pluginName.equals(plugin.name)) {
-                includeJar = entry.getValue();
+              if (pluginName.equals(pluginManifest.name)) {
+                enablePlugin = entry.getValue();
                 if (logger.isLoggable(Level.FINER))
-                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (includeJar ? "en" : "dis") + "abled");
+                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (enablePlugin ? "en" : "dis") + "abled");
 
                 break;
               }
             }
           }
 
-          if (includeJar) {
-            fileToPluginManifest.put(file, plugin);
-            urls.add(file);
+          if (enablePlugin) {
+            fileToPluginManifest.put(file, pluginManifest);
           }
           else {
             file.delete();
@@ -429,8 +429,6 @@ public final class SpecialAgentUtil {
           }
         });
       }
-
-      return urls;
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
