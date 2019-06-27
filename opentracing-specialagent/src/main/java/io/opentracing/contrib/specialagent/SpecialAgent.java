@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -54,6 +55,7 @@ import io.opentracing.util.GlobalTracer;
 public class SpecialAgent {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
 
+  static final String CONFIG_ARG = "sa.config";
   static final String AGENT_RUNNER_ARG = "sa.agentrunner";
   static final String RULE_PATH_ARG = "sa.rulepath";
   static final String TRACER_PROPERTY = "sa.tracer";
@@ -92,7 +94,7 @@ public class SpecialAgent {
   private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
   private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
 
-  private static AllPluginsClassLoader allPluginsClassLoader;
+  private static PluginsClassLoader pluginsClassLoader;
 
   // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
   private static final Instrumenter instrumenter = Instrumenter.BYTEBUDDY;
@@ -130,7 +132,7 @@ public class SpecialAgent {
     if (agentArgs != null)
       AssembleUtil.absorbProperties(agentArgs);
 
-    final String configProperty = System.getProperty("config");
+    final String configProperty = System.getProperty(CONFIG_ARG);
     try (
       final InputStream configInputStream = SpecialAgent.class.getResourceAsStream("/default.properties");
       final FileReader reader = configProperty == null ? null : new FileReader(new File(configProperty));
@@ -247,42 +249,15 @@ public class SpecialAgent {
     if (logger.isLoggable(Level.FINER))
       logger.finer("Loading " + fileToPluginManifest.size() + " rule paths:\n" + AssembleUtil.toIndentedString(fileToPluginManifest.keySet()));
 
-    allPluginsClassLoader = new AllPluginsClassLoader(fileToPluginManifest.keySet());
+    pluginsClassLoader = new PluginsClassLoader(fileToPluginManifest.keySet());
 
     final Map<String,String> nameToVersion = new HashMap<>();
-    final int count = loadDependencies(allPluginsClassLoader, nameToVersion) + loadDependencies(ClassLoader.getSystemClassLoader(), nameToVersion);
+    final int count = loadDependencies(pluginsClassLoader, nameToVersion) + loadDependencies(ClassLoader.getSystemClassLoader(), nameToVersion);
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
     loadTracer();
     loadRules();
-  }
-
-  static class AllPluginsClassLoader extends URLClassLoader {
-    private final Set<File> files;
-    private final File[] filesArray;
-
-    public AllPluginsClassLoader(final Set<File> files) {
-      // Override parent ClassLoader methods to avoid delegation of resource
-      // resolution to bootstrap class loader
-      super(SpecialAgentUtil.toURLs(files), new ClassLoader(null) {
-        // Overridden to ensure resources are not discovered in bootstrap class loader
-        @Override
-        public Enumeration<URL> getResources(final String name) throws IOException {
-          return null;
-        }
-      });
-      this.files = files;
-      this.filesArray = files.toArray(new File[files.size()]);
-    }
-
-    public File[] getFiles() {
-      return filesArray;
-    }
-
-    public boolean containsPath(final File file) {
-      return files.contains(file);
-    }
   }
 
   /**
@@ -361,7 +336,7 @@ public class SpecialAgent {
 
         nameToVersion.put(pluginManifest.name, version);
 
-        final File[] dependencyFiles = MavenUtil.filterRuleURLs(allPluginsClassLoader.getFiles(), dependenciesTgf, false, "compile");
+        final File[] dependencyFiles = MavenUtil.filterRuleURLs(pluginsClassLoader.getFiles(), dependenciesTgf, false, "compile");
         if (logger.isLoggable(Level.FINEST))
           logger.finest("  URLs from " + DEPENDENCIES_TGF + ": " + AssembleUtil.toIndentedString(dependencyFiles));
 
@@ -370,7 +345,7 @@ public class SpecialAgent {
 
         boolean foundReference = false;
         for (final File dependencyFile : dependencyFiles) {
-          if (allPluginsClassLoader.containsPath(dependencyFile)) {
+          if (pluginsClassLoader.containsPath(dependencyFile)) {
             // When run from a test, it may happen that both the "allPluginsClassLoader"
             // and SystemClassLoader have the same path, leading to the same dependencies.tgf
             // file to be processed twice. This check asserts the previously registered
@@ -409,7 +384,7 @@ public class SpecialAgent {
    * instrumentation {@link Manager} in the runtime.
    */
   private static void loadRules() {
-    if (allPluginsClassLoader == null) {
+    if (pluginsClassLoader == null) {
       logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
       return;
     }
@@ -418,10 +393,10 @@ public class SpecialAgent {
       // Create map from rule jar URL to its index in
       // allPluginsClassLoader.getURLs()
       final Map<File,Integer> ruleJarToIndex = new HashMap<>();
-      for (int i = 0; i < allPluginsClassLoader.getFiles().length; ++i)
-        ruleJarToIndex.put(allPluginsClassLoader.getFiles()[i], i);
+      for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
+        ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
-      instrumenter.manager.loadRules(allPluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
+      instrumenter.manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -471,7 +446,7 @@ public class SpecialAgent {
       final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
       final File file = new File(tracerProperty);
       try {
-        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(allPluginsClassLoader, tracerProperty);
+        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(pluginsClassLoader, tracerProperty);
         if (tracerUrl != null) {
           // If the desired tracer is in its own JAR file, or if this is not
           // running in an AgentRunner test (because in this case the tracer
@@ -525,17 +500,23 @@ public class SpecialAgent {
   public static boolean linkRule(final int index, final ClassLoader classLoader) {
     Map<Integer,Boolean> indexToCompatibility = classLoaderToCompatibility.get(classLoader);
     Boolean compatible;
-    if (indexToCompatibility != null) {
-      compatible = indexToCompatibility.get(index);
+    if (indexToCompatibility == null) {
+      synchronized (classLoaderToCompatibility) {
+        indexToCompatibility = classLoaderToCompatibility.get(classLoader);
+        if (indexToCompatibility == null) {
+          classLoaderToCompatibility.put(classLoader, indexToCompatibility = new ConcurrentHashMap<>());
+        }
+      }
+
+      compatible = null;
     }
     else {
-      classLoaderToCompatibility.put(classLoader, indexToCompatibility = new HashMap<>());
-      compatible = null;
+      compatible = indexToCompatibility.get(index);
     }
 
     if (compatible != null && compatible) {
       if (logger.isLoggable(Level.FINER)) {
-        final File pluginFile = allPluginsClassLoader.getFiles()[index];
+        final File pluginFile = pluginsClassLoader.getFiles()[index];
         final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
         logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible);
       }
@@ -544,7 +525,7 @@ public class SpecialAgent {
     }
 
     // Find the Plugin File (identified by index passed to this method)
-    final File pluginFile = allPluginsClassLoader.getFiles()[index];
+    final File pluginFile = pluginsClassLoader.getFiles()[index];
     final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
 
     if (logger.isLoggable(Level.FINER))
