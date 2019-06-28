@@ -165,6 +165,8 @@ Dynamically attaching to a Java application involves the use of a running applic
     java -jar opentracing-specialagent-1.3.1.jar <PID>
     ```
 
+**Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
+
 ## 3 Configuration
 
 ### 3.1 Overview
