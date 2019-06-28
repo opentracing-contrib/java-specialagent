@@ -28,7 +28,8 @@ public class CachedClassFileLocator implements ClassFileLocator {
     if (classes == null)
       return;
 
-    for (final Class<?> cls : classes) {
+    for (int i = 0; i < classes.length; ++i) {
+      final Class<?> cls = classes[i];
       Resolution resolution = classFileLocator.locate(cls.getName());
       if (resolution instanceof ClassFileLocator.Resolution.Illegal)
         resolution = ClassFileLocator.ForClassLoader.of(cls.getClassLoader()).locate(cls.getName());

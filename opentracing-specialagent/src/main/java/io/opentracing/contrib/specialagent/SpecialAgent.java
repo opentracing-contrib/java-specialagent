@@ -83,8 +83,8 @@ public class SpecialAgent {
       if (value != null || !(key instanceof URLClassLoader))
         return value;
 
-      final URLClassLoader urlClassLoader = (URLClassLoader)key;
-      return urlClassLoader.getURLs().length > 0 || urlClassLoader.getParent() != null ? null : super.get(null);
+      final URLClassLoader classLoader = (URLClassLoader)key;
+      return classLoader.getURLs().length > 0 || classLoader.getParent() != null ? null : super.get(null);
     }
   }
 
@@ -166,7 +166,7 @@ public class SpecialAgent {
       }
     }
     catch (final IOException e) {
-      throw new ExceptionInInitializerError(e);
+      throw new IllegalStateException(e);
     }
 
     BootLoaderAgent.premain(inst);
@@ -188,8 +188,10 @@ public class SpecialAgent {
   /**
    * Main initialization method for the {@code SpecialAgent}. This method is
    * called by the re/transformation {@link Manager} instance.
+   *
+   * @param manager The {@link Manager} instance to be used for initialization.
    */
-  static void initialize() {
+  static void initialize(final Manager manager) {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
@@ -226,9 +228,9 @@ public class SpecialAgent {
 
     try {
       // Add instrumentation rule JARs from system class loader
-      final Enumeration<URL> instrumentationRules = instrumenter.manager.getResources();
+      final Enumeration<URL> instrumentationRules = manager.getResources();
       while (instrumentationRules.hasMoreElements()) {
-        final File pluginFile = SpecialAgentUtil.getSourceLocation(instrumentationRules.nextElement(), instrumenter.manager.file);
+        final File pluginFile = SpecialAgentUtil.getSourceLocation(instrumentationRules.nextElement(), manager.file);
         fileToPluginManifest.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
       }
     }
@@ -256,8 +258,8 @@ public class SpecialAgent {
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
-    loadTracer();
-    loadRules();
+    deferredTracer = loadTracer();
+    loadRules(manager);
   }
 
   /**
@@ -383,20 +385,19 @@ public class SpecialAgent {
    * This method loads any OpenTracing {@code AgentRule}s, delegated to the
    * instrumentation {@link Manager} in the runtime.
    */
-  private static void loadRules() {
+  private static void loadRules(final Manager manager) {
     if (pluginsClassLoader == null) {
       logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
       return;
     }
 
     try {
-      // Create map from rule jar URL to its index in
-      // allPluginsClassLoader.getURLs()
+      // Create map from rule jar URL to its index in allPluginsClassLoader.getURLs()
       final Map<File,Integer> ruleJarToIndex = new HashMap<>();
       for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
         ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
-      instrumenter.manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
+      manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
     }
     catch (final IOException e) {
       logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -418,9 +419,12 @@ public class SpecialAgent {
 
   /**
    * Connects a Tracer Plugin to the runtime.
+   *
+   * @return A {@code Tracer} instance to be deferred, or null if no tracer was
+   *         specified or the specified tracer was loaded.
    */
   @SuppressWarnings("resource")
-  private static void loadTracer() {
+  private static Tracer loadTracer() {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n======================== Loading Tracer ========================\n");
 
@@ -428,12 +432,12 @@ public class SpecialAgent {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Tracer already registered with GlobalTracer");
 
-      return;
+      return null;
     }
 
     final String tracerProperty = System.getProperty(TRACER_PROPERTY);
     if (tracerProperty == null)
-      return;
+      return null;
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("Resolving tracer:\n  " + tracerProperty);
@@ -482,18 +486,18 @@ public class SpecialAgent {
       Thread.currentThread().setContextClassLoader(contextClassLoader);
     }
 
-    if (tracer != null) {
-      if (isAgentRunner())
-        deferredTracer = tracer;
-      else if (!GlobalTracer.registerIfAbsent(tracer))
-        throw new IllegalStateException("There is already a registered global Tracer.");
-
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("Tracer was resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer:\n  " + tracer.getClass().getName() + " from " + (tracer.getClass().getProtectionDomain().getCodeSource() == null ? "null" : tracer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()));
-    }
-    else {
+    if (tracer == null) {
       logger.warning("Tracer was NOT RESOLVED");
+      return null;
     }
+
+    if (!isAgentRunner() && !GlobalTracer.registerIfAbsent(tracer))
+      throw new IllegalStateException("There is already a registered global Tracer.");
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Tracer was resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer:\n  " + tracer.getClass().getName() + " from " + (tracer.getClass().getProtectionDomain().getCodeSource() == null ? "null" : tracer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()));
+
+    return tracer;
   }
 
   @SuppressWarnings("resource")
@@ -558,13 +562,13 @@ public class SpecialAgent {
       if (logger.isLoggable(Level.FINER))
         logger.finer("[" + pluginManifest.name + "] Target class loader is bootstrap, so adding rule JARs to the bootstrap class loader directly");
 
-      for (final File path : pluginDependencyFiles) {
+      for (final File pluginDependencyFile : pluginDependencyFiles) {
         try {
-          final File file = new File(path.getPath());
+          final File file = new File(pluginDependencyFile.getPath());
           inst.appendToBootstrapClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
         }
         catch (final IOException e) {
-          logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to bootstrap class loader: " + path.getPath(), e);
+          logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to bootstrap class loader: " + pluginDependencyFile.getPath(), e);
         }
       }
     }
@@ -572,12 +576,12 @@ public class SpecialAgent {
       if (logger.isLoggable(Level.FINER))
         logger.finer("[" + pluginManifest.name + "] Target class loader is system, so adding rule JARs to the system class loader directly");
 
-      for (final File file : pluginDependencyFiles) {
+      for (final File pluginDependencyFile : pluginDependencyFiles) {
         try {
-          inst.appendToSystemClassLoaderSearch(file.isFile() ? new JarFile(file) : SpecialAgentUtil.createTempJarFile(file));
+          inst.appendToSystemClassLoaderSearch(pluginDependencyFile.isFile() ? new JarFile(pluginDependencyFile) : SpecialAgentUtil.createTempJarFile(pluginDependencyFile));
         }
         catch (final IOException e) {
-          logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to system class loader: " + file, e);
+          logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to system class loader: " + pluginDependencyFile, e);
         }
       }
     }

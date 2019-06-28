@@ -42,14 +42,19 @@ public class MutexAgent {
 
   public static void premain(final Instrumentation inst) {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<< Installing AgentRunnerUtil >>>>>>>>>>>>>>>>>>>\n");
+      logger.fine("\n<<<<<<<<<<<<<<<<<< Installing MutexAgent >>>>>>>>>>>>>>>>>>>\n");
 
     new AgentBuilder.Default()
       .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(isSubTypeOf(Tracer.class).or(isSubTypeOf(Scope.class)).or(isSubTypeOf(ScopeManager.class)).or(isSubTypeOf(Span.class)).or(isSubTypeOf(SpanBuilder.class)).or(isSubTypeOf(SpanContext.class)))
+      .type(isSubTypeOf(Tracer.class)
+        .or(isSubTypeOf(Scope.class))
+        .or(isSubTypeOf(ScopeManager.class))
+        .or(isSubTypeOf(Span.class))
+        .or(isSubTypeOf(SpanBuilder.class))
+        .or(isSubTypeOf(SpanContext.class)))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
