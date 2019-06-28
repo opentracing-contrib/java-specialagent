@@ -24,7 +24,7 @@
 
 ## 1 Introduction
 
-This project provides the API for <ins>Instrumentation Plugins</ins> to integrate into <ins>SpecialAgent</ins>'s auto-instrumentation rules. The API is a light wrapper on top of [ByteBuddy](http://bytebuddy.net/), which enables a plugin developer to use the full breadth of ByteBuddy's `@Advice` intercept API.
+This project provides the API for <ins>Instrumentation Plugins</ins> to integrate into <ins>SpecialAgent</ins>'s auto-instrumentation rules. The API is a light wrapper on top of [ByteBuddy][bytebuddy], which enables a plugin developer to use the full breadth of ByteBuddy's `@Advice` intercept API.
 
 ### 2 Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>
 
@@ -50,7 +50,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
    <dependency>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>opentracing-specialagent-api</artifactId>
-     <version>1.3.1</version>
+     <version>1.3.2</version>
      <scope>provided</scope>
    </dependency>
    <dependency>
@@ -142,7 +142,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 
 1. **Implement a JUnit test that uses `AgentRunner`**
 
-   Please refer to the [Test Usage](https://github.com/opentracing-contrib/java-specialagent/#test-usage) section in the <ins>SpecialAgent</ins>.
+   Please refer to the [Test Usage][test-usage] section in the <ins>SpecialAgent</ins>.
 
 ## 5 `AgentRunner` Usage
 
@@ -158,7 +158,7 @@ The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> mo
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.3.1</version>
+  <version>1.3.2</version>
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -224,15 +224,15 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
    * The dependencies for the 3rd-party libraries are not necessary when the plugin is applied to a target application, as the application must already have these dependencies for the plugin to be used.
    * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the <ins>SpecialAgent</ins> package, as all of the <ins>Instrumentation Plugins</ins> as contained within it.
    * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
-   * Many of the currently implemented <ins>Instrumentation Plugins</ins> _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the <ins>Instrumentation Plugin</ins> artifact. An example of this can be seen with the [Mongo Driver Plugin](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-mongo-driver/pom.xml#L37-L44).
+   * Many of the currently implemented <ins>Instrumentation Plugins</ins> _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the <ins>Instrumentation Plugin</ins> artifact. An example of this can be seen with the [Mongo Driver Plugin][mongodriver-pom].
 1. The package must contain a `fingerprint.bin` file. This file provides the <ins>SpecialAgent</ins> with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the <ins>SpecialAgent</ins> to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
-   1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3](https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-okhttp/pom.xml) as an example.
+   1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3][okhttp-pom] as an example.
    1. Next, include the following plugin in the project's POM:
       ```xml
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
         <artifactId>agentrule-maven-plugin</artifactId>
-        <version>1.3.1</version>
+        <version>1.3.2</version>
         <executions>
           <execution>
             <goals>
@@ -254,7 +254,7 @@ The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the
 
 #### 5.1.3 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
 
-<ins>Instrumentation Rules</ins> must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`](https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml) for an example of the usage.
+<ins>Instrumentation Rules</ins> must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`][specialagent-pom] for an example of the usage.
 
 ## 6 Debugging
 
@@ -272,4 +272,9 @@ Please make sure to update tests as appropriate.
 
 This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
+[bytebuddy]: http://bytebuddy.net/
+[mongodriver-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-mongo-driver/pom.xml#L37-L44
+[okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-okhttp/pom.xml
 [opentracing-contrib]: https://github.com/opentracing-contrib/
+[specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml
+[test-usage]: https://github.com/opentracing-contrib/java-specialagent/#test-usage

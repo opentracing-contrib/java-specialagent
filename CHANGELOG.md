@@ -1,5 +1,13 @@
 # Changes by Version
 
+## v1.3.2 (2019-06-28)
+* Fix to propagation of system properties via dynamic attach.
+* Implement assert that name of SpecialAgent JAR is correct.
+* Make SpecialAgent thread safe.
+* Update LightStep and Jaeger Tracer Plugins.
+* Update Fingerprinting Algorithm to support (semi)-depth-n fingerprints.
+* Update [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): JDBC.
+
 ## v1.3.1 (2019-06-17)
 * Re-integrate [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Grizzly AHC, Grizzly Http Server, Reactor.
 
