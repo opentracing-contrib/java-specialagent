@@ -36,7 +36,7 @@ import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 @Mojo(name = "assemble", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true )
 @Execute(goal = "assemble")
 public final class AssembleMojo extends ResolveDependenciesMojo {
-  private static final String outPath = "dependencies/META-INF/opentracing-specialagent";
+  private static final String outPath = "dependencies/" + UtilConstants.META_INF_PLUGIN_PATH;
   private static final String declarationScopeOfInstrumentationPlugins = "provided";
 
   @Parameter(defaultValue = "${localRepository}")

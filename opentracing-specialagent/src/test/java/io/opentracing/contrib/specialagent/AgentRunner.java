@@ -402,7 +402,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private int delta = Integer.MAX_VALUE;
 
   private static File getManifestFile() {
-    return new File(CWD, "target/classes/META-INF/opentracing-specialagent/TEST-MANIFEST.MF");
+    return new File(new File(CWD, "target/classes"), UtilConstants.META_INF_TEST_MANIFEST);
   }
 
   @Override

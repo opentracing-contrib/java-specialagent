@@ -46,7 +46,11 @@ public final class AssembleUtil {
    * @return {@code true} if the specified string is a name of a Maven scope.
    */
   private static boolean isScope(final String scope) {
-    return Arrays.binarySearch(scopes, scope) > -1;
+    for (int i = 0; i < scopes.length; ++i)
+      if (scopes[i].equals(scope))
+        return true;
+
+    return false;
   }
 
   private static final Set<String> jarTypes = new HashSet<>(Arrays.asList("jar", "test-jar", "maven-plugin", "ejb", "ejb-client", "java-source", "javadoc"));
