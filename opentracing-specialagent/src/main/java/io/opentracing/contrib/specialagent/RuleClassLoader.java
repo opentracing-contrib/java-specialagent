@@ -47,7 +47,6 @@ class RuleClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
 
   public static final String FINGERPRINT_FILE = "fingerprint.bin";
-  static final ClassLoader BOOT_LOADER_PROXY = new URLClassLoader(new URL[0], null);
 
   private static final boolean failOnEmptyFingerprint;
 
@@ -168,7 +167,7 @@ class RuleClassLoader extends URLClassLoader {
    */
   boolean isCompatible(ClassLoader classLoader) {
     if (classLoader == null)
-      classLoader = BOOT_LOADER_PROXY;
+      classLoader = BootProxyClassLoader.INSTANCE;
 
     Boolean compatible = compatibility.get(classLoader);
     if (compatible != null)

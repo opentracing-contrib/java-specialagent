@@ -470,7 +470,7 @@ public class SpecialAgent {
               }
             }
 
-            AgentRuleUtil.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl}, parent);
+            AgentRuleUtil.tracerClassLoader = new TracerClassLoader(tracerUrl, parent);
             Thread.currentThread().setContextClassLoader(AgentRuleUtil.tracerClassLoader);
           }
         }

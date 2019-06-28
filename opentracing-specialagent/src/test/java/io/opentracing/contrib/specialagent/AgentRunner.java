@@ -129,7 +129,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private static final File CWD = new File("").getAbsoluteFile();
-  private static final ClassLoader bootLoaderProxy = new URLClassLoader(new URL[0], null);
+  private static final ClassLoader bootLoaderProxy = BootProxyClassLoader.INSTANCE;
 
   static {
     System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
