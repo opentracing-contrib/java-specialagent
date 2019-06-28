@@ -481,13 +481,13 @@
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>jaeger-client-bundle</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.lightstep.tracer</groupId>
       <artifactId>lightstep-tracer-jre-bundle</artifactId>
-      <version>0.16.2</version>
+      <version>0.16.3</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
