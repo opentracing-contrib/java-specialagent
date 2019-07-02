@@ -19,12 +19,14 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 
 import javax.servlet.DispatcherType;
 
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
+import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
@@ -36,8 +38,12 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
     if (state.containsKey(context))
       return;
 
-    if (!isFilterMethodPresent(context))
+    if (!isFilterMethodPresent(context)) {
+      if (AgentRule.logger.isLoggable(Level.FINER))
+        AgentRule.logger.finer("JettyAgentIntercept#exit(" + context.getClass().getName() + "): isFilterMethodPresent = false");
+
       return;
+    }
 
     final TracingFilter filter = new TracingFilter(GlobalTracer.get());
     context.addFilter(TRACING_FILTER_NAME, filter).addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);

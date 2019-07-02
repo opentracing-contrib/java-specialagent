@@ -31,9 +31,13 @@ public class ServletContextAgentIntercept extends ContextAgentIntercept {
     if (!(thiz instanceof ServletContext))
       return;
 
-    if (!isFilterMethodPresent(thiz))
+    if (!isFilterMethodPresent(thiz)) {
+      if (AgentRule.logger.isLoggable(Level.FINER))
+        AgentRule.logger.finer("ServletContextAgentIntercept#exit(" + thiz.getClass().getName() + "): isFilterMethodPresent = false");
+
       return;
-    
+    }
+
     try {
       final ServletContext context = (ServletContext)thiz;
       final TracingFilter filter = new TracingFilter(GlobalTracer.get());
@@ -41,7 +45,7 @@ public class ServletContextAgentIntercept extends ContextAgentIntercept {
       if (registration != null)
         registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     }
-    catch (final UnsupportedOperationException e) {
+    catch (final Exception e) {
       AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
     }
   }

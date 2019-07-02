@@ -41,16 +41,6 @@
       <version>0.4.0</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <!-- If we add <optional>true</optional>, a fingerprint.bin will be
-        generated, and the SpecialAgent will validate the APIs match in runtime.
-        This may or may not be desirable, because it would then restrict this
-        plugin only to the Servlet API version specified. -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
       <version>${version.org.eclipse.jetty}</version>
@@ -66,13 +56,13 @@
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
       <version>${version.org.apache.tomcat.embed}</version>
-      <scope>provided</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
       <version>${version.org.apache.tomcat.embed}</version>
-      <scope>provided</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
