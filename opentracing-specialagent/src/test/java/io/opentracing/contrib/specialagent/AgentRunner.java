@@ -191,6 +191,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     Event[] events() default {Event.ERROR};
 
     /**
+     * @return Names of plugins to disable in the test runtime.
+     *         <p>
+     *         Default: <code>{}</code>.
+     */
+    String[] disable() default {};
+
+    /**
      * @return Whether the plugin should run in verbose mode.
      *         <p>
      *         Default: <code>false</code>.
@@ -272,7 +279,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
       final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
       final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
-      final URLClassLoader classLoader = new URLClassLoader(SpecialAgentUtil.toURLs(classpath), new ClassLoader(ClassLoader.getSystemClassLoader()) {
+      final URLClassLoader classLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), new ClassLoader(ClassLoader.getSystemClassLoader()) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? bootLoaderProxy.loadClass(name) : super.loadClass(name, resolve);
@@ -335,7 +342,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private final PluginManifest pluginManifest;
 
   private void setVerbose(final boolean verbose) {
-    System.setProperty("sa.instrumentation.plugin." + pluginManifest.name, String.valueOf(verbose));
+    System.setProperty("sa.instrumentation.plugin." + pluginManifest.name + ".verbose", String.valueOf(verbose));
+  }
+
+  private static void setDisable(final String[] disable) {
+    for (final String name : disable)
+      System.setProperty("sa.instrumentation.plugin." + name + ".enable", "false");
   }
 
   /**
@@ -351,14 +363,15 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
     this.pluginManifest = PluginManifest.getPluginManifest(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
-    final boolean verbose;
     final Event[] events;
     if (config == null) {
-      verbose = false;
       events = new Event[] {Event.ERROR};
     }
     else {
-      verbose = config.verbose();
+      setDisable(config.disable());
+      if (config.verbose())
+        setVerbose(true);
+
       events = config.events();
       if (config.log() != Config.Log.INFO) {
         final String logLevelProperty = System.getProperty(SpecialAgent.LOGGING_PROPERTY);
@@ -372,10 +385,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
 
-    if (verbose)
-      setVerbose(true);
-
-    if (events.length > 0) {
+    if (events != null && events.length > 0) {
       final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
       if (eventsProperty != null) {
         logger.warning(SpecialAgent.EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());

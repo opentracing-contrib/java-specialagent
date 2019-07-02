@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -185,6 +187,8 @@ public class SpecialAgent {
     premain(agentArgs, inst);
   }
 
+  private static IsoClassLoader isoClassLoader;
+
   /**
    * Main initialization method for the {@code SpecialAgent}. This method is
    * called by the re/transformation {@link Manager} instance.
@@ -221,8 +225,78 @@ public class SpecialAgent {
         tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), Boolean.parseBoolean(value));
     }
 
+    final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey(null) || instruPluginNameToEnable.remove(null);
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
+
+    final boolean allTracerEnabled = !tracerPluginNameToEnable.containsKey(null) || tracerPluginNameToEnable.remove(null);
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
+
+    final Supplier<File> destDir = new Supplier<File>() {
+      private File destDir = null;
+
+      @Override
+      public File get() {
+        try {
+          return destDir == null ? destDir = Files.createTempDirectory("opentracing-specialagent").toFile() : destDir;
+        }
+        catch (final IOException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    };
+
+    final List<URL> isoUrls = new ArrayList<>();
+
+    // Process the ext JARs from AssembleUtil#META_INF_EXT_PATH
+    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_ISO_PATH, destDir, new Predicate<File>() {
+      @Override
+      public boolean test(final File file) {
+        try {
+          isoUrls.add(new URL("file", "", file.getAbsolutePath()));
+          return true;
+        }
+        catch (final MalformedURLException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    });
+
+    isoClassLoader = new IsoClassLoader(isoUrls.toArray(new URL[isoUrls.size()]));
+
     // Process the plugin JARs from AssembleUtil#META_INF_PLUGIN_PATH
-    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, instruPluginNameToEnable, tracerPluginNameToEnable, fileToPluginManifest);
+    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, new Predicate<File>() {
+      @Override
+      public boolean test(final File t) {
+        // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
+        final PluginManifest pluginManifest = PluginManifest.getPluginManifest(t);
+        boolean enablePlugin = true;
+        if (pluginManifest != null) {
+          final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
+          // Next, see if it is included or excluded
+          enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
+          final Map<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
+          for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
+            final String pluginName = entry.getKey();
+            if (pluginName.equals(pluginManifest.name)) {
+              enablePlugin = entry.getValue();
+              if (logger.isLoggable(Level.FINER))
+                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (enablePlugin ? "en" : "dis") + "abled");
+
+              break;
+            }
+          }
+        }
+
+        if (!enablePlugin)
+          return false;
+
+        fileToPluginManifest.put(t, pluginManifest);
+        return true;
+      }
+    });
+
     if (fileToPluginManifest.size() == 0 && logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH);
 
@@ -544,7 +618,7 @@ public class SpecialAgent {
       logger.finest("[" + pluginManifest.name + "] new " + RuleClassLoader.class.getSimpleName() + "([\n" + AssembleUtil.toIndentedString(pluginDependencyFiles) + "]\n, " + AssembleUtil.getNameId(classLoader) + ");");
 
     // Create an isolated (no parent class loader) URLClassLoader with the pluginDependencyFiles
-    final RuleClassLoader ruleClassLoader = new RuleClassLoader(pluginManifest, classLoader, pluginDependencyFiles);
+    final RuleClassLoader ruleClassLoader = new RuleClassLoader(pluginManifest, isoClassLoader, classLoader, pluginDependencyFiles);
     compatible = ruleClassLoader.isCompatible(classLoader);
     indexToCompatibility.put(index, compatible);
     if (!compatible) {

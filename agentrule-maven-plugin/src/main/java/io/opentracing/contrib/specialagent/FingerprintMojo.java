@@ -156,7 +156,7 @@ public final class FingerprintMojo extends TreeMojo {
 
   private void createFingerprintBin() throws MojoExecutionException, MojoFailureException {
     try {
-      final File destFile = new File(getProject().getBuild().getOutputDirectory(), RuleClassLoader.FINGERPRINT_FILE);
+      final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
       destFile.getParentFile().mkdirs();
       final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
       if (!nameFile.exists() && !nameFile.createNewFile())
@@ -165,7 +165,7 @@ public final class FingerprintMojo extends TreeMojo {
       // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with (scope=*, optional=true), " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
+        getLog().warn("No dependencies were found with (scope=*, optional=true), " + UtilConstants.FINGERPRINT_FILE + " will be empty");
         new LibraryFingerprint().toFile(destFile);
         return;
       }
@@ -176,7 +176,7 @@ public final class FingerprintMojo extends TreeMojo {
       // Include the compile path of the Instrumentation Rule itself, which solves the use-
       // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
       // bridges/links between the 3rd-Party Library to itself).
-      compileDeps[0] = new File(getProject().getBuild().getOutputDirectory()).toURI().toURL();
+      compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
 
       final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, getProject().getArtifacts().iterator(), 0);
       try (

@@ -313,6 +313,7 @@
       </dependencies>
     </profile>
     <profile>
+      <id>tools.jar</id>
       <activation>
         <jdk>(,1.9)</jdk>
       </activation>
@@ -355,6 +356,20 @@
     </dependency>
 
     <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>fingerprint</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
       <scope>test</scope>
@@ -366,12 +381,6 @@
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-util</artifactId>
-      <version>${project.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>fingerprint</artifactId>
       <version>${project.version}</version>
       <optional>true</optional>
     </dependency>
@@ -410,11 +419,6 @@
       <artifactId>byte-buddy-agent</artifactId>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
   <build>
     <resources>
@@ -437,7 +441,7 @@
           resources of this module -->
         <directory>${project.build.directory}/classes</directory>
         <!-- Have to exclude all JARs, because all dependencies are copied to the
-          ${project.build.directory}/dependencies/META-INF/opentracing-specialagent
+          ${project.build.directory}/dependencies/META-INF/plugins
           path via maven-dependency-plugin (id: copy-dependencies), and the
           ${project.build.directory}/dependencies path is listed as a <resource> right
           above here, which makes the maven-resources-plugin copy them to

@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -29,11 +31,13 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public final class AssembleUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
@@ -68,7 +72,7 @@ public final class AssembleUtil {
     return false;
   }
 
-  static File getFileForDependency(final String dependency, final String ... scopes) {
+  public static File getFileForDependency(final String dependency, final String ... scopes) {
     final int c0 = dependency.indexOf(':');
     final String groupId = dependency.substring(0, c0);
 
@@ -131,7 +135,7 @@ public final class AssembleUtil {
    * @return A {@code Set} of resource names that match the call parameters.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<File> selectFromTgf(final String tgf, final boolean includeOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
+  public static Set<File> selectFromTgf(final String tgf, final boolean includeOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
     final Set<String> excluded = getLocations(excludes);
     final Set<File> files = new HashSet<>();
     final StringTokenizer tokenizer = new StringTokenizer(tgf, "\r\n");
@@ -208,7 +212,7 @@ public final class AssembleUtil {
    *         of the specified classes.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<String> getLocations(final Class<?> ... classes) throws IOException {
+  public static Set<String> getLocations(final Class<?> ... classes) throws IOException {
     final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     final Set<String> locations = new LinkedHashSet<>();
     for (final Class<?> cls : classes) {
@@ -272,7 +276,7 @@ public final class AssembleUtil {
    * @return An indented string representation of the specified array, using the
    *         algorithm in {@link Arrays#toString(Object[])}.
    */
-  static String toIndentedString(final Object[] a) {
+  public static String toIndentedString(final Object[] a) {
     if (a == null)
       return "null";
 
@@ -303,7 +307,7 @@ public final class AssembleUtil {
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Collection#toString()}.
    */
-  static String toIndentedString(final Collection<?> l) {
+  public static String toIndentedString(final Collection<?> l) {
     if (l == null)
       return "null";
 
@@ -335,7 +339,7 @@ public final class AssembleUtil {
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Map#toString()}.
    */
-  static String toIndentedString(final Map<?,?> m) {
+  public static String toIndentedString(final Map<?,?> m) {
     if (m == null)
       return "null";
 
@@ -426,7 +430,7 @@ public final class AssembleUtil {
    *         second array; and a value greater than {@code 0} if the first array
    *         is lexicographically greater than the second array.
    */
-  static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
+  public static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
     if (a == b)
       return 0;
 
@@ -463,7 +467,7 @@ public final class AssembleUtil {
    *         the second specified array.
    * @throws NullPointerException If {@code a} or {@code b} are null.
    */
-  static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
+  public static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
     for (int i = 0, j = 0;;) {
       if (j == b.length)
         return true;
@@ -494,7 +498,7 @@ public final class AssembleUtil {
    *         the second specified array.
    * @throws NullPointerException If {@code a} or {@code b} are null.
    */
-  static <T>boolean containsAll(final T[] a, final T[] b, final Comparator<T> c) {
+  public static <T>boolean containsAll(final T[] a, final T[] b, final Comparator<T> c) {
     for (int i = 0, j = 0;;) {
       if (j == b.length)
         return true;
@@ -535,7 +539,7 @@ public final class AssembleUtil {
    * @throws NullPointerException If {@code a} or {@code b} are null.
    */
   @SuppressWarnings("unchecked")
-  static <T extends Comparable<T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
+  public static <T extends Comparable<T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
     for (int d = 0;; ++d) {
       int comparison = 0;
       if (i + d == a.length || j + d == b.length || (comparison = a[i + d].compareTo(b[j + d])) != 0) {
@@ -568,7 +572,7 @@ public final class AssembleUtil {
    * @return The specified array, which is sorted in-place (unless it is null).
    * @see Arrays#sort(Object[])
    */
-  static <T>T[] sort(final T[] array) {
+  public static <T>T[] sort(final T[] array) {
     if (array == null)
       return null;
 
@@ -680,6 +684,93 @@ public final class AssembleUtil {
         System.setProperty(part.substring(1), "");
       else
         System.setProperty(part.substring(1, index), part.substring(index + 1));
+    }
+  }
+
+  public static void forEachClass(final URL[] urls, final Consumer<String> consumer) throws IOException {
+    for (final URL url : urls) {
+      if (url.getPath().endsWith(".jar")) {
+        try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
+          for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
+            final String name = entry.getName();
+            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
+              consumer.accept(name);
+            }
+          }
+        }
+      }
+      else {
+        final File file = new File(url.getPath());
+        final Path path = file.toPath();
+        AssembleUtil.recurseDir(file, new Predicate<File>() {
+          @Override
+          public boolean test(final File t) {
+            if (t.isDirectory())
+              return true;
+
+            final String name = path.relativize(t.toPath()).toString();
+            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
+              consumer.accept(name);
+            }
+
+            return true;
+          }
+        });
+      }
+    }
+  }
+
+  private static URL _toURL(final File file) throws MalformedURLException {
+    final String path = file.getAbsolutePath();
+    return new URL("file", "", file.isDirectory() ? path + "/" : path);
+  }
+
+  public static URL toURL(final File file) {
+    try {
+      return _toURL(file);
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final File ... files) {
+    try {
+      final URL[] urls = new URL[files.length];
+      for (int i = 0; i < files.length; ++i)
+        urls[i] = _toURL(files[i]);
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final List<File> files) {
+    try {
+      final URL[] urls = new URL[files.size()];
+      for (int i = 0; i < files.size(); ++i)
+        urls[i] = _toURL(files.get(i));
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final Collection<File> files) {
+    try {
+      final URL[] urls = new URL[files.size()];
+      final Iterator<File> iterator = files.iterator();
+      for (int i = 0; iterator.hasNext(); ++i)
+        urls[i] = AssembleUtil._toURL(iterator.next());
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
     }
   }
 

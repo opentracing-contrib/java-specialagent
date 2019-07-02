@@ -17,6 +17,8 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -45,14 +47,12 @@ import java.util.zip.ZipInputStream;
  */
 class RuleClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
-
-  public static final String FINGERPRINT_FILE = "fingerprint.bin";
-
   private static final boolean failOnEmptyFingerprint;
 
-  private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-  private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
-  private boolean preLoaded;
+  static {
+    final String property = System.getProperty("failOnEmptyFingerprint");
+    failOnEmptyFingerprint = property != null && !"false".equalsIgnoreCase(property);
+  }
 
   /**
    * Callback that is used to load a class by the specified resource path into
@@ -74,24 +74,26 @@ class RuleClassLoader extends URLClassLoader {
     }
   };
 
-  static {
-    final String property = System.getProperty("failOnEmptyFingerprint");
-    failOnEmptyFingerprint = property != null && !"false".equalsIgnoreCase(property);
-  }
-
+  private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
+  private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
   private final PluginManifest pluginManifest;
+  private final IsoClassLoader isoClassLoader;
+  private boolean preLoaded;
 
   /**
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
    * parent {@code ClassLoader}.
    *
    * @param pluginManifest The {@link PluginManifest}.
+   * @param isoClassLoader {@code IsoClassLoader} supplying classes that are
+   *          isolated from parent class loaders.
    * @param parent The parent {@code ClassLoader}.
    * @param files The classpath URLs.
    */
-  RuleClassLoader(final PluginManifest pluginManifest, final ClassLoader parent, final File ... files) {
-    super(SpecialAgentUtil.toURLs(files), parent);
+  RuleClassLoader(final PluginManifest pluginManifest, final IsoClassLoader isoClassLoader, final ClassLoader parent, final File ... files) {
+    super(AssembleUtil.toURLs(files), parent);
     this.pluginManifest = pluginManifest;
+    this.isoClassLoader = isoClassLoader;
   }
 
   @Override
@@ -174,42 +176,44 @@ class RuleClassLoader extends URLClassLoader {
       return compatible;
 
     try {
-      final URL fpURL = pluginManifest.getFingerprint();
-      final LibraryFingerprint fingerprint = LibraryFingerprint.fromFile(fpURL);
-      compatible = isCompatible(fingerprint, classLoader);
+      if (!(compatible = isFingerprintCompatible(classLoader)))
+        close();
+
       compatibility.put(classLoader, compatible);
       return compatible;
     }
-    catch (final IOException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
       throw new IllegalStateException(e);
     }
   }
 
-  private boolean isCompatible(final LibraryFingerprint fingerprint, final ClassLoader classLoader) throws IOException {
+  private boolean isFingerprintCompatible(final ClassLoader classLoader) throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    final Class<?> libraryFingerprintClass = Class.forName("io.opentracing.contrib.specialagent.LibraryFingerprint", true, isoClassLoader);
+    final Method fromFileMethod = libraryFingerprintClass.getDeclaredMethod("fromFile", URL.class);
+    final Object fingerprint = fromFileMethod.invoke(null, pluginManifest.getFingerprint());
     if (fingerprint != null) {
-      final FingerprintError[] errors = fingerprint.isCompatible(classLoader);
+      final Method isCompatibleMethod = libraryFingerprintClass.getDeclaredMethod("isCompatible", ClassLoader.class);
+      final Object[] errors = (Object[])isCompatibleMethod.invoke(fingerprint, classLoader);
       if (errors != null) {
-        logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
+        logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
         compatibility.put(classLoader, false);
-        close();
         return false;
       }
 
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
+        logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
 
       return true;
     }
 
     if (failOnEmptyFingerprint) {
-      logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"-DfailOnEmptyFingerprint=true\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"-DfailOnEmptyFingerprint=true\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
       compatibility.put(classLoader, false);
-      close();
       return false;
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to default \"-DfailOnEmptyFingerprint=false\" and \"" + FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to default \"-DfailOnEmptyFingerprint=false\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
   }

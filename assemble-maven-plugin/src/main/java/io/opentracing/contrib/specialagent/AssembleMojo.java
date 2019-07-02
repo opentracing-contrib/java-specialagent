@@ -36,7 +36,8 @@ import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 @Mojo(name = "assemble", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true )
 @Execute(goal = "assemble")
 public final class AssembleMojo extends ResolveDependenciesMojo {
-  private static final String outPath = "dependencies/" + UtilConstants.META_INF_PLUGIN_PATH;
+  private static final String pluginsDestDir = "dependencies/" + UtilConstants.META_INF_PLUGIN_PATH;
+  private static final String extDestDir = "dependencies/" + UtilConstants.META_INF_ISO_PATH;
   private static final String declarationScopeOfInstrumentationPlugins = "provided";
 
   @Parameter(defaultValue = "${localRepository}")
@@ -50,26 +51,42 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
     }
   }
 
+  private static void fileCopy(final File from, final File to) throws IOException {
+    Files.copy(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
+  }
+
   @Override
   protected void doExecute() throws MojoExecutionException {
     this.includeScope = declarationScopeOfInstrumentationPlugins;
     try {
-      final File destPath = new File(getProject().getBuild().getDirectory(), outPath);
-      destPath.mkdirs();
+      final File pluginsPath = new File(getProject().getBuild().getDirectory(), pluginsDestDir);
+      pluginsPath.mkdirs();
+
+      final File extPath = new File(getProject().getBuild().getDirectory(), extDestDir);
+      extPath.mkdirs();
 
       final DependencyStatusSets dependencies = getDependencySets(false, false);
       final Set<Artifact> artifacts = dependencies.getResolvedDependencies();
       for (final Artifact artifact : artifacts) {
+        if (getLog().isDebugEnabled())
+          getLog().debug("Assembling artifact: " + artifact.toString());
+
         File jarFile = AssembleUtil.getFileForDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
         if (jarFile != null) {
           jarFile = new File(localRepository.getBasedir(), jarFile.getPath());
           final String dependenciesTgf = AssembleUtil.readFileFromJar(jarFile, "dependencies.tgf");
           if (dependenciesTgf != null) {
-            copyDependencies(dependenciesTgf, destPath);
+            copyDependencies(dependenciesTgf, pluginsPath);
           }
           else if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory")) {
-            Files.copy(jarFile.toPath(), new File(destPath, jarFile.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            fileCopy(jarFile, new File(pluginsPath, jarFile.getName()));
           }
+          else if (artifact.isOptional()) {
+            fileCopy(jarFile, new File(extPath, jarFile.getName()));
+          }
+        }
+        else {
+          getLog().info("Skipping2: " + artifact);
         }
       }
     }

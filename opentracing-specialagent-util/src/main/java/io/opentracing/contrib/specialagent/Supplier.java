@@ -15,12 +15,19 @@
 
 package io.opentracing.contrib.specialagent;
 
-public final class UtilConstants {
-  public static final String FINGERPRINT_FILE = "fingerprint.bin";
-  public static final String META_INF_PLUGIN_PATH = "META-INF/plugins/";
-  public static final String META_INF_ISO_PATH = "META-INF/iso/";
-  public static final String META_INF_TEST_MANIFEST = META_INF_PLUGIN_PATH + "TEST-MANIFEST.MF";
-
-  private UtilConstants() {
-  }
+/**
+ * Represents a supplier of results.
+ * <p>
+ * There is no requirement that a new or distinct result be returned each time
+ * the supplier is invoked.
+ *
+ * @param <T> The type of results supplied by this supplier.
+ */
+public interface Supplier<T> {
+  /**
+   * Gets a result.
+   *
+   * @return A result.
+   */
+  T get();
 }

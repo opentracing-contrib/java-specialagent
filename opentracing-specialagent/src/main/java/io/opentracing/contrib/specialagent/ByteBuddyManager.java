@@ -26,7 +26,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,6 +105,8 @@ public class ByteBuddyManager extends Manager {
     SpecialAgent.initialize(this);
   }
 
+  private final Set<String> loadedRules = new HashSet<>();
+
   @Override
   void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> fileeToPluginManifest) throws IOException {
     AgentRule agentRule = null;
@@ -130,8 +134,15 @@ public class ByteBuddyManager extends Manager {
           if (line.length() == 0 || line.charAt(0) == '#')
             continue;
 
+          if (loadedRules.contains(line)) {
+            if (logger.isLoggable(Level.FINE))
+              logger.fine("Skipping loaded rule: " + line);
+
+            continue;
+          }
+
           if (logger.isLoggable(Level.FINE))
-            logger.fine("Installing rule: " + line);
+            logger.fine("Installing new rule: " + line);
 
           final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
           if (!AgentRule.class.isAssignableFrom(agentClass)) {
@@ -145,6 +156,7 @@ public class ByteBuddyManager extends Manager {
 
           agentRule = (AgentRule)agentClass.getConstructor().newInstance();
           loadAgentRule(agentRule, newBuilder(), index, events);
+          loadedRules.add(line);
         }
       }
     }
