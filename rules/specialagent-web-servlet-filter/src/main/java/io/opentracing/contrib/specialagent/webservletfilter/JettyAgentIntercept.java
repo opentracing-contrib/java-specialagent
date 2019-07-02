@@ -28,20 +28,19 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
-public class JettyAgentIntercept {
+public class JettyAgentIntercept extends ContextAgentIntercept {
   public static final Map<Context,Object> state = Collections.synchronizedMap(new WeakHashMap<Context,Object>());
-  private static final String[] patterns = {"/*"};
 
   public static void exit(final Object thiz) {
     final Context context = ((ServletContextHandler)thiz).getServletContext();
     if (state.containsKey(context))
       return;
 
-    if (context.getFilterRegistration("tracingFilter") != null)
+    if (!isFilterMethodPresent(context))
       return;
 
     final TracingFilter filter = new TracingFilter(GlobalTracer.get());
-    context.addFilter("tracingFilter", filter).addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
+    context.addFilter(TRACING_FILTER_NAME, filter).addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     state.put(context, null);
   }
 }
