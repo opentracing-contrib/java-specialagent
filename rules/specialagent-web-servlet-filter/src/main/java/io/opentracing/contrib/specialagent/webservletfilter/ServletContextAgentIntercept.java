@@ -26,20 +26,18 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
-public class ServletContextAgentIntercept {
-  private static final String[] patterns = {"/*"};
-
+public class ServletContextAgentIntercept extends ContextAgentIntercept {
   public static void exit(final Object thiz) {
     if (!(thiz instanceof ServletContext))
       return;
 
-    final ServletContext context = (ServletContext)thiz;
-    if (context.getFilterRegistration("tracingFilter") != null)
+    if (!isFilterMethodPresent(thiz))
       return;
-
-    final TracingFilter filter = new TracingFilter(GlobalTracer.get());
+    
     try {
-      final FilterRegistration.Dynamic registration = context.addFilter("tracingFilter", filter);
+      final ServletContext context = (ServletContext)thiz;
+      final TracingFilter filter = new TracingFilter(GlobalTracer.get());
+      final FilterRegistration.Dynamic registration = context.addFilter(TRACING_FILTER_NAME, filter);
       if (registration != null)
         registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     }
