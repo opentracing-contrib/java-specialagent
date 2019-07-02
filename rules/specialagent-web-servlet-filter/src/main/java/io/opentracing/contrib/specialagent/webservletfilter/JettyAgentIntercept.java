@@ -37,6 +37,9 @@ public class JettyAgentIntercept {
     if (state.containsKey(context))
       return;
 
+    if (context.getFilterRegistration("tracingFilter") != null)
+      return;
+
     final TracingFilter filter = new TracingFilter(GlobalTracer.get());
     context.addFilter("tracingFilter", filter).addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     state.put(context, null);

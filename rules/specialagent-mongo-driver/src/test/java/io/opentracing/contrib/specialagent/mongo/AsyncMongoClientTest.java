@@ -41,6 +41,7 @@ import com.mongodb.connection.ClusterSettings;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
@@ -88,7 +89,7 @@ public class AsyncMongoClientTest {
       }
 
       final List<MockSpan> spans = tracer.finishedSpans();
-      assertEquals(2, spans.size());
+      assertEquals(spans.toString(), 2, spans.size());
       assertEquals("insert", spans.get(0).operationName());
       assertEquals("find", spans.get(1).operationName());
     }

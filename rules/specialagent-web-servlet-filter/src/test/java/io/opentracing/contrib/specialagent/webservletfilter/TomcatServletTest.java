@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContextListener;
@@ -37,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -47,7 +49,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false)
+@AgentRunner.Config(isolateClassLoader=false, disable = "okhttp")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class.getName());
 
@@ -83,8 +85,9 @@ public class TomcatServletTest {
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
     final Response response = client.newCall(request).execute();
 
+    final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(HttpServletResponse.SC_ACCEPTED, response.code());
-    assertEquals(1, tracer.finishedSpans().size());
+    assertEquals(spans.toString(), 1, spans.size());
   }
 
   public static class SCL implements ServletContextListener {
