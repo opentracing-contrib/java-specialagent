@@ -195,7 +195,9 @@ class RuleClassLoader extends URLClassLoader {
       final Method isCompatibleMethod = libraryFingerprintClass.getDeclaredMethod("isCompatible", ClassLoader.class);
       final Object[] errors = (Object[])isCompatibleMethod.invoke(fingerprint, classLoader);
       if (errors != null) {
-        logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + " in: " + AssembleUtil.toIndentedString(getURLs()));
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + "\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
+
         compatibility.put(classLoader, false);
         return false;
       }
@@ -207,13 +209,15 @@ class RuleClassLoader extends URLClassLoader {
     }
 
     if (failOnEmptyFingerprint) {
-      logger.warning("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"-DfailOnEmptyFingerprint=true\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"-DfailOnEmptyFingerprint=true\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
+
       compatibility.put(classLoader, false);
       return false;
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to default \"-DfailOnEmptyFingerprint=false\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\" in:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to default \"-DfailOnEmptyFingerprint=false\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
   }
