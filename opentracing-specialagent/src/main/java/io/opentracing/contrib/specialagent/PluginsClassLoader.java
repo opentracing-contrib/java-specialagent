@@ -41,7 +41,7 @@ class PluginsClassLoader extends URLClassLoader {
   public PluginsClassLoader(final Set<File> files) {
     // Override parent ClassLoader methods to avoid delegation of resource
     // resolution to bootstrap class loader
-    super(SpecialAgentUtil.toURLs(files), new ClassLoader(null) {
+    super(AssembleUtil.toURLs(files), new ClassLoader(null) {
       // Overridden to ensure resources are not discovered in bootstrap class loader
       @Override
       public Enumeration<URL> getResources(final String name) throws IOException {

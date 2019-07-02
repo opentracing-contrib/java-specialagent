@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author Seva Safris
  */
-class LibraryFingerprint extends Fingerprint {
+public class LibraryFingerprint extends Fingerprint {
   private static final long serialVersionUID = -8454972655262482231L;
   private static final Logger logger = Logger.getLogger(LibraryFingerprint.class.getName());
 
@@ -45,7 +45,7 @@ class LibraryFingerprint extends Fingerprint {
    *         the specified URL.
    * @throws IOException If an I/O error has occurred.
    */
-  static LibraryFingerprint fromFile(final URL url) throws IOException {
+  public static LibraryFingerprint fromFile(final URL url) throws IOException {
     try (final ObjectInputStream in = new ObjectInputStream(url.openStream())) {
       final LibraryFingerprint libraryFingerprint = (LibraryFingerprint)in.readObject();
       if (logger.isLoggable(Level.FINEST))
@@ -122,7 +122,7 @@ class LibraryFingerprint extends Fingerprint {
    *         errors encountered in the compatibility test, or {@code null} if
    *         the runtime is compatible with this fingerprint,
    */
-  FingerprintError[] isCompatible(final ClassLoader classLoader) {
+  public FingerprintError[] isCompatible(final ClassLoader classLoader) {
     return classes == null ? null : isCompatible(classLoader, new FingerprintVerifier(), 0, 0);
   }
 

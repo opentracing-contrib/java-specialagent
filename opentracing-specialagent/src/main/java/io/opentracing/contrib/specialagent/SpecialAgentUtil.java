@@ -28,12 +28,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -238,33 +236,6 @@ public final class SpecialAgentUtil {
     return count;
   }
 
-  public static URL[] toURLs(final Collection<File> files) {
-    try {
-      final URL[] urls = new URL[files.size()];
-      final Iterator<File> iterator = files.iterator();
-      for (int i = 0; iterator.hasNext(); ++i)
-        urls[i] = iterator.next().toURI().toURL();
-
-      return urls;
-    }
-    catch (final MalformedURLException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  public static URL[] toURLs(final File ... files) {
-    try {
-      final URL[] urls = new URL[files.length];
-      for (int i = 0; i < files.length; ++i)
-        urls[i] = files[i].toURI().toURL();
-
-      return urls;
-    }
-    catch (final MalformedURLException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
   /**
    * Returns an array of {@code URL} objects representing each path entry in the
    * specified {@code classpath}.
@@ -320,32 +291,19 @@ public final class SpecialAgentUtil {
    * file resources it created.
    *
    * @param path The prefix path to match when finding resources.
-   * @param instruPluginNameToEnable Map of instrumentation plugin name to
-   *          boolean specifying whether it should be included in the runtime.
-   * @param tracerPluginNameToEnable Map of tracer plugin name to boolean
-   *          specifying whether it should be included in the runtime.
-   * @param fileToPluginManifest The {@code Map} to be filled with JAR files
-   *          having a prefix path that match {@code path}, and the associated
-   *          {@link PluginManifest}.
+   * @param destDir Callback that supplies the destDir.
+   * @param callback Callback function to process resource files.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static void findJarResources(final String path, final Map<String,Boolean> instruPluginNameToEnable, final Map<String,Boolean> tracerPluginNameToEnable, final Map<File,PluginManifest> fileToPluginManifest) {
+  static void findJarResources(final String path, final Supplier<File> destDir, Predicate<File> callback) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
       if (!resources.hasMoreElements())
         return;
 
-      final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey(null) || instruPluginNameToEnable.remove(null);
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
-
-      final boolean allTracerEnabled = !tracerPluginNameToEnable.containsKey(null) || tracerPluginNameToEnable.remove(null);
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
-
       final Set<URL> visitedResources = new HashSet<>();
-      File destDir = null;
+      File outDir = null;
       do {
         final URL resource = resources.nextElement();
         if (visitedResources.contains(resource))
@@ -360,8 +318,8 @@ public final class SpecialAgentUtil {
         if (logger.isLoggable(Level.FINEST))
           logger.finest("SpecialAgent Rule Path: " + resource);
 
-        if (destDir == null)
-          destDir = Files.createTempDirectory("opentracing-specialagent").toFile();
+        if (outDir == null)
+          outDir = destDir.get();
 
         final JarURLConnection jarURLConnection = (JarURLConnection)connection;
         jarURLConnection.setUseCaches(false);
@@ -376,7 +334,7 @@ public final class SpecialAgentUtil {
           final String jarFileName = jarEntry.substring(slash + 1);
 
           // First, extract the JAR into a temp dir
-          final File subDir = new File(destDir, jarEntry.substring(0, slash));
+          final File subDir = new File(outDir, jarEntry.substring(0, slash));
           subDir.mkdirs();
           final File file = new File(subDir, jarFileName);
           if (!file.isDirectory() && !file.getName().endsWith(".jar"))
@@ -385,38 +343,14 @@ public final class SpecialAgentUtil {
           final URL jarUrl = new URL(resource, jarEntry.substring(path.length()));
           Files.copy(jarUrl.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-          // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-          final PluginManifest pluginManifest = PluginManifest.getPluginManifest(file);
-          boolean enablePlugin = true;
-          if (pluginManifest != null) {
-            final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
-            // Next, see if it is included or excluded
-            enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-            final Map<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
-            for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
-              final String pluginName = entry.getKey();
-              if (pluginName.equals(pluginManifest.name)) {
-                enablePlugin = entry.getValue();
-                if (logger.isLoggable(Level.FINER))
-                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (enablePlugin ? "en" : "dis") + "abled");
-
-                break;
-              }
-            }
-          }
-
-          if (enablePlugin) {
-            fileToPluginManifest.put(file, pluginManifest);
-          }
-          else {
+          if (!callback.test(file))
             file.delete();
-          }
         }
       }
       while (resources.hasMoreElements());
 
-      if (destDir != null) {
-        final File targetDir = destDir;
+      if (outDir != null) {
+        final File targetDir = outDir;
         Runtime.getRuntime().addShutdownHook(new Thread() {
           @Override
           public void run() {

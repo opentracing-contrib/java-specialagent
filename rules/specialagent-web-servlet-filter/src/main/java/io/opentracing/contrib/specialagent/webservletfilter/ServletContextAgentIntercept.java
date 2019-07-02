@@ -33,9 +33,13 @@ public class ServletContextAgentIntercept {
     if (!(thiz instanceof ServletContext))
       return;
 
+    final ServletContext context = (ServletContext)thiz;
+    if (context.getFilterRegistration("tracingFilter") != null)
+      return;
+
     final TracingFilter filter = new TracingFilter(GlobalTracer.get());
     try {
-      final FilterRegistration.Dynamic registration = ((ServletContext)thiz).addFilter("tracingFilter", filter);
+      final FilterRegistration.Dynamic registration = context.addFilter("tracingFilter", filter);
       if (registration != null)
         registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     }

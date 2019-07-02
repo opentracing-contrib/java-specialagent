@@ -68,7 +68,7 @@ public class MongoClientTest {
       }
 
       final List<MockSpan> spans = tracer.finishedSpans();
-      assertEquals(2, spans.size());
+      assertEquals(spans.toString(), 2, spans.size());
       assertEquals("insert", spans.get(0).operationName());
       assertEquals("find", spans.get(1).operationName());
     }

@@ -15,14 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Path;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import org.objectweb.asm.Opcodes;
 
 final class FingerprintUtil {
@@ -66,39 +58,6 @@ final class FingerprintUtil {
 
   public static boolean isInvokeSpecial(int opcode) {
     return (opcode & Opcodes.INVOKESPECIAL) != 0;
-  }
-
-  static void forEachClass(final URLClassLoader classLoader, final BiConsumer<URLClassLoader,String> consumer) throws IOException {
-    for (final URL url : classLoader.getURLs()) {
-      if (url.getPath().endsWith(".jar")) {
-        try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
-          for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
-            final String name = entry.getName();
-            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
-              consumer.accept(classLoader, name);
-            }
-          }
-        }
-      }
-      else {
-        final File file = new File(url.getPath());
-        final Path path = file.toPath();
-        AssembleUtil.recurseDir(file, new Predicate<File>() {
-          @Override
-          public boolean test(final File t) {
-            if (t.isDirectory())
-              return true;
-
-            final String name = path.relativize(t.toPath()).toString();
-            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
-              consumer.accept(classLoader, name);
-            }
-
-            return true;
-          }
-        });
-      }
-    }
   }
 
   private FingerprintUtil() {

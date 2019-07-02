@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.cassandra;
 
 import static org.junit.Assert.*;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
@@ -53,7 +54,12 @@ public class CassandraTest {
   @After
   public void after() {
     if (isJdkSupported) {
-      EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+      try {
+        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+      }
+      catch (final Exception e) {
+        logger.log(Level.WARNING, e.getMessage(), e);
+      }
     }
   }
 
@@ -70,8 +76,7 @@ public class CassandraTest {
       session.close();
     }
 
-    final int size = tracer.finishedSpans().size();
-    assertEquals(1, size);
+    assertEquals(1, tracer.finishedSpans().size());
   }
 
   private static Session createSession() {

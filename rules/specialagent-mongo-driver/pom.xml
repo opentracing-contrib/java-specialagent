@@ -53,6 +53,16 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <!--
+        This dependency is not necessary, but simply resolves a lot of errors thrown by ByteBuddy when it tries to instrument Log4J classes.
+        The version must align with the version of netty that's used by mongo-java-driver: https://github.com/netty/netty/blob/4.1/pom.xml
+      -->
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <scope>test</scope>
+      <version>2.6.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-async</artifactId>
       <version>${version.org.mongodb.mongo-java-driver}</version>

@@ -41,11 +41,11 @@ class FingerprintBuilder {
   static ClassFingerprint[] build(final URLClassLoader classLoader, final int depth, final Phase phase) throws IOException {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
-    FingerprintUtil.forEachClass(classLoader, new BiConsumer<URLClassLoader,String>() {
+    AssembleUtil.forEachClass(classLoader.getURLs(), new Consumer<String>() {
       @Override
-      public void accept(final URLClassLoader t, final String u) {
+      public void accept(final String name) {
         try {
-          fingerprinter.fingerprint(Phase.LOAD, u);
+          fingerprinter.fingerprint(Phase.LOAD, name);
         }
         catch (final IOException e) {
           throw new IllegalStateException(e);

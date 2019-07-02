@@ -86,7 +86,7 @@ public class ReactiveMongoClientTest {
       }
 
       final List<MockSpan> spans = tracer.finishedSpans();
-      assertEquals(1, spans.size());
+      assertEquals(spans.toString(), 1, spans.size());
       assertEquals("insert", spans.get(0).operationName());
     }
     finally {
