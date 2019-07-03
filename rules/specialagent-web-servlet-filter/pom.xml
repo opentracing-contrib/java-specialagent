@@ -82,16 +82,16 @@
     </dependency>
 
     <!--
-      Putting this dependency in the end, because version 3.0.1 is not high enough for Tomcat being
+      Putting this dependency in the end, because version 2.3 is not high enough for Tomcat being
       used for tests. This Dependency is only provided here for the sake of creating a
       fingerprint.bin. This is the lowest version that is supported by java-web-servlet-filter.
      -->
-    <dependency>
+    <!--dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
       <scope>provided</scope>
       <optional>true</optional>
-    </dependency>
+    </dependency-->
   </dependencies>
 </project>
