@@ -43,7 +43,7 @@ public class HttpClientAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object arg0, @Advice.Argument(value = 1, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg1, @Advice.Argument(value = 2, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg2) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg1, @Advice.Argument(value = 2, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg2) {
     if (!isEnabled(origin))
       return;
 
@@ -58,14 +58,14 @@ public class HttpClientAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+  public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
     if (isEnabled(origin))
       HttpClientAgentIntercept.exit(returned);
   }
 
   public static class OnException {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+    public static void exit(final @Advice.Thrown Throwable thrown) {
       if (thrown != null)
         HttpClientAgentIntercept.onError(thrown);
     }
