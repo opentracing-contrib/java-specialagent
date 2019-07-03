@@ -277,8 +277,8 @@ public final class SpecialAgentUtil {
     if (path.length() == 0)
       return path;
 
-    final boolean end = path.charAt(path.length() - 1) == '/';
-    final int start = end ? path.lastIndexOf('/', path.length() - 2) : path.lastIndexOf('/');
+    final boolean end = path.charAt(path.length() - 1) == File.separatorChar;
+    final int start = end ? path.lastIndexOf(File.separatorChar, path.length() - 2) : path.lastIndexOf(File.separatorChar);
     return start == -1 ? (end ? path.substring(0, path.length() - 1) : path) : end ? path.substring(start + 1, path.length() - 1) : path.substring(start + 1);
   }
 
