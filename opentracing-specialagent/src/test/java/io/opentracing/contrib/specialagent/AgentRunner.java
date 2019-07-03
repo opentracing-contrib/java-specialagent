@@ -191,7 +191,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     Event[] events() default {Event.ERROR};
 
     /**
-     * @return Names of plugins to disable in the test runtime.
+     * @return Names of plugins (either instrumentation or tracer) to disable in
+     *         the test runtime.
      *         <p>
      *         Default: <code>{}</code>.
      */
@@ -346,8 +347,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private static void setDisable(final String[] disable) {
-    for (final String name : disable)
+    for (final String name : disable) {
       System.setProperty("sa.instrumentation.plugin." + name + ".enable", "false");
+      System.setProperty("sa.tracer.plugin." + name + ".enable", "false");
+    }
   }
 
   /**

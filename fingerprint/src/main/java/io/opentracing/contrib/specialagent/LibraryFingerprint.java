@@ -77,7 +77,7 @@ public class LibraryFingerprint extends Fingerprint {
       throw new IllegalArgumentException("Number of scan URLs must be greater than 0");
 
     try (final URLClassLoader classLoader = new URLClassLoader(scanUrls, parent)) {
-      this.classes = FingerprintBuilder.build(classLoader, 0, Phase.LOAD);
+      this.classes = FingerprintBuilder.build(classLoader, 1, Phase.LOAD);
     }
   }
 

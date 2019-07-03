@@ -40,6 +40,7 @@ import org.objectweb.asm.signature.SignatureVisitor;
 class Fingerprinter extends ClassVisitor {
   private static final Logger logger = Logger.getLogger(Fingerprinter.class.getName());
   private static final Pattern synthetic = Pattern.compile("access\\$\\d+");
+  private static final boolean hackFixNoMethods = true;
 
   private final Set<String> innerClassExcludes = new HashSet<>();
   private final ClassLoader classLoader;
@@ -83,10 +84,7 @@ class Fingerprinter extends ClassVisitor {
 
   void compass(final int depth) throws IOException {
     filtering = true;
-    Log log;
-    for (int i = 0; (log = logs.nextLog()) != null && i < depth; ++i) {
-      fingerprint(log.getPhase(), log.getClassName().replace('.', '/').concat(".class"));
-    }
+    for (int i = 0; logs.compass(this) && i < depth; ++i);
   }
 
   private String className;
@@ -198,9 +196,11 @@ class Fingerprinter extends ClassVisitor {
     if (log == null)
       return null;
 
-    log.resolve(typeToClassName(type));
     if (signature != null)
       new SignatureReader(signature).accept(signatureVisitor);
+
+    if (!hackFixNoMethods)
+      log.resolve(typeToClassName(type));
 
     return fieldVisitor;
   }
@@ -252,7 +252,8 @@ class Fingerprinter extends ClassVisitor {
       if (signature != null)
         new SignatureReader(signature).accept(signatureVisitor);
 
-      log.resolve(exceptionTypes);
+      if (!hackFixNoMethods)
+        log.resolve(exceptionTypes);
     }
 
     return new MethodVisitor(api, methodVisitor) {
@@ -273,6 +274,9 @@ class Fingerprinter extends ClassVisitor {
       @Override
       public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc, final boolean itf) {
         super.visitMethodInsn(opcode, owner, name, desc, itf);
+        if (filtering)
+          return;
+
         // Skip if INVOKESPECIAL, because the later scan via addClassRef(type..) will pick up the constructor
         // Skipping this avoids the virtual constructors of member inner classes
         if (synthetic.matcher(name).matches() || FingerprintUtil.isInvokeSpecial(opcode))
@@ -290,6 +294,9 @@ class Fingerprinter extends ClassVisitor {
       @Override
       public void visitTypeInsn(final int opcode, final String type) {
         super.visitTypeInsn(opcode, type);
+        if (filtering)
+          return;
+
         addClassRef(Type.getObjectType(type), filtering ? Phase.NONE : Phase.CALL);
       }
 
@@ -306,6 +313,6 @@ class Fingerprinter extends ClassVisitor {
   @Override
   public void visitEnd() {
     super.visitEnd();
-    logs.markAllResolved(this.className);
+    logs.markAllResolved(this.className, !hackFixNoMethods);
   }
 }

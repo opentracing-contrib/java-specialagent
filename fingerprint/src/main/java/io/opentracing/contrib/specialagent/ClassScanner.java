@@ -49,8 +49,8 @@ class ClassScanner extends ClassVisitor {
       return inspector;
     }
     catch (final Exception e) {
-      if (logger.isLoggable(Level.FINE))
-        logger.log(Level.FINE, (e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath, e);
+      if (logger.isLoggable(Level.FINER))
+        logger.finer((e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath);
 
       if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
         throw e;

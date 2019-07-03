@@ -47,11 +47,12 @@ import java.util.zip.ZipInputStream;
  */
 class RuleClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
-  private static final boolean failOnEmptyFingerprint;
+  private static final String SKIP_FINGERPRINT = "sa.fingerprint.skip";
+  private static final boolean skipFingerprint;
 
   static {
-    final String property = System.getProperty("failOnEmptyFingerprint");
-    failOnEmptyFingerprint = property != null && !"false".equalsIgnoreCase(property);
+    final String property = System.getProperty(SKIP_FINGERPRINT);
+    skipFingerprint = property != null && !"false".equalsIgnoreCase(property);
   }
 
   /**
@@ -188,6 +189,14 @@ class RuleClassLoader extends URLClassLoader {
   }
 
   private boolean isFingerprintCompatible(final ClassLoader classLoader) throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    if (skipFingerprint) {
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"-D" + SKIP_FINGERPRINT + "=true\"");
+
+      compatibility.put(classLoader, true);
+      return true;
+    }
+
     final Class<?> libraryFingerprintClass = Class.forName("io.opentracing.contrib.specialagent.LibraryFingerprint", true, isoClassLoader);
     final Method fromFileMethod = libraryFingerprintClass.getDeclaredMethod("fromFile", URL.class);
     final Object fingerprint = fromFileMethod.invoke(null, pluginManifest.getFingerprint());
@@ -208,16 +217,8 @@ class RuleClassLoader extends URLClassLoader {
       return true;
     }
 
-    if (failOnEmptyFingerprint) {
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"-DfailOnEmptyFingerprint=true\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
-
-      compatibility.put(classLoader, false);
-      return false;
-    }
-
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to default \"-DfailOnEmptyFingerprint=false\" and \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
   }
