@@ -400,6 +400,7 @@ Thank you to the following developers for filing issues and helping us fix them:
 * [@kaushikdeb](https://github.com/kaushikdeb)
 * [@deepakgoenka](https://github.com/deepakgoenka)
 * [@etsangsplk](https://github.com/etsangsplk)
+* [@Vovan2006](https://github.com/Vovan2006)
 
 Thank you to the following individuals for noticing typographic errors and sending PRs:
 
