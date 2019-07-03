@@ -173,7 +173,24 @@ public class SpecialAgent {
 
     BootLoaderAgent.premain(inst);
     SpecialAgent.inst = inst;
-    instrumenter.manager.premain(null, inst);
+
+    final String spring = System.getProperty("sa.spring");
+    if (spring != null && !"false".equals(spring)) {
+      SpringAgent.premain(inst, new Thread() {
+        @Override
+        public void run() {
+          try {
+            instrumenter.manager.premain(null, inst);
+          }
+          catch (final Exception e) {
+            throw new ExceptionInInitializerError(e);
+          }
+        }
+      });
+    }
+    else {
+      instrumenter.manager.premain(null, inst);
+    }
   }
 
   /**
@@ -333,6 +350,7 @@ public class SpecialAgent {
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
     deferredTracer = loadTracer();
+
     loadRules(manager);
   }
 
@@ -460,6 +478,9 @@ public class SpecialAgent {
    * instrumentation {@link Manager} in the runtime.
    */
   private static void loadRules(final Manager manager) {
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>>\n");
+
     if (pluginsClassLoader == null) {
       logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
       return;
@@ -478,7 +499,7 @@ public class SpecialAgent {
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("OpenTracing AgentRule(s) loaded");
+      logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<<\n");
   }
 
   private static boolean isAgentRunner() {
@@ -500,78 +521,88 @@ public class SpecialAgent {
   @SuppressWarnings("resource")
   private static Tracer loadTracer() {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n======================== Loading Tracer ========================\n");
+      logger.fine("\n<<<<<<<<<<<<<<<<<<<<<<<< Loading Tracer >>>>>>>>>>>>>>>>>>>>>>>>\n");
 
-    if (GlobalTracer.isRegistered()) {
+    try {
+      if (GlobalTracer.isRegistered()) {
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("Tracer already registered with GlobalTracer");
+
+        return null;
+      }
+
+      final String tracerProperty = System.getProperty(TRACER_PROPERTY);
+      if (tracerProperty == null) {
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("Tracer was not specified with \"" + TRACER_PROPERTY + "\" system property");
+
+        return null;
+      }
+
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Tracer already registered with GlobalTracer");
+        logger.fine("Resolving tracer:\n  " + tracerProperty);
 
-      return null;
-    }
-
-    final String tracerProperty = System.getProperty(TRACER_PROPERTY);
-    if (tracerProperty == null)
-      return null;
-
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Resolving tracer:\n  " + tracerProperty);
-
-    final Tracer tracer;
-    if ("mock".equals(tracerProperty)) {
-      tracer = new MockTracer();
-    }
-    else {
-      final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-      final File file = new File(tracerProperty);
-      try {
-        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(pluginsClassLoader, tracerProperty);
-        if (tracerUrl != null) {
-          // If the desired tracer is in its own JAR file, or if this is not
-          // running in an AgentRunner test (because in this case the tracer
-          // is in a JAR also, which is inside the SpecialAgent JAR), then
-          // isolate the tracer JAR in its own class loader.
-          if (file.exists() || !isAgentRunner()) {
-            final ClassLoader parent;
-            if (System.getProperty("java.version").startsWith("1.")) {
-              parent = null;
-            }
-            else {
-              try {
-                parent = (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      final Tracer tracer;
+      if ("mock".equals(tracerProperty)) {
+        tracer = new MockTracer();
+      }
+      else {
+        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final File file = new File(tracerProperty);
+        try {
+          final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(pluginsClassLoader, tracerProperty);
+          if (tracerUrl != null) {
+            // If the desired tracer is in its own JAR file, or if this is not
+            // running in an AgentRunner test (because in this case the tracer
+            // is in a JAR also, which is inside the SpecialAgent JAR), then
+            // isolate the tracer JAR in its own class loader.
+            if (file.exists() || !isAgentRunner()) {
+              final ClassLoader parent;
+              if (System.getProperty("java.version").startsWith("1.")) {
+                parent = null;
               }
-              catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new IllegalStateException(e);
+              else {
+                try {
+                  parent = (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+                }
+                catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                  throw new IllegalStateException(e);
+                }
               }
-            }
 
-            AgentRuleUtil.tracerClassLoader = new TracerClassLoader(tracerUrl, parent);
-            Thread.currentThread().setContextClassLoader(AgentRuleUtil.tracerClassLoader);
+              AgentRuleUtil.tracerClassLoader = new TracerClassLoader(tracerUrl, parent);
+              Thread.currentThread().setContextClassLoader(AgentRuleUtil.tracerClassLoader);
+            }
+          }
+          else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null) {
+            throw new IllegalStateException(TRACER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
           }
         }
-        else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null) {
-          throw new IllegalStateException("TRACER_PROPERTY=" + tracerProperty + " did not resolve to a tracer JAR or name");
+        catch (final IOException e) {
+          throw new IllegalStateException(e);
         }
+
+        tracer = TracerResolver.resolveTracer();
+        Thread.currentThread().setContextClassLoader(contextClassLoader);
       }
-      catch (final IOException e) {
-        throw new IllegalStateException(e);
+
+      if (tracer == null) {
+        logger.warning("Tracer was NOT RESOLVED");
+        return null;
       }
 
-      tracer = TracerResolver.resolveTracer();
-      Thread.currentThread().setContextClassLoader(contextClassLoader);
+      if (!isAgentRunner() && !GlobalTracer.registerIfAbsent(tracer))
+        throw new IllegalStateException("There is already a registered global Tracer.");
+
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Tracer was resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer:\n  " + tracer.getClass().getName() + " from " + (tracer.getClass().getProtectionDomain().getCodeSource() == null ? "null" : tracer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()));
+
+      return tracer;
     }
-
-    if (tracer == null) {
-      logger.warning("Tracer was NOT RESOLVED");
-      return null;
+    finally {
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>>> Loaded Tracer <<<<<<<<<<<<<<<<<<<<<<<<<\n");
     }
-
-    if (!isAgentRunner() && !GlobalTracer.registerIfAbsent(tracer))
-      throw new IllegalStateException("There is already a registered global Tracer.");
-
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Tracer was resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer:\n  " + tracer.getClass().getName() + " from " + (tracer.getClass().getProtectionDomain().getCodeSource() == null ? "null" : tracer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()));
-
-    return tracer;
   }
 
   @SuppressWarnings("resource")

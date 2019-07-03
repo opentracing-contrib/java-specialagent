@@ -22,11 +22,13 @@ import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -53,7 +55,7 @@ public class ClassLoaderAgentRule extends AgentRule {
       logger.fine("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n");
 
     final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(PluginsClassLoader.class)))));
-    return Arrays.asList(
+    final List<Extendable> builders = Arrays.asList(
       narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -72,6 +74,11 @@ public class ClassLoaderAgentRule extends AgentRule {
           final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class);
           return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }}));
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n");
+
+    return builders;
   }
 
   public static class FindClass {

@@ -178,12 +178,8 @@ public final class FingerprintMojo extends TreeMojo {
       // bridges/links between the 3rd-Party Library to itself).
       compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
 
-      final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, getProject().getArtifacts().iterator(), 0);
-      try (
-        final URLClassLoader root = new URLClassLoader(nonOptionalDeps, null);
-        final URLClassLoader parent = new URLClassLoader(optionalDeps, root);
-      ) {
-        final LibraryFingerprint fingerprint = new LibraryFingerprint(parent, compileDeps);
+      try (final URLClassLoader classLoader = new URLClassLoader(optionalDeps, null)) {
+        final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, compileDeps);
         fingerprint.toFile(destFile);
         if (getLog().isDebugEnabled())
           getLog().debug(fingerprint.toString());

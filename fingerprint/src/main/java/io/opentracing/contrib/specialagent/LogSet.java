@@ -15,9 +15,11 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,24 +53,27 @@ class LogSet {
       add(log);
   }
 
-  Log nextLog() {
-    for (final Map.Entry<Log,Log> entry : map.entrySet())
-      if (!entry.getValue().isResolved())
-        return entry.getValue();
+  boolean compass(final Fingerprinter fingerprinter) throws IOException {
+    final int before = map.entrySet().size();
+    for (final Map.Entry<Log,Log> entry : new HashSet<>(map.entrySet())) {
+      final Log log = entry.getValue();
+      if (!log.isResolved())
+        fingerprinter.fingerprint(log.getPhase(), log.getClassName().replace('.', '/').concat(".class"));
+    }
 
-    return null;
+    return before != map.entrySet().size();
   }
 
   public boolean contains(final Log log) {
     return map.containsKey(log);
   }
 
-  public void markAllResolved(final String className) {
+  public void markAllResolved(final String className, final boolean resolveConstructors) {
     final Iterator<Map.Entry<Log,Log>> iterator = map.entrySet().iterator();
     while (iterator.hasNext()) {
       final Log log = iterator.next().getValue();
       if (className.equals(log.getClassName()) && !log.isResolved()) {
-        if (log instanceof MethodLog && ((MethodLog)log).methodName.equals("<init>")) {
+        if (resolveConstructors && log instanceof MethodLog && ((MethodLog)log).methodName.equals("<init>")) {
           log.resolve();
         }
         else {
@@ -82,6 +87,13 @@ class LogSet {
 
   public ClassFingerprint[] collate(final Phase phase) {
     final List<Log> sorted = new ArrayList<>(map.values());
+
+    // Remove unresolved logs
+    final Iterator<Log> iterator = sorted.iterator();
+    while (iterator.hasNext())
+      if (!iterator.next().isResolved())
+        iterator.remove();
+
     Collections.sort(sorted, new Comparator<Log>() {
       @Override
       public int compare(final Log o1, final Log o2) {
