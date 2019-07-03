@@ -26,8 +26,9 @@ In additiona to its engine, the <ins>SpecialAgent</ins> packages a set of pre-su
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2 [For Development](#212-for-development)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1 [Building](#2121-building)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2 [Usage](#22-usage)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.1 [Static Attach](#221-static-attach)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.2 [Dynamic Attach](#222-dynamic-attach)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.1 [<ins>Static Attach</ins>](#221-static-attach)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.2 [<ins>Dynamic Attach</ins>](#222-dynamic-attach)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.3 [Static Deferred Attach](#223-static-deferred-attach)<br>
 <samp>&nbsp;&nbsp;</samp>3 [Configuration](#3-configuration)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.1 [Overview](#31-overview)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2 [Properties](#32-properties)<br>
@@ -84,7 +85,7 @@ The latest development release is: <ins>1.3.3-SNAPSHOT</ins>.
 wget -O opentracing-specialagent-1.3.3-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
-This is the main artifact that contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented. This JAR can be specified as the `-javaagent` target for static attach to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
+This is the main artifact that contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented. This JAR can be specified as the `-javaagent` target for [<ins>Static Attach</ins>](#221-static-attach) to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
 
 #### 2.1.2 For Development
 
@@ -140,19 +141,19 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utiliz
 
 ### 2.2 Usage
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) uses [Java’s Instrumentation mechanism](https://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html) to transform the behavior of a target application. The entrypoint into the target application is performed via Java’s Agent convention. [<ins>SpecialAgent</ins>](#41-specialagent) supports both static and dynamic attach.
+The [<ins>SpecialAgent</ins>](#41-specialagent) uses [Java’s Instrumentation mechanism](https://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html) to transform the behavior of a target application. The entrypoint into the target application is performed via Java’s Agent convention. [<ins>SpecialAgent</ins>](#41-specialagent) supports both [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Dynamic Attach</ins>](#222-dynamic-attach).
 
-#### 2.2.1 Static Attach
+#### 2.2.1 <ins>Static Attach</ins>
 
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.3.2.jar -jar myapp.jar
+java -javaagent:opentracing-specialagent-1.3.2.jar -jar MyApp.jar
 ```
 
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
 
-#### 2.2.2 Dynamic Attach
+#### 2.2.2 <ins>Dynamic Attach</ins>
 
 Dynamically attaching to a Java application involves the use of a running application’s PID, after the application’s startup. The following commands can be used as an example:
 
@@ -172,6 +173,20 @@ Dynamically attaching to a Java application involves the use of a running applic
     ```
 
 **Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
+
+#### 2.2.3 <ins>Static Deferred Attach</ins>
+
+With [<ins>Static Attach</ins>](#221-static-attach), the application is executed with the `-javaagent` argument, and the agent initialization occurs before the application is started. This mode requires 1 command from the command line.
+
+With [<ins>Dynamic Attach</ins>](#222-dynamic-attach), the application is allowed to start first, afterwhich an agent VM is dynamically attached to the application's PID. This mode requires 2 commands from the command line: the first for the application, and the second for the agent VM.
+
+With <ins>Static Deferred Attach</ins>, the application is executed with the `-javaagent` argument, but the agent initialization is deferred until the application is started. This mode requires 1 command from the command line, and is designed specifically for Spring runtimes that have complex initialization lifecycles. The [<ins>SpecialAgent</ins>](#41-specialagent) relies on the `ContextRefreshedEvent` to signify that the application is ready, and thus to cue agent initialization. This approach works for all versions of Spring and Spring Boot.
+
+The following command can be used as an example:
+
+```bash
+java -javaagent:opentracing-specialagent-1.3.2.jar -Dsa.spring -jar MySpringApp.jar
+```
 
 ## 3 Configuration
 
@@ -196,6 +211,10 @@ The following properties are supported by all instrumentation plugins:
    Sets verbose mode for all or one plugin (Default: false). This property can also be set in an `AgentRunner` JUnit test with the `@AgentRunner.Config(verbose=true)` for all tests in a JUnit class, or `@AgentRunner.TestConfig(verbose=true)` for an individual JUnit test method.
 
    Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
+
+1. Skip fingerprint verification: `sa.fingerprint.skip`
+
+   Tells the [<ins>SpecialAgent</ins>](#41-specialagent) to skip the fingerprint verification when linking [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) into class loaders. This option allows one to work around an unexpected fingerprint verification failure, which can happen in complex runtimes that do not contain all class definitions on the class path. It must be noted, however, that if the fingerprint verification is disabled, the [<ins>SpecialAgent</ins>](#41-specialagent) will indiscriminately install all plugins regardless of library version compatibility issues, which may lead to `NoClassDefFoundError`, `IllegalAccessError`, `AbstractMethodError`, `LinkageError`, etc.
 
 ### 3.3 Selecting the [<ins>Tracer Plugin</ins>](#43-tracer-plugin)
 
@@ -311,7 +330,7 @@ Examples:
 1. The [<ins>SpecialAgent</ins>](#41-specialagent) must allow any [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) exists.
 1. The [<ins>SpecialAgent</ins>](#41-specialagent) must automatically install the [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
 1. The [<ins>SpecialAgent</ins>](#41-specialagent) must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the [<ins>SpecialAgent</ins>](#41-specialagent), and cannot apply to the code of the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) made available in [opentracing-contrib][opentracing-contrib].
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must support static and dynamic attach to applications running on JVM versions 1.7, 1.8, 9, and 11.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Dynamic Attach</ins>](#222-dynamic-attach) to applications running on JVM versions 1.7, 1.8, 9, and 11.
 1. The [<ins>SpecialAgent</ins>](#41-specialagent) must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
    1. Launch the test in a process simulating the `-javaagent` vm argument that points to the [<ins>SpecialAgent</ins>](#41-specialagent) (in order to test auto-instrumentation functionality).
    1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
