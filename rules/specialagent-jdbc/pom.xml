@@ -34,7 +34,7 @@
       <!-- https://github.com/opentracing-contrib/java-jdbc -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jdbc</artifactId>
-      <version>0.1.4</version>
+      <version>0.1.5</version>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
