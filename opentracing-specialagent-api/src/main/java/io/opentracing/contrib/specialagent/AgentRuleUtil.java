@@ -26,6 +26,38 @@ public final class AgentRuleUtil {
   static ClassLoader tracerClassLoader;
 
   /**
+   * Returns the name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getSimpleNameId(Object)
+   */
+  public static String getNameId(final Object obj) {
+    return obj != null ? obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
+   * Returns the simple name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The simple name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getNameId(Object)
+   */
+  public static String getSimpleNameId(final Object obj) {
+    return obj != null ? obj.getClass().getSimpleName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
    * Returns an array that is the subArray of the provided array.
    *
    * @param <T> Type parameter of object.

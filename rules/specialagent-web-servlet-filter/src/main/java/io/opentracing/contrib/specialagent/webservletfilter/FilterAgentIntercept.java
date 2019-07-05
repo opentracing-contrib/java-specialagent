@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
@@ -73,7 +74,12 @@ public class FilterAgentIntercept {
     try {
       final HttpServlet servlet = (HttpServlet)thiz;
       final TracingFilter filter = getFilter(servlet.getServletContext());
+      if (AgentRule.logger.isLoggable(Level.FINEST))
+        AgentRule.logger.finest(">> TracingFilter#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+
       filter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
+      if (AgentRule.logger.isLoggable(Level.FINEST))
+        AgentRule.logger.finest("<< TracingFilter#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
     }
     catch (final Exception e) {
       AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
@@ -97,10 +103,15 @@ public class FilterAgentIntercept {
       final ServletContext servletContext = request.getServletContext() != null ? request.getServletContext() : filterToServletContext.get(filter);
       final TracingFilter tracingFilter = getFilter(servletContext);
       servletRequestToState.put(request, Boolean.TRUE);
+      if (AgentRule.logger.isLoggable(Level.FINEST))
+        AgentRule.logger.finest(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+
       tracingFilter.doFilter(request, (ServletResponse)res, new FilterChain() {
         @Override
         public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
           filter.doFilter(request, response, (FilterChain)chain);
+          if (AgentRule.logger.isLoggable(Level.FINEST))
+            AgentRule.logger.finest("<< TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(response) +  ")");
         }
       });
     }
