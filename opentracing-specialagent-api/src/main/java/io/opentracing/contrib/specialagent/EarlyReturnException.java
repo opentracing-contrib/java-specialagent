@@ -38,6 +38,13 @@ public class EarlyReturnException extends RuntimeException {
   }
 
   /**
+   * Creates a new {@code EarlyReturnException} with a null return value.
+   */
+  public EarlyReturnException() {
+    this.returnValue = null;
+  }
+
+  /**
    * @return The value to return early.
    */
   public Object getReturnValue() {
