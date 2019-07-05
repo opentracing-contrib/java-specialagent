@@ -29,6 +29,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
@@ -39,6 +40,7 @@ public class FilterAgentIntercept {
   public static final Map<Filter,ServletContext> filterToServletContext = new WeakHashMap<>();
   public static final Map<ServletContext,TracingFilter> servletContextToFilter = new WeakHashMap<>();
   public static final Map<ServletRequest,Boolean> servletRequestToState = new WeakHashMap<>();
+  public static final Map<ServletResponse,Integer> servletResponseToStatus = new WeakHashMap<>();
 
   public static TracingFilter getFilter(final ServletContext servletContext) throws ServletException {
     Objects.requireNonNull(servletContext);
@@ -108,5 +110,14 @@ public class FilterAgentIntercept {
     }
 
     throw new EarlyReturnException();
+  }
+
+  public static void response(final Object thiz, final int status) {
+    servletResponseToStatus.put((ServletResponse)thiz, status);
+  }
+
+  public static int getSatusCode(final ServletResponse response) {
+    final Integer statusCode = servletResponseToStatus.get(response);
+    return statusCode != null ? statusCode : HttpServletResponse.SC_OK;
   }
 }

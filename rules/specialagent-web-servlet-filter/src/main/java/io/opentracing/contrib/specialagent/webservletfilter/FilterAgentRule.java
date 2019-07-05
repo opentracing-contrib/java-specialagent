@@ -39,6 +39,14 @@ public class FilterAgentRule extends AgentRule {
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(ServletAdvice.class).on(named("service")));
         }})
+      .type(hasSuperType(named("javax.servlet.http.HttpServletResponse")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder
+            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("setStatus")))
+            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError")));
+        }})
       .type(hasSuperType(named("javax.servlet.Filter")))
       .transform(new Transformer() {
         @Override
@@ -56,6 +64,22 @@ public class FilterAgentRule extends AgentRule {
           // TODO: Add method signature...
           return builder.visit(Advice.to(DoFilterExit.class).on(named("doFilter")));
         }}));
+  }
+
+  public static class ServletAdvice {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response) {
+      if (isEnabled(origin))
+        FilterAgentIntercept.service(thiz, request, response);
+    }
+  }
+
+  public static class HttpServletResponseAdvice {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) int status) {
+      if (isEnabled(origin))
+        FilterAgentIntercept.response(thiz, status);
+    }
   }
 
   public static class InitAdvice {
@@ -79,14 +103,6 @@ public class FilterAgentRule extends AgentRule {
     public static void exit(@Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) {
       if (thrown instanceof EarlyReturnException)
         thrown = null;
-    }
-  }
-
-  public static class ServletAdvice {
-    @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response) {
-      if (isEnabled(origin))
-        FilterAgentIntercept.service(thiz, request, response);
     }
   }
 }
