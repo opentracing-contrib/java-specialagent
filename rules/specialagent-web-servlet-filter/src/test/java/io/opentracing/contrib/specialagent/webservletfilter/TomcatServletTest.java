@@ -24,14 +24,16 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +60,8 @@ public class TomcatServletTest {
 
   @Before
   public void beforeTest() throws LifecycleException {
+    MockFilter.count = 0;
+
     tomcatServer = new Tomcat();
     tomcatServer.setPort(serverPort);
 
@@ -67,13 +71,22 @@ public class TomcatServletTest {
     final File applicationDir = new File(new File(baseDir, "webapps"), "ROOT");
     applicationDir.mkdirs();
 
-    final Context appContext = tomcatServer.addWebapp("", applicationDir.getAbsolutePath());
+    final Context context = tomcatServer.addWebapp("", applicationDir.getAbsolutePath());
+    final FilterDef filterDef = new FilterDef();
+    filterDef.setFilterName(MockFilter.class.getSimpleName());
+    filterDef.setFilterClass(MockFilter.class.getName());
+    context.addFilterDef(filterDef);
+
+    final FilterMap filterMap = new FilterMap();
+    filterMap.setFilterName(MockFilter.class.getSimpleName());
+    filterMap.addURLPattern("/*");
+    context.addFilterMap(filterMap);
 
     // Following triggers creation of NoPluggabilityServletContext object during initialization
-    ((StandardContext)appContext).addApplicationLifecycleListener(new SCL());
+    ((StandardContext)context).addApplicationLifecycleListener(new SCL());
 
-    Tomcat.addServlet(appContext, "helloWorldServlet", new MockServlet());
-    appContext.addServletMappingDecoded("/hello", "helloWorldServlet");
+    Tomcat.addServlet(context, "helloWorldServlet", new MockServlet());
+    context.addServletMappingDecoded("/hello", "helloWorldServlet");
 
     tomcatServer.start();
     logger.info("Tomcat server: http://" + tomcatServer.getHost().getName() + ":" + serverPort + "/");
@@ -85,8 +98,10 @@ public class TomcatServletTest {
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
     final Response response = client.newCall(request).execute();
 
+    assertEquals(HttpServletResponse.SC_OK, response.code());
+    assertEquals(1, MockFilter.count);
+
     final List<MockSpan> spans = tracer.finishedSpans();
-    assertEquals(HttpServletResponse.SC_ACCEPTED, response.code());
     assertEquals(spans.toString(), 1, spans.size());
   }
 
