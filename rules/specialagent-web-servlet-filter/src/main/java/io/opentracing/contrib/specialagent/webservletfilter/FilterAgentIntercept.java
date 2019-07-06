@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 
@@ -28,63 +27,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
-import io.opentracing.util.GlobalTracer;
 
-public class FilterAgentIntercept {
+public class FilterAgentIntercept extends ServletFilterAgentIntercept {
   public static final Map<Filter,ServletContext> filterToServletContext = new WeakHashMap<>();
-  public static final Map<ServletContext,TracingFilter> servletContextToFilter = new WeakHashMap<>();
-  public static final Map<ServletRequest,Boolean> servletRequestToState = new WeakHashMap<>();
   public static final Map<ServletResponse,Integer> servletResponseToStatus = new WeakHashMap<>();
-
-  public static TracingFilter getFilter(final ServletContext servletContext) throws ServletException {
-    Objects.requireNonNull(servletContext);
-    TracingFilter filter = servletContextToFilter.get(servletContext);
-    if (filter != null)
-      return filter;
-
-    synchronized (servletContextToFilter) {
-      filter = servletContextToFilter.get(servletContext);
-      if (filter != null)
-        return filter;
-
-      servletContextToFilter.put(servletContext, filter = new TracingProxyFilter(GlobalTracer.get(), servletContext));
-      return filter;
-    }
-  }
-
-  public static final FilterChain noopFilterChain = new FilterChain() {
-    @Override
-    public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
-    }
-  };
-
-  public static void service(final Object thiz, final Object req, final Object res) {
-    // If `servletRequestToState` contains the request key, then this request
-    // has been handled by doFilter
-    if (servletRequestToState.remove((ServletRequest)req) != null)
-      return;
-
-    try {
-      final HttpServlet servlet = (HttpServlet)thiz;
-      final TracingFilter filter = getFilter(servlet.getServletContext());
-      if (AgentRule.logger.isLoggable(Level.FINEST))
-        AgentRule.logger.finest(">> TracingFilter#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
-
-      filter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
-      if (AgentRule.logger.isLoggable(Level.FINEST))
-        AgentRule.logger.finest("<< TracingFilter#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
-    }
-    catch (final Exception e) {
-      AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
-    }
-  }
 
   public static void init(final Object thiz, final Object filterConfig) {
     filterToServletContext.put((Filter)thiz, ((FilterConfig)filterConfig).getServletContext());
@@ -102,6 +54,13 @@ public class FilterAgentIntercept {
       final Filter filter = (Filter)thiz;
       final ServletContext servletContext = request.getServletContext() != null ? request.getServletContext() : filterToServletContext.get(filter);
       final TracingFilter tracingFilter = getFilter(servletContext);
+
+      // If the tracingFilter instance is not a TracingProxyFilter, then it was
+      // created with ServletContext#addFilter. Therefore, the intercept of the
+      // Filter#doFilter method is not necessary.
+      if (!(tracingFilter instanceof TracingProxyFilter))
+        return;
+
       servletRequestToState.put(request, Boolean.TRUE);
       if (AgentRule.logger.isLoggable(Level.FINEST))
         AgentRule.logger.finest(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
@@ -123,7 +82,7 @@ public class FilterAgentIntercept {
     throw new EarlyReturnException();
   }
 
-  public static void response(final Object thiz, final int status) {
+  public static void setStatusCode(final Object thiz, final int status) {
     servletResponseToStatus.put((ServletResponse)thiz, status);
   }
 

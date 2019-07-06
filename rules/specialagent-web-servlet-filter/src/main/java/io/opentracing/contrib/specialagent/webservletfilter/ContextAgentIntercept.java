@@ -15,20 +15,26 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import javax.servlet.Filter;
+import javax.servlet.ServletContext;
 
 public abstract class ContextAgentIntercept {
   public static final String TRACING_FILTER_NAME = "tracingFilter";
   public static final String[] patterns = {"/*"};
 
-  public static boolean isFilterMethodPresent(final Object context) {
+  public static Method getFilterMethod(final ServletContext context) {
     try {
-      return !Modifier.isAbstract(context.getClass().getMethod("addFilter", String.class, Filter.class).getModifiers());
+      final Method method = context.getClass().getMethod("addFilter", String.class, Filter.class);
+      System.err.println("XXX: " + context.getClass().getName() + " " + method);
+      final boolean isAbstract = Modifier.isAbstract(method.getModifiers());
+      System.err.println("XXX: " + isAbstract);
+      return isAbstract ? null : method;
     }
     catch (final NoSuchMethodException e) {
-      return false;
+      return null;
     }
   }
 }

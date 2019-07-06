@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
+import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.logging.Level;
 
@@ -23,30 +24,38 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 
 import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
 public class ServletContextAgentIntercept extends ContextAgentIntercept {
-  public static void exit(final Object thiz) {
+  public static void addFilter(final Object thiz) {
     if (!(thiz instanceof ServletContext))
       return;
 
-    if (!isFilterMethodPresent(thiz)) {
+    final ServletContext context = (ServletContext)thiz;
+    if (AgentRule.logger.isLoggable(Level.FINER))
+      AgentRule.logger.finer(">> ServletContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
+
+    final Method addFilterMethod = getFilterMethod(context);
+    if (addFilterMethod == null) {
       if (AgentRule.logger.isLoggable(Level.FINER))
-        AgentRule.logger.finer("ServletContextAgentIntercept#exit(" + thiz.getClass().getName() + "): isFilterMethodPresent = false");
+        AgentRule.logger.finer("<< ServletContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): isFilterMethodPresent = false");
 
       return;
     }
 
     try {
-      final ServletContext context = (ServletContext)thiz;
       final TracingFilter filter = new TracingFilter(GlobalTracer.get());
-      final FilterRegistration.Dynamic registration = context.addFilter(TRACING_FILTER_NAME, filter);
+      final FilterRegistration.Dynamic registration = (FilterRegistration.Dynamic)addFilterMethod.invoke(context, TRACING_FILTER_NAME, filter);
       if (registration != null)
         registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
     }
     catch (final Exception e) {
       AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
     }
+
+    if (AgentRule.logger.isLoggable(Level.FINER))
+      AgentRule.logger.finer("<< ServletContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
   }
 }

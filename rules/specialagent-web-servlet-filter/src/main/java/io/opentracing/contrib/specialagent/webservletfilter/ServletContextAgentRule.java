@@ -35,7 +35,7 @@ public class ServletContextAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Jetty.class).on(isConstructor()));
+          return builder.visit(Advice.to(JettyAdvice.class).on(isConstructor()));
         }})
       .type(hasSuperType(named("javax.servlet.ServletContext"))
         // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
@@ -47,23 +47,23 @@ public class ServletContextAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ServletContext.class).on(isConstructor()));
+          return builder.visit(Advice.to(ServletContextAdvice.class).on(isConstructor()));
         }}));
   }
 
-  public static class Jetty {
+  public static class JettyAdvice {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled(origin))
-        JettyAgentIntercept.exit(thiz);
+        JettyAgentIntercept.addFilter(thiz);
     }
   }
 
-  public static class ServletContext {
+  public static class ServletContextAdvice {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled(origin))
-        ServletContextAgentIntercept.exit(thiz);
+        ServletContextAgentIntercept.addFilter(thiz);
     }
   }
 }
