@@ -28,10 +28,7 @@ public abstract class ContextAgentIntercept {
   public static Method getFilterMethod(final ServletContext context) {
     try {
       final Method method = context.getClass().getMethod("addFilter", String.class, Filter.class);
-      System.err.println("XXX: " + context.getClass().getName() + " " + method);
-      final boolean isAbstract = Modifier.isAbstract(method.getModifiers());
-      System.err.println("XXX: " + isAbstract);
-      return isAbstract ? null : method;
+      return Modifier.isAbstract(method.getModifiers()) ? null : method;
     }
     catch (final NoSuchMethodException e) {
       return null;

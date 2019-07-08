@@ -60,7 +60,6 @@ public class SpringAgent {
 
   @Advice.OnMethodExit
   public static void exit() {
-    System.err.println("XXX: Spring started");
     try {
       thread.start();
       thread.join();

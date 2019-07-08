@@ -15,16 +15,13 @@
 
 package io.opentracing.contrib.specialagent.spring3.webmvc;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.mock.MockTracer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -34,6 +31,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
@@ -46,17 +47,17 @@ public class Spring3WebMvcTest {
   public static void beforeClass() throws Exception {
     server = new Server(0);
 
-    final WebAppContext webApp = new WebAppContext();
-    webApp.setServer(server);
-    webApp.setContextPath(CONTEXT_PATH);
-    webApp.setWar("src/test/webapp");
+    final WebAppContext webAppContext = new WebAppContext();
+    webAppContext.setServer(server);
+    webAppContext.setContextPath(CONTEXT_PATH);
+    webAppContext.setWar("src/test/webapp");
 
-    server.setHandler(webApp);
+    server.setHandler(webAppContext);
     server.start();
 
     // jetty starts on random port
-    final int serverPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
-    url = "http://localhost:" + serverPort;
+    final int port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+    url = "http://localhost:" + port;
   }
 
   @AfterClass
