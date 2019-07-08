@@ -51,7 +51,9 @@
     <module>specialagent-apache-httpclient</module>
     <module>specialagent-lettuce</module>
     <module>specialagent-spring-web</module>
+    <module>specialagent-spring-3-web</module>
     <module>specialagent-spring-webmvc</module>
+    <module>specialagent-spring-3-webmvc</module>
     <module>specialagent-spring-webflux</module>
     <module>specialagent-redisson</module>
     <module>specialagent-hazelcast</module>
