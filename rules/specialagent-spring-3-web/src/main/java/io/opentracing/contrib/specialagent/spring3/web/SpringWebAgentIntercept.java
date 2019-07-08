@@ -15,18 +15,20 @@
 
 package io.opentracing.contrib.specialagent.spring3.web;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.spring3.web.copied.HttpHeadersCarrier;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
 
-@SuppressWarnings("deprecation")
 public class SpringWebAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
@@ -35,45 +37,46 @@ public class SpringWebAgentIntercept {
     private Span span;
   }
 
-  public static void enter(Object thiz) {
+  public static void enter(final Object thiz) {
     final ClientHttpRequest request = (ClientHttpRequest)thiz;
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = tracer
+      .buildSpan(request.getMethod().name())
+      .withTag(Tags.COMPONENT.getKey(), "java-spring-rest-template")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.HTTP_URL, request.getURI().toString())
+      .withTag(Tags.HTTP_METHOD, request.getMethod().name())
+      .start();
 
-    final Span span = GlobalTracer.get()
-        .buildSpan(request.getMethod().name())
-        .withTag(Tags.COMPONENT.getKey(), "java-spring-rest-template")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.HTTP_URL, request.getURI().toString())
-        .withTag(Tags.HTTP_METHOD, request.getMethod().name())
-        .start();
+    tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersCarrier(request.getHeaders()));
 
-    GlobalTracer.get().inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersCarrier(request.getHeaders()));
-
-    final Scope scope = GlobalTracer.get().activateSpan(span);
+    final Scope scope = tracer.activateSpan(span);
     final Context context = new Context();
     contextHolder.set(context);
     context.scope = scope;
     context.span = span;
   }
 
-  public static void exit(Object response, Throwable thrown) {
-      final Context context = contextHolder.get();
-      if (context == null)
-        return;
+  public static void exit(final Object response, final Throwable thrown) {
+    final Context context = contextHolder.get();
+    if (context == null)
+      return;
 
-      if (thrown != null) {
-        captureException(context.span, thrown);
-      } else {
-        ClientHttpResponse httpResponse = (ClientHttpResponse) response;
-
-        try {
-          Tags.HTTP_STATUS.set(context.span, httpResponse.getStatusCode().value());
-        } catch (Exception ignore) {
-        }
+    if (thrown != null) {
+      captureException(context.span, thrown);
+    }
+    else {
+      try {
+        final ClientHttpResponse httpResponse = (ClientHttpResponse)response;
+        Tags.HTTP_STATUS.set(context.span, httpResponse.getStatusCode().value());
       }
+      catch (final Exception ignore) {
+      }
+    }
 
-      context.scope.close();
-      context.span.finish();
-      contextHolder.remove();
+    context.scope.close();
+    context.span.finish();
+    contextHolder.remove();
   }
 
   static void captureException(final Span span, final Throwable t) {

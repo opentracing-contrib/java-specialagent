@@ -17,10 +17,10 @@ package io.opentracing.contrib.specialagent.spring3.webmvc;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import io.opentracing.util.GlobalTracer;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import io.opentracing.util.GlobalTracer;
 
 @Controller
 public class TestController {

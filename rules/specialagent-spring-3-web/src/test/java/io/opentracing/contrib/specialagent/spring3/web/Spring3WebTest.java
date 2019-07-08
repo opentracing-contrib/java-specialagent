@@ -15,19 +15,19 @@
 
 package io.opentracing.contrib.specialagent.spring3.web;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.mock.MockTracer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.web.client.RestTemplate;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
-@SuppressWarnings("deprecation")
 public class Spring3WebTest {
   @Before
   public void before(final MockTracer tracer) {
@@ -54,5 +54,4 @@ public class Spring3WebTest {
 
     assertEquals(2, tracer.finishedSpans().size());
   }
-
 }

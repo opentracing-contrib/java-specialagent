@@ -15,9 +15,10 @@
 
 package io.opentracing.contrib.specialagent.spring3.webmvc;
 
+import org.springframework.web.servlet.HandlerInterceptor;
+
 import io.opentracing.contrib.specialagent.spring3.webmvc.copied.TracingHandlerInterceptor;
 import io.opentracing.util.GlobalTracer;
-import org.springframework.web.servlet.HandlerInterceptor;
 
 public class SpringWebMvcAgentIntercept {
   public static Object getInterceptors(final Object thiz) {
@@ -25,15 +26,15 @@ public class SpringWebMvcAgentIntercept {
       Class.forName("org.springframework.web.method.HandlerMethod");
       // Spring 3.0 doesn't have it
       return thiz;
-    } catch (ClassNotFoundException ignore) {
-      // OK
+    }
+    catch (final ClassNotFoundException ignore) {
     }
 
-    HandlerInterceptor[] interceptors = (HandlerInterceptor[]) thiz;
-    if (interceptors == null || interceptors.length == 0) {
-      return new HandlerInterceptor[]{new TracingHandlerInterceptor(GlobalTracer.get())};
-    }
-    HandlerInterceptor[] interceptorsCopy = new HandlerInterceptor[interceptors.length + 1];
+    final HandlerInterceptor[] interceptors = (HandlerInterceptor[])thiz;
+    if (interceptors == null || interceptors.length == 0)
+      return new HandlerInterceptor[] {new TracingHandlerInterceptor(GlobalTracer.get())};
+
+    final HandlerInterceptor[] interceptorsCopy = new HandlerInterceptor[interceptors.length + 1];
     interceptorsCopy[interceptorsCopy.length - 1] = new TracingHandlerInterceptor(GlobalTracer.get());
     System.arraycopy(interceptors, 0, interceptorsCopy, 0, interceptors.length);
 
