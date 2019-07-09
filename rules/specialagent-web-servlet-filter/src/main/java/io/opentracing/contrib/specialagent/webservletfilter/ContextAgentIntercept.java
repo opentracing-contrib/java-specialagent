@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -25,13 +26,30 @@ public abstract class ContextAgentIntercept {
   public static final String TRACING_FILTER_NAME = "tracingFilter";
   public static final String[] patterns = {"/*"};
 
-  public static Method getFilterMethod(final ServletContext context) {
+  public static Method getMethod(final Class<?> cls, final String name, final Class<?> ... parameterTypes) {
     try {
-      final Method method = context.getClass().getMethod("addFilter", String.class, Filter.class);
+      final Method method = cls.getMethod(name, parameterTypes);
       return Modifier.isAbstract(method.getModifiers()) ? null : method;
     }
     catch (final NoSuchMethodException e) {
       return null;
     }
+  }
+
+  public static boolean invoke(final Object[] returned, final Object obj, final Method method, final Object ... args) {
+    if (method == null)
+      return false;
+
+    try {
+      returned[0] = method.invoke(obj, args);
+      return true;
+    }
+    catch (final IllegalAccessException | InvocationTargetException e) {
+      return false;
+    }
+  }
+
+  public static Method getFilterMethod(final ServletContext context) {
+    return getMethod(context.getClass(), "addFilter", String.class, Filter.class);
   }
 }

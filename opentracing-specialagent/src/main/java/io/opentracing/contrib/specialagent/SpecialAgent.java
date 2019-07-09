@@ -478,28 +478,31 @@ public class SpecialAgent {
    * instrumentation {@link Manager} in the runtime.
    */
   private static void loadRules(final Manager manager) {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>>\n");
-
-    if (pluginsClassLoader == null) {
-      logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
-      return;
-    }
-
     try {
-      // Create map from rule jar URL to its index in allPluginsClassLoader.getURLs()
-      final Map<File,Integer> ruleJarToIndex = new HashMap<>();
-      for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
-        ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>>\n");
 
-      manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
-    }
-    catch (final IOException e) {
-      logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
-    }
+      if (pluginsClassLoader == null) {
+        logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
+        return;
+      }
 
+      try {
+        // Create map from rule jar URL to its index in allPluginsClassLoader.getURLs()
+        final Map<File,Integer> ruleJarToIndex = new HashMap<>();
+        for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
+          ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
+
+        manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
+      }
+      catch (final IOException e) {
+        logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
+      }
+    }
+    finally {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<<\n");
+    }
   }
 
   private static boolean isAgentRunner() {

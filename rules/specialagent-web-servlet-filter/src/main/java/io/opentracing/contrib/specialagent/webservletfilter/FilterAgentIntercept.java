@@ -52,8 +52,11 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
 
     try {
       final Filter filter = (Filter)thiz;
-      final ServletContext servletContext = request.getServletContext() != null ? request.getServletContext() : filterToServletContext.get(filter);
-      final TracingFilter tracingFilter = getFilter(servletContext);
+      final ServletContext[] servletContext = new ServletContext[1];
+      if (!ContextAgentIntercept.invoke(servletContext, request, ContextAgentIntercept.getMethod(request.getClass(), "getServletContext")) || servletContext[0] == null)
+        servletContext[0] = filterToServletContext.get(filter);
+
+      final TracingFilter tracingFilter = getFilter(servletContext[0]);
 
       // If the tracingFilter instance is not a TracingProxyFilter, then it was
       // created with ServletContext#addFilter. Therefore, the intercept of the

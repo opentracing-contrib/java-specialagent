@@ -17,11 +17,13 @@ package io.opentracing.contrib.web.servlet.filter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public final class ClassUtil {
   public static Method getMethod(final Class<?> cls, final String name, final Class<?> ... parameterTypes) {
     try {
-      return cls.getMethod(name, parameterTypes);
+      final Method method = cls.getMethod(name, parameterTypes);
+      return Modifier.isAbstract(method.getModifiers()) ? null : method;
     }
     catch (final NoSuchMethodException e) {
       return null;
