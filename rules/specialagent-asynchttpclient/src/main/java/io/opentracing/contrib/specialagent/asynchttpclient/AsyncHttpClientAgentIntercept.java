@@ -29,11 +29,14 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class AsyncHttpClientAgentIntercept {
+  private static final String COMPONENT_NAME = "java-asynchttpclient";
+
   public static Object enter(final Object request, final Object handler) {
     final Request req = (Request)request;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer
       .buildSpan(req.getMethod())
+      .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
       .withTag(Tags.HTTP_METHOD.getKey(), req.getMethod())
       .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
       .withTag(Tags.HTTP_URL.getKey(), req.getUrl()).start();
