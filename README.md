@@ -384,6 +384,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter)
 1. [Spring @Async and @Scheduled](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core)
 1. [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging)
+1. [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs)
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 

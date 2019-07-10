@@ -70,6 +70,7 @@
     <module>specialagent-grizzly-ahc</module>
     <module>specialagent-grizzly-http-server</module>
     <module>specialagent-reactor</module>
+    <module>specialagent-jaxrs</module>
   </modules>
   <profiles>
     <profile>
