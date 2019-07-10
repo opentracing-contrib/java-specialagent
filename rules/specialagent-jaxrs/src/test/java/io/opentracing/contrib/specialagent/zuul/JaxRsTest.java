@@ -15,18 +15,14 @@
 
 package io.opentracing.contrib.specialagent.zuul;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.mock.MockTracer;
-import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
+
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -34,23 +30,26 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.mock.MockTracer;
+
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
 public class JaxRsTest {
   @Test
-  public void test(MockTracer tracer) throws Exception {
-    Server server = new Server(0);
+  public void test(final MockTracer tracer) throws Exception {
+    final Server server = new Server(0);
     server.setHandler(new AbstractHandler() {
       @Override
-      public void handle(String s, Request request, HttpServletRequest httpServletRequest,
-          HttpServletResponse httpServletResponse) {
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        request.setHandled(true);
+      public void handle(final String target, final Request baseRequest, final HttpServletRequest request, final HttpServletResponse response) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        baseRequest.setHandled(true);
       }
     });
     server.start();
 
-    final int port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
+    final int port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
     final String url = "http://localhost:" + port;
 
     final Client client = ClientBuilder.newClient();

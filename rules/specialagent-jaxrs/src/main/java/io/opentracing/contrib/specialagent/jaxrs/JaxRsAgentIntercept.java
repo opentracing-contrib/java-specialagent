@@ -15,12 +15,13 @@
 
 package io.opentracing.contrib.specialagent.jaxrs;
 
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import javax.ws.rs.client.ClientBuilder;
+
+import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 
 public class JaxRsAgentIntercept {
   public static void enter(final Object thiz) {
-    ClientBuilder builder = (ClientBuilder) thiz;
+    final ClientBuilder builder = (ClientBuilder)thiz;
     builder.register(ClientTracingFeature.class);
   }
 }
