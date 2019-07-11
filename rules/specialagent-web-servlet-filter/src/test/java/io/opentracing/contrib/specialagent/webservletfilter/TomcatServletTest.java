@@ -95,7 +95,7 @@ public class TomcatServletTest {
   @Test
   public void testHelloRequest(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
-    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
+    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").addHeader("F5_test", "value").build();
     final Response response = client.newCall(request).execute();
 
     assertEquals(HttpServletResponse.SC_OK, response.code());
@@ -103,6 +103,10 @@ public class TomcatServletTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(spans.toString(), 1, spans.size());
+
+    assertEquals("value", spans.get(0).tags().get("test"));
+    assertEquals("F5", spans.get(0).tags().get("ServiceName"));
+    assertEquals("TransitTime", spans.get(0).operationName());
   }
 
   public static class SCL implements ServletContextListener {

@@ -159,7 +159,7 @@ public class TracingFilter implements Filter {
         final Enumeration<String> headerNames = httpRequest.getHeaderNames();
 
         while (headerNames.hasMoreElements()) {
-            final String headerName = headerNames.nextElement();
+            final String headerName = headerNames.nextElement().toLowerCase();
             if (headerName.startsWith(headerPrefix)) {
                 return true;
             }
@@ -188,7 +188,7 @@ public class TracingFilter implements Filter {
         if (drivenByHeaders) {
             final Enumeration<String> headerNames = httpRequest.getHeaderNames();
             while (headerNames.hasMoreElements()) {
-                final String headerName = headerNames.nextElement();
+                final String headerName = headerNames.nextElement().toLowerCase();
                 if (headerName.startsWith(headerPrefix)) {
                     span.setTag(headerName.replace(headerPrefix, ""),
                         httpRequest.getHeader(headerName));
@@ -220,7 +220,7 @@ public class TracingFilter implements Filter {
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            String headerPrefix = "F5_"; // TODO: get via config property?
+            String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
             boolean drivenByHeaders = true; // TODO: get via config property?
             final Span span = buildSpan(httpRequest, headerPrefix, drivenByHeaders);
 
