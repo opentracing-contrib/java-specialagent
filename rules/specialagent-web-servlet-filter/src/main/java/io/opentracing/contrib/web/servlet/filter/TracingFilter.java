@@ -230,13 +230,13 @@ public class TracingFilter implements Filter {
                 if (ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) && !isAsyncStarted[0]) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
-                        if (drivenByHeaders) {
-                            for (String headerName : httpResponse.getHeaderNames()) {
-                                headerName = headerName.toLowerCase();
-                                if (headerName.startsWith(headerPrefix)) {
-                                    span.setTag(headerName.replace(headerPrefix, ""),
-                                        httpResponse.getHeader(headerName));
-                                }
+                    }
+                    if (drivenByHeaders) {
+                        for (String headerName : httpResponse.getHeaderNames()) {
+                            headerName = headerName.toLowerCase();
+                            if (headerName.startsWith(headerPrefix)) {
+                                span.setTag(headerName.replace(headerPrefix, ""),
+                                    httpResponse.getHeader(headerName));
                             }
                         }
                     }
