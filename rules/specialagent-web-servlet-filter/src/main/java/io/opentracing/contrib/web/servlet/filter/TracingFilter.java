@@ -232,6 +232,7 @@ public class TracingFilter implements Filter {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
                         if (drivenByHeaders) {
                             for (String headerName : httpResponse.getHeaderNames()) {
+                                headerName = headerName.toLowerCase();
                                 if (headerName.startsWith(headerPrefix)) {
                                     span.setTag(headerName.replace(headerPrefix, ""),
                                         httpResponse.getHeader(headerName));
