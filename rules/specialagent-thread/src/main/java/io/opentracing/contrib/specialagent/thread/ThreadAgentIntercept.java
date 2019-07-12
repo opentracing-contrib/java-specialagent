@@ -19,11 +19,11 @@ package io.opentracing.contrib.specialagent.thread;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadAgentIntercept {
-  private static final Map<Long, Span> cache = new HashMap<>();
+  private static final Map<Long, Span> cache = new ConcurrentHashMap<>();
   private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
 
   public static void start(final Object thiz) {
