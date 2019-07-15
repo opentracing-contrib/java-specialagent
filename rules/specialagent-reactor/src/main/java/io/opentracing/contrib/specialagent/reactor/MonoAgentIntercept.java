@@ -20,9 +20,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.reactor.TracedSubscriber;
 import io.opentracing.util.GlobalTracer;
+import java.util.function.BiFunction;
+import java.util.logging.Logger;
 import reactor.core.publisher.Hooks;
+import reactor.core.publisher.Operators;
 
 public class MonoAgentIntercept {
+  private static final Logger log = Logger.getLogger(MonoAgentIntercept.class.getName());
   public static final AtomicBoolean inited = new AtomicBoolean();
 
   public static void enter() {
@@ -32,6 +36,14 @@ public class MonoAgentIntercept {
     synchronized (inited) {
       if (inited.get())
         return;
+
+      try {
+        Operators.class.getMethod("liftPublisher", BiFunction.class);
+      } catch (NoSuchMethodException e) {
+        log.warning("Reactor version is not supported");
+        inited.set(true);
+        return;
+      }
 
       final Tracer tracer = GlobalTracer.get();
       Hooks.onEachOperator(TracedSubscriber.asOperator(tracer));
