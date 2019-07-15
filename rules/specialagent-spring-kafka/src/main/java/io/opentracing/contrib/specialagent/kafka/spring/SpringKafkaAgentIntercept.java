@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.kafka.spring;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
@@ -31,6 +32,9 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringKafkaAgentIntercept {
+  private static final Logger log = Logger.getLogger(SpringKafkaAgentIntercept.class.getName());
+  private static Boolean isKafkaVersionSupported;
+
   private static class Context {
     private int counter = 1;
     private Scope scope;
@@ -39,7 +43,21 @@ public class SpringKafkaAgentIntercept {
 
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
-  public static void onMessageEnter(Object record) {
+  public static void onMessageEnter(final Object record) {
+    if (isKafkaVersionSupported == null) {
+      try {
+        Class.forName("org.apache.kafka.common.header.Headers");
+        isKafkaVersionSupported = true;
+      }
+      catch (final ClassNotFoundException e) {
+        log.warning("Kafka versions prior to 1.0.0 are not supported");
+        isKafkaVersionSupported = false;
+      }
+    }
+
+    if (!isKafkaVersionSupported)
+      return;
+
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
       return;

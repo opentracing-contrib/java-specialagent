@@ -71,6 +71,7 @@
     <module>specialagent-grizzly-http-server</module>
     <module>specialagent-reactor</module>
     <module>specialagent-jaxrs</module>
+    <module>specialagent-thread</module>
   </modules>
   <profiles>
     <profile>
