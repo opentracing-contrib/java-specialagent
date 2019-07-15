@@ -100,7 +100,7 @@ public class SpringKafkaTest {
     }
 
     @KafkaListener(topics = "spring")
-    public void listen(String message) {
+    public void listen(final String message) {
       assertNotNull(GlobalTracer.get().activeSpan());
       assertEquals("message", message);
       counter.incrementAndGet();
