@@ -41,8 +41,8 @@ public class ThreadAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-              .visit(Advice.to(Run.class).on(named("run")))
-              .visit(Advice.to(RunError.class).on(named("run")));
+            .visit(Advice.to(Run.class).on(named("run")))
+            .visit(Advice.to(RunError.class).on(named("run")));
         }}));
   }
 

@@ -15,27 +15,26 @@
 
 package io.opentracing.contrib.specialagent.thread;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadAgentIntercept {
-  private static final Map<Long, Span> cache = new ConcurrentHashMap<>();
+  private static final Map<Long,Span> cache = new ConcurrentHashMap<>();
   private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
 
   public static void start(final Object thiz) {
-    Thread thread = (Thread) thiz;
+    Thread thread = (Thread)thiz;
     final Span span = GlobalTracer.get().activeSpan();
-    if (span != null) {
+    if (span != null)
       cache.put(thread.getId(), span);
-    }
   }
 
   public static void runEnter(final Object thiz) {
-    Thread thread = (Thread) thiz;
+    final Thread thread = (Thread)thiz;
     final Span span = cache.get(thread.getId());
     if (span != null) {
       final Scope scope = GlobalTracer.get().activateSpan(span);
@@ -43,13 +42,11 @@ public class ThreadAgentIntercept {
     }
   }
 
-  public static void runExit(Object thiz) {
-    Thread thread = (Thread) thiz;
+  public static void runExit(final Object thiz) {
+    final Thread thread = (Thread)thiz;
     cache.remove(thread.getId());
     final Scope scope = scopeHandler.get();
-    if (scope != null) {
+    if (scope != null)
       scope.close();
-    }
-
   }
 }
