@@ -15,11 +15,6 @@
 
 package io.opentracing.contrib.specialagent.kafka.spring;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -29,8 +24,15 @@ import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class SpringKafkaAgentIntercept {
+  private static final Logger log = Logger.getLogger(SpringKafkaAgentIntercept.class.getName());
+
+  private static Boolean isKafkaVersionSupported;
   private static class Context {
     private int counter = 1;
     private Scope scope;
@@ -40,6 +42,20 @@ public class SpringKafkaAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   public static void onMessageEnter(Object record) {
+    if (isKafkaVersionSupported == null) {
+      try {
+        Class.forName("org.apache.kafka.common.header.Headers");
+        isKafkaVersionSupported = true;
+      } catch (ClassNotFoundException e) {
+        log.warning("Kafka prior version 1.0.0 is not supported");
+        isKafkaVersionSupported = false;
+      }
+    }
+
+    if (!isKafkaVersionSupported) {
+      return;
+    }
+
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
       return;
