@@ -18,7 +18,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.noop.NoopSpan;
+import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -27,7 +27,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.servlet.Filter;
@@ -167,16 +170,18 @@ public class TracingFilter implements Filter {
         return false;
     }
 
-    private Span buildSpan(HttpServletRequest httpRequest, String headerPrefix, boolean drivenByHeaders) {
-        if(!isTraced(httpRequest, headerPrefix, drivenByHeaders)) {
-            return NoopSpan.INSTANCE;
+    private Span buildSpan(HttpServletRequest httpRequest, Span f5Span) {
+        SpanContext extractedContext;
+
+        if (f5Span != null) {
+            extractedContext = f5Span.context();
+        } else {
+            extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                new HttpServletRequestExtractAdapter(httpRequest));
         }
 
-        SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-            new HttpServletRequestExtractAdapter(httpRequest));
-
         final Span span = tracer
-            .buildSpan(drivenByHeaders ? "TransitTime" : httpRequest.getMethod())
+            .buildSpan(httpRequest.getMethod())
             .asChildOf(extractedContext)
             .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
             .start();
@@ -185,19 +190,59 @@ public class TracingFilter implements Filter {
             spanDecorator.onRequest(httpRequest, span);
         }
 
-        if (drivenByHeaders) {
-            final Enumeration<String> headerNames = httpRequest.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                final String headerName = headerNames.nextElement().toLowerCase();
-                if (headerName.startsWith(headerPrefix)) {
-                    span.setTag(headerName.replace(headerPrefix, ""),
+        httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
+
+        return span;
+    }
+
+    private Span buildF5Span(HttpServletRequest httpRequest, String headerPrefix,
+        boolean drivenByHeaders) {
+        if (!isTraced(httpRequest, headerPrefix, drivenByHeaders)) {
+            return null;
+        }
+
+        SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+            new HttpServletRequestExtractAdapter(httpRequest));
+
+        Map<String, String> tags = new HashMap<>();
+        final Enumeration<String> headerNames = httpRequest.getHeaderNames();
+        Long ingressTime = null;
+        while (headerNames.hasMoreElements()) {
+            final String headerName = headerNames.nextElement().toLowerCase();
+            if (headerName.startsWith(headerPrefix)) {
+                if(headerName.equals(headerPrefix + "ingresstime")) {
+                    try {
+                        ingressTime = Long.parseLong(httpRequest.getHeader(headerName));
+                    } catch (NumberFormatException e) {
+                        log.warning("failed to parse header: " + headerName + " value: " + httpRequest.getHeader(headerName));
+                        tags.put(headerName.replace(headerPrefix, ""),
+                            httpRequest.getHeader(headerName));
+                    }
+                } else {
+                    tags.put(headerName.replace(headerPrefix, ""),
                         httpRequest.getHeader(headerName));
                 }
             }
-            span.setTag("ServiceName", "F5"); // TODO: get via config property?
         }
 
-        httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
+        final SpanBuilder spanBuilder = tracer
+            .buildSpan("TransitTime")
+            .asChildOf(extractedContext)
+            .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER);
+        if (ingressTime != null) {
+            spanBuilder.withStartTimestamp(ingressTime);
+        }
+        for (Entry<String, String> entry : tags.entrySet()) {
+            spanBuilder.withTag(entry.getKey(), entry.getValue());
+        }
+        final Span span = spanBuilder.start();
+
+
+        for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+            spanDecorator.onRequest(httpRequest, span);
+        }
+        span.setTag(Tags.COMPONENT, "F5"); // TODO: get via config property?
+        span.setTag("ServiceName", "F5"); // TODO: get via config property?
 
         return span;
     }
@@ -222,21 +267,36 @@ public class TracingFilter implements Filter {
         } else {
             String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
             boolean drivenByHeaders = true; // TODO: get via config property?
-            final Span span = buildSpan(httpRequest, headerPrefix, drivenByHeaders);
+            final Span f5Span = buildF5Span(httpRequest, headerPrefix, drivenByHeaders);
+            final Span span = buildSpan(httpRequest, f5Span);
 
             final Boolean[] isAsyncStarted = new Boolean[] {false};
+            Long egresstime = null;
             try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
                 if (ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) && !isAsyncStarted[0]) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
                     }
-                    if (drivenByHeaders) {
+                    if (f5Span != null) {
                         for (String headerName : httpResponse.getHeaderNames()) {
                             headerName = headerName.toLowerCase();
                             if (headerName.startsWith(headerPrefix)) {
-                                span.setTag(headerName.replace(headerPrefix, ""),
-                                    httpResponse.getHeader(headerName));
+                                if (headerName.equals(headerPrefix + "egresstime")) {
+                                    try {
+                                        egresstime = Long
+                                            .parseLong(httpResponse.getHeader(headerName));
+                                    } catch (NumberFormatException e) {
+                                        log.warning(
+                                            "failed to parse header: " + headerName + " value: "
+                                                + httpRequest.getHeader(headerName));
+                                        f5Span.setTag(headerName.replace(headerPrefix, ""),
+                                            httpResponse.getHeader(headerName));
+                                    }
+                                } else {
+                                    f5Span.setTag(headerName.replace(headerPrefix, ""),
+                                        httpResponse.getHeader(headerName));
+                                }
                             }
                         }
                     }
@@ -257,6 +317,13 @@ public class TracingFilter implements Filter {
                     // This is necessary, as we don't know whether this request is being handled
                     // asynchronously until after the scope has already been started.
                     span.finish();
+                }
+                if (f5Span != null) {
+                    if (egresstime != null) {
+                        f5Span.finish(egresstime);
+                    } else {
+                        f5Span.finish();
+                    }
                 }
             }
         }

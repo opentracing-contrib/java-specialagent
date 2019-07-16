@@ -61,7 +61,9 @@ public class JettyServletTest {
   private Server server;
 
   @Before
-  public void beforeTest() throws Exception {
+  public void beforeTest(MockTracer tracer) throws Exception {
+    tracer.reset();
+
     MockFilter.count = 0;
 
     server = new Server(0);
@@ -80,9 +82,32 @@ public class JettyServletTest {
   }
 
   @Test
+  public void testHelloF5Request(final MockTracer tracer) throws IOException {
+    final OkHttpClient client = new OkHttpClient();
+    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello")
+        .addHeader("F5_test", "value")
+        .addHeader("F5_ingressTime", "123")
+        .build();
+    final Response response = client.newCall(request).execute();
+
+    assertEquals(HttpServletResponse.SC_OK, response.code());
+    assertEquals(1, MockFilter.count);
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(spans.toString(), 2, spans.size());
+
+    assertEquals("value", spans.get(1).tags().get("test"));
+    assertEquals("F5", spans.get(1).tags().get("ServiceName"));
+    assertEquals("TransitTime", spans.get(1).operationName());
+    assertEquals(123, spans.get(1).startMicros());
+    assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
+    assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
+  }
+
+  @Test
   public void testHelloRequest(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
-    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").addHeader("F5_test", "value").build();
+    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
     final Response response = client.newCall(request).execute();
 
     assertEquals(HttpServletResponse.SC_OK, response.code());
@@ -91,9 +116,7 @@ public class JettyServletTest {
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(spans.toString(), 1, spans.size());
 
-    assertEquals("value", spans.get(0).tags().get("test"));
-    assertEquals("F5", spans.get(0).tags().get("ServiceName"));
-    assertEquals("TransitTime", spans.get(0).operationName());
+    assertEquals("GET", spans.get(0).operationName());
   }
 
   @After
