@@ -35,7 +35,9 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,7 +61,8 @@ public class TomcatServletTest {
   private Tomcat tomcatServer;
 
   @Before
-  public void beforeTest() throws LifecycleException {
+  public void beforeTest(final MockTracer tracer) throws LifecycleException {
+    tracer.reset();
     MockFilter.count = 0;
 
     tomcatServer = new Tomcat();
@@ -93,7 +96,7 @@ public class TomcatServletTest {
   }
 
   @Test
-  public void testHelloRequest(final MockTracer tracer) throws IOException {
+  public void testHelloF5Request(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").addHeader("F5_test", "value").build();
     final Response response = client.newCall(request).execute();
@@ -102,11 +105,28 @@ public class TomcatServletTest {
     assertEquals(1, MockFilter.count);
 
     final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(spans.toString(), 2, spans.size());
+
+    assertEquals("value", spans.get(1).tags().get("test"));
+    assertEquals("F5", spans.get(1).tags().get("ServiceName"));
+    assertEquals("TransitTime", spans.get(1).operationName());
+    assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
+    assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
+  }
+
+  @Test
+  public void testHelloRequest(final MockTracer tracer) throws IOException {
+    final OkHttpClient client = new OkHttpClient();
+    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
+    final Response response = client.newCall(request).execute();
+
+    assertEquals(HttpServletResponse.SC_OK, response.code());
+    assertEquals(1, MockFilter.count);
+
+    final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(spans.toString(), 1, spans.size());
 
-    assertEquals("value", spans.get(0).tags().get("test"));
-    assertEquals("F5", spans.get(0).tags().get("ServiceName"));
-    assertEquals("TransitTime", spans.get(0).operationName());
+    assertEquals("GET", spans.get(0).operationName());
   }
 
   public static class SCL implements ServletContextListener {
@@ -124,5 +144,6 @@ public class TomcatServletTest {
   @After
   public void afterTest() throws LifecycleException {
     tomcatServer.stop();
+    tomcatServer.destroy();
   }
 }
