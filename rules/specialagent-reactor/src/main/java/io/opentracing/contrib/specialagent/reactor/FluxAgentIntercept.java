@@ -16,17 +16,16 @@
 package io.opentracing.contrib.specialagent.reactor;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.reactor.TracedSubscriber;
+import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.util.GlobalTracer;
-import java.util.function.BiFunction;
-import java.util.logging.Logger;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Operators;
 
 public class FluxAgentIntercept {
-  private static final Logger log = Logger.getLogger(FluxAgentIntercept.class.getName());
   public static final AtomicBoolean inited = new AtomicBoolean();
 
   public static void enter() {
@@ -39,8 +38,9 @@ public class FluxAgentIntercept {
 
       try {
         Operators.class.getMethod("liftPublisher", BiFunction.class);
-      } catch (NoSuchMethodException e) {
-        log.warning("Reactor version is not supported");
+      }
+      catch (final NoSuchMethodException e) {
+        AgentRule.logger.warning("Reactor version is not supported");
         inited.set(true);
         return;
       }
