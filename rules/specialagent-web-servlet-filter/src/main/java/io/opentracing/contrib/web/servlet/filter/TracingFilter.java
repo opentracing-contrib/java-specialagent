@@ -168,39 +168,38 @@ public class TracingFilter implements Filter {
     }
 
     private Span buildSpan(HttpServletRequest httpRequest, String headerPrefix, boolean drivenByHeaders) {
-      httpRequest.
-        if(!isTraced(httpRequest, headerPrefix, drivenByHeaders)) {
-            return NoopSpan.INSTANCE;
-        }
+      if(!isTraced(httpRequest, headerPrefix, drivenByHeaders)) {
+          return NoopSpan.INSTANCE;
+      }
 
-        SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-            new HttpServletRequestExtractAdapter(httpRequest));
+      SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+          new HttpServletRequestExtractAdapter(httpRequest));
 
-        final Span span = tracer
-            .buildSpan(drivenByHeaders ? "TransitTime" : httpRequest.getMethod())
-            .asChildOf(extractedContext)
-            .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-            .start();
+      final Span span = tracer
+          .buildSpan(drivenByHeaders ? "TransitTime" : httpRequest.getMethod())
+          .asChildOf(extractedContext)
+          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+          .start();
 
-        for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-            spanDecorator.onRequest(httpRequest, span);
-        }
+      for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+          spanDecorator.onRequest(httpRequest, span);
+      }
 
-        if (drivenByHeaders) {
-            final Enumeration<String> headerNames = httpRequest.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                final String headerName = headerNames.nextElement().toLowerCase();
-                if (headerName.startsWith(headerPrefix)) {
-                    span.setTag(headerName.replace(headerPrefix, ""),
-                        httpRequest.getHeader(headerName));
-                }
-            }
-            span.setTag("ServiceName", "F5"); // TODO: get via config property?
-        }
+      if (drivenByHeaders) {
+          final Enumeration<String> headerNames = httpRequest.getHeaderNames();
+          while (headerNames.hasMoreElements()) {
+              final String headerName = headerNames.nextElement().toLowerCase();
+              if (headerName.startsWith(headerPrefix)) {
+                  span.setTag(headerName.replace(headerPrefix, ""),
+                      httpRequest.getHeader(headerName));
+              }
+          }
+          span.setTag("ServiceName", "F5"); // TODO: get via config property?
+      }
 
-        httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
+      httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
 
-        return span;
+      return span;
     }
 
     @Override
