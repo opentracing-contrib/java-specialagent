@@ -45,6 +45,7 @@
       <artifactId>opentracing-grizzly-ahc</artifactId>
       <version>0.1.2</version>
       <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
