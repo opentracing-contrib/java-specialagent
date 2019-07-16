@@ -172,7 +172,7 @@ public final class SpecialAgentUtil {
             logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
         }
         else {
-          final String jarName = getName(location.toString());
+          final String jarName = getName(location.getPath());
           if (!jarName.equals(bootClassPathManifestEntry))
             throw new IllegalStateException("Name of -javaagent JAR, which is currently " + jarName + ", must be: " + bootClassPathManifestEntry);
         }
