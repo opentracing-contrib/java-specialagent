@@ -30,14 +30,14 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>spring-webflux</sa.plugin.name>
-    <spring.boot.version>2.1.3.RELEASE</spring.boot.version>
-    <version.jetty>9.3.15.v20161220</version.jetty>
+    <spring.boot.version>2.1.6.RELEASE</spring.boot.version>
+    <version.jetty>9.4.19.v20190610</version.jetty>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webflux</artifactId>
-      <version>5.1.6.RELEASE</version>
+      <version>5.1.8.RELEASE</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
