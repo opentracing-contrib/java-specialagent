@@ -14,22 +14,14 @@
  */
 package io.opentracing.contrib.web.servlet.filter;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.noop.NoopSpan;
-import io.opentracing.propagation.Format;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -39,6 +31,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 
 /**
  * Tracing servlet filter.
@@ -151,58 +151,6 @@ public class TracingFilter implements Filter {
         }
     }
 
-    private boolean isTraced(HttpServletRequest httpRequest, String headerPrefix,
-        boolean drivenByHeaders) {
-        if (!drivenByHeaders) {
-            return true;
-        }
-        final Enumeration<String> headerNames = httpRequest.getHeaderNames();
-
-        while (headerNames.hasMoreElements()) {
-            final String headerName = headerNames.nextElement().toLowerCase();
-            if (headerName.startsWith(headerPrefix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Span buildSpan(HttpServletRequest httpRequest, String headerPrefix, boolean drivenByHeaders) {
-      httpRequest.
-        if(!isTraced(httpRequest, headerPrefix, drivenByHeaders)) {
-            return NoopSpan.INSTANCE;
-        }
-
-        SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-            new HttpServletRequestExtractAdapter(httpRequest));
-
-        final Span span = tracer
-            .buildSpan(drivenByHeaders ? "TransitTime" : httpRequest.getMethod())
-            .asChildOf(extractedContext)
-            .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-            .start();
-
-        for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-            spanDecorator.onRequest(httpRequest, span);
-        }
-
-        if (drivenByHeaders) {
-            final Enumeration<String> headerNames = httpRequest.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                final String headerName = headerNames.nextElement().toLowerCase();
-                if (headerName.startsWith(headerPrefix)) {
-                    span.setTag(headerName.replace(headerPrefix, ""),
-                        httpRequest.getHeader(headerName));
-                }
-            }
-            span.setTag("ServiceName", "F5"); // TODO: get via config property?
-        }
-
-        httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
-
-        return span;
-    }
-
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
             throws IOException, ServletException {
@@ -221,9 +169,19 @@ public class TracingFilter implements Filter {
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
-            boolean drivenByHeaders = true; // TODO: get via config property?
-            final Span span = buildSpan(httpRequest, headerPrefix, drivenByHeaders);
+            SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                    new HttpServletRequestExtractAdapter(httpRequest));
+
+            final Span span = tracer.buildSpan(httpRequest.getMethod())
+                    .asChildOf(extractedContext)
+                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+                    .start();
+
+            httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
+
+            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+                spanDecorator.onRequest(httpRequest, span);
+            }
 
             final Boolean[] isAsyncStarted = new Boolean[] {false};
             try (Scope scope = tracer.activateSpan(span)) {
@@ -231,15 +189,6 @@ public class TracingFilter implements Filter {
                 if (ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) && !isAsyncStarted[0]) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
-                    }
-                    if (drivenByHeaders) {
-                        for (String headerName : httpResponse.getHeaderNames()) {
-                            headerName = headerName.toLowerCase();
-                            if (headerName.startsWith(headerPrefix)) {
-                                span.setTag(headerName.replace(headerPrefix, ""),
-                                    httpResponse.getHeader(headerName));
-                            }
-                        }
                     }
                 }
             // catch all exceptions (e.g. RuntimeException, ServletException...)
