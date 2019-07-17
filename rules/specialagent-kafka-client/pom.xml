@@ -33,17 +33,17 @@
     <kafka.version>2.0.1</kafka.version>
   </properties>
   <dependencies>
+    <dependency>
       <!-- https://github.com/opentracing-contrib/java-kafka-client -->
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-kafka-client</artifactId>
-        <version>0.1.3</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-          </exclusion>
-        </exclusions>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-kafka-client</artifactId>
+      <version>0.1.3</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>

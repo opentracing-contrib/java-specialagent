@@ -32,8 +32,8 @@
     <sa.plugin.name>thrift</sa.plugin.name>
   </properties>
   <dependencies>
-    <!-- https://github.com/opentracing-contrib/java-thrift -->
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-thrift -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-thrift</artifactId>
       <version>0.1.1</version>

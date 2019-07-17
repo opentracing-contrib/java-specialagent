@@ -33,8 +33,8 @@
     <version.apache.logging>2.11.2</version.apache.logging>
   </properties>
   <dependencies>
-    <!-- https://github.com/opentracing-contrib/java-elasticsearch-client -->
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-elasticsearch-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-elasticsearch-client-common</artifactId>
       <version>0.1.2</version>
