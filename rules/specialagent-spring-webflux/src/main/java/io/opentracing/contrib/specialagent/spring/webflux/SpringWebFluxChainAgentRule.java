@@ -37,6 +37,13 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(Chain.class).on(named("initChain")));
         }})
+      // in spring-webflux 5.0.x DefaultWebFilterChain.initChain() doesn't exist therefore use WebHttpHandlerBuilder$SortedBeanContainer.getFilters():
+      .type(named("org.springframework.web.server.adapter.WebHttpHandlerBuilder$SortedBeanContainer"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(Filters.class).on(named("getFilters")));
+        }})
       .type(hasSuperType(named("org.springframework.web.reactive.function.client.WebClient$Builder")))
       .transform(new Transformer() {
         @Override
@@ -50,6 +57,14 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(typing = Typing.DYNAMIC, readOnly = false, value = 0) Object filters) {
       if (isEnabled(origin))
         filters = SpringWebFluxAgentIntercept.filters(filters);
+    }
+  }
+
+  public static class Filters {
+    @Advice.OnMethodExit
+    public static void enter(final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
+      if (isEnabled(origin))
+        returned = SpringWebFluxAgentIntercept.filters(returned);
     }
   }
 
