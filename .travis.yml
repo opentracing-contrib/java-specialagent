@@ -19,7 +19,7 @@ jdk:
 - oraclejdk8
 - oraclejdk9
 #- oraclejdk10
-#- oraclejdk11
+- oraclejdk11
 install:
 - cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
 script:
