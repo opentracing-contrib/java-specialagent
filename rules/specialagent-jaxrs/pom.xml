@@ -41,6 +41,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-jaxrs -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jaxrs2</artifactId>
       <version>0.5.0</version>

@@ -18,6 +18,7 @@
   </properties>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-lettuce</artifactId>
       <version>0.1.7</version>

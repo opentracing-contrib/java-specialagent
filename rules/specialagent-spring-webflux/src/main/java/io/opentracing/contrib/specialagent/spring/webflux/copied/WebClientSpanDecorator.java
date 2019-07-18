@@ -15,11 +15,10 @@ package io.opentracing.contrib.specialagent.spring.webflux.copied;
 
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
-import org.springframework.web.reactive.function.client.ClientRequest;
-import org.springframework.web.reactive.function.client.ClientResponse;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
 
 /**
  * Decorate span by adding tags/logs or operation name change.
@@ -82,8 +81,15 @@ public interface WebClientSpanDecorator {
     }
 
     @Override
-    public void onResponse(final ClientRequest clientRequest, final ClientResponse clientResponse, final Span span) {
-      Tags.HTTP_STATUS.set(span, clientResponse.rawStatusCode());
+    public void onResponse(final ClientRequest clientRequest, final ClientResponse clientResponse,
+        final Span span) {
+      try {
+        // spring-webflux 5.0.x doesn't have "rawStatusCode" method
+        ClientResponse.class.getDeclaredMethod("rawStatusCode");
+        Tags.HTTP_STATUS.set(span, clientResponse.rawStatusCode());
+      } catch (NoSuchMethodException e) {
+        Tags.HTTP_STATUS.set(span, clientResponse.statusCode().value());
+      }
     }
 
     @Override

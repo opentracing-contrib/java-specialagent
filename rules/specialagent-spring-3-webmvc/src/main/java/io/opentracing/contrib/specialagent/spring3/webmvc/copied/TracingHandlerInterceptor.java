@@ -28,7 +28,6 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
@@ -41,6 +40,7 @@ import io.opentracing.contrib.web.servlet.filter.TracingFilter;
  * @author Pavol Loffay
  */
 public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
+  public static final String SERVER_SPAN_CONTEXT = "io.opentracing.contrib.web.servlet.filter.TracingFilter.activeSpanContext";
 
   private static final String SCOPE_STACK = TracingHandlerInterceptor.class.getName() + ".scopeStack";
   private static final String CONTINUATION_FROM_ASYNC_STARTED = TracingHandlerInterceptor.class.getName() + ".continuation";
@@ -73,7 +73,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
    */
   static boolean isTraced(HttpServletRequest httpServletRequest) {
     // exclude pattern, span is not started in filter
-    return httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) instanceof SpanContext;
+    return httpServletRequest.getAttribute(SERVER_SPAN_CONTEXT) instanceof SpanContext;
   }
 
   @Override
@@ -97,7 +97,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
       } else {
         // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
         serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-            .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
+            .addReference(References.FOLLOWS_FROM, (SpanContext) httpServletRequest.getAttribute(SERVER_SPAN_CONTEXT))
             .start();
         httpServletRequest.setAttribute(IS_ERROR_HANDLING_SPAN, true);
         activeSpanStack.push(tracer.activateSpan(serverSpan));

@@ -33,6 +33,7 @@
   </properties>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-redisson</artifactId>
       <version>${opentracing.redis.version}</version>

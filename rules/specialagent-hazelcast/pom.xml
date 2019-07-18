@@ -34,6 +34,7 @@
   </properties>
   <dependencies>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-hazelcast -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-hazelcast</artifactId>
       <version>0.1.1</version>

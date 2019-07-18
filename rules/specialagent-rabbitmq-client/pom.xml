@@ -32,8 +32,8 @@
     <sa.plugin.name>rabbitmq-client</sa.plugin.name>
   </properties>
   <dependencies>
-    <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
       <version>0.1.4</version>
