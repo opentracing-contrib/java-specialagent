@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -163,11 +164,7 @@ public class TracingFilter implements Filter {
         }
     }
 
-    private boolean isTraced(HttpServletRequest httpRequest, String headerPrefix,
-        boolean drivenByHeaders) {
-        if (!drivenByHeaders) {
-            return true;
-        }
+    private boolean isTraced(HttpServletRequest httpRequest, String headerPrefix) {
         final Enumeration<String> headerNames = httpRequest.getHeaderNames();
 
         while (headerNames.hasMoreElements()) {
@@ -204,9 +201,8 @@ public class TracingFilter implements Filter {
         return span;
     }
 
-    private Span buildF5Span(HttpServletRequest httpRequest, String headerPrefix,
-        boolean drivenByHeaders) {
-        if (!isTraced(httpRequest, headerPrefix, drivenByHeaders)) {
+    private Span buildF5Span(HttpServletRequest httpRequest, String headerPrefix) {
+        if (!isTraced(httpRequest, headerPrefix)) {
             return null;
         }
 
@@ -245,6 +241,7 @@ public class TracingFilter implements Filter {
             spanBuilder.withTag(entry.getKey(), entry.getValue());
         }
         final Span span = spanBuilder.start();
+        log.log(Level.FINER, ">> [F5] started TransitTime span " + span.context().toSpanId() + " with start time " + ingressTime);
 
 
         for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
@@ -275,8 +272,7 @@ public class TracingFilter implements Filter {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
-            boolean drivenByHeaders = true; // TODO: get via config property?
-            final Span f5Span = buildF5Span(httpRequest, headerPrefix, drivenByHeaders);
+            final Span f5Span = buildF5Span(httpRequest, headerPrefix);
             final Span span = buildSpan(httpRequest, f5Span);
 
             final Boolean[] isAsyncStarted = new Boolean[] {false};
@@ -333,6 +329,7 @@ public class TracingFilter implements Filter {
                     } else {
                         f5Span.finish();
                     }
+                    log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.context().toSpanId() + " with finish time " + egresstime);
                 }
             }
         }
