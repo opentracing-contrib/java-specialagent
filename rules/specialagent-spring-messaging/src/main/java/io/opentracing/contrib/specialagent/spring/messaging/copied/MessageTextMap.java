@@ -34,10 +34,13 @@ public class MessageTextMap<T> implements TextMap {
 
   private final Set<String> byteHeaders;
 
-  public MessageTextMap(Message<T> message) {
+  private final boolean isKafkaBinder;
+
+  public MessageTextMap(Message<T> message, boolean isKafkaBinder) {
     this.message = message;
     this.headers = new MutableMessageHeaders(message.getHeaders());
     this.byteHeaders = new HashSet<>();
+    this.isKafkaBinder = isKafkaBinder;
   }
 
   @Override
@@ -60,7 +63,12 @@ public class MessageTextMap<T> implements TextMap {
 
   @Override
   public void put(String key, String value) {
-    headers.put(key, byteHeaders.contains(key) ? value.getBytes() : value);
+    if (isKafkaBinder) {
+      // for Kafka value must be byte array
+      headers.put(key, value.getBytes());
+    } else {
+      headers.put(key, byteHeaders.contains(key) ? value.getBytes() : value);
+    }
   }
 
   public Message<T> getMessage() {
