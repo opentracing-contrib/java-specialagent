@@ -41,9 +41,30 @@ public class OpenTracingChannelInterceptor extends ChannelInterceptorAdapter imp
   static final String COMPONENT_NAME = "spring-messaging";
 
   private final Tracer tracer;
+  private final boolean isKafkaBinder;
 
   public OpenTracingChannelInterceptor(Tracer tracer) {
     this.tracer = tracer;
+    this.isKafkaBinder = isKafkaBinder();
+  }
+
+  /**
+   * Check if Kafka Binder is used. In case of two binders (Rabbit and Kafka) in the classpath there
+   * is no way to determine is Kafka or Rabbit is used.
+   */
+  private static boolean isKafkaBinder() {
+    try {
+      Class.forName("org.springframework.cloud.stream.binder.rabbit.RabbitMessageChannelBinder");
+      return false;
+    } catch (ClassNotFoundException ignore) {
+    }
+
+    try {
+      Class.forName("org.springframework.cloud.stream.binder.kafka.KafkaMessageChannelBinder");
+      return true;
+    } catch (ClassNotFoundException ignore) {
+    }
+    return false;
   }
 
   @Override
@@ -56,7 +77,7 @@ public class OpenTracingChannelInterceptor extends ChannelInterceptorAdapter imp
         .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
         .withTag(Tags.MESSAGE_BUS_DESTINATION.getKey(), getChannelName(channel));
 
-    MessageTextMap<?> carrier = new MessageTextMap<>(message);
+    MessageTextMap<?> carrier = new MessageTextMap<>(message, isKafkaBinder);
     SpanContext extractedContext = tracer.extract(Format.Builtin.TEXT_MAP, carrier);
     if (isConsumer) {
       spanBuilder.addReference(References.FOLLOWS_FROM, extractedContext);
