@@ -329,7 +329,7 @@ public class TracingFilter implements Filter {
                     } else {
                         f5Span.finish();
                     }
-                    log.log(Level.FINER, ">> [F5] finished TransitTime span " + span.context().toSpanId() + " with finish time " + egresstime);
+                    log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.context().toSpanId() + " with finish time " + egresstime);
                 }
             }
         }
