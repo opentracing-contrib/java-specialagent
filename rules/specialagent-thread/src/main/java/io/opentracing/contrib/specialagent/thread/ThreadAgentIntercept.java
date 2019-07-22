@@ -35,7 +35,7 @@ public class ThreadAgentIntercept {
       else
         cache = new ConcurrentHashMap<>();
     }
-    catch (final IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException | ClassNotFoundException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
       throw new ExceptionInInitializerError();
     }
   }
