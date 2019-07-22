@@ -29,6 +29,7 @@ public class ThreadAgentIntercept {
   private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
 
   static {
+    System.out.println("Current class loader: " + ThreadAgentIntercept.class.getClassLoader());
     try {
       if (ThreadAgentIntercept.class.getClassLoader() != null)
         cache = (Map<Long,Span>)BootProxyClassLoader.INSTANCE.loadClass(ThreadAgentIntercept.class.getName()).getField("cache").get(null);
@@ -45,11 +46,14 @@ public class ThreadAgentIntercept {
     final Span span = GlobalTracer.get().activeSpan();
     if (span != null)
       cache.put(thread.getId(), span);
+
+    System.out.println("start(" + thiz + " " + thread.getId() + "): " + span + "     " + System.identityHashCode(cache) + "     " + ThreadAgentRule.class.getClassLoader());
   }
 
   public static void runEnter(final Object thiz) {
     final Thread thread = (Thread)thiz;
     final Span span = cache.get(thread.getId());
+    System.out.println("enter(" + thiz + " " + thread.getId() + "): " + span + "     " + System.identityHashCode(cache) + "     " + ThreadAgentRule.class.getClassLoader());
     if (span != null) {
       final Scope scope = GlobalTracer.get().activateSpan(span);
       scopeHandler.set(scope);
@@ -59,6 +63,7 @@ public class ThreadAgentIntercept {
   public static void runExit(final Object thiz) {
     final Thread thread = (Thread)thiz;
     final Span span = cache.remove(thread.getId());
+    System.out.println("exit(" + thiz + " " + thread.getId() + "): " + span + "     " + System.identityHashCode(cache) + "     " + ThreadAgentRule.class.getClassLoader());
     final Scope scope = scopeHandler.get();
     if (scope != null)
       scope.close();
