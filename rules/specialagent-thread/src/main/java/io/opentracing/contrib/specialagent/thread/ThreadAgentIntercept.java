@@ -20,11 +20,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.BootProxyClassLoader;
 import io.opentracing.util.GlobalTracer;
 
+@SuppressWarnings("unchecked")
 public class ThreadAgentIntercept {
-  private static final Map<Long,Span> cache = new ConcurrentHashMap<>();
+  public static final Map<Long,Span> cache;
   private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
+
+  static {
+    try {
+      if (ThreadAgentIntercept.class.getClassLoader() != null)
+        cache = (Map<Long,Span>)BootProxyClassLoader.INSTANCE.loadClass(ThreadAgentIntercept.class.getName()).getField("cache").get(null);
+      else
+        cache = new ConcurrentHashMap<>();
+    }
+    catch (final IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException | ClassNotFoundException e) {
+      throw new ExceptionInInitializerError();
+    }
+  }
 
   public static void start(final Object thiz) {
     Thread thread = (Thread)thiz;
@@ -44,7 +58,7 @@ public class ThreadAgentIntercept {
 
   public static void runExit(final Object thiz) {
     final Thread thread = (Thread)thiz;
-    cache.remove(thread.getId());
+    final Span span = cache.remove(thread.getId());
     final Scope scope = scopeHandler.get();
     if (scope != null)
       scope.close();

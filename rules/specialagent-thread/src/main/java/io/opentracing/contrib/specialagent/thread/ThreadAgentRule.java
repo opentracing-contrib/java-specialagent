@@ -31,16 +31,12 @@ public class ThreadAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(named("java.lang.Thread"))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Start.class).on(named("start")));
-        }})
+      .type(hasSuperType(named("java.lang.Thread")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
+            .visit(Advice.to(Start.class).on(named("start")))
             .visit(Advice.to(Run.class).on(named("run")))
             .visit(Advice.to(RunError.class).on(named("run")));
         }}));
@@ -62,15 +58,16 @@ public class ThreadAgentRule extends AgentRule {
     }
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.This Object thiz) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(origin))
         ThreadAgentIntercept.runExit(thiz);
     }
   }
 
   public static class RunError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Thrown Throwable thrown, final @Advice.This Object thiz) {
-      if (thrown != null)
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.This Object thiz) {
+      if (isEnabled(origin) && thrown != null)
         ThreadAgentIntercept.runExit(thiz);
     }
   }

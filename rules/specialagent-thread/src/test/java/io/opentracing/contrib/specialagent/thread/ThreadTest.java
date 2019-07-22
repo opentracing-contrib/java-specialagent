@@ -29,6 +29,7 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
+@AgentRunner.Config(isolateClassLoader = false)
 public class ThreadTest {
   @Before
   public void before(final MockTracer tracer) {
@@ -56,8 +57,7 @@ public class ThreadTest {
     assertNull(GlobalTracer.get().activeSpan());
   }
 
-  // FIXME: this test is failing
-  // @Test
+  @Test
   public void testNoRunnable(final MockTracer tracer) throws InterruptedException {
     final AtomicBoolean foundSpan = new AtomicBoolean(false);
     final Thread thread = new Thread() {
