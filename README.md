@@ -222,7 +222,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenTracing-compatible 
 
 1. **Internal [<ins>Tracer Plugins</ins>](#43-tracer-plugin)**
 
-    The [<ins>SpecialAgent</ins>](#41-specialagent) includes the collowing [<ins>Tracer Plugins</ins>](#43-tracer-plugin):
+    The [<ins>SpecialAgent</ins>](#41-specialagent) includes the following [<ins>Tracer Plugins</ins>](#43-tracer-plugin):
 
     1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
     1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
@@ -391,8 +391,9 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
 The following OpenTracing tracer service providers have [<ins>Tracer Plugins</ins>](#43-tracer-plugin) implemented.
+Here is a [demo](https://github.com/opentracing-contrib/java-specialagent-demo).
 
-1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
+1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle), [Configuration reference](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment)
 1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
 
 ### 6.3 [<ins>Instrumented libraries by existing rules</ins>](#46-instrumented-libs)
