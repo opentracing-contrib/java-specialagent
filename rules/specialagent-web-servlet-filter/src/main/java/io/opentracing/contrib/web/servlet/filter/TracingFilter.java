@@ -243,6 +243,13 @@ public class TracingFilter implements Filter {
         }
         final Span span = spanBuilder.start();
         f5Span.span = span;
+        final StringBuilder builder = new StringBuilder(">> [F5] Request headers for: " + f5Span.span.context().toSpanId() + " ");
+        final Enumeration<String> headers = httpRequest.getHeaderNames();
+        while (headers.hasMoreElements()) {
+          final String headerName = headers.nextElement();
+          builder.append(headerName).append(": \"").append(httpRequest.getHeader(headerName)).append("\",");
+        }
+        log.log(Level.FINER, builder.toString());
         log.log(Level.FINER, ">> [F5] started TransitTime span " + span.context().toSpanId() + " with start time " + f5Span.ingressTime);
 
 
@@ -347,6 +354,10 @@ public class TracingFilter implements Filter {
                         } else {
                             f5Span.span.finish();
                         }
+                    }
+                    final StringBuilder builder = new StringBuilder(">> [F5] Response headers for: " + f5Span.span.context().toSpanId() + " ");
+                    for (final String headerName : httpResponse.getHeaderNames()) {
+                      builder.append(headerName).append(": \"").append(httpResponse.getHeader(headerName)).append("\",");
                     }
                     log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.span.context().toSpanId() + " with finish time " + f5Span.egressTime);
                 }
