@@ -19,6 +19,7 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import static org.junit.Assert.*;
 
+import io.opentracing.tag.Tags;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -107,9 +108,12 @@ public class TomcatServletTest {
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(spans.toString(), 2, spans.size());
 
-    assertEquals("value", spans.get(1).tags().get("test"));
-    assertEquals("F5", spans.get(1).tags().get("ServiceName"));
-    assertEquals("TransitTime", spans.get(1).operationName());
+    MockSpan f5Span = spans.get(1);
+    assertEquals("value", f5Span.tags().get("test"));
+    assertEquals("F5", f5Span.tags().get("ServiceName"));
+    assertEquals("TransitTime", f5Span.operationName());
+    assertEquals(Boolean.TRUE, f5Span.tags().get(Tags.ERROR.getKey()));
+    assertFalse(f5Span.logEntries().isEmpty());
     assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
     assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
   }
