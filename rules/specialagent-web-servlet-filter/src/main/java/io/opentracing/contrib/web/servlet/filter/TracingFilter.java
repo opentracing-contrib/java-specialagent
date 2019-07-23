@@ -176,11 +176,11 @@ public class TracingFilter implements Filter {
         return false;
     }
 
-    private Span buildSpan(HttpServletRequest httpRequest, Span f5Span) {
+    private Span buildSpan(HttpServletRequest httpRequest, F5Span f5Span) {
         SpanContext extractedContext;
 
-        if (f5Span != null) {
-            extractedContext = f5Span.context();
+        if (f5Span != null && f5Span.span != null) {
+            extractedContext = f5Span.span.context();
         } else {
             extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                 new HttpServletRequestExtractAdapter(httpRequest));
@@ -201,23 +201,24 @@ public class TracingFilter implements Filter {
         return span;
     }
 
-    private Span buildF5Span(HttpServletRequest httpRequest, String headerPrefix) {
+    private F5Span buildF5Span(HttpServletRequest httpRequest, String headerPrefix) {
         if (!isTraced(httpRequest, headerPrefix)) {
             return null;
         }
+
+        F5Span f5Span = new F5Span();
 
         SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
             new HttpServletRequestExtractAdapter(httpRequest));
 
         Map<String, String> tags = new HashMap<>();
         final Enumeration<String> headerNames = httpRequest.getHeaderNames();
-        Long ingressTime = null;
         while (headerNames.hasMoreElements()) {
             final String headerName = headerNames.nextElement().toLowerCase();
             if (headerName.startsWith(headerPrefix)) {
                 if(headerName.equals(headerPrefix + "ingresstime")) {
                     try {
-                        ingressTime = Long.parseLong(httpRequest.getHeader(headerName));
+                        f5Span.ingressTime = Long.parseLong(httpRequest.getHeader(headerName));
                     } catch (NumberFormatException e) {
                         log.warning("failed to parse header: " + headerName + " value: " + httpRequest.getHeader(headerName));
                         tags.put(headerName.replace(headerPrefix, ""),
@@ -234,14 +235,15 @@ public class TracingFilter implements Filter {
             .buildSpan("TransitTime")
             .asChildOf(extractedContext)
             .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER);
-        if (ingressTime != null) {
-            spanBuilder.withStartTimestamp(ingressTime);
+        if (f5Span.ingressTime != null) {
+            spanBuilder.withStartTimestamp(f5Span.ingressTime);
         }
         for (Entry<String, String> entry : tags.entrySet()) {
             spanBuilder.withTag(entry.getKey(), entry.getValue());
         }
         final Span span = spanBuilder.start();
-        log.log(Level.FINER, ">> [F5] started TransitTime span " + span.context().toSpanId() + " with start time " + ingressTime);
+        f5Span.span = span;
+        log.log(Level.FINER, ">> [F5] started TransitTime span " + span.context().toSpanId() + " with start time " + f5Span.ingressTime);
 
 
         for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
@@ -250,7 +252,7 @@ public class TracingFilter implements Filter {
         span.setTag(Tags.COMPONENT, "F5"); // TODO: get via config property?
         span.setTag("ServiceName", "F5"); // TODO: get via config property?
 
-        return span;
+        return f5Span;
     }
 
     @Override
@@ -272,11 +274,10 @@ public class TracingFilter implements Filter {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
-            final Span f5Span = buildF5Span(httpRequest, headerPrefix);
+            final F5Span f5Span = buildF5Span(httpRequest, headerPrefix);
             final Span span = buildSpan(httpRequest, f5Span);
 
             final Boolean[] isAsyncStarted = new Boolean[] {false};
-            Long egresstime = null;
             try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
                 if (ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) && !isAsyncStarted[0]) {
@@ -289,17 +290,17 @@ public class TracingFilter implements Filter {
                             if (headerName.startsWith(headerPrefix)) {
                                 if (headerName.equals(headerPrefix + "egresstime")) {
                                     try {
-                                        egresstime = Long
+                                        f5Span.egressTime = Long
                                             .parseLong(httpResponse.getHeader(headerName));
                                     } catch (NumberFormatException e) {
                                         log.warning(
                                             "failed to parse header: " + headerName + " value: "
                                                 + httpRequest.getHeader(headerName));
-                                        f5Span.setTag(headerName.replace(headerPrefix, ""),
+                                        f5Span.span.setTag(headerName.replace(headerPrefix, ""),
                                             httpResponse.getHeader(headerName));
                                     }
                                 } else {
-                                    f5Span.setTag(headerName.replace(headerPrefix, ""),
+                                    f5Span.span.setTag(headerName.replace(headerPrefix, ""),
                                         httpResponse.getHeader(headerName));
                                 }
                             }
@@ -323,13 +324,31 @@ public class TracingFilter implements Filter {
                     // asynchronously until after the scope has already been started.
                     span.finish();
                 }
-                if (f5Span != null) {
-                    if (egresstime != null) {
-                        f5Span.finish(egresstime);
+                if (f5Span != null && f5Span.span != null) {
+                    if (f5Span.egressTime != null) {
+                        if(f5Span.ingressTime != null && f5Span.ingressTime.equals(f5Span.egressTime)) {
+                            Tags.ERROR.set(f5Span.span, Boolean.TRUE);
+                            Map<String, Object> errorLogs = new HashMap<>(2);
+                            errorLogs.put("event", Tags.ERROR.getKey());
+                            errorLogs.put("error", "transit time = 0");
+                            f5Span.span.log(errorLogs);
+                            f5Span.span.finish(f5Span.ingressTime + 1);
+                        } else {
+                            f5Span.span.finish(f5Span.egressTime);
+                        }
                     } else {
-                        f5Span.finish();
+                        Tags.ERROR.set(f5Span.span, Boolean.TRUE);
+                        Map<String, Object> errorLogs = new HashMap<>(2);
+                        errorLogs.put("event", Tags.ERROR.getKey());
+                        errorLogs.put("error", "egress missing");
+                        f5Span.span.log(errorLogs);
+                        if(f5Span.ingressTime != null) {
+                            f5Span.span.finish(f5Span.ingressTime + 1);
+                        } else {
+                            f5Span.span.finish();
+                        }
                     }
-                    log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.context().toSpanId() + " with finish time " + egresstime);
+                    log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.span.context().toSpanId() + " with finish time " + f5Span.egressTime);
                 }
             }
         }
@@ -366,5 +385,11 @@ public class TracingFilter implements Filter {
      */
     public static SpanContext serverSpanContext(ServletRequest servletRequest) {
         return (SpanContext) servletRequest.getAttribute(SERVER_SPAN_CONTEXT);
+    }
+
+    private static class F5Span {
+        private Span span;
+        private Long ingressTime;
+        private Long egressTime;
     }
 }
