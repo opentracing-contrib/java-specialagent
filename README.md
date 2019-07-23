@@ -428,6 +428,7 @@ Thank you to the following developers for filing issues and helping us fix them:
 Thank you to the following individuals for noticing typographic errors and sending PRs:
 
 * [Daniel Rodriguez Hernandez](https://github.com/drodriguezhdez)
+* [qudongfang](https://github.com/qudongfang)
 
 Finally, thanks for all of the feedback! Please share your comments [as an issue](https://github.com/opentracing-contrib/java-specialagent/issues)!
 
