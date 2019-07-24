@@ -218,7 +218,7 @@ public class TracingFilter implements Filter {
             if (headerName.startsWith(headerPrefix)) {
                 if(headerName.equals(headerPrefix + "ingresstime")) {
                     try {
-                        f5Span.ingressTime = Long.parseLong(httpRequest.getHeader(headerName));
+                        f5Span.ingressTime = Long.parseLong(httpRequest.getHeader(headerName)) * 1000;
                     } catch (NumberFormatException e) {
                         log.warning("failed to parse header: " + headerName + " value: " + httpRequest.getHeader(headerName));
                         tags.put(headerName.replace(headerPrefix, ""),
@@ -298,7 +298,7 @@ public class TracingFilter implements Filter {
                                 if (headerName.equals(headerPrefix + "egresstime")) {
                                     try {
                                         f5Span.egressTime = Long
-                                            .parseLong(httpResponse.getHeader(headerName));
+                                            .parseLong(httpResponse.getHeader(headerName)) * 1000;
                                     } catch (NumberFormatException e) {
                                         log.warning(
                                             "failed to parse header: " + headerName + " value: "
