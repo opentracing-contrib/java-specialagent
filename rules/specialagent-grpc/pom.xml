@@ -87,7 +87,7 @@
       <!-- https://github.com/opentracing-contrib/java-grpc -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grpc</artifactId>
-      <version>0.1.1</version>
+      <version>0.1.2</version>
       <exclusions>
         <exclusion>
           <groupId>io.grpc</groupId>
