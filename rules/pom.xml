@@ -50,6 +50,7 @@
     <module>specialagent-jedis</module>
     <module>specialagent-apache-httpclient</module>
     <module>specialagent-lettuce</module>
+    <module>specialagent-lettuce-5.0</module>
     <module>specialagent-spring-web</module>
     <module>specialagent-spring-3-web</module>
     <module>specialagent-spring-webmvc</module>
