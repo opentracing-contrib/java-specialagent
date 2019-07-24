@@ -34,6 +34,9 @@ In additiona to its engine, the <ins>SpecialAgent</ins> packages a set of pre-su
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2 [Properties](#32-properties)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.3 [Selecting the <ins>Tracer Plugin</ins>](#33-selecting-the-tracer-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4 [Disabling <ins>Instrumentation Plugins</ins>](#34-disabling-instrumentation-plugins)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.1 [Disabling All Instrumentation Plugins](#343-disabling-agentrules-of-an-instrumentation-plugin)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.2 [Disabling One Instrumentation Plugin](#342-disabling-one-instrumentation-plugin)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.3 [Disabling `AgentRule`s of an Instrumentation Plugin](#343-disabling-agentrules-of-an-instrumentation-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.5 [Disabling <ins>Tracer Plugins</ins>](#35-disabling-tracer-plugins)<br>
 <samp>&nbsp;&nbsp;</samp>4 [Definitions](#4-definitions)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.1 [<ins>SpecialAgent</ins>](#41-specialagent)<br>
@@ -241,19 +244,33 @@ _**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) enabled by default, and allows them to be disabled.
 
+#### 3.4.1 Disabling All Instrumentation Plugins
+
 To disable _all **instrumentation** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.instrumentation.plugins.enable=false
+sa.instrumentation.plugins.disable
 ```
+
+#### 3.4.2 Disabling One Instrumentation Plugin
 
 To disable _an individual **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.instrumentation.plugin.${PLUGIN_NAME}.enable=false
+sa.instrumentation.plugin.${PLUGIN_NAME}.disable
 ```
 
 The value of `${PLUGIN_NAME}` is the name of the plugin as declared in the plugin's POM ([Project Object Model][pom]). The names follow a consice pattern, such as `okhttp` for the `specialagent-okhttp` plugin artifactId, and `web-servlet-filter` for the `specialagent-web-servlet-filter` plugin artifactId.
+
+#### 3.4.3 Disabling `AgentRule`s of an Instrumentation Plugin
+
+To disable _an individual `AgentRule` of an **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+
+```
+sa.instrumentation.plugin.${PLUGIN_NAME}.${AGENT_RULE_SIMPLE_CLASS_NAME}.disable
+```
+
+The value of `${AGENT_RULE_SIMPLE_CLASS_NAME}` is the simple class name of the `AgentRule` subclass that is to be disabled.
 
 ### 3.5 Disabling [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
@@ -262,13 +279,13 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Tracer Plug
 To disable _all **tracer** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.tracer.plugins.enable=false
+sa.tracer.plugins.disable
 ```
 
 To disable _an individual **tracer** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.tracer.plugin.${SHORT_NAME}.enable=false
+sa.tracer.plugin.${SHORT_NAME}.disable
 ```
 
 The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep` or `jaeger`.
