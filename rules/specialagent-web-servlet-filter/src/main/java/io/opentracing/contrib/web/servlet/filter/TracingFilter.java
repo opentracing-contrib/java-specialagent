@@ -14,14 +14,6 @@
  */
 package io.opentracing.contrib.web.servlet.filter;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.propagation.Format;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -49,6 +42,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -243,14 +237,9 @@ public class TracingFilter implements Filter {
         }
         final Span span = spanBuilder.start();
         f5Span.span = span;
-        final StringBuilder builder = new StringBuilder(">> [F5] Request headers for: " + f5Span.span.context().toSpanId() + " ");
-        final Enumeration<String> headers = httpRequest.getHeaderNames();
-        while (headers.hasMoreElements()) {
-          final String headerName = headers.nextElement();
-          builder.append(headerName).append(": \"").append(httpRequest.getHeader(headerName)).append("\",");
-        }
-        log.log(Level.FINER, builder.toString());
-        log.log(Level.FINER, ">> [F5] started TransitTime span " + span.context().toSpanId() + " with start time " + f5Span.ingressTime);
+
+        log.log(Level.FINER, ">> [F5] Request headers for: " + getId(f5Span) + " " + printHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader));
+        log.log(Level.FINER, ">> [F5] Started TransitTime: " + span.context().toSpanId() + " with start time " + f5Span.ingressTime);
 
 
         for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
@@ -347,23 +336,33 @@ public class TracingFilter implements Filter {
                         Tags.ERROR.set(f5Span.span, Boolean.TRUE);
                         Map<String, Object> errorLogs = new HashMap<>(2);
                         errorLogs.put("event", Tags.ERROR.getKey());
-                        errorLogs.put("error", "egress missing");
                         f5Span.span.log(errorLogs);
                         if(f5Span.ingressTime != null) {
+                            errorLogs.put("error", "egress missing");
                             f5Span.span.finish(f5Span.ingressTime + 1);
                         } else {
+                            errorLogs.put("error", "ingress missing, egress missing");
                             f5Span.span.finish();
                         }
                     }
-                    final StringBuilder builder = new StringBuilder(">> [F5] Response headers for: " + f5Span.span.context().toSpanId() + " ");
-                    for (final String headerName : httpResponse.getHeaderNames()) {
-                      builder.append(headerName).append(": \"").append(httpResponse.getHeader(headerName)).append("\",");
-                    }
-                    log.log(Level.FINER, builder.toString());
-                    log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.span.context().toSpanId() + " with finish time " + f5Span.egressTime);
                 }
+
+                log.log(Level.FINER, ">> [F5] Response headers for: " + getId(f5Span) + " " + printHeaders(httpResponse.getHeaderNames(), httpResponse::getHeader));
+                log.log(Level.FINER, ">> [F5] finished TransitTime: " + getId(f5Span) + " with finish time " + (f5Span == null ? null : f5Span.egressTime));
             }
         }
+    }
+
+    private static String printHeaders(final Iterable<String> names, final Function<String,String> nameToHeader) {
+      final StringBuilder builder = new StringBuilder();
+      for (final String name : names)
+        builder.append(name).append(": \"").append(nameToHeader.apply(name)).append("\",");
+
+      return builder.toString();
+    }
+
+    private static String getId(final F5Span span) {
+      return span == null || span.span == null ? null : span.span.context().toSpanId();
     }
 
     @Override
