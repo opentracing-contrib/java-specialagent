@@ -108,7 +108,7 @@ public class ByteBuddyManager extends Manager {
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> fileeToPluginManifest) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> fileToPluginManifest) throws IOException {
     AgentRule agentRule = null;
     try {
       // Load ClassLoader Agent
@@ -141,16 +141,25 @@ public class ByteBuddyManager extends Manager {
             continue;
           }
 
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Installing new rule: " + line);
-
           final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
           if (!AgentRule.class.isAssignableFrom(agentClass)) {
             logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
             continue;
           }
 
-          final PluginManifest pluginManifest = fileeToPluginManifest.get(ruleJar);
+          final PluginManifest pluginManifest = fileToPluginManifest.get(ruleJar);
+
+          final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
+          final String disableRule = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "." + simpleClassName + ".disable");
+          if (!"false".equals(disableRule)) {
+            if (logger.isLoggable(Level.FINE))
+              logger.fine("Skipping disabled rule: " + line);
+
+            continue;
+          }
+
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Installing new rule: " + line);
 
           AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
 
