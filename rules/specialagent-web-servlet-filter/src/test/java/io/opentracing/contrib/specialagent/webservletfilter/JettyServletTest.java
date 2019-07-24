@@ -89,8 +89,8 @@ public class JettyServletTest {
     assertEquals("F5", f5Span.tags().get("ServiceName"));
     assertEquals("TransitTime", f5Span.operationName());
     assertTrue(f5Span.logEntries().isEmpty());
-    assertEquals(123, f5Span.startMicros()); // ingressTime
-    assertEquals(321, f5Span.finishMicros()); // egressTime
+    assertEquals(123000, f5Span.startMicros()); // ingressTime
+    assertEquals(321000, f5Span.finishMicros()); // egressTime
     assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
     assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
   }
