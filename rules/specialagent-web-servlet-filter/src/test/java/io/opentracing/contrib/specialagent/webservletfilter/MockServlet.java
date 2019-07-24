@@ -31,6 +31,7 @@ public class MockServlet extends HttpServlet {
 
   @Override
   public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
-    response.setStatus(HttpServletResponse.SC_ACCEPTED);
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.addHeader("F5_egressTime", "321");
   }
 }

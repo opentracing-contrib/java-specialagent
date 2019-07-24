@@ -17,18 +17,22 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import io.opentracing.tag.Tags;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
-
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpServletResponse;
-
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
@@ -36,18 +40,9 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * @author gbrown
@@ -99,7 +94,10 @@ public class TomcatServletTest {
   @Test
   public void testHelloF5Request(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
-    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").addHeader("F5_test", "value").build();
+    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello")
+        .addHeader("F5_test", "value")
+        .addHeader("F5_ingressTime", "123")
+        .build();
     final Response response = client.newCall(request).execute();
 
     assertEquals(HttpServletResponse.SC_OK, response.code());
@@ -112,8 +110,9 @@ public class TomcatServletTest {
     assertEquals("value", f5Span.tags().get("test"));
     assertEquals("F5", f5Span.tags().get("ServiceName"));
     assertEquals("TransitTime", f5Span.operationName());
-    assertEquals(Boolean.TRUE, f5Span.tags().get(Tags.ERROR.getKey()));
-    assertFalse(f5Span.logEntries().isEmpty());
+    assertTrue(f5Span.logEntries().isEmpty());
+    assertEquals(123, f5Span.startMicros()); // ingressTime
+    assertEquals(321, f5Span.finishMicros()); // egressTime
     assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
     assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
   }

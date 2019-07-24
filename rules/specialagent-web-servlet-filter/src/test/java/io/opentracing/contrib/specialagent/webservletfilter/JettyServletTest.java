@@ -17,38 +17,28 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
-import static org.junit.Assert.*;
-
-import io.opentracing.tag.Tags;
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.List;
+import javax.servlet.DispatcherType;
+import javax.servlet.http.HttpServletResponse;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author gbrown
@@ -71,12 +61,9 @@ public class JettyServletTest {
 
     final ServletContextHandler servletContextHandler = new ServletContextHandler();
     servletContextHandler.setContextPath("/");
-    servletContextHandler.addServlet(MockServlet.class, "/hello");
     server.setHandler(servletContextHandler);
-
-    final ServletHandler servletHandler = new ServletHandler();
-    servletHandler.addFilterWithMapping(MockFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-    server.setHandler(servletHandler);
+    servletContextHandler.addFilter(MockFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+    servletContextHandler.addServlet(new ServletHolder(new MockServlet()), "/*");
 
     server.start();
     serverPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
@@ -101,10 +88,9 @@ public class JettyServletTest {
     assertEquals("value", f5Span.tags().get("test"));
     assertEquals("F5", f5Span.tags().get("ServiceName"));
     assertEquals("TransitTime", f5Span.operationName());
-    assertEquals(Boolean.TRUE, f5Span.tags().get(Tags.ERROR.getKey()));
-    assertFalse(f5Span.logEntries().isEmpty());
-    assertEquals(123, f5Span.startMicros());
-    assertEquals(f5Span.startMicros() + 1, f5Span.finishMicros());
+    assertTrue(f5Span.logEntries().isEmpty());
+    assertEquals(123, f5Span.startMicros()); // ingressTime
+    assertEquals(321, f5Span.finishMicros()); // egressTime
     assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
     assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
   }
