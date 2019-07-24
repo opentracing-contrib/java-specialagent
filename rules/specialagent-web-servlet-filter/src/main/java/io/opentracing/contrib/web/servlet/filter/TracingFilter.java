@@ -359,6 +359,7 @@ public class TracingFilter implements Filter {
                     for (final String headerName : httpResponse.getHeaderNames()) {
                       builder.append(headerName).append(": \"").append(httpResponse.getHeader(headerName)).append("\",");
                     }
+                    log.log(Level.FINER, builder.toString());
                     log.log(Level.FINER, ">> [F5] finished TransitTime span " + f5Span.span.context().toSpanId() + " with finish time " + f5Span.egressTime);
                 }
             }
