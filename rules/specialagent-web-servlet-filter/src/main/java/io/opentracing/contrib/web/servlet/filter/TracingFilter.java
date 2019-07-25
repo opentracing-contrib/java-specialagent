@@ -158,7 +158,7 @@ public class TracingFilter implements Filter {
         }
     }
 
-    private boolean isTraced(HttpServletRequest httpRequest, String headerPrefix) {
+    private static boolean isTraced(HttpServletRequest httpRequest, String headerPrefix) {
         final Enumeration<String> headerNames = httpRequest.getHeaderNames();
 
         while (headerNames.hasMoreElements()) {
@@ -210,7 +210,7 @@ public class TracingFilter implements Filter {
         while (headerNames.hasMoreElements()) {
             final String headerName = headerNames.nextElement().toLowerCase();
             if (headerName.startsWith(headerPrefix)) {
-                if(headerName.equals(headerPrefix + "ingresstime")) {
+                if (headerName.equals(headerPrefix + "ingresstime")) {
                     try {
                         f5Span.ingressTime = Long.parseLong(httpRequest.getHeader(headerName)) * 1000;
                     } catch (NumberFormatException e) {
@@ -218,7 +218,20 @@ public class TracingFilter implements Filter {
                         tags.put(headerName.replace(headerPrefix, ""),
                             httpRequest.getHeader(headerName));
                     }
-                } else {
+                }
+                else if (headerName.equals(headerPrefix + "egresstime")) {
+                  try {
+                      f5Span.egressTime = Long
+                          .parseLong(httpRequest.getHeader(headerName)) * 1000;
+                  } catch (NumberFormatException e) {
+                      log.warning(
+                          "failed to parse header: " + headerName + " value: "
+                              + httpRequest.getHeader(headerName));
+                      f5Span.span.setTag(headerName.replace(headerPrefix, ""),
+                          httpRequest.getHeader(headerName));
+                  }
+                }
+                else {
                     tags.put(headerName.replace(headerPrefix, ""),
                         httpRequest.getHeader(headerName));
                 }
@@ -238,9 +251,10 @@ public class TracingFilter implements Filter {
         final Span span = spanBuilder.start();
         f5Span.span = span;
 
-        log.log(Level.FINER, ">> [F5] Request headers for: " + getId(f5Span) + " " + printHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader));
-        log.log(Level.FINER, ">> [F5] Started TransitTime: " + span.context().toSpanId() + " with start time " + f5Span.ingressTime);
-
+        if (log.isLoggable(Level.FINER)) {
+          log.finer(">> [F5] Request headers for: " + getId(f5Span) + " " + printHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader));
+          log.finer(">> [F5] Started TransitTime: " + getId(f5Span) + " {" + f5Span.ingressTime + ", " + f5Span.egressTime + "}");
+        }
 
         for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
             spanDecorator.onRequest(httpRequest, span);
@@ -250,6 +264,8 @@ public class TracingFilter implements Filter {
 
         return f5Span;
     }
+
+    private static final String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
@@ -269,7 +285,6 @@ public class TracingFilter implements Filter {
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            String headerPrefix = "F5_".toLowerCase(); // TODO: get via config property (convert to lower case)?
             final F5Span f5Span = buildF5Span(httpRequest, headerPrefix);
             final Span span = buildSpan(httpRequest, f5Span);
 
@@ -279,28 +294,6 @@ public class TracingFilter implements Filter {
                 if (!ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) || !isAsyncStarted[0]) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
-                    }
-                    if (f5Span != null) {
-                        for (String headerName : httpResponse.getHeaderNames()) {
-                            headerName = headerName.toLowerCase();
-                            if (headerName.startsWith(headerPrefix)) {
-                                if (headerName.equals(headerPrefix + "egresstime")) {
-                                    try {
-                                        f5Span.egressTime = Long
-                                            .parseLong(httpResponse.getHeader(headerName)) * 1000;
-                                    } catch (NumberFormatException e) {
-                                        log.warning(
-                                            "failed to parse header: " + headerName + " value: "
-                                                + httpRequest.getHeader(headerName));
-                                        f5Span.span.setTag(headerName.replace(headerPrefix, ""),
-                                            httpResponse.getHeader(headerName));
-                                    }
-                                } else {
-                                    f5Span.span.setTag(headerName.replace(headerPrefix, ""),
-                                        httpResponse.getHeader(headerName));
-                                }
-                            }
-                        }
                     }
                 }
             // catch all exceptions (e.g. RuntimeException, ServletException...)
@@ -347,8 +340,8 @@ public class TracingFilter implements Filter {
                     }
                 }
 
-                log.log(Level.FINER, ">> [F5] Response headers for: " + getId(f5Span) + " " + printHeaders(httpResponse.getHeaderNames(), httpResponse::getHeader));
-                log.log(Level.FINER, ">> [F5] finished TransitTime: " + getId(f5Span) + " with finish time " + (f5Span == null ? null : f5Span.egressTime));
+                if (f5Span != null && log.isLoggable(Level.FINER))
+                  log.finer(">> [F5] Finished TransitTime: " + getId(f5Span) + " {" + f5Span.ingressTime + ", " + f5Span.egressTime + "}");
             }
         }
     }

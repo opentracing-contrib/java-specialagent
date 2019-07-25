@@ -17,20 +17,15 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletResponse;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -39,6 +34,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * @author gbrown
@@ -75,6 +77,7 @@ public class JettyServletTest {
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello")
         .addHeader("F5_test", "value")
         .addHeader("F5_ingressTime", "123")
+        .addHeader("F5_egressTime", "321")
         .build();
     final Response response = client.newCall(request).execute();
 

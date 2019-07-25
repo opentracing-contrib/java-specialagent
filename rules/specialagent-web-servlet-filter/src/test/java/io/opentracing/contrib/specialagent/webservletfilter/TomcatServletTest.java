@@ -97,6 +97,7 @@ public class TomcatServletTest {
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello")
         .addHeader("F5_test", "value")
         .addHeader("F5_ingressTime", "123")
+        .addHeader("F5_egressTime", "321")
         .build();
     final Response response = client.newCall(request).execute();
 
