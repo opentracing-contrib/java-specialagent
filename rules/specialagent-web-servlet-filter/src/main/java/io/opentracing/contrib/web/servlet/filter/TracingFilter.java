@@ -186,7 +186,7 @@ public class TracingFilter implements Filter {
             final Boolean[] isAsyncStarted = new Boolean[] {false};
             try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
-                if (ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) && !isAsyncStarted[0]) {
+                if (!ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) || !isAsyncStarted[0]) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
                     }
