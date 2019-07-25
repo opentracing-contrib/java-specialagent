@@ -42,11 +42,11 @@ class ClassScanner extends ClassVisitor {
   }
 
   private static ClassScanner scan(final ClassLoader classLoader, final String resourcePath, final List<MethodFingerprint> methods, final List<FieldFingerprint> fields, final Set<String> innerClassExcludes) throws IOException {
-    final ClassScanner inspector = new ClassScanner(classLoader, methods, fields, innerClassExcludes);
+    final ClassScanner scanner = new ClassScanner(classLoader, methods, fields, innerClassExcludes);
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
-      new ClassReader(in).accept(inspector, 0);
-      inspector.scanSupers();
-      return inspector;
+      new ClassReader(in).accept(scanner, 0);
+      scanner.scanSupers();
+      return scanner;
     }
     catch (final Exception e) {
       if (logger.isLoggable(Level.FINER))
@@ -62,9 +62,9 @@ class ClassScanner extends ClassVisitor {
   private static void scanInterfaces(final String[] interfaces, final ClassLoader classLoader, final List<MethodFingerprint> methods, final List<FieldFingerprint> fields, final Set<String> innerClassExcludes) throws IOException {
     for (final String cls : interfaces) {
       if (!FingerprintUtil.isExcluded(cls)) {
-        final ClassScanner inspector = ClassScanner.scan(classLoader, cls.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
-        if (inspector != null && inspector.interfaces != null)
-          scanInterfaces(inspector.interfaces, classLoader, methods, fields, innerClassExcludes);
+        final ClassScanner scanner = ClassScanner.scan(classLoader, cls.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
+        if (scanner != null && scanner.interfaces != null)
+          scanInterfaces(scanner.interfaces, classLoader, methods, fields, innerClassExcludes);
       }
     }
   }

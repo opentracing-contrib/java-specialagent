@@ -105,6 +105,16 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   }
 
   @Override
+  public int hashCode() {
+    int hashCode = 0;
+    hashCode = hashCode * 37 + getName().hashCode();
+    hashCode = hashCode * 37 + returnType.hashCode();
+    hashCode = hashCode * 37 + Arrays.hashCode(parameterTypes);
+    hashCode = hashCode * 37 + Arrays.hashCode(exceptionTypes);
+    return hashCode;
+  }
+
+  @Override
   public String toString() {
     final StringBuilder builder = new StringBuilder();
     builder.append(returnType == null ? "void" : returnType).append(' ');
