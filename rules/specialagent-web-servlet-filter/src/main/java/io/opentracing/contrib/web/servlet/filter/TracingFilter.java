@@ -318,10 +318,10 @@ public class TracingFilter implements Filter {
                         if(f5Span.ingressTime != null && f5Span.ingressTime.equals(f5Span.egressTime)) {
                             Tags.ERROR.set(f5Span.span, Boolean.TRUE);
                             Map<String, Object> errorLogs = new HashMap<>(2);
-                            errorLogs.put("event", Tags.ERROR.getKey());
-                            errorLogs.put("error", "transit time = 0");
+                            errorLogs.put("event", "Warn");
+                            errorLogs.put("Warning", "transit time = 0. Setting to 1ms");
                             f5Span.span.log(errorLogs);
-                            f5Span.span.finish(f5Span.ingressTime + 1);
+                            f5Span.span.finish(f5Span.ingressTime + 1000);
                         } else {
                             f5Span.span.finish(f5Span.egressTime);
                         }
