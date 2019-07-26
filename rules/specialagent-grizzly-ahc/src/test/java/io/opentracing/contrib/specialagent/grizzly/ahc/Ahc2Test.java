@@ -37,12 +37,14 @@ import io.opentracing.mock.MockTracer;
  */
 @RunWith(AgentRunner.class)
 public class Ahc2Test extends AbstractAhcTest {
+  private static final int port = 8348;
+
 	@Before
 	public void before(final MockTracer tracer) throws IOException {
 		// clear traces
 		tracer.reset();
 
-		httpServer = HttpServer.createSimpleServer();
+		httpServer = HttpServer.createSimpleServer(".", port);
 		httpServer.start();
 		setupServer(httpServer);
 	}
@@ -61,7 +63,7 @@ public class Ahc2Test extends AbstractAhcTest {
 		  final AsyncHttpClient client = new AsyncHttpClient();
       final Scope scope = tracer.buildSpan("parent").startActive(true);
 		) {
-      response = client.prepareGet("http://localhost:8080/root").execute().get();
+      response = client.prepareGet("http://localhost:" + port + "/root").execute().get();
 		}
 
     doTest(response, tracer);
@@ -72,7 +74,7 @@ public class Ahc2Test extends AbstractAhcTest {
 	  final Response response;
 		try (
 		  final SimpleAsyncHttpClient client = new SimpleAsyncHttpClient.Builder()
-				.setUrl("http://localhost:8080/root")
+				.setUrl("http://localhost:" + port + "/root")
 				.build();
 			 final Scope scope = tracer.buildSpan("parent").startActive(true);
 		) {
