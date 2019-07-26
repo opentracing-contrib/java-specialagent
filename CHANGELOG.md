@@ -1,5 +1,19 @@
 # Changes by Version
 
+## v1.3.3 (2019-07-26)
+* Support Servlet API 2.3 with `web-servlet-filter` Plugin.
+* Remedy class collision errors of conflicting library versions.
+* Reduce excess log verbosity.
+* Support windows slashes.
+* Update JDBC Plugin to `0.1.5`.
+* Update Grizzly AHC Plugin to `0.1.3`.
+* Minor fixes to Kafka Messaging, Redisson, and Cassandra plugins.
+* Resolve conflicting transitive dependencies in Instrumentation Plugins.
+* Update Fingerprinting Algorithm to support (full)-depth-n fingerprints.
+* Implement [static-deferred](https://github.com/opentracing-contrib/java-specialagent/#223-static-deferred-attach) attachment strategy.
+* Implement [mechanism to disable `AgentRule`s](https://github.com/opentracing-contrib/java-specialagent#343-disabling-agentrules-of-an-instrumentation-plugin).
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring 3 Web, Spring 3 Web MVC, JAX-RS, Thread.
+
 ## v1.3.2 (2019-06-28)
 * Fix to propagation of system properties via dynamic attach.
 * Implement assert that name of SpecialAgent JAR is correct.
