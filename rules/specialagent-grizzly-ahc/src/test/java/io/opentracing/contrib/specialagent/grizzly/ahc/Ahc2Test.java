@@ -37,48 +37,50 @@ import io.opentracing.mock.MockTracer;
  */
 @RunWith(AgentRunner.class)
 public class Ahc2Test extends AbstractAhcTest {
-	@Before
-	public void before(final MockTracer tracer) throws IOException {
-		// clear traces
-		tracer.reset();
+  private static final int port = 8348;
 
-		httpServer = HttpServer.createSimpleServer();
-		httpServer.start();
-		setupServer(httpServer);
-	}
+  @Before
+  public void before(final MockTracer tracer) throws IOException {
+    // clear traces
+    tracer.reset();
 
-	@After
-	public void after() throws Exception {
-		if (httpServer != null) {
-			httpServer.shutdownNow();
-		}
-	}
+    httpServer = HttpServer.createSimpleServer(".", port);
+    httpServer.start();
+    setupServer(httpServer);
+  }
 
-	@Test
-	public void basicAhcTest(final MockTracer tracer) throws Exception {
-	  final Response response;
-		try (
-		  final AsyncHttpClient client = new AsyncHttpClient();
+  @After
+  public void after() throws Exception {
+    if (httpServer != null) {
+      httpServer.shutdownNow();
+    }
+  }
+
+  @Test
+  public void basicAhcTest(final MockTracer tracer) throws Exception {
+    final Response response;
+    try (
+      final AsyncHttpClient client = new AsyncHttpClient();
       final Scope scope = tracer.buildSpan("parent").startActive(true);
-		) {
-      response = client.prepareGet("http://localhost:8080/root").execute().get();
-		}
+    ) {
+      response = client.prepareGet("http://localhost:" + port + "/root").execute().get();
+    }
 
     doTest(response, tracer);
-	}
+  }
 
-	@Test
-	public void basicSimpleAhcTest(final MockTracer tracer) throws Exception {
-	  final Response response;
-		try (
-		  final SimpleAsyncHttpClient client = new SimpleAsyncHttpClient.Builder()
-				.setUrl("http://localhost:8080/root")
-				.build();
-			 final Scope scope = tracer.buildSpan("parent").startActive(true);
-		) {
-		  response = client.get().get();
-		}
+  @Test
+  public void basicSimpleAhcTest(final MockTracer tracer) throws Exception {
+    final Response response;
+    try (
+      final SimpleAsyncHttpClient client = new SimpleAsyncHttpClient.Builder()
+        .setUrl("http://localhost:" + port + "/root")
+        .build();
+       final Scope scope = tracer.buildSpan("parent").startActive(true);
+    ) {
+      response = client.get().get();
+    }
 
     doTest(response, tracer);
-	}
+  }
 }
