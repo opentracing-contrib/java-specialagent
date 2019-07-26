@@ -452,7 +452,7 @@ public class SpecialAgent {
             // and SystemClassLoader have the same path, leading to the same dependencies.tgf
             // file to be processed twice. This check asserts the previously registered
             // dependencies are correct.
-            foundReference =  true;
+            foundReference = true;
             final File[] registeredDependencyFiles = pluginFileToDependencies.get(dependencyFile);
             if (registeredDependencyFiles != null) {
               if (registeredDependencyFiles == pluginFileToDependencies.get(jarFile))
@@ -466,7 +466,9 @@ public class SpecialAgent {
 
             ++count;
             pluginFileToDependencies.put(jarFile, dependencyFiles);
-            pluginFileToDependencies.put(dependencyFile, dependencyFiles);
+            // Why did I link each `dependencyFile` to the `dependencyFiles`?
+            // Removing this due to: [LS-10518]
+            // pluginFileToDependencies.put(dependencyFile, dependencyFiles);
           }
         }
 
@@ -638,7 +640,7 @@ public class SpecialAgent {
       if (logger.isLoggable(Level.FINER)) {
         final File pluginFile = pluginsClassLoader.getFiles()[index];
         final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
-        logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible);
+        logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
       }
 
       return true;
