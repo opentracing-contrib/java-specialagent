@@ -28,6 +28,7 @@ import io.opentracing.contrib.specialagent.spring3.web.copied.HttpHeadersCarrier
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import org.springframework.web.client.RestTemplate;
 
 public class SpringWebAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -38,6 +39,14 @@ public class SpringWebAgentIntercept {
   }
 
   public static void enter(final Object thiz) {
+    try {
+      RestTemplate.class.getMethod("getInterceptors");
+      // Spring 3 RestTemplate doesn't have getInterceptors method
+      return;
+    } catch (NoSuchMethodException ignore) {
+      // OK
+    }
+
     final ClientHttpRequest request = (ClientHttpRequest)thiz;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer
