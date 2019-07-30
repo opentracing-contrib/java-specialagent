@@ -40,6 +40,8 @@
     <module>specialagent-jms-1</module>
     <module>specialagent-jms-2</module>
     <module>specialagent-elasticsearch-client-6</module>
+    <module>specialagent-elasticsearch-7-rest-client</module>
+    <module>specialagent-elasticsearch-7-transport-client</module>
     <module>specialagent-rxjava-2</module>
     <module>specialagent-kafka-client</module>
     <module>specialagent-asynchttpclient</module>
