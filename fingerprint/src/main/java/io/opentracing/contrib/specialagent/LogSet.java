@@ -16,14 +16,17 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class LogSet {
   private final LinkedHashMap<Log,Log> map = new LinkedHashMap<>();
@@ -53,14 +56,32 @@ class LogSet {
       add(log);
   }
 
+  private final Set<String> checked = new HashSet<>();
+
   boolean compass(final Fingerprinter fingerprinter) throws IOException {
     final int before = map.entrySet().size();
+    int count = 0;
     for (final Map.Entry<Log,Log> entry : new HashSet<>(map.entrySet())) {
       final Log log = entry.getValue();
-      if (!log.isResolved())
-        fingerprinter.fingerprint(log.getPhase(), log.getClassName().replace('.', '/').concat(".class"));
+      if (!log.isResolved()) {
+        if (log.getPhase() == Phase.NONE) {
+          log.resolve();
+          continue;
+        }
+
+        ++count;
+        final String className = log.getClassName();
+        if (checked.contains(className))
+          throw new IllegalStateException("Should have already checked: " + className);
+
+        checked.add(className);
+        if (!fingerprinter.fingerprint(log.getPhase(), className.replace('.', '/').concat(".class")))
+          log.resolve();
+      }
+
     }
 
+    System.out.println("Checked: " + checked.size() + ", Remaining: " + count);
     return before != map.entrySet().size();
   }
 
@@ -154,7 +175,58 @@ class LogSet {
     if (className != null)
       classes.add(new ClassFingerprint(className, superClass, interfaces, constructors, methods, fields));
 
-    return classes.toArray(new ClassFingerprint[classes.size()]);
+    final List<ClassFingerprint> merged = merge(classes);
+    return merged.toArray(new ClassFingerprint[merged.size()]);
+  }
+
+  private static List<ClassFingerprint> merge(final List<ClassFingerprint> fingerprints) {
+    final Map<String,ClassFingerprint> classToFingerprint = new HashMap<>();
+    final Map<String,String> classToSuper = new HashMap<>();
+    final Digraph<String> digraph = new Digraph<>();
+    for (final ClassFingerprint fingerprint : fingerprints) {
+      classToFingerprint.put(fingerprint.getName(), fingerprint);
+      if (fingerprint.getSuperClass() != null) {
+        classToSuper.put(fingerprint.getName(), fingerprint.getSuperClass());
+        digraph.add(fingerprint.getName(), fingerprint.getSuperClass());
+      }
+    }
+
+    final Map<String,AbstractMap.SimpleEntry<Set<MethodFingerprint>,Set<FieldFingerprint>>> classToMethods = new HashMap<>();
+    for (final String className : digraph.topSort()) {
+      final String superClassName = classToSuper.get(className);
+      final ClassFingerprint superFingerprint = classToFingerprint.get(superClassName);
+      if (superFingerprint == null)
+        continue;
+
+      AbstractMap.SimpleEntry<Set<MethodFingerprint>,Set<FieldFingerprint>> methodsFields = classToMethods.get(className);
+      if (methodsFields == null) {
+        classToMethods.put(className, methodsFields = new AbstractMap.SimpleEntry<Set<MethodFingerprint>,Set<FieldFingerprint>>(new HashSet<MethodFingerprint>(), new HashSet<FieldFingerprint>()));
+        final ClassFingerprint fingerprint = classToFingerprint.get(className);
+        if (fingerprint.getMethods() != null)
+          for (final MethodFingerprint method : fingerprint.getMethods())
+            methodsFields.getKey().add(method);
+
+        if (fingerprint.getFields() != null)
+          for (final FieldFingerprint field : fingerprint.getFields())
+            methodsFields.getValue().add(field);
+      }
+
+      if (superFingerprint.getMethods() != null)
+        for (final MethodFingerprint method : superFingerprint.getMethods())
+          methodsFields.getKey().add(method);
+
+      if (superFingerprint.getFields() != null)
+        for (final FieldFingerprint field : superFingerprint.getFields())
+          methodsFields.getValue().add(field);
+    }
+
+    final List<ClassFingerprint> merged = new ArrayList<>();
+    for (final Map.Entry<String,AbstractMap.SimpleEntry<Set<MethodFingerprint>,Set<FieldFingerprint>>> entry : classToMethods.entrySet()) {
+      final ClassFingerprint fingerprint = classToFingerprint.get(entry.getKey());
+      merged.add(new ClassFingerprint(fingerprint, entry.getValue().getKey(), entry.getValue().getValue()));
+    }
+
+    return merged;
   }
 
   public String toString(final Phase phase) {

@@ -35,7 +35,7 @@ class FieldLog extends Log {
   }
 
   void resolve(final String fieldType) {
-    this.fieldType = fieldType;
+    this.fieldType = Objects.requireNonNull(fieldType);
     resolve();
   }
 

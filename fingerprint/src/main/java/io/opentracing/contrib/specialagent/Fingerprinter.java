@@ -40,7 +40,6 @@ import org.objectweb.asm.signature.SignatureVisitor;
 class Fingerprinter extends ClassVisitor {
   private static final Logger logger = Logger.getLogger(Fingerprinter.class.getName());
   private static final Pattern synthetic = Pattern.compile("access\\$\\d+");
-  private static final boolean hackFixNoMethods = true;
 
   private final Set<String> innerClassExcludes = new HashSet<>();
   private final ClassLoader classLoader;
@@ -67,11 +66,12 @@ class Fingerprinter extends ClassVisitor {
     };
   }
 
-  void fingerprint(final Phase phase, final String resourcePath) throws IOException {
+  boolean fingerprint(final Phase phase, final String resourcePath) throws IOException {
     this.phase = phase;
     this.filtering = false;
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);
+      return true;
     }
     catch (final Exception e) {
       if (logger.isLoggable(Level.FINE))
@@ -79,6 +79,8 @@ class Fingerprinter extends ClassVisitor {
 
       if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
         throw e;
+
+      return false;
     }
   }
 
@@ -100,8 +102,8 @@ class Fingerprinter extends ClassVisitor {
     return "boolean".equals(name) || "byte".equals(name) || "char".equals(name) || "short".equals(name) || "int".equals(name) || "long".equals(name) || "float".equals(name) || "double".equals(name);
   }
 
-  private static String typeToClassName(Type type) {
-    if (type.getSort() != Type.OBJECT)
+  private static String typeToClassName(Type type, final boolean withExcludes) {
+    if (withExcludes && type.getSort() != Type.OBJECT)
       return null;
 
     if (type.getSort() == Type.ARRAY) {
@@ -109,20 +111,20 @@ class Fingerprinter extends ClassVisitor {
       type = Type.getObjectType(className.substring(0, className.length() - 2));
     }
 
-    if (isPrimitive(type))
+    if (withExcludes && isPrimitive(type))
       return null;
 
     final String className = type.getClassName();
-    return FingerprintUtil.isExcluded(className) ? null : className;
+    return withExcludes && FingerprintUtil.isExcluded(className) ? null : className;
   }
 
   private ClassLog addClassRef(final Type type, final Phase lifecyclePhase) {
-    final String className = typeToClassName(type);
+    final String className = typeToClassName(type, true);
     return className == null ? null : logs.add(new ClassLog(lifecyclePhase, className));
   }
 
   private FieldLog addFieldRef(final Type type, final String name, final Phase phase) {
-    final String className = typeToClassName(type);
+    final String className = typeToClassName(type, true);
     return className == null ? null : logs.add(new FieldLog(phase, className, name));
   }
 
@@ -199,9 +201,7 @@ class Fingerprinter extends ClassVisitor {
     if (signature != null)
       new SignatureReader(signature).accept(signatureVisitor);
 
-    if (!hackFixNoMethods)
-      log.resolve(typeToClassName(type));
-
+    log.resolve(typeToClassName(type, false));
     return fieldVisitor;
   }
 
@@ -252,8 +252,7 @@ class Fingerprinter extends ClassVisitor {
       if (signature != null)
         new SignatureReader(signature).accept(signatureVisitor);
 
-      if (!hackFixNoMethods)
-        log.resolve(exceptionTypes);
+      log.resolve(exceptionTypes);
     }
 
     return new MethodVisitor(api, methodVisitor) {
@@ -283,7 +282,7 @@ class Fingerprinter extends ClassVisitor {
           return;
 
         final Type type = Type.getObjectType(owner);
-        final String className = typeToClassName(type);
+        final String className = typeToClassName(type, true);
         if (className == null)
           return;
 
@@ -313,6 +312,6 @@ class Fingerprinter extends ClassVisitor {
   @Override
   public void visitEnd() {
     super.visitEnd();
-    logs.markAllResolved(this.className, !hackFixNoMethods);
+    logs.markAllResolved(this.className, true);
   }
 }

@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -52,6 +53,15 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     this.superClass = superClass;
     this.interfaces = interfaces == null || interfaces.length == 0 ? null : AssembleUtil.sort(interfaces);
     this.constructors = constructors == null || constructors.size() == 0 ? null : AssembleUtil.sort(constructors.toArray(new ConstructorFingerprint[constructors.size()]));
+    this.methods = methods == null || methods.size() == 0 ? null : AssembleUtil.sort(methods.toArray(new MethodFingerprint[methods.size()]));
+    this.fields = fields == null || fields.size() == 0 ? null : AssembleUtil.sort(fields.toArray(new FieldFingerprint[fields.size()]));
+  }
+
+  ClassFingerprint(final ClassFingerprint fingerprint, final Collection<MethodFingerprint> methods, final Collection<FieldFingerprint> fields) {
+    super(fingerprint.getName());
+    this.superClass = fingerprint.getSuperClass();
+    this.interfaces = fingerprint.getInterfaces();
+    this.constructors = fingerprint.getConstructors();
     this.methods = methods == null || methods.size() == 0 ? null : AssembleUtil.sort(methods.toArray(new MethodFingerprint[methods.size()]));
     this.fields = fields == null || fields.size() == 0 ? null : AssembleUtil.sort(fields.toArray(new FieldFingerprint[fields.size()]));
   }
@@ -109,11 +119,11 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
    *         compatible with this fingerprint.
    */
   public boolean compatible(final ClassFingerprint o) {
-    if (superClass == null ? o.superClass != null : o.superClass != null && !superClass.equals(o.superClass))
-      return false;
-
-    if (interfaces == null ? o.interfaces != null : o.interfaces != null && !AssembleUtil.containsAll(interfaces, o.interfaces))
-      return false;
+//    if (superClass == null ? o.superClass != null : o.superClass != null && !superClass.equals(o.superClass))
+//      return false;
+//
+//    if (interfaces == null ? o.interfaces != null : o.interfaces != null && !AssembleUtil.containsAll(interfaces, o.interfaces))
+//      return false;
 
     if (constructors == null ? o.constructors != null : o.constructors != null && !AssembleUtil.containsAll(constructors, o.constructors))
       return false;
