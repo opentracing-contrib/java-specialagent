@@ -144,6 +144,18 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-elasticsearch-7-rest-client</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-elasticsearch-7-transport-client</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-rxjava-2</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>

@@ -375,6 +375,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [JMS API (`javax.jms` v1 & v2)][java-jms]
 1. [JMS Spring \[5.1.7.RELEASE,\]](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring)
 1. [Elasticsearch6 Client \[6.6.2,\]](https://github.com/opentracing-contrib/java-elasticsearch-client)
+1. [Elasticsearch7 Client \[7.2.0,\]](https://github.com/opentracing-contrib/java-elasticsearch-client)
 1. [RxJava 2 \[2.2.8,\]](https://github.com/opentracing-contrib/java-rxjava)
 1. [Kafka Client \[2.0.1,\]](https://github.com/opentracing-contrib/java-kafka-client)
 1. [Kafka Spring \[2.2.6.RELEASE,\]](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring)
