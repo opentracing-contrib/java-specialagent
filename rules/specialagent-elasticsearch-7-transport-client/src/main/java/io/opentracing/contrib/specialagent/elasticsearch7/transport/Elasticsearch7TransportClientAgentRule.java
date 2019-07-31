@@ -42,7 +42,7 @@ public class Elasticsearch7TransportClientAgentRule extends AgentRule {
 
   public static class Transport {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
       if (isEnabled(origin))
         listener = Elasticsearch7TransportClientAgentIntercept.transport(request, listener);
     }

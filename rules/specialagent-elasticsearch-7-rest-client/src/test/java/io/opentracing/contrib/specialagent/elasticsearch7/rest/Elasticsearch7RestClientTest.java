@@ -15,9 +15,19 @@
 
 package io.opentracing.contrib.specialagent.elasticsearch7.rest;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
@@ -37,18 +47,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader = false)
@@ -88,8 +89,31 @@ public class Elasticsearch7RestClientTest {
     tracer.reset();
   }
 
+  private static void test1(final RestClient client, final HttpEntity entity) throws IOException {
+    final Request request = new Request("PUT", "/twitter/tweet/1");
+    request.setEntity(entity);
+
+    final Response indexResponse = client.performRequest(request);
+    assertNotNull(indexResponse);
+  }
+
+  private static void test2(final RestClient client, final HttpEntity entity) {
+    final Request request = new Request("PUT", "/twitter/tweet/2");
+    request.setEntity(entity);
+
+    client.performRequestAsync(request, new ResponseListener() {
+      @Override
+      public void onSuccess(final Response response) {
+      }
+
+      @Override
+      public void onFailure(final Exception exception) {
+      }
+    });
+  }
+
   @Test
-  public void restClient(final MockTracer tracer) throws Exception {
+  public void restClient(final MockTracer tracer) throws IOException {
     try (final RestClient client = RestClient.builder(new HttpHost("localhost", HTTP_PORT, "http")).build()) {
       final HttpEntity entity = new NStringEntity(
         "{\n" +
@@ -98,40 +122,19 @@ public class Elasticsearch7RestClientTest {
         "    \"message\" : \"trying out Elasticsearch\"\n" +
         "}", ContentType.APPLICATION_JSON);
 
-      Request request = new Request("PUT", "/twitter/tweet/1");
-      request.setEntity(entity);
+      test1(client, entity);
+      test2(client, entity);
 
-      final Response indexResponse = client.performRequest(request);
-
-      assertNotNull(indexResponse);
-
-      request = new Request("PUT", "/twitter/tweet/2");
-      request.setEntity(entity);
-
-      client.performRequestAsync(request, new ResponseListener() {
+      await().atMost(15, TimeUnit.SECONDS).until(new Callable<Integer>() {
         @Override
-        public void onSuccess(final Response response) {
+        public Integer call() {
+          return tracer.finishedSpans().size();
         }
-
-        @Override
-        public void onFailure(final Exception exception) {
-        }
-      });
-
-      await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+      }, equalTo(2));
     }
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 
   private static class PluginConfigurableNode extends Node {

@@ -15,15 +15,15 @@
 
 package io.opentracing.contrib.specialagent.elasticsearch7.transport;
 
+import org.elasticsearch.action.ActionListener;
+
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import org.elasticsearch.action.ActionListener;
 
 public class Elasticsearch7TransportClientAgentIntercept {
-
   @SuppressWarnings({"rawtypes", "unchecked"})
   public static ActionListener<?> transport(final Object request, final Object listener) {
     final Tracer.SpanBuilder spanBuilder = GlobalTracer.get()
