@@ -371,6 +371,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Mongo Driver \[3.10.1,\]](https://github.com/opentracing-contrib/java-mongo-driver)
 1. [Apache Camel \[2.24.0,\]](https://github.com/apache/camel/tree/master/components/camel-opentracing)
 1. [AWS SDK \[1.11.528,\]](https://github.com/opentracing-contrib/java-aws-sdk)
+1. [AWS SDK 2 \[2.7.15,\]](https://github.com/opentracing-contrib/java-aws-sdk)
 1. [Cassandra Driver \[3.6.0,\]](https://github.com/opentracing-contrib/java-cassandra-driver)
 1. [JMS API (`javax.jms` v1 & v2)][java-jms]
 1. [JMS Spring \[5.1.7.RELEASE,\]](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring)

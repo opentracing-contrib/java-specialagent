@@ -36,6 +36,7 @@
     <module>specialagent-web-servlet-filter</module>
     <module>specialagent-camel</module>
     <module>specialagent-aws-sdk</module>
+    <module>specialagent-aws-sdk-2</module>
     <module>specialagent-cassandra-driver</module>
     <module>specialagent-jms-1</module>
     <module>specialagent-jms-2</module>
