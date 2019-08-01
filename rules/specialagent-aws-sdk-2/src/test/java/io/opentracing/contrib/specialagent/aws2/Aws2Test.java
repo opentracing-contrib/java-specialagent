@@ -15,12 +15,21 @@
 
 package io.opentracing.contrib.specialagent.aws2;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
+import static org.junit.Assert.*;
+
+import java.net.URI;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
@@ -34,17 +43,8 @@ import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
-import java.net.URI;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
-
 @RunWith(AgentRunner.class)
 public class Aws2Test {
-
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();
@@ -85,46 +85,36 @@ public class Aws2Test {
   }
 
   private static DynamoDbClient buildClient() {
-    final AwsSessionCredentials awsCreds = AwsSessionCredentials.create(
-            "access_key_id",
-            "secret_key_id",
-            "session_token");
-
+    final AwsSessionCredentials awsCreds = AwsSessionCredentials.create("access_key_id", "secret_key_id", "session_token");
     return DynamoDbClient
-            .builder()
-            .endpointOverride(URI.create("http://localhost:8000"))
-            .region(Region.US_WEST_2)
-            .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-            .overrideConfiguration(ClientOverrideConfiguration.builder().apiCallTimeout(Duration.ofSeconds(1)).build())
-            .build();
+      .builder()
+      .endpointOverride(URI.create("http://localhost:8000"))
+      .region(Region.US_WEST_2)
+      .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+      .overrideConfiguration(ClientOverrideConfiguration.builder().apiCallTimeout(Duration.ofSeconds(1)).build())
+      .build();
   }
 
   private static DynamoDbAsyncClient buildAsyncClient() {
-    final AwsSessionCredentials awsCreds = AwsSessionCredentials.create(
-            "access_key_id",
-            "secret_key_id",
-            "session_token");
+    final AwsSessionCredentials awsCreds = AwsSessionCredentials.create("access_key_id", "secret_key_id", "session_token");
     final DynamoDbAsyncClient build = DynamoDbAsyncClient
-            .builder()
-            .endpointOverride(URI.create("http://localhost:8000"))
-            .region(Region.US_WEST_2)
-            .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-            .overrideConfiguration(ClientOverrideConfiguration.builder()
-                    .apiCallTimeout(Duration.ofSeconds(1)).build())
-            .build();
+      .builder()
+      .endpointOverride(URI.create("http://localhost:8000"))
+      .region(Region.US_WEST_2)
+      .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+      .overrideConfiguration(ClientOverrideConfiguration.builder()
+        .apiCallTimeout(Duration.ofSeconds(1)).build())
+      .build();
     return build;
   }
 
   private static void createTable(final DynamoDbClient dbClient, final String tableName) {
     final String partitionKeyName = tableName + "Id";
     final CreateTableRequest createTableRequest =CreateTableRequest.builder()
-            .tableName(tableName)
-            .keySchema(
-                    KeySchemaElement.builder().attributeName(partitionKeyName).keyType(KeyType.HASH).build())
-            .attributeDefinitions(
-                    AttributeDefinition.builder().attributeName(partitionKeyName).attributeType("S").build())
-            .provisionedThroughput(
-                    ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(5L).build()).build();
+      .tableName(tableName)
+      .keySchema(KeySchemaElement.builder().attributeName(partitionKeyName).keyType(KeyType.HASH).build())
+      .attributeDefinitions(AttributeDefinition.builder().attributeName(partitionKeyName).attributeType("S").build())
+      .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(5L).build()).build();
 
     dbClient.createTable(createTableRequest);
   }
@@ -132,7 +122,7 @@ public class Aws2Test {
   private static CompletableFuture<CreateTableResponse> createTableAsync(final DynamoDbAsyncClient dbClient, final String tableName) {
     final String partitionKeyName = tableName + "Id";
     final CreateTableRequest createTableRequest = CreateTableRequest
-            .builder()
+      .builder()
       .tableName(tableName).keySchema(KeySchemaElement.builder().attributeName(partitionKeyName).keyType(KeyType.HASH).build())
       .attributeDefinitions(AttributeDefinition.builder().attributeName(partitionKeyName).attributeType("S").build())
       .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(5L).build()).build();

@@ -15,18 +15,17 @@
 
 package io.opentracing.contrib.specialagent.aws2;
 
+import java.util.function.Consumer;
 
 import software.amazon.awssdk.core.client.builder.SdkClientBuilder;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration.Builder;
 
-import java.util.function.Consumer;
-
 public class Aws2AgentIntercept {
   public static void enter(final Object thiz) {
-    SdkClientBuilder builder = (SdkClientBuilder) thiz;
+    final SdkClientBuilder<?,?> builder = (SdkClientBuilder<?,?>)thiz;
     builder.overrideConfiguration(new Consumer<Builder>() {
       @Override
-      public void accept(Builder builder) {
+      public void accept(final Builder builder) {
         builder.addExecutionInterceptor(new TracingExecutionInterceptor());
       }
     });
