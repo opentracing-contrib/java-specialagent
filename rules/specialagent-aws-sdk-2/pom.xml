@@ -25,25 +25,13 @@
   </parent>
   <artifactId>specialagent-aws-sdk-2</artifactId>
   <name>SpecialAgent Rule for AWS SDK 2</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-aws-sdk</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-aws-sdk-2</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>aws-sdk-2</sa.plugin.name>
   </properties>
   <dependencies>
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-aws-sdk -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-aws-sdk</artifactId>
-      <version>0.1.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>aws-java-sdk</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>aws-sdk-java</artifactId>

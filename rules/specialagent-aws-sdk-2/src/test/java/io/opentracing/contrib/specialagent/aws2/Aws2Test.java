@@ -39,14 +39,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(AgentRunner.class)
 public class Aws2Test {
-  private static final Logger logger = Logger.getLogger(Aws2Test.class.getName());
 
   @Before
   public void before(final MockTracer tracer) {
@@ -60,7 +57,7 @@ public class Aws2Test {
       createTable(dbClient, "table-1");
     }
     catch (final Exception e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+      e.printStackTrace();
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -79,7 +76,7 @@ public class Aws2Test {
       assertEquals("asyncRequest", result.tableDescription().tableName());
     }
     catch (final Exception e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+      e.printStackTrace();
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
