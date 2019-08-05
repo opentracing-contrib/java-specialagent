@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
@@ -25,9 +26,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
-
-
+import java.util.Set;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -99,11 +100,13 @@ public class ByteBuddyManager extends Manager {
   @Override
   void premain(final String agentArgs, final Instrumentation inst) throws Exception {
     this.inst = inst;
-    SpecialAgent.initialize();
+    SpecialAgent.initialize(this);
   }
 
+  private final Set<String> loadedRules = new HashSet<>();
+
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<URL,Integer> ruleJarToIndex, final Map<String,String> nameToVersion, final Event[] events) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> fileToPluginManifest) throws IOException {
     AgentRule agentRule = null;
     try {
       // Load ClassLoader Agent
@@ -117,7 +120,7 @@ public class ByteBuddyManager extends Manager {
       final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
       while (enumeration.hasMoreElements()) {
         final URL scriptUrl = enumeration.nextElement();
-        final URL ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
+        final File ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Dereferencing index for " + ruleJar);
 
@@ -129,8 +132,12 @@ public class ByteBuddyManager extends Manager {
           if (line.length() == 0 || line.charAt(0) == '#')
             continue;
 
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Installing rule: " + line);
+          if (loadedRules.contains(line)) {
+            if (logger.isLoggable(Level.FINE))
+              logger.fine("Skipping loaded rule: " + line);
+
+            continue;
+          }
 
           final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
           if (!AgentRule.class.isAssignableFrom(agentClass)) {
@@ -138,14 +145,25 @@ public class ByteBuddyManager extends Manager {
             continue;
           }
 
-          final String jarName = AgentRuleUtil.getPluginName(ruleJar);
-          final String version = nameToVersion.get(jarName);
-          final String name = jarName.endsWith(version) ? jarName.substring(0, jarName.length() - version.length() - 1) : jarName;
+          final PluginManifest pluginManifest = fileToPluginManifest.get(ruleJar);
 
-          AgentRule.classNameToName.put(agentClass.getName(), name);
+          final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
+          final String disableRule = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "." + simpleClassName + ".disable");
+          if (disableRule != null && !"false".equals(disableRule)) {
+            if (logger.isLoggable(Level.FINE))
+              logger.fine("Skipping disabled rule: " + line);
+
+            continue;
+          }
+
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Installing new rule: " + line);
+
+          AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
 
           agentRule = (AgentRule)agentClass.getConstructor().newInstance();
           loadAgentRule(agentRule, newBuilder(), index, events);
+          loadedRules.add(line);
         }
       }
     }
@@ -190,13 +208,13 @@ public class ByteBuddyManager extends Manager {
     @Override
     public void onDiscovery(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
       if (events[Event.DISCOVERY.ordinal()] != null)
-        logger.severe("Event::onDiscovery(" + typeName + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
+        logger.severe("Event::onDiscovery(" + typeName + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")");
     }
 
     @Override
     public void onTransformation(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final DynamicType dynamicType) {
       if (events[Event.TRANSFORMATION.ordinal()] != null)
-        logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
+        logger.severe("Event::onTransformation(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
       if (index != -1 && !SpecialAgent.linkRule(index, classLoader))
         throw new IllegalStateException("Disallowing transformation due to incompatibility");
@@ -205,19 +223,19 @@ public class ByteBuddyManager extends Manager {
     @Override
     public void onIgnored(final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
       if (events[Event.IGNORED.ordinal()] != null)
-        logger.severe("Event::onIgnored(" + typeDescription.getName() + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
+        logger.severe("Event::onIgnored(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")");
     }
 
     @Override
     public void onError(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded, final Throwable throwable) {
       if (events[Event.ERROR.ordinal()] != null)
-        logger.log(Level.SEVERE, "Event::onError(" + typeName + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")", throwable);
+        logger.log(Level.SEVERE, "Event::onError(" + typeName + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")", throwable);
     }
 
     @Override
     public void onComplete(final String typeName, final ClassLoader classLoader, final JavaModule module, final boolean loaded) {
       if (events[Event.COMPLETE.ordinal()] != null)
-        logger.severe("Event::onComplete(" + typeName + ", " + SpecialAgentUtil.getIdentityCode(classLoader) + ", " + module + ", " + loaded + ")");
+        logger.severe("Event::onComplete(" + typeName + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ")");
     }
   }
 }

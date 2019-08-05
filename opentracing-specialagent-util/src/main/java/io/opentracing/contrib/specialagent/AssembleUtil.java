@@ -17,98 +17,31 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import java.util.zip.ZipInputStream;
 
 public final class AssembleUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
   private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
-
-  /**
-   * Filters the specified array of URL objects by checking if the file name of
-   * the URL is included in the specified {@code Set} of string names.
-   *
-   * @param urls The array of URL objects to filter.
-   * @param files The set of {@code File} objects whose names are to be matched
-   *          by the specified array of URL objects.
-   * @param index The index value for stack tracking (must be called with 0).
-   * @param depth The depth value for stack tracking (must be called with 0).
-   * @return An array of {@code URL} objects that have file names that belong to
-   *         the specified {@code Set} of string names.
-   * @throws MalformedURLException If a parsed URL fails to comply with the
-   *           specific syntax of the associated protocol.
-   */
-  private static URL[] filterUrlFileNames(final URL[] urls, final Set<File> files, final int index, final int depth) throws MalformedURLException {
-    for (int i = index; i < urls.length; ++i) {
-      final String string = urls[i].toString();
-      final String artifact;
-      if (string.endsWith("/target/classes/"))
-        artifact = getArtifactFile(new File(string.substring(5, string.length() - 16)));
-      else if (string.endsWith(".jar"))
-        artifact = string.substring(string.lastIndexOf('/') + 1);
-      else
-        continue;
-
-      for (final File file : files) {
-        if (artifact.equals(file.getName())) {
-          final URL result = new URL(string);
-          final URL[] results = filterUrlFileNames(urls, files, i + 1, depth + 1);
-          results[depth] = result;
-          return results;
-        }
-      }
-    }
-
-    return depth == 0 ? null : new URL[depth];
-  }
-
-  private static String getArtifactFile(final File dir) {
-    try {
-      final MavenXpp3Reader reader = new MavenXpp3Reader();
-      final Model model = reader.read(new FileReader(new File(dir, "pom.xml")));
-      final String version = model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();
-      return model.getArtifactId() + "-" + version + ".jar";
-    }
-    catch (final IOException | XmlPullParserException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  /**
-   * Filter the specified array of URL objects to return the Instrumentation
-   * Rule URLs as specified by the Dependency TGF file at {@code dependencyUrl}.
-   *
-   * @param urls The array of URL objects to filter.
-   * @param dependenciesTgf The contents of the TGF file that specify the
-   *          dependencies.
-   * @param includeOptional Whether to include dependencies marked as
-   *          {@code (optional)}.
-   * @param scopes An array of Maven scopes to include in the returned set, or
-   *          {@code null} to include all scopes.
-   * @return An array of URL objects representing Instrumentation Rule URLs
-   * @throws IOException If an I/O error has occurred.
-   */
-  public static URL[] filterRuleURLs(final URL[] urls, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
-    final Set<File> files = selectFromTgf(dependenciesTgf, includeOptional, scopes);
-    return filterUrlFileNames(urls, files, 0, 0);
-  }
 
   /**
    * Tests if the specified string is a name of a Maven scope.
@@ -117,7 +50,11 @@ public final class AssembleUtil {
    * @return {@code true} if the specified string is a name of a Maven scope.
    */
   private static boolean isScope(final String scope) {
-    return Arrays.binarySearch(scopes, scope) > -1;
+    for (int i = 0; i < scopes.length; ++i)
+      if (scopes[i].equals(scope))
+        return true;
+
+    return false;
   }
 
   private static final Set<String> jarTypes = new HashSet<>(Arrays.asList("jar", "test-jar", "maven-plugin", "ejb", "ejb-client", "java-source", "javadoc"));
@@ -135,7 +72,7 @@ public final class AssembleUtil {
     return false;
   }
 
-  static File getFileForDependency(final String dependency, final String ... scopes) {
+  public static File getFileForDependency(final String dependency, final String ... scopes) {
     final int c0 = dependency.indexOf(':');
     final String groupId = dependency.substring(0, c0);
 
@@ -198,7 +135,7 @@ public final class AssembleUtil {
    * @return A {@code Set} of resource names that match the call parameters.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<File> selectFromTgf(final String tgf, final boolean includeOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
+  public static Set<File> selectFromTgf(final String tgf, final boolean includeOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
     final Set<String> excluded = getLocations(excludes);
     final Set<File> files = new HashSet<>();
     final StringTokenizer tokenizer = new StringTokenizer(tgf, "\r\n");
@@ -208,7 +145,7 @@ public final class AssembleUtil {
       if ("#".equals(token))
         break;
 
-      final boolean isOptional = token.endsWith("(optional)");
+      final boolean isOptional = token.endsWith(" (optional)");
       if (isOptional) {
         if (!includeOptional)
           continue;
@@ -219,9 +156,6 @@ public final class AssembleUtil {
       // groupId
       final int start = token.indexOf(' ');
       int end = token.indexOf(' ', start + 1);
-      if (end != -1 && end == token.indexOf(" (optional)", end))
-        end = token.indexOf(' ', end + 11);
-
       if (end == -1)
         end = token.length();
 
@@ -257,7 +191,7 @@ public final class AssembleUtil {
     }
   }
 
-  private static ZipEntry getEntryFromJar(final ZipFile zipFile, final String name) throws IOException {
+  private static ZipEntry getEntryFromJar(final ZipFile zipFile, final String name) {
     final Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
     while (enumeration.hasMoreElements()) {
       final ZipEntry entry = enumeration.nextElement();
@@ -278,15 +212,15 @@ public final class AssembleUtil {
    *         of the specified classes.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<String> getLocations(final Class<?> ... classes) throws IOException {
+  public static Set<String> getLocations(final Class<?> ... classes) throws IOException {
     final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     final Set<String> locations = new LinkedHashSet<>();
     for (final Class<?> cls : classes) {
       final String resourceName = cls.getName().replace('.', '/').concat(".class");
-      final Enumeration<URL> urls = classLoader.getResources(resourceName);
-      while (urls.hasMoreElements()) {
-        final String path = urls.nextElement().getFile();
-        locations.add(path.startsWith("file:") ? path.substring(5, path.indexOf('!')) : path.substring(0, path.length() - resourceName.length() - 1));
+      final Enumeration<URL> resources = classLoader.getResources(resourceName);
+      while (resources.hasMoreElements()) {
+        final String resource = resources.nextElement().getFile();
+        locations.add(resource.startsWith("file:") ? resource.substring(5, resource.indexOf('!')) : resource.substring(0, resource.length() - resourceName.length() - 1));
       }
     }
 
@@ -342,7 +276,7 @@ public final class AssembleUtil {
    * @return An indented string representation of the specified array, using the
    *         algorithm in {@link Arrays#toString(Object[])}.
    */
-  static String toIndentedString(final Object[] a) {
+  public static String toIndentedString(final Object[] a) {
     if (a == null)
       return "null";
 
@@ -354,7 +288,7 @@ public final class AssembleUtil {
       if (i > 0)
         builder.append(",\n");
 
-      builder.append("  ").append(a[i]);
+      builder.append(a[i]);
     }
 
     return builder.toString();
@@ -373,7 +307,7 @@ public final class AssembleUtil {
    * @return An indented string representation of the specified {@code List},
    *         using the algorithm in {@link Collection#toString()}.
    */
-  static String toIndentedString(final Collection<?> l) {
+  public static String toIndentedString(final Collection<?> l) {
     if (l == null)
       return "null";
 
@@ -386,10 +320,458 @@ public final class AssembleUtil {
       if (i > 0)
         builder.append(",\n");
 
-      builder.append("  ").append(iterator.next());
+      builder.append(iterator.next());
     }
 
     return builder.toString();
+  }
+
+  /**
+   * Returns string representation of the specified map.
+   * <p>
+   * This method differentiates itself from the algorithm in
+   * {@link Map#toString()} by formatting the output to separate entries
+   * onto new lines, indented with 2 spaces. If the specified map is
+   * null, this method returns the string {@code "null"}. If the size of the
+   * specified map is 0, this method returns {@code ""}.
+   *
+   * @param m The map.
+   * @return An indented string representation of the specified {@code List},
+   *         using the algorithm in {@link Map#toString()}.
+   */
+  public static String toIndentedString(final Map<?,?> m) {
+    if (m == null)
+      return "null";
+
+    if (m.size() == 0)
+      return "";
+
+    final StringBuilder builder = new StringBuilder();
+    final Iterator<?> iterator = m.entrySet().iterator();
+    for (int i = 0; iterator.hasNext(); ++i) {
+      if (i > 0)
+        builder.append(",\n");
+
+      builder.append(iterator.next());
+    }
+
+    return builder.toString();
+  }
+
+  /**
+   * Recursively process each sub-path of the specified directory.
+   *
+   * @param dir The directory to process.
+   * @param predicate The predicate defining the test process.
+   * @return {@code true} if the specified predicate returned {@code true} for
+   *         each sub-path to which it was applied, otherwise {@code false}.
+   */
+  public static boolean recurseDir(final File dir, final Predicate<File> predicate) {
+    final File[] files = dir.listFiles();
+    if (files != null)
+      for (final File file : files)
+        if (!recurseDir(file, predicate))
+          return false;
+
+    return predicate.test(dir);
+  }
+
+  /**
+   * Recursively process each sub-path of the specified directory.
+   *
+   * @param dir The directory to process.
+   * @param function The function defining the test process, which returns a
+   *          {@link FileVisitResult} to direct the recursion process.
+   * @return A {@link FileVisitResult} to direct the recursion process.
+   */
+  public static FileVisitResult recurseDir(final File dir, final Function<File,FileVisitResult> function) {
+    final File[] files = dir.listFiles();
+    if (files != null) {
+      for (final File file : files) {
+        final FileVisitResult result = recurseDir(file, function);
+        if (result == FileVisitResult.SKIP_SIBLINGS)
+          break;
+
+        if (result == FileVisitResult.TERMINATE)
+          return result;
+
+        if (result == FileVisitResult.SKIP_SUBTREE)
+          return FileVisitResult.SKIP_SIBLINGS;
+      }
+    }
+
+    return function.apply(dir);
+  }
+
+  /**
+   * Compares two {@code Object} arrays, within comparable elements,
+   * lexicographically.
+   * <p>
+   * A {@code null} array reference is considered lexicographically less than a
+   * non-{@code null} array reference. Two {@code null} array references are
+   * considered equal. A {@code null} array element is considered
+   * lexicographically than a non-{@code null} array element. Two {@code null}
+   * array elements are considered equal.
+   * <p>
+   * The comparison is consistent with {@link Arrays#equals(Object[], Object[])
+   * equals}, more specifically the following holds for arrays {@code a} and
+   * {@code b}:
+   *
+   * <pre>
+   * {@code Arrays.equals(a, b) == (Arrays.compare(a, b) == 0)}
+   * </pre>
+   *
+   * @param a The first array to compare.
+   * @param b The second array to compare.
+   * @param <T> The type of comparable array elements.
+   * @return The value {@code 0} if the first and second array are equal and
+   *         contain the same elements in the same order; a value less than
+   *         {@code 0} if the first array is lexicographically less than the
+   *         second array; and a value greater than {@code 0} if the first array
+   *         is lexicographically greater than the second array.
+   */
+  public static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
+    if (a == b)
+      return 0;
+
+    // A null array is less than a non-null array
+    if (a == null || b == null)
+      return a == null ? -1 : 1;
+
+    int length = Math.min(a.length, b.length);
+    for (int i = 0; i < length; i++) {
+      final T oa = a[i];
+      final T ob = b[i];
+      if (oa != ob) {
+        // A null element is less than a non-null element
+        if (oa == null || ob == null)
+          return oa == null ? -1 : 1;
+
+        final int v = oa.compareTo(ob);
+        if (v != 0)
+          return v;
+      }
+    }
+
+    return a.length - b.length;
+  }
+
+  /**
+   * Tests whether the first specified array contains all {@link Comparable}
+   * elements in the second specified array.
+   *
+   * @param <T> Type parameter of array, which must extend {@link Comparable}.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @return {@code true} if the first specifies array contains all elements in
+   *         the second specified array.
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  public static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
+    for (int i = 0, j = 0;;) {
+      if (j == b.length)
+        return true;
+
+      if (i == a.length)
+        return false;
+
+      final int comparison = a[i].compareTo(b[j]);
+      if (comparison > 0)
+        return false;
+
+      ++i;
+      if (comparison == 0)
+        ++j;
+    }
+  }
+
+  /**
+   * Tests whether the first specifies array contains all elements in the second
+   * specified array, with comparison determined by the specified
+   * {@link Comparator}.
+   *
+   * @param <T> Type parameter of array.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @param c The {@link Comparator}.
+   * @return {@code true} if the first specifies array contains all elements in
+   *         the second specified array.
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  public static <T>boolean containsAll(final T[] a, final T[] b, final Comparator<T> c) {
+    for (int i = 0, j = 0;;) {
+      if (j == b.length)
+        return true;
+
+      if (i == a.length)
+        return false;
+
+      final int comparison = c.compare(a[i], b[j]);
+      if (comparison > 0)
+        return false;
+
+      ++i;
+      if (comparison == 0)
+        ++j;
+    }
+  }
+
+  /**
+   * Returns an array of type {@code <T>} that includes only the elements that
+   * belong to the specified arrays (the specified arrays must be sorted).
+   * <p>
+   * <i><b>Note:</b> This is a recursive algorithm, implemented to take
+   * advantage of the high performance of callstack registers, but will fail due
+   * to a {@link StackOverflowError} if the number of differences between the
+   * first and second specified arrays approaches ~8000.</i>
+   *
+   * @param <T> Type parameter of array.
+   * @param a The first specified array (sorted).
+   * @param b The second specified array (sorted).
+   * @param i The starting index of the first specified array (should be set to
+   *          0).
+   * @param j The starting index of the second specified array (should be set to
+   *          0).
+   * @param r The starting index of the resulting array (should be set to 0).
+   * @return An array of type {@code <T>} that includes only the elements that
+   *         belong to the first and second specified array (the specified
+   *         arrays must be sorted).
+   * @throws NullPointerException If {@code a} or {@code b} are null.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends Comparable<T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
+    for (int d = 0;; ++d) {
+      int comparison = 0;
+      if (i + d == a.length || j + d == b.length || (comparison = a[i + d].compareTo(b[j + d])) != 0) {
+        final T[] retained;
+        if (i + d == a.length || j + d == b.length)
+          retained = r + d == 0 ? null : (T[])Array.newInstance(a.getClass().getComponentType(), r + d);
+        else if (comparison < 0)
+          retained = retain(a, b, i + d + 1, j + d, r + d);
+        else
+          retained = retain(a, b, i + d, j + d + 1, r + d);
+
+        if (d > 0)
+          System.arraycopy(a, i, retained, r, d);
+
+        return retained;
+      }
+    }
+  }
+
+  /**
+   * Sorts the specified array of objects into ascending order, according to the
+   * natural ordering of its elements. All elements in the array must implement
+   * the {@link Comparable} interface. Furthermore, all elements in the array
+   * must be mutually comparable (that is, {@code e1.compareTo(e2)} must not
+   * throw a {@link ClassCastException} for any elements {@code e1} and
+   * {@code e2} in the array).
+   *
+   * @param <T> The component type of the specified array.
+   * @param array The array to be sorted.
+   * @return The specified array, which is sorted in-place (unless it is null).
+   * @see Arrays#sort(Object[])
+   */
+  public static <T>T[] sort(final T[] array) {
+    if (array == null)
+      return null;
+
+    Arrays.sort(array);
+    return array;
+  }
+
+  /**
+   * Returns the name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getSimpleNameId(Object)
+   */
+  public static String getNameId(final Object obj) {
+    return obj != null ? obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
+   * Returns the simple name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The simple name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getNameId(Object)
+   */
+  public static String getSimpleNameId(final Object obj) {
+    return obj != null ? obj.getClass().getSimpleName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
+   * Returns a string representation of the specified array, using the specified
+   * delimiter between the string representation of each element. If the
+   * specified array is null, this method returns the string {@code "null"}. If
+   * the length of the specified array is 0, this method returns {@code ""}.
+   *
+   * @param a The array.
+   * @param del The delimiter.
+   * @return A string representation of the specified array, using the specified
+   *         delimiter between the string representation of each element.
+   */
+  public static String toString(final Object[] a, final String del) {
+    if (a == null)
+      return "null";
+
+    if (a.length == 0)
+      return "";
+
+    final StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < a.length; ++i) {
+      if (i > 0)
+        builder.append(del);
+
+      builder.append(String.valueOf(a[i]));
+    }
+
+    return builder.toString();
+  }
+
+  /**
+   * Returns a string representation of the specified collection, using the
+   * specified delimiter between the string representation of each element. If
+   * the specified collection is null, this method returns the string
+   * {@code "null"}. If the size of the specified collection is 0, this method
+   * returns {@code ""}.
+   *
+   * @param c The array.
+   * @param del The delimiter.
+   * @return A string representation of the specified array, using the specified
+   *         delimiter between the string representation of each element.
+   */
+  public static String toString(final Collection<?> c, final String del) {
+    if (c == null)
+      return "null";
+
+    if (c.size() == 0)
+      return "";
+
+    final StringBuilder builder = new StringBuilder();
+    final Iterator<?> iterator = c.iterator();
+    for (int i = 0; iterator.hasNext(); ++i) {
+      if (i > 0)
+        builder.append(del);
+
+      builder.append(String.valueOf(iterator.next()));
+    }
+
+    return builder.toString();
+  }
+
+  public static void absorbProperties(final String command) {
+    final String[] parts = command.split("\\s+-");
+    for (int i = 0; i < parts.length; ++i) {
+      final String part = parts[i];
+      if (part.charAt(0) != 'D')
+        continue;
+
+      final int index = part.indexOf('=');
+      if (index == -1)
+        System.setProperty(part.substring(1), "");
+      else
+        System.setProperty(part.substring(1, index), part.substring(index + 1));
+    }
+  }
+
+  public static void forEachClass(final URL[] urls, final Consumer<String> consumer) throws IOException {
+    for (final URL url : urls) {
+      if (url.getPath().endsWith(".jar")) {
+        try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
+          for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
+            final String name = entry.getName();
+            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
+              consumer.accept(name);
+            }
+          }
+        }
+      }
+      else {
+        final File file = new File(url.getPath());
+        final Path path = file.toPath();
+        AssembleUtil.recurseDir(file, new Predicate<File>() {
+          @Override
+          public boolean test(final File t) {
+            if (t.isDirectory())
+              return true;
+
+            final String name = path.relativize(t.toPath()).toString();
+            if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
+              consumer.accept(name);
+            }
+
+            return true;
+          }
+        });
+      }
+    }
+  }
+
+  private static URL _toURL(final File file) throws MalformedURLException {
+    final String path = file.getAbsolutePath();
+    return new URL("file", "", file.isDirectory() ? path + "/" : path);
+  }
+
+  public static URL toURL(final File file) {
+    try {
+      return _toURL(file);
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final File ... files) {
+    try {
+      final URL[] urls = new URL[files.length];
+      for (int i = 0; i < files.length; ++i)
+        urls[i] = _toURL(files[i]);
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final List<File> files) {
+    try {
+      final URL[] urls = new URL[files.size()];
+      for (int i = 0; i < files.size(); ++i)
+        urls[i] = _toURL(files.get(i));
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static URL[] toURLs(final Collection<File> files) {
+    try {
+      final URL[] urls = new URL[files.size()];
+      final Iterator<File> iterator = files.iterator();
+      for (int i = 0; iterator.hasNext(); ++i)
+        urls[i] = AssembleUtil._toURL(iterator.next());
+
+      return urls;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private AssembleUtil() {

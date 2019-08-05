@@ -26,6 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -78,6 +79,12 @@ public class HazelcastTest {
   public void testGetAllHazelcastInstances(final MockTracer tracer) {
     final Set<HazelcastInstance> instances = Hazelcast.getAllHazelcastInstances();
     test(instances.iterator().next(), tracer);
+  }
+
+  @Test
+  public void testNewHazelcastClientInstance(final MockTracer tracer) {
+    HazelcastInstance hazelcast2 = HazelcastClient.newHazelcastClient();
+    test(hazelcast2, tracer);
   }
 
   private static void test(final HazelcastInstance instance, final MockTracer tracer) {

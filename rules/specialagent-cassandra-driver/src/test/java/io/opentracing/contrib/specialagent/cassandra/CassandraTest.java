@@ -30,6 +30,7 @@ import com.datastax.driver.core.Session;
 
 import io.opentracing.contrib.cassandra.TracingSession;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockTracer;
 
@@ -52,7 +53,12 @@ public class CassandraTest {
   @After
   public void after() {
     if (isJdkSupported) {
-      EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+      try {
+        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+      }
+      catch (final Exception e) {
+        logger.log(Level.WARNING, e.getMessage(), e);
+      }
     }
   }
 
@@ -69,8 +75,7 @@ public class CassandraTest {
       session.close();
     }
 
-    final int size = tracer.finishedSpans().size();
-    assertEquals(1, size);
+    assertEquals(1, tracer.finishedSpans().size());
   }
 
   private static Session createSession() {

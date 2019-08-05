@@ -100,23 +100,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
   }
 
-  private static void absorbProperties() {
-    final String sunJavaCommand = System.getProperty("sun.java.command");
-    if (sunJavaCommand == null)
-      return;
-
-    final String[] parts = sunJavaCommand.split("\\s+-");
-    for (int i = 0; i < parts.length; ++i) {
-      final String part = parts[i];
-      if (part.charAt(0) != 'D')
-        continue;
-
-      final int index = part.indexOf('=');
-      if (index == -1)
-        System.setProperty(part.substring(1), "");
-      else
-        System.setProperty(part.substring(1, index), part.substring(index + 1));
-    }
+  private static JarFile appendSourceLocationToBootstrap(final Instrumentation inst, final Class<?> cls) throws IOException {
+    final JarFile jarFile = createJarFileOfSource(cls);
+    inst.appendToBootstrapClassLoaderSearch(jarFile);
+    return jarFile;
   }
 
   static Instrumentation install() {
@@ -128,13 +115,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
 
       // FIXME: Can this be done in a better way?
-      final JarFile jarFile = createJarFileOfSource(AgentRunner.class);
       final Instrumentation inst = ByteBuddyAgent.install();
-      inst.appendToBootstrapClassLoaderSearch(jarFile);
+      final JarFile jarFile0 = appendSourceLocationToBootstrap(inst, AgentRunner.class);
       if (logger.isLoggable(Level.FINE))
         logger.fine("\n================== Installing BootLoaderAgent ==================\n");
 
-      BootLoaderAgent.premain(inst, jarFile);
+      BootLoaderAgent.premain(inst, jarFile0);
       return inst;
     }
     catch (final IOException e) {
@@ -143,11 +129,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private static final File CWD = new File("").getAbsoluteFile();
-  private static final ClassLoader bootLoaderProxy = new URLClassLoader(new URL[0], null);
+  private static final ClassLoader bootLoaderProxy = BootProxyClassLoader.INSTANCE;
 
   static {
     System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
-    absorbProperties();
+    final String sunJavaCommand = System.getProperty("sun.java.command");
+    if (sunJavaCommand != null)
+      AssembleUtil.absorbProperties(sunJavaCommand);
+
     inst = install();
   }
 
@@ -184,6 +173,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
      *         Default: <code>{Event.ERROR}</code>.
      */
     Event[] events() default {Event.ERROR};
+
+    /**
+     * @return Names of plugins (either instrumentation or tracer) to disable in
+     *         the test runtime.
+     *         <p>
+     *         Default: <code>{}</code>.
+     */
+    String[] disable() default {};
 
     /**
      * @return Whether the plugin should run in verbose mode.
@@ -241,8 +238,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
     try {
-      final String testClassesPath = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
-      final String classesPath = testClassesPath.endsWith(".jar") ? testClassesPath.replace(".jar", "-tests.jar") : testClassesPath.replace("/test-classes/", "/classes/");
+      final String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
+      final File testClassesPath = new File(path);
+      final File classesPath = new File(path.endsWith(".jar") ? path.replace(".jar", "-tests.jar") : path.replace("/test-classes/", "/classes/"));
       URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
       if (dependenciesUrl == null) {
         logger.warning(SpecialAgent.DEPENDENCIES_TGF + " was not found: invoking `mvn generate-resources`");
@@ -260,13 +258,16 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }
       }
 
-      final List<String> rulePaths = findRulePaths(dependenciesUrl);
+      final List<File> rulePaths = findRulePaths(dependenciesUrl);
       rulePaths.add(testClassesPath);
       rulePaths.add(classesPath);
 
       final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
-      final URL[] classpath = SpecialAgentUtil.classPathToURLs(System.getProperty("java.class.path"));
-      final URLClassLoader classLoader = new URLClassLoader(classpath, new ClassLoader(ClassLoader.getSystemClassLoader()) {
+      isolatedClasses.add("io.opentracing.contrib.specialagent.AgentRule");
+      isolatedClasses.add("io.opentracing.contrib.specialagent.Logger");
+      isolatedClasses.add("io.opentracing.contrib.specialagent.Level");
+      final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
+      final URLClassLoader classLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), new ClassLoader(ClassLoader.getSystemClassLoader()) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? bootLoaderProxy.loadClass(name) : super.loadClass(name, resolve);
@@ -292,18 +293,18 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @return A list of the rule paths.
    * @throws IOException If an I/O error has occurred.
    */
-  private static List<String> findRulePaths(final URL dependenciesUrl) throws IOException {
+  private static List<File> findRulePaths(final URL dependenciesUrl) throws IOException {
     final String dependenciesTgf = dependenciesUrl == null ? null : new String(AssembleUtil.readBytes(dependenciesUrl));
 
-    final List<String> rulePaths = new ArrayList<>();
-    final URL[] classpath = SpecialAgentUtil.classPathToURLs(System.getProperty("java.class.path"));
+    final List<File> rulePaths = new ArrayList<>();
+    final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
 
-    final URL[] dependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
+    final File[] dependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
     if (dependencies == null)
       throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
     for (int i = 0; i < dependencies.length; ++i)
-      rulePaths.add(dependencies[i].getFile());
+      rulePaths.add(dependencies[i]);
 
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
@@ -312,24 +313,31 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("rulePaths of forked process will be:\n" + AssembleUtil.toIndentedString(rulePaths));
 
-    System.setProperty(SpecialAgent.RULE_PATH_ARG, SpecialAgentUtil.toString(rulePaths.toArray(), ":"));
+    System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
 
     // Add scope={"test", "provided"}, optional=true to rulePaths
-    final URL[] testDependencies = AssembleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
+    final File[] testDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
     if (testDependencies == null)
       throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
-    for (final URL testDependency : testDependencies)
-      rulePaths.add(testDependency.getPath());
+    for (final File testDependency : testDependencies)
+      rulePaths.add(testDependency);
 
     return rulePaths;
   }
 
   private final Config config;
-  private final String pluginName;
+  private final PluginManifest pluginManifest;
 
   private void setVerbose(final boolean verbose) {
-    System.setProperty("sa.instrumentation.plugin." + pluginName, String.valueOf(verbose));
+    System.setProperty("sa.instrumentation.plugin." + pluginManifest.name + ".verbose", String.valueOf(verbose));
+  }
+
+  private static void setDisable(final String[] disable) {
+    for (final String name : disable) {
+      System.setProperty("sa.instrumentation.plugin." + name + ".enable", "false");
+      System.setProperty("sa.tracer.plugin." + name + ".enable", "false");
+    }
   }
 
   /**
@@ -344,35 +352,33 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
-    this.pluginName = AgentRuleUtil.getPluginName(testClass.getProtectionDomain().getCodeSource().getLocation());
-    final boolean verbose;
+    this.pluginManifest = PluginManifest.getPluginManifest(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
     final Event[] events;
     if (config == null) {
-      verbose = false;
       events = new Event[] {Event.ERROR};
     }
     else {
-      verbose = config.verbose();
+      setDisable(config.disable());
+      if (config.verbose())
+        setVerbose(true);
+
       events = config.events();
       if (config.log() != Level.INFO) {
-        final String logLevelProperty = System.getProperty(SpecialAgent.LOGGING_PROPERTY);
+        final String logLevelProperty = System.getProperty(SpecialAgent.LOG_LEVEL_PROPERTY);
         if (logLevelProperty != null)
-          logger.warning(SpecialAgent.LOGGING_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log is specified in " + testClass.getName());
+          logger.warning(SpecialAgent.LOG_LEVEL_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log is specified in " + testClass.getName());
         else
-          System.setProperty(SpecialAgent.LOGGING_PROPERTY, String.valueOf(config.log()));
+          System.setProperty(SpecialAgent.LOG_LEVEL_PROPERTY, String.valueOf(config.log()));
       }
 
       if (!config.isolateClassLoader())
         logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
 
-    if (verbose)
-      setVerbose(true);
-
-    if (events.length > 0) {
-      final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
+    if (events != null && events.length > 0) {
+      final String eventsProperty = System.getProperty(SpecialAgent.LOG_EVENTS_PROPERTY);
       if (eventsProperty != null) {
-        logger.warning(SpecialAgent.EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
+        logger.warning(SpecialAgent.LOG_EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
       }
       else {
         final StringBuilder builder = new StringBuilder();
@@ -380,7 +386,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           builder.append(event).append(",");
 
         builder.setLength(builder.length() - 1);
-        System.setProperty(SpecialAgent.EVENTS_PROPERTY, builder.toString());
+        System.setProperty(SpecialAgent.LOG_EVENTS_PROPERTY, builder.toString());
       }
     }
 
@@ -396,7 +402,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private int delta = Integer.MAX_VALUE;
 
   private static File getManifestFile() {
-    return new File(CWD, "target/classes/META-INF/opentracing-specialagent/TEST-MANIFEST.MF");
+    return new File(new File(CWD, "target/classes"), UtilConstants.META_INF_TEST_MANIFEST);
   }
 
   @Override

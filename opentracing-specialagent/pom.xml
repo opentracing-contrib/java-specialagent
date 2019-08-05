@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.3.4-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent</artifactId>
   <name>OpenTracing SpecialAgent</name>
@@ -120,6 +120,12 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-aws-sdk-2</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-cassandra-driver</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
@@ -139,6 +145,18 @@
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-elasticsearch-client-6</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-elasticsearch-7-rest-client</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-elasticsearch-7-transport-client</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -204,13 +222,31 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-lettuce-5.0</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-spring-web</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-spring-3-web</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-spring-webmvc</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-spring-3-webmvc</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -226,24 +262,24 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
-        <!--dependency>
-          <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-grizzly-http-server</artifactId>
-          <version>0.1.0</version>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-grizzly-ahc</artifactId>
+          <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-grizzly-ahc</artifactId>
-          <version>0.1.0</version>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-grizzly-http-server</artifactId>
+          <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
-          <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-reactor</artifactId>
-          <version>0.1.0</version>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-reactor</artifactId>
+          <version>${project.version}</version>
           <scope>provided</scope>
-        </dependency-->
+        </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-hazelcast</artifactId>
@@ -298,9 +334,34 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-spring-jms</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-spring-messaging</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-jaxrs</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-thread</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
+      <id>tools.jar</id>
       <activation>
         <jdk>(,1.9)</jdk>
       </activation>
@@ -343,6 +404,20 @@
     </dependency>
 
     <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>fingerprint</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
       <scope>test</scope>
@@ -354,7 +429,6 @@
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-util</artifactId>
-      <version>${project.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -392,22 +466,6 @@
       <artifactId>byte-buddy-agent</artifactId>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>5.0.3</version>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
-    <dependency>
-      <groupId>javax.el</groupId>
-      <artifactId>javax.el-api</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
-      <optional>true</optional>
-    </dependency>
-    <!-- [end] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [end] -->
   </dependencies>
   <build>
     <resources>
@@ -430,7 +488,7 @@
           resources of this module -->
         <directory>${project.build.directory}/classes</directory>
         <!-- Have to exclude all JARs, because all dependencies are copied to the
-          ${project.build.directory}/dependencies/META-INF/opentracing-specialagent
+          ${project.build.directory}/dependencies/META-INF/plugins
           path via maven-dependency-plugin (id: copy-dependencies), and the
           ${project.build.directory}/dependencies path is listed as a <resource> right
           above here, which makes the maven-resources-plugin copy them to

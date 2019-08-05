@@ -44,6 +44,12 @@ public class HttpClientAgentIntercept {
     if (request == null)
       return null;
 
+    if(request.getHeaders("amz-sdk-invocation-id").length > 0) {
+      // skip embedded Apache HttpClient in AWS SDK Client, because it breaks
+      // request signature and AWS SDK gets traced by the aws-sdk rule
+      return null;
+    }
+
     Context context = contextHolder.get();
     if (context != null) {
       ++context.counter;
@@ -54,20 +60,19 @@ public class HttpClientAgentIntercept {
     contextHolder.set(context);
 
     final Tracer tracer = GlobalTracer.get();
-    final Span span = tracer.buildSpan(request.getRequestLine().getMethod())
+    final Span span = tracer
+      .buildSpan(request.getRequestLine().getMethod())
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
       .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
       .withTag(Tags.HTTP_URL, request.getRequestLine().getUri()).start();
 
     if (request instanceof HttpUriRequest) {
       final URI uri = ((HttpUriRequest)request).getURI();
-      span.setTag(Tags.PEER_HOSTNAME, uri.getHost());
-      span.setTag(Tags.PEER_PORT, uri.getPort() == -1 ? 80 : uri.getPort());
+      setPeerHostPort(span, uri.getHost(), uri.getPort());
     }
     else if (arg0 instanceof HttpHost) {
       final HttpHost httpHost = (HttpHost)arg0;
-      span.setTag(Tags.PEER_HOSTNAME, httpHost.getHostName());
-      span.setTag(Tags.PEER_PORT, httpHost.getPort() == -1 ? 80: httpHost.getPort());
+      setPeerHostPort(span, httpHost.getHostName(), httpHost.getPort());
     }
 
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request));
@@ -79,6 +84,12 @@ public class HttpClientAgentIntercept {
       return new Object[] {null, new TracingResponseHandler<>((ResponseHandler<?>)arg2, span)};
 
     return null;
+  }
+
+  private static void setPeerHostPort(final Span span, final String host, final int port) {
+    span.setTag(Tags.PEER_HOSTNAME, host);
+    if (port != -1)
+      span.setTag(Tags.PEER_PORT, port);
   }
 
   public static void exit(final Object returned) {
@@ -106,11 +117,10 @@ public class HttpClientAgentIntercept {
     if (--context.counter != 0)
       return;
 
-    Tags.ERROR.set(context.span, Boolean.TRUE);
-
     final HashMap<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", thrown);
+    context.span.setTag(Tags.ERROR, Boolean.TRUE);
     context.span.log(errorLogs);
     context.span.finish();
     contextHolder.remove();

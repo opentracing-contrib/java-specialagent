@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rules</groupId>
     <artifactId>rules</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.3.4-SNAPSHOT</version>
   </parent>
   <artifactId>specialagent-rabbitmq-client</artifactId>
   <name>SpecialAgent Rule for RabbitMQ Client</name>
@@ -32,11 +32,11 @@
     <sa.plugin.name>rabbitmq-client</sa.plugin.name>
   </properties>
   <dependencies>
-    <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
-      <version>0.1.1</version>
+      <version>0.1.4</version>
       <exclusions>
         <exclusion>
           <groupId>com.rabbitmq</groupId>

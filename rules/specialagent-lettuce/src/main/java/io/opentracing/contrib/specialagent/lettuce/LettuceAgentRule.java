@@ -43,6 +43,12 @@ public class LettuceAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(StatefulRedisCluster.class).on(named("async")));
+        }})
+      .type(hasSuperType(named("io.lettuce.core.pubsub.StatefulRedisPubSubConnection")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AddPubSubListener.class).on(named("addListener")));
         }}));
   }
 
@@ -59,6 +65,14 @@ public class LettuceAgentRule extends AgentRule {
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled(origin))
         returned = LettuceAgentIntercept.getAsyncClusterCommands(returned);
+    }
+  }
+
+  public static class AddPubSubListener {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
+      if (isEnabled(origin))
+        arg = LettuceAgentIntercept.addPubSubListener(arg);
     }
   }
 }

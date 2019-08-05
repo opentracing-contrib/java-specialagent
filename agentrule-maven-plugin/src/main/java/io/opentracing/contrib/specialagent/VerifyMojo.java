@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +65,7 @@ public final class VerifyMojo extends AbstractMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    final File dir = new File(project.getBuild().getOutputDirectory(), "META-INF/opentracing-specialagent");
+    final File dir = new File(project.getBuild().getOutputDirectory(), UtilConstants.META_INF_PLUGIN_PATH);
     if (!dir.exists())
       return;
 
@@ -83,14 +84,13 @@ public final class VerifyMojo extends AbstractMojo {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
             final String entry = entries.nextElement().getName();
-            if ("otarules.mf".equals(entry)) // Deliberately unlinked from
-                                             // ByteBuddyManager#RULES_FILE
+            if ("otarules.mf".equals(entry)) // Deliberately unlinked from ByteBuddyManager#RULES_FILE
               hasOtaRulesMf = true;
             else if ("fingerprint.bin".equals(entry))
               hasFingerprintBin = true;
             else if ("dependencies.tgf".equals(entry))
               hasDependenciesTgf = true;
-            else if ("META-INF/opentracing-specialagent/TEST-MANIFEST.MF".equals(entry))
+            else if (UtilConstants.META_INF_TEST_MANIFEST.equals(entry))
               hasTestManifest = true;
             else if (entry.startsWith("sa.plugin.name."))
               name = entry.substring(15);
@@ -100,7 +100,7 @@ public final class VerifyMojo extends AbstractMojo {
         if (!hasOtaRulesMf) {
           final String rename = renames.get(file.getName());
           if (rename != null)
-            Files.move(file.toPath(), new File(file.getParentFile(), rename).toPath());
+            Files.move(file.toPath(), new File(file.getParentFile(), rename).toPath(), StandardCopyOption.REPLACE_EXISTING);
 
           continue;
         }

@@ -15,6 +15,10 @@
 
 package io.opentracing.contrib.specialagent.kafka.spring;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import io.opentracing.References;
@@ -28,6 +32,9 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringKafkaAgentIntercept {
+  private static final Logger log = Logger.getLogger(SpringKafkaAgentIntercept.class.getName());
+  private static Boolean isKafkaVersionSupported;
+
   private static class Context {
     private int counter = 1;
     private Scope scope;
@@ -36,7 +43,21 @@ public class SpringKafkaAgentIntercept {
 
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
-  public static void onMessageEnter(Object record) {
+  public static void onMessageEnter(final Object record) {
+    if (isKafkaVersionSupported == null) {
+      try {
+        Class.forName("org.apache.kafka.common.header.Headers");
+        isKafkaVersionSupported = true;
+      }
+      catch (final ClassNotFoundException e) {
+        log.warning("Kafka versions prior to 1.0.0 are not supported");
+        isKafkaVersionSupported = false;
+      }
+    }
+
+    if (!isKafkaVersionSupported)
+      return;
+
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
       return;
@@ -63,15 +84,26 @@ public class SpringKafkaAgentIntercept {
     contextHolder.get().scope = tracer.activateSpan(span);
   }
 
-  public static void onMessageExit() {
+  public static void onMessageExit(Throwable thrown) {
     final Context context = contextHolder.get();
     if (context != null) {
       --context.counter;
       if (context.counter == 0) {
+        if (thrown != null) {
+          captureException(context.span, thrown);
+        }
         context.scope.close();
         context.span.finish();
         contextHolder.remove();
       }
     }
+  }
+
+  private static void captureException(final Span span, final Throwable t) {
+    final Map<String,Object> exceptionLogs = new HashMap<>();
+    exceptionLogs.put("event", Tags.ERROR.getKey());
+    exceptionLogs.put("error.object", t);
+    span.log(exceptionLogs);
+    Tags.ERROR.set(span, true);
   }
 }

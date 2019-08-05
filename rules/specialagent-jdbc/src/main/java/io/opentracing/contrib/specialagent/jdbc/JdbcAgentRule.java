@@ -81,7 +81,7 @@ public class JdbcAgentRule extends AgentRule {
       if (!isEnabled(origin))
         return;
 
-      final Connection connection = JdbcAgentIntercept.enter(url, info);
+      final Connection connection = JdbcAgentIntercept.connect(url, info);
       if (connection != null)
         throw new EarlyReturnException(connection);
     }

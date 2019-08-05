@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.kafka.spring;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
@@ -44,9 +45,9 @@ public class SpringKafkaAgentRule extends AgentRule {
       SpringKafkaAgentIntercept.onMessageEnter(record);
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin) {
+  @Advice.OnMethodExit(onThrowable = Throwable.class)
+  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
     if (isEnabled(origin))
-      SpringKafkaAgentIntercept.onMessageExit();
+      SpringKafkaAgentIntercept.onMessageExit(thrown);
   }
 }

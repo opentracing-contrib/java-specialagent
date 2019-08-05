@@ -18,7 +18,7 @@ package io.opentracing.contrib.specialagent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.lang.management.ManagementFactory;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,19 +26,20 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.CodeSource;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-
-import io.opentracing.contrib.specialagent.Manager.Event;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -55,7 +56,7 @@ public final class SpecialAgentUtil {
       final FileOutputStream fos = new FileOutputStream(zipPath.toFile());
       final JarOutputStream jos = new JarOutputStream(fos);
     ) {
-      recurseDir(dir, new Predicate<File>() {
+      AssembleUtil.recurseDir(dir, new Predicate<File>() {
         @Override
         public boolean test(final File t) {
           if (t.isFile()) {
@@ -81,6 +82,103 @@ public final class SpecialAgentUtil {
     return new JarFile(file);
   }
 
+  static String getInputArguments() {
+    final StringBuilder builder = new StringBuilder();
+    final Iterator<String> iterator = ManagementFactory.getRuntimeMXBean().getInputArguments().iterator();
+    for (int i = 0; iterator.hasNext(); ++i) {
+      if (i > 0)
+        builder.append(' ');
+
+      builder.append(iterator.next());
+    }
+
+    return builder.toString();
+  }
+
+  private static URL getLocation(final Class<?> cls) {
+    final CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+    if (codeSource != null)
+      return codeSource.getLocation();
+
+    for (final String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+      if (arg.startsWith("-javaagent:")) {
+        try {
+          return new URL("file", null, arg.substring(11));
+        }
+        catch (final MalformedURLException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    }
+
+    final String sunJavaCommand = System.getProperty("sun.java.command");
+    if (sunJavaCommand == null)
+      return null;
+
+    final String[] parts = sunJavaCommand.split("\\s+-");
+    for (int i = 0; i < parts.length; ++i) {
+      final String part = parts[i];
+      if (part.startsWith("javaagent:")) {
+        try {
+          return new URL("file", null, part.substring(10));
+        }
+        catch (final MalformedURLException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private static Manifest getManifest(final URL location) throws IOException {
+    try (final JarInputStream in = new JarInputStream(location.openStream())) {
+      return in.getManifest();
+    }
+  }
+
+  private static String getBootClassPathManifestEntry(final URL location) throws IOException {
+    final Manifest manifest = SpecialAgentUtil.getManifest(location);
+    if (manifest == null)
+      return null;
+
+    final Attributes attributes = manifest.getMainAttributes();
+    if (attributes == null)
+      return null;
+
+    return attributes.getValue("Boot-Class-Path");
+  }
+
+  /**
+   * Asserts that the name of the JAR used on the command line matches the name
+   * for the "Boot-Class-Path" entry in META-INF/MANIFEST.MF.
+   *
+   * @throws IllegalStateException If the name is not what is expected.
+   */
+  static void assertJavaAgentJarName() {
+    try {
+      final URL location = getLocation(SpecialAgent.class);
+      if (location == null) {
+        logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+      }
+      else {
+        final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location);
+        if (bootClassPathManifestEntry == null) {
+          if (logger.isLoggable(Level.FINE))
+            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+        }
+        else {
+          final String jarName = getName(location.getPath());
+          if (!jarName.equals(bootClassPathManifestEntry))
+            throw new IllegalStateException("Name of -javaagent JAR, which is currently " + jarName + ", must be: " + bootClassPathManifestEntry);
+        }
+      }
+    }
+    catch (final IOException e) {
+      logger.log(Level.WARNING, e.getMessage(), e);
+    }
+  }
+
   /**
    * @return A {@code Set} of strings representing the paths in classpath of the
    *         current process.
@@ -101,12 +199,18 @@ public final class SpecialAgentUtil {
    * @throws IllegalArgumentException If the specified resource path is not the
    *           suffix of the specified URL.
    */
-  static URL getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
+  static File getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
     final String string = url.toString();
     if (!string.endsWith(resourcePath))
       throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
 
-    return new URL(string.startsWith("jar:") ? string.substring(4, string.lastIndexOf('!')) : string.substring(0, string.length() - resourcePath.length()));
+    if (string.startsWith("jar:file:"))
+      return new File(string.substring(9, string.lastIndexOf('!')));
+
+    if (string.startsWith("file:"))
+      return new File(string.substring(5, string.length() - resourcePath.length()));
+
+    throw new UnsupportedOperationException("Unsupported protocol: " + url.getProtocol());
   }
 
   /**
@@ -129,35 +233,6 @@ public final class SpecialAgentUtil {
   }
 
   /**
-   * Returns a string representation of the specified array, using the specified
-   * delimiter between the string representation of each element. If the
-   * specified array is null, this method returns the string {@code "null"}. If
-   * the length of the specified array is 0, this method returns {@code ""}.
-   *
-   * @param a The array.
-   * @param del The delimiter.
-   * @return A string representation of the specified array, using the specified
-   *         delimiter between the string representation of each element.
-   */
-  public static String toString(final Object[] a, final String del) {
-    if (a == null)
-      return "null";
-
-    if (a.length == 0)
-      return "";
-
-    final StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < a.length; ++i) {
-      if (i > 0)
-        builder.append(del);
-
-      builder.append(String.valueOf(a[i]));
-    }
-
-    return builder.toString();
-  }
-
-  /**
    * Returns an array of {@code URL} objects representing each path entry in the
    * specified {@code classpath}.
    *
@@ -166,31 +241,16 @@ public final class SpecialAgentUtil {
    * @return An array of {@code URL} objects representing each path entry in the
    *         specified {@code classpath}.
    */
-  public static URL[] classPathToURLs(final String classpath) {
+  public static File[] classPathToFiles(final String classpath) {
     if (classpath == null)
       return null;
 
     final String[] paths = classpath.split(File.pathSeparator);
-    final URL[] libs = new URL[paths.length];
-    try {
-      for (int i = 0; i < paths.length; ++i)
-        libs[i] = new File(paths[i]).toURI().toURL();
-    }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
+    final File[] files = new File[paths.length];
+    for (int i = 0; i < paths.length; ++i)
+      files[i] = new File(paths[i]);
 
-    return libs;
-  }
-
-  /**
-   * Returns the hexadecimal representation of an object's identity hash code.
-   *
-   * @param obj The object.
-   * @return The hexadecimal representation of an object's identity hash code.
-   */
-  public static String getIdentityCode(final Object obj) {
-    return obj == null ? "null" : obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16);
+    return files;
   }
 
   /**
@@ -213,43 +273,33 @@ public final class SpecialAgentUtil {
     if (path.length() == 0)
       return path;
 
-    final boolean end = path.charAt(path.length() - 1) == '/';
-    final int start = end ? path.lastIndexOf('/', path.length() - 2) : path.lastIndexOf('/');
+    final boolean end = path.charAt(path.length() - 1) == File.separatorChar;
+    final int start = end ? path.lastIndexOf(File.separatorChar, path.length() - 2) : path.lastIndexOf(File.separatorChar);
     return start == -1 ? (end ? path.substring(0, path.length() - 1) : path) : end ? path.substring(start + 1, path.length() - 1) : path.substring(start + 1);
   }
 
   /**
-   * Returns a {@code List} of {@code URL} objects having a prefix path that
-   * matches {@code path}. This method will add a shutdown hook to delete any
-   * temporary directory and file resources it created.
+   * Fills the specified {@code fileToPluginManifest} map with JAR files having
+   * a prefix path that match {@code path}, and the associated
+   * {@link PluginManifest}.
+   * <p>
+   * This method will add a shutdown hook to delete any temporary directory and
+   * file resources it created.
    *
    * @param path The prefix path to match when finding resources.
-   * @param instruPlugins Map of instrumentation plugin name to boolean
-   *          specifying whether it should be included in the runtime.
-   * @param tracerPlugins Map of tracer plugin name to boolean specifying
-   *          whether it should be included in the runtime.
-   * @return A {@code List} of {@code URL} objects having a prefix path that
-   *         matches {@code path}.
+   * @param destDir Callback that supplies the destDir.
+   * @param callback Callback function to process resource files.
    * @throws IllegalStateException If an illegal state occurs due to an
    *           {@link IOException}.
    */
-  static Set<URL> findJarResources(final String path, final Map<String,Boolean> instruPlugins, final Map<String,Boolean> tracerPlugins) {
+  static void findJarResources(final String path, final Supplier<File> destDir, Predicate<File> callback) {
     try {
       final Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
-      final Set<URL> urls = new HashSet<>();
       if (!resources.hasMoreElements())
-        return urls;
-
-      final boolean allInstruEnabled = !instruPlugins.containsKey(null) || instruPlugins.remove(null);
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
-
-      final boolean allTracerEnabled = !tracerPlugins.containsKey(null) || tracerPlugins.remove(null);
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
+        return;
 
       final Set<URL> visitedResources = new HashSet<>();
-      File destDir = null;
+      File outDir = null;
       do {
         final URL resource = resources.nextElement();
         if (visitedResources.contains(resource))
@@ -264,8 +314,8 @@ public final class SpecialAgentUtil {
         if (logger.isLoggable(Level.FINEST))
           logger.finest("SpecialAgent Rule Path: " + resource);
 
-        if (destDir == null)
-          destDir = Files.createTempDirectory("opentracing-specialagent").toFile();
+        if (outDir == null)
+          outDir = destDir.get();
 
         final JarURLConnection jarURLConnection = (JarURLConnection)connection;
         jarURLConnection.setUseCaches(false);
@@ -280,46 +330,27 @@ public final class SpecialAgentUtil {
           final String jarFileName = jarEntry.substring(slash + 1);
 
           // First, extract the JAR into a temp dir
-          final File subDir = new File(destDir, jarEntry.substring(0, slash));
+          final File subDir = new File(outDir, jarEntry.substring(0, slash));
           subDir.mkdirs();
           final File file = new File(subDir, jarFileName);
-          final URL url = new URL(resource, jarEntry.substring(path.length()));
-          Files.copy(url.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          if (!file.isDirectory() && !file.getName().endsWith(".jar"))
+            continue;
 
-          // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-          final Plugin plugin = Plugin.getPlugin(file);
-          boolean includeJar = true;
-          if (plugin != null) {
-            final boolean isInstruPlugin = plugin.type == Plugin.Type.INSTRUMENTATION;
-            // Next, see if it is included or excluded
-            includeJar = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-            final Map<String,Boolean> plugins = isInstruPlugin ? instruPlugins : tracerPlugins;
-            for (final Map.Entry<String,Boolean> entry : plugins.entrySet()) {
-              final String pluginName = entry.getKey();
-              if (pluginName.equals(plugin.name)) {
-                includeJar = entry.getValue();
-                if (logger.isLoggable(Level.FINER))
-                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (includeJar ? "en" : "dis") + "abled");
+          final URL jarUrl = new URL(resource, jarEntry.substring(path.length()));
+          Files.copy(jarUrl.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                break;
-              }
-            }
-          }
-
-          if (includeJar)
-            urls.add(file.toURI().toURL());
-          else
+          if (!callback.test(file))
             file.delete();
         }
       }
       while (resources.hasMoreElements());
 
-      if (destDir != null) {
-        final File targetDir = destDir;
+      if (outDir != null) {
+        final File targetDir = outDir;
         Runtime.getRuntime().addShutdownHook(new Thread() {
           @Override
           public void run() {
-            recurseDir(targetDir, new Predicate<File>() {
+            AssembleUtil.recurseDir(targetDir, new Predicate<File>() {
               @Override
               public boolean test(final File t) {
                 return t.delete();
@@ -328,61 +359,10 @@ public final class SpecialAgentUtil {
           }
         });
       }
-
-      return urls;
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private static class Plugin {
-    private static enum Type {
-      INSTRUMENTATION,
-      TRACER
-    }
-
-    private static Plugin getPlugin(final File file) throws IOException {
-      try (final JarFile jarFile = new JarFile(file)) {
-        final Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-          final String entry = entries.nextElement().getName();
-          if (entry.startsWith("sa.plugin.name."))
-            return new Plugin(Type.INSTRUMENTATION, entry.substring(15));
-
-          if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
-            return new Plugin(Type.TRACER, file.getName().substring(0, file.getName().length() - 4));
-        }
-
-        return null;
-      }
-    }
-
-    private final Type type;
-    private final String name;
-
-    private Plugin(final Type type, final String name) {
-      this.type = type;
-      this.name = name;
-    }
-  }
-
-  /**
-   * Recursively process each sub-path of the specified directory.
-   *
-   * @param dir The directory to process.
-   * @param predicate The predicate defining the test process.
-   * @return {@code true} if the specified predicate returned {@code true} for
-   *         each sub-path to which it was applied, otherwise {@code false}.
-   */
-  public static boolean recurseDir(final File dir, final Predicate<File> predicate) {
-    final File[] files = dir.listFiles();
-    if (files != null)
-      for (final File file : files)
-        if (!recurseDir(file, predicate))
-          return false;
-
-    return predicate.test(dir);
   }
 
   /**
@@ -426,192 +406,15 @@ public final class SpecialAgentUtil {
     return names;
   }
 
-  /**
-   * Sorts the specified array of objects into ascending order, according to the
-   * natural ordering of its elements. All elements in the array must implement
-   * the {@link Comparable} interface. Furthermore, all elements in the array
-   * must be mutually comparable (that is, {@code e1.compareTo(e2)} must not
-   * throw a {@link ClassCastException} for any elements {@code e1} and
-   * {@code e2} in the array).
-   *
-   * @param <T> The component type of the specified array.
-   * @param array The array to be sorted.
-   * @return The specified array, which is sorted in-place (unless it is null).
-   * @see Arrays#sort(Object[])
-   */
-  static <T>T[] sort(final T[] array) {
-    if (array == null)
-      return null;
+  private static final Manager.Event[] DEFAULT_EVENTS = new Manager.Event[5];
 
-    Arrays.sort(array);
-    return array;
-  }
-
-  /**
-   * Returns an array of type {@code <T>} that includes only the elements that
-   * belong to the specified arrays (the specified arrays must be sorted).
-   * <p>
-   * <i><b>Note:</b> This is a recursive algorithm, implemented to take
-   * advantage of the high performance of callstack registers, but will fail due
-   * to a {@link StackOverflowError} if the number of differences between the
-   * first and second specified arrays approaches ~8000.</i>
-   *
-   * @param <T> Type parameter of array.
-   * @param a The first specified array (sorted).
-   * @param b The second specified array (sorted).
-   * @param i The starting index of the first specified array (should be set to
-   *          0).
-   * @param j The starting index of the second specified array (should be set to
-   *          0).
-   * @param r The starting index of the resulting array (should be set to 0).
-   * @return An array of type {@code <T>} that includes only the elements that
-   *         belong to the first and second specified array (the specified
-   *         arrays must be sorted).
-   * @throws NullPointerException If {@code a} or {@code b} are null.
-   */
-  @SuppressWarnings("unchecked")
-  static <T extends Comparable<T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
-    for (int d = 0;; ++d) {
-      int comparison = 0;
-      if (i + d == a.length || j + d == b.length || (comparison = a[i + d].compareTo(b[j + d])) != 0) {
-        final T[] retained;
-        if (i + d == a.length || j + d == b.length)
-          retained = r + d == 0 ? null : (T[])Array.newInstance(a.getClass().getComponentType(), r + d);
-        else if (comparison < 0)
-          retained = retain(a, b, i + d + 1, j + d, r + d);
-        else
-          retained = retain(a, b, i + d, j + d + 1, r + d);
-
-        if (d > 0)
-          System.arraycopy(a, i, retained, r, d);
-
-        return retained;
-      }
-    }
-  }
-
-  /**
-   * Tests whether the first specified array contains all {@link Comparable}
-   * elements in the second specified array.
-   *
-   * @param <T> Type parameter of array, which must extend {@link Comparable}.
-   * @param a The first specified array (sorted).
-   * @param b The second specified array (sorted).
-   * @return {@code true} if the first specifies array contains all elements in
-   *         the second specified array.
-   * @throws NullPointerException If {@code a} or {@code b} are null.
-   */
-  static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
-    for (int i = 0, j = 0;;) {
-      if (j == b.length)
-        return true;
-
-      if (i == a.length)
-        return false;
-
-      final int comparison = a[i].compareTo(b[j]);
-      if (comparison > 0)
-        return false;
-
-      ++i;
-      if (comparison == 0)
-        ++j;
-    }
-  }
-
-  /**
-   * Tests whether the first specifies array contains all elements in the second
-   * specified array, with comparison determined by the specified
-   * {@link Comparator}.
-   *
-   * @param <T> Type parameter of array.
-   * @param a The first specified array (sorted).
-   * @param b The second specified array (sorted).
-   * @param c The {@link Comparator}.
-   * @return {@code true} if the first specifies array contains all elements in
-   *         the second specified array.
-   * @throws NullPointerException If {@code a} or {@code b} are null.
-   */
-  static <T>boolean containsAll(final T[] a, final T[] b, final Comparator<T> c) {
-    for (int i = 0, j = 0;;) {
-      if (j == b.length)
-        return true;
-
-      if (i == a.length)
-        return false;
-
-      final int comparison = c.compare(a[i], b[j]);
-      if (comparison > 0)
-        return false;
-
-      ++i;
-      if (comparison == 0)
-        ++j;
-    }
-  }
-
-  /**
-   * Compares two {@code Object} arrays, within comparable elements,
-   * lexicographically.
-   * <p>
-   * A {@code null} array reference is considered lexicographically less than a
-   * non-{@code null} array reference. Two {@code null} array references are
-   * considered equal. A {@code null} array element is considered
-   * lexicographically than a non-{@code null} array element. Two {@code null}
-   * array elements are considered equal.
-   * <p>
-   * The comparison is consistent with {@link Arrays#equals(Object[], Object[])
-   * equals}, more specifically the following holds for arrays {@code a} and
-   * {@code b}:
-   *
-   * <pre>
-   * {@code Arrays.equals(a, b) == (Arrays.compare(a, b) == 0)}
-   * </pre>
-   *
-   * @param a The first array to compare.
-   * @param b The second array to compare.
-   * @param <T> The type of comparable array elements.
-   * @return The value {@code 0} if the first and second array are equal and
-   *         contain the same elements in the same order; a value less than
-   *         {@code 0} if the first array is lexicographically less than the
-   *         second array; and a value greater than {@code 0} if the first array
-   *         is lexicographically greater than the second array.
-   */
-  static <T extends Comparable<? super T>>int compare(final T[] a, final T[] b) {
-    if (a == b)
-      return 0;
-
-    // A null array is less than a non-null array
-    if (a == null || b == null)
-      return a == null ? -1 : 1;
-
-    int length = Math.min(a.length, b.length);
-    for (int i = 0; i < length; i++) {
-      final T oa = a[i];
-      final T ob = b[i];
-      if (oa != ob) {
-        // A null element is less than a non-null element
-        if (oa == null || ob == null)
-          return oa == null ? -1 : 1;
-
-        final int v = oa.compareTo(ob);
-        if (v != 0)
-          return v;
-      }
-    }
-
-    return a.length - b.length;
-  }
-
-  private static final Event[] DEFAULT_EVENTS = new Event[5];
-
-  static Event[] digestEventsProperty(final String eventsProperty) {
+  static Manager.Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)
       return DEFAULT_EVENTS;
 
     final String[] parts = eventsProperty.split(",");
     Arrays.sort(parts);
-    final Event[] events = Event.values();
+    final Manager.Event[] events = Manager.Event.values();
     for (int i = 0, j = 0; i < events.length;) {
       final int comparison = j < parts.length ? events[i].name().compareTo(parts[j]) : -1;
       if (comparison < 0) {

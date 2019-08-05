@@ -48,33 +48,32 @@ class TestUtil {
    * paths, as well as subpaths of the paths. This method excludes classes
    * belonging to JUnit.
    *
-   * @param paths The paths.
+   * @param files The paths.
    * @return A set of all files contained in the list of specified paths, as
    *         well as subpaths of the paths.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<String> getClassFiles(final List<String> paths) throws IOException {
-    final Set<String> files = new HashSet<>();
-    for (final String path : paths) {
-      final File file = new File(path);
-      if (path.endsWith(".jar")) {
+  static Set<String> getClassFiles(final List<File> files) throws IOException {
+    final Set<String> classFiles = new HashSet<>();
+    for (final File file : files) {
+      if (file.getName().endsWith(".jar")) {
         try (final JarFile jarFile = new JarFile(file)) {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
             final JarEntry entry = entries.nextElement();
             if (predicate.test(entry.getName()))
-              files.add(entry.getName());
+              classFiles.add(entry.getName());
           }
         }
       }
       else {
         final Path filePath = file.toPath();
-        SpecialAgentUtil.recurseDir(file, new Predicate<File>() {
+        AssembleUtil.recurseDir(file, new Predicate<File>() {
           @Override
           public boolean test(final File t) {
             final String name = filePath.relativize(t.toPath()).toString();
             if (predicate.test(name))
-              files.add(name);
+              classFiles.add(name);
 
             return true;
           }
@@ -82,6 +81,6 @@ class TestUtil {
       }
     }
 
-    return files;
+    return classFiles;
   }
 }

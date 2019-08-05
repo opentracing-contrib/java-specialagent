@@ -15,10 +15,13 @@
 
 package io.opentracing.contrib.specialagent.lettuce;
 
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -33,6 +36,9 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.codec.StringCodec;
+import io.lettuce.core.pubsub.RedisPubSubAdapter;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -55,8 +61,30 @@ public class LettuceTest {
 
   @After
   public void after() {
-    server.stop();
+    if (server != null)
+      server.stop();
+
+    if (client != null)
+      client.shutdown();
+  }
+
+  @Test
+  public void testPubSub(final MockTracer tracer) {
+    final StatefulRedisPubSubConnection<String,String> connection = client.connectPubSub();
+    connection.addListener(new RedisPubSubAdapter<>());
+
+    final RedisPubSubCommands<String,String> commands = connection.sync();
+    commands.subscribe("channel");
+
+    final RedisCommands<String,String> commands2 = client.connect().sync();
+    commands2.publish("channel", "msg");
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(4));
+
     client.shutdown();
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(4, spans.size());
   }
 
   @Test
@@ -94,5 +122,9 @@ public class LettuceTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
+  }
+
+  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
+    return () -> tracer.finishedSpans().size();
   }
 }

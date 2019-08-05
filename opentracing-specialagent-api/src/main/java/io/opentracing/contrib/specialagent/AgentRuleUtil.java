@@ -16,7 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Array;
-import java.net.URL;
 
 /**
  * Utility functions for subclasses of {@link AgentRule}.
@@ -25,6 +24,38 @@ import java.net.URL;
  */
 public final class AgentRuleUtil {
   static ClassLoader tracerClassLoader;
+
+  /**
+   * Returns the name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getSimpleNameId(Object)
+   */
+  public static String getNameId(final Object obj) {
+    return obj != null ? obj.getClass().getName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
+
+  /**
+   * Returns the simple name of the class of the specified object suffixed with
+   * {@code '@'} followed by the hexadecimal representation of the object's
+   * identity hash code, or {@code "null"} if the specified object is null.
+   *
+   * @param obj The object.
+   * @return The simple name of the class of the specified object suffixed with
+   *         {@code '@'} followed by the hexadecimal representation of the
+   *         object's identity hash code, or {@code "null"} if the specified
+   *         object is null.
+   * @see #getNameId(Object)
+   */
+  public static String getSimpleNameId(final Object obj) {
+    return obj != null ? obj.getClass().getSimpleName() + "@" + Integer.toString(System.identityHashCode(obj), 16) : "null";
+  }
 
   /**
    * Returns an array that is the subArray of the provided array.
@@ -209,23 +240,6 @@ public final class AgentRuleUtil {
     }
 
     return false;
-  }
-
-  public static String getPluginName(final URL url) {
-    final String path = url.getPath();
-    final String name;
-    if (path.endsWith("-tests.jar"))
-      name = path.substring(0, path.length() - 10);
-    else if (path.endsWith(".jar"))
-      name = path.substring(0, path.length() - 4);
-    else if (path.endsWith("/target/test-classes/"))
-      name = path.substring(0, path.length() - 21);
-    else if (path.endsWith("/target/classes/"))
-      name = path.substring(0, path.length() - 16);
-    else
-      throw new UnsupportedOperationException("Unsupported path: " + path);
-
-    return name.substring(name.lastIndexOf('/') + 1);
   }
 
   private AgentRuleUtil() {

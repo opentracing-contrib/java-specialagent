@@ -20,18 +20,30 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,21 +54,29 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
+@AgentRunner.Config(disable = "okhttp")
 public class JettyServletTest {
   // jetty starts on random port
   private int serverPort;
-  private Server jettyServer;
+  private Server server;
 
   @Before
   public void beforeTest() throws Exception {
-    final ServletContextHandler servletContext = new ServletContextHandler();
-    servletContext.setContextPath("/");
-    servletContext.addServlet(MockServlet.class, "/hello");
+    MockFilter.count = 0;
 
-    jettyServer = new Server(0);
-    jettyServer.setHandler(servletContext);
-    jettyServer.start();
-    serverPort = ((ServerConnector)jettyServer.getConnectors()[0]).getLocalPort();
+    server = new Server(0);
+
+    final ServletContextHandler servletContextHandler = new ServletContextHandler();
+    servletContextHandler.setContextPath("/");
+    servletContextHandler.addServlet(MockServlet.class, "/hello");
+    server.setHandler(servletContextHandler);
+
+    final ServletHandler servletHandler = new ServletHandler();
+    servletHandler.addFilterWithMapping(MockFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+    server.setHandler(servletHandler);
+
+    server.start();
+    serverPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
   }
 
   @Test
@@ -65,13 +85,16 @@ public class JettyServletTest {
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
     final Response response = client.newCall(request).execute();
 
-    assertEquals(HttpServletResponse.SC_ACCEPTED, response.code());
-    assertEquals(1, tracer.finishedSpans().size());
+    assertEquals(HttpServletResponse.SC_OK, response.code());
+    assertEquals(1, MockFilter.count);
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(spans.toString(), 1, spans.size());
   }
 
   @After
   public void afterTest() throws Exception {
-    jettyServer.stop();
-    jettyServer.join();
+    server.stop();
+    server.join();
   }
 }

@@ -22,11 +22,12 @@ import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
-import io.opentracing.contrib.specialagent.SpecialAgent.AllPluginsClassLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -52,8 +53,8 @@ public class ClassLoaderAgentRule extends AgentRule {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n");
 
-    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(AllPluginsClassLoader.class)))));
-    return Arrays.asList(
+    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(PluginsClassLoader.class)))));
+    final List<Extendable> builders = Arrays.asList(
       narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -72,6 +73,11 @@ public class ClassLoaderAgentRule extends AgentRule {
           final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class);
           return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }}));
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n");
+
+    return builders;
   }
 
   public static class FindClass {
@@ -90,15 +96,15 @@ public class ClassLoaderAgentRule extends AgentRule {
         if (bytecode == null)
           return;
 
-        if (AgentRule.logger.isLoggable(Level.FINEST))
-          AgentRule.logger.finest("<<<<<<<< defineClass(\"" + arg + "\")");
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("<<<<<<<< defineClass(\"" + arg + "\")");
 
         final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
         returned = (Class<?>)defineClass.invoke(thiz, arg, bytecode, 0, bytecode.length, null);
         thrown = null;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
+        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
       }
       finally {
         visited.remove(arg);
@@ -121,7 +127,7 @@ public class ClassLoaderAgentRule extends AgentRule {
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
+        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
       }
       finally {
         visited.remove(arg);
@@ -146,7 +152,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
+        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
       }
       finally {
         visited.remove(arg);

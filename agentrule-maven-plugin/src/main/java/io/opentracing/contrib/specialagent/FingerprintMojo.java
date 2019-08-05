@@ -37,8 +37,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
 import org.codehaus.plexus.component.repository.ComponentDependency;
 
-import io.opentracing.contrib.specialagent.Link.Manifest;
-
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
  * instrumentation plugins. The implementation uses introspection to record the
@@ -99,9 +97,6 @@ public final class FingerprintMojo extends TreeMojo {
     if (artifact.getClassifier() != null)
       builder.append('-').append(artifact.getClassifier());
 
-    if ("test-jar".equals(artifact.getType()))
-      builder.append("-tests");
-
     try {
       return new URL("file", "", builder.append(".jar").toString());
     }
@@ -161,7 +156,7 @@ public final class FingerprintMojo extends TreeMojo {
 
   private void createFingerprintBin() throws MojoExecutionException, MojoFailureException {
     try {
-      final File destFile = new File(getProject().getBuild().getOutputDirectory(), RuleClassLoader.FINGERPRINT_FILE);
+      final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
       destFile.getParentFile().mkdirs();
       final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
       if (!nameFile.exists() && !nameFile.createNewFile())
@@ -170,7 +165,7 @@ public final class FingerprintMojo extends TreeMojo {
       // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
       if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with (scope=*, optional=true), " + RuleClassLoader.FINGERPRINT_FILE + " will be empty");
+        getLog().warn("No dependencies were found with (scope=*, optional=true), " + UtilConstants.FINGERPRINT_FILE + " will be empty");
         new LibraryFingerprint().toFile(destFile);
         return;
       }
@@ -181,13 +176,14 @@ public final class FingerprintMojo extends TreeMojo {
       // Include the compile path of the Instrumentation Rule itself, which solves the use-
       // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
       // bridges/links between the 3rd-Party Library to itself).
-      compileDeps[0] = new File(getProject().getBuild().getOutputDirectory()).toURI().toURL();
+      compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
 
-      final Manifest manifest = Link.createManifest(compileDeps);
-
-      final URL[] nonOptionalDeps = getDependencyPaths(localRepository, null, false, getProject().getArtifacts().iterator(), 0);
-      final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(nonOptionalDeps), manifest, optionalDeps);
-      fingerprint.toFile(destFile);
+      try (final URLClassLoader classLoader = new URLClassLoader(optionalDeps, null)) {
+        final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, compileDeps);
+        fingerprint.toFile(destFile);
+        if (getLog().isDebugEnabled())
+          getLog().debug(fingerprint.toString());
+      }
     }
     catch (final IOException e) {
       throw new MojoFailureException(null, e);
@@ -196,11 +192,10 @@ public final class FingerprintMojo extends TreeMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    if ("pom".equalsIgnoreCase(getProject().getPackaging()))
+    if ("pom".equalsIgnoreCase(getProject().getPackaging())) {
+      getLog().info("Skipping for \"pom\" module.");
       return;
-
-    if (name == null || name.length() == 0)
-      throw new MojoExecutionException("The parameter 'name' is missing or invalid");
+    }
 
     createDependenciesTgf();
     createFingerprintBin();

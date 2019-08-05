@@ -33,7 +33,7 @@ public class JdbcAgentIntercept {
     return TracingDriver.class.equals(caller) ? AgentRuleUtil.getExecutionStack()[8] : caller;
   }
 
-  public static Connection enter(final String url, final Properties info) throws SQLException {
+  public static Connection connect(final String url, final Properties info) throws SQLException {
     if (AgentRuleUtil.callerEquals(2, TracingDriver.class.getName() + ".connect"))
       return null;
 

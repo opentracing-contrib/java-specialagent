@@ -20,6 +20,7 @@ import javax.jms.MessageProducer;
 
 import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.util.GlobalTracer;
 
 public class Jms1AgentIntercept {
   private static boolean isJms2;
@@ -38,13 +39,13 @@ public class Jms1AgentIntercept {
     if (isJms2)
       return thiz;
 
-    return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz);
+    return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
   }
 
   public static Object createConsumer(final Object thiz) {
     if (isJms2)
       return thiz;
 
-    return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz);
+    return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz, GlobalTracer.get(), true);
   }
 }

@@ -13,3 +13,4 @@
 # limitations under the License.
 
 io.opentracing.contrib.specialagent.webservletfilter.ServletContextAgentRule
+io.opentracing.contrib.specialagent.webservletfilter.FilterAgentRule

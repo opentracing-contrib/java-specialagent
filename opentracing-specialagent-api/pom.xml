@@ -21,12 +21,17 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.3.4-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent-api</artifactId>
   <name>OpenTracing SpecialAgent API</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api</url>
   <dependencies>
+    <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>opentracing-specialagent-util</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>

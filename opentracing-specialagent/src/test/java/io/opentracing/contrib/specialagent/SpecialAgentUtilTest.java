@@ -17,6 +17,8 @@ package io.opentracing.contrib.specialagent;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import org.junit.Test;
 
 import io.opentracing.contrib.specialagent.Manager.Event;
@@ -27,161 +29,6 @@ import io.opentracing.contrib.specialagent.Manager.Event;
  * @author Seva Safris
  */
 public class SpecialAgentUtilTest {
-
-  @Test
-  public void testRetain() {
-    String[] a, b, r;
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(a, r);
-
-    a = new String[] {"b", "c", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(a, r);
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(b, r);
-
-    a = new String[] {"a", "b", "c"};
-    b = new String[] {"a", "b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(a, r);
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "b", "c"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(b, r);
-
-    a = new String[] {"a", "b", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(a, r);
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "b", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(b, r);
-
-    a = new String[] {"a", "c", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(a, r);
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(b, r);
-
-    a = new String[] {"a", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(a, r);
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(b, r);
-
-    a = new String[] {"a", "c", "d"};
-    b = new String[] {"a", "b", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(new String[] {"a", "d"}, r);
-
-    a = new String[] {"a", "b", "d"};
-    b = new String[] {"a", "c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(new String[] {"a", "d"}, r);
-
-    a = new String[] {"c", "d"};
-    b = new String[] {"a", "b", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(new String[] {"d"}, r);
-
-    a = new String[] {"a", "b"};
-    b = new String[] {"a", "c"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertArrayEquals(new String[] {"a"}, r);
-
-    a = new String[] {"a", "b"};
-    b = new String[] {"c", "d"};
-    r = SpecialAgentUtil.retain(a, b, 0, 0, 0);
-    assertNull(r);
-  }
-
-  @Test
-  public void testContainsAll() {
-    String[] a, b;
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    assertTrue(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"b", "c", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"b", "c", "d"};
-    assertTrue(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "c"};
-    b = new String[] {"a", "b", "c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "b", "c"};
-    assertTrue(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "b", "d"};
-    assertTrue(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "c", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "c", "d"};
-    assertTrue(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "d"};
-    b = new String[] {"a", "b", "c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "c", "d"};
-    b = new String[] {"a", "d"};
-    assertTrue(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "c", "d"};
-    b = new String[] {"a", "b", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b", "d"};
-    b = new String[] {"a", "c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"c", "d"};
-    b = new String[] {"a", "b", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b"};
-    b = new String[] {"a", "c"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-
-    a = new String[] {"a", "b"};
-    b = new String[] {"c", "d"};
-    assertFalse(SpecialAgentUtil.containsAll(a, b));
-  }
-
   @Test
   public void testDigestEventsProperty() {
     Event[] events = SpecialAgentUtil.digestEventsProperty(null);
@@ -209,5 +56,21 @@ public class SpecialAgentUtilTest {
     assertNull(events[Event.DISCOVERY.ordinal()]);
     assertNull(events[Event.ERROR.ordinal()]);
     assertNull(events[Event.IGNORED.ordinal()]);
+  }
+
+  @Test
+  public void testGetName() {
+    try {
+      SpecialAgentUtil.getName("");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
+
+    final String name = "opentracing-specialagent-1.3.3-SNAPSHOT.jar";
+    final String s = File.separator;
+    assertEquals(name, SpecialAgentUtil.getName(name));
+    assertEquals(name, SpecialAgentUtil.getName("." + s + name));
+    assertEquals(name, SpecialAgentUtil.getName("foo" + s + "bar" + s + name));
   }
 }
