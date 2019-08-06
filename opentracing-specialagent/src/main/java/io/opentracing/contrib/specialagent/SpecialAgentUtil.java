@@ -39,11 +39,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-
-import io.opentracing.contrib.specialagent.Manager.Event;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -51,7 +47,7 @@ import io.opentracing.contrib.specialagent.Manager.Event;
  * @author Seva Safris
  */
 public final class SpecialAgentUtil {
-  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class.getName());
+  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
 
   static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();
@@ -410,15 +406,15 @@ public final class SpecialAgentUtil {
     return names;
   }
 
-  private static final Event[] DEFAULT_EVENTS = new Event[5];
+  private static final Manager.Event[] DEFAULT_EVENTS = new Manager.Event[5];
 
-  static Event[] digestEventsProperty(final String eventsProperty) {
+  static Manager.Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)
       return DEFAULT_EVENTS;
 
     final String[] parts = eventsProperty.split(",");
     Arrays.sort(parts);
-    final Event[] events = Event.values();
+    final Manager.Event[] events = Manager.Event.values();
     for (int i = 0, j = 0; i < events.length;) {
       final int comparison = j < parts.length ? events[i].name().compareTo(parts[j]) : -1;
       if (comparison < 0) {

@@ -18,9 +18,10 @@ package io.opentracing.contrib.specialagent.spring.messaging;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -30,6 +31,8 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class TypeExcludeFilterAgentRule extends AgentRule {
+  public static final Logger logger = Logger.getLogger(TypeExcludeFilterAgentRule.class);
+
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
@@ -49,7 +52,7 @@ public class TypeExcludeFilterAgentRule extends AgentRule {
     @Advice.OnMethodExit(onThrowable = NoClassDefFoundError.class)
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) NoClassDefFoundError thrown) {
       if (isEnabled(origin)) {
-        AgentRule.logger.log(Level.INFO, thrown.getMessage(), thrown);
+        logger.log(Level.INFO, thrown.getMessage(), thrown);
         thrown = null;
         returned = Boolean.FALSE;
       }
@@ -60,7 +63,7 @@ public class TypeExcludeFilterAgentRule extends AgentRule {
     @Advice.OnMethodExit(onThrowable = NoClassDefFoundError.class)
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) NoClassDefFoundError thrown) {
       if (isEnabled(origin)) {
-        AgentRule.logger.log(Level.INFO, thrown.getMessage(), thrown);
+        logger.log(Level.INFO, thrown.getMessage(), thrown);
         thrown = null;
         returned = null;
       }

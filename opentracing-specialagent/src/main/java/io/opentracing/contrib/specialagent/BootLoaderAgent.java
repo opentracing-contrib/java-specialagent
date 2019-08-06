@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -45,6 +44,7 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class BootLoaderAgent {
+  public static final Logger logger = Logger.getLogger(BootLoaderAgent.class);
   public static final CachedClassFileLocator cachedLocator;
 
   static {
@@ -158,7 +158,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
+        logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
       }
       finally {
         visited.remove(arg);
@@ -200,7 +200,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
+        logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
       }
       finally {
         visited.remove(arg);
@@ -215,7 +215,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
+        logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
       }
     }
   }

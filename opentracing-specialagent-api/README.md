@@ -264,6 +264,8 @@ The `-Dsa.log.level` system property can be used to set the logging level for <i
 
 The `-Dsa.log.events` system property can be used to set the re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, the `ERROR` event is logged (only when run with `AgentRunner`).
 
+The `-Dsa.log.file` system property can be used to set the logging output file for <ins>SpecialAgent</ins>.
+
 ## 7 Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

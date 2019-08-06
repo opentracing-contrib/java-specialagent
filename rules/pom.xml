@@ -213,6 +213,11 @@
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>opentracing-specialagent-util</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-api</artifactId>
       <scope>provided</scope>
     </dependency>

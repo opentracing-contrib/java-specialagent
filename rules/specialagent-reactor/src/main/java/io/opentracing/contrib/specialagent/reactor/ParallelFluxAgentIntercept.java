@@ -21,11 +21,13 @@ import java.util.function.BiFunction;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.reactor.TracedSubscriber;
 import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.util.GlobalTracer;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Operators;
 
 public class ParallelFluxAgentIntercept {
+  public static final Logger logger = Logger.getLogger(ParallelFluxAgentIntercept.class);
   public static final AtomicBoolean inited = new AtomicBoolean();
 
   public static void enter() {
@@ -40,7 +42,7 @@ public class ParallelFluxAgentIntercept {
         Operators.class.getMethod("liftPublisher", BiFunction.class);
       }
       catch (final NoSuchMethodException e) {
-        AgentRule.logger.warning("Reactor version is not supported");
+        logger.warning("Reactor version is not supported");
         inited.set(true);
         return;
       }

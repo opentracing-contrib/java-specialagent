@@ -29,8 +29,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -50,7 +48,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ByteBuddyManager extends Manager {
-  private static final Logger logger = Logger.getLogger(ByteBuddyManager.class.getName());
+  private static final Logger logger = Logger.getLogger(ByteBuddyManager.class);
   private static final String RULES_FILE = "otarules.mf";
 
   private static void installOn(final Narrowable builder, final Class<?> advice, final AgentRule agentRule, final Listener listener, final Instrumentation instrumentation) {

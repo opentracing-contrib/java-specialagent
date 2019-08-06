@@ -20,13 +20,13 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.logging.Logger;
+
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 public class FingerprintTest {
-  private static final Logger logger = Logger.getLogger(FingerprintTest.class.getName());
+  private static final Logger logger = Logger.getLogger(FingerprintTest.class);
 
   @Test
   public void test2() throws IOException {

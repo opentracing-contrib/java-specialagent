@@ -17,9 +17,6 @@ package io.opentracing.contrib.specialagent.cassandra;
 
 import static org.junit.Assert.*;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -33,11 +30,13 @@ import com.datastax.driver.core.Session;
 
 import io.opentracing.contrib.cassandra.TracingSession;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 public class CassandraTest {
-  private static final Logger logger = Logger.getLogger(CassandraTest.class.getName());
+  private static final Logger logger = Logger.getLogger(CassandraTest.class);
 
   // Cassandra doesn't yet support the latest JDK versions. We are still on 1.8
   private static final boolean isJdkSupported = System.getProperty("java.version").startsWith("1.8.");

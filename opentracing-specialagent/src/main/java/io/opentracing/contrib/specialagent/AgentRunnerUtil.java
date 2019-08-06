@@ -16,8 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Field;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
@@ -32,7 +30,7 @@ import io.opentracing.util.GlobalTracer;
  * @author Seva Safris
  */
 public class AgentRunnerUtil {
-  private static final Logger logger = Logger.getLogger(AgentRunnerUtil.class.getName());
+  private static final Logger logger = Logger.getLogger(AgentRunnerUtil.class);
   private static Tracer tracer = null;
   private static final Object tracerMutex = new Object();
 

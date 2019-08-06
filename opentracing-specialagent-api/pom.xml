@@ -28,6 +28,11 @@
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api</url>
   <dependencies>
     <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>opentracing-specialagent-util</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
       <scope>provided</scope>

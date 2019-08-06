@@ -27,8 +27,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -46,7 +44,7 @@ import java.util.zip.ZipInputStream;
  * @author Seva Safris
  */
 class RuleClassLoader extends URLClassLoader {
-  private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
+  private static final Logger logger = Logger.getLogger(RuleClassLoader.class);
   private static final String SKIP_FINGERPRINT = "sa.fingerprint.skip";
   private static final boolean skipFingerprint;
 

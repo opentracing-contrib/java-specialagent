@@ -23,8 +23,6 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a library.
@@ -33,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class LibraryFingerprint extends Fingerprint {
   private static final long serialVersionUID = -8454972655262482231L;
-  private static final Logger logger = Logger.getLogger(LibraryFingerprint.class.getName());
+  private static final Logger logger = Logger.getLogger(LibraryFingerprint.class);
 
   /**
    * Returns a {@code LibraryFingerprint} for the serialized object encoding at

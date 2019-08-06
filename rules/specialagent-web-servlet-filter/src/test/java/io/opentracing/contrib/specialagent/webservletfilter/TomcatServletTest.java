@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -40,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import okhttp3.OkHttpClient;
@@ -53,7 +53,7 @@ import okhttp3.Response;
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader=false, disable = "okhttp")
 public class TomcatServletTest {
-  private static final Logger logger = Logger.getLogger(TomcatServletTest.class.getName());
+  private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
 
   private final int serverPort = 9786;
   private Tomcat tomcatServer;

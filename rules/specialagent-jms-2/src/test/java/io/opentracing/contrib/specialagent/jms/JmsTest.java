@@ -15,19 +15,14 @@
 
 package io.opentracing.contrib.specialagent.jms;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.jms.common.TracingMessageConsumer;
-import io.opentracing.contrib.jms2.TracingMessageProducer;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -37,12 +32,19 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
 import org.junit.Test;
+
+import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.contrib.jms2.TracingMessageProducer;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 // NOTE: This class is copied from specialagent-jms-1.
 // NOTE: It should be a 100% duplicate!
 public abstract class JmsTest {
-  static final Logger logger = Logger.getLogger(JmsTest.class.getName());
+  static final Logger logger = Logger.getLogger(JmsTest.class);
 
   Session session;
   Connection connection;

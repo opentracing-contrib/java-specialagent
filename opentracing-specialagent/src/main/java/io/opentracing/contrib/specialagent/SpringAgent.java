@@ -18,8 +18,6 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -32,7 +30,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringAgent {
-  private static final Logger logger = Logger.getLogger(SpringAgent.class.getName());
+  private static final Logger logger = Logger.getLogger(SpringAgent.class);
 
   public static Thread thread;
 

@@ -21,19 +21,20 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 
 import javax.servlet.DispatcherType;
 
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
-import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
 public class JettyAgentIntercept extends ContextAgentIntercept {
+  public static final Logger logger = Logger.getLogger(JettyAgentIntercept.class);
   public static final Map<Context,Object> state = Collections.synchronizedMap(new WeakHashMap<Context,Object>());
 
   public static void addFilter(final Object thiz) {
@@ -41,13 +42,13 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
     if (state.containsKey(context))
       return;
 
-    if (AgentRule.logger.isLoggable(Level.FINER))
-      AgentRule.logger.finer(">> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
+    if (logger.isLoggable(Level.FINER))
+      logger.finer(">> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
 
     final Method addFilterMethod = getFilterMethod(context);
     if (addFilterMethod == null) {
-      if (AgentRule.logger.isLoggable(Level.FINER))
-        AgentRule.logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): isFilterMethodPresent = false");
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): isFilterMethodPresent = false");
 
       return;
     }
@@ -60,10 +61,10 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
       state.put(context, null);
     }
     catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-      AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
+      logger.log(Level.WARNING, e.getMessage(), e);
     }
 
-    if (AgentRule.logger.isLoggable(Level.FINER))
-      AgentRule.logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
   }
 }

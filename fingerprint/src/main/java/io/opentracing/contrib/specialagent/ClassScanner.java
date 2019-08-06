@@ -21,8 +21,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -32,7 +30,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 class ClassScanner extends ClassVisitor {
-  private static final Logger logger = Logger.getLogger(ClassScanner.class.getName());
+  private static final Logger logger = Logger.getLogger(ClassScanner.class);
 
   static ClassFingerprint fingerprint(final ClassLoader classLoader, final String resourcePath, final Set<String> innerClassExcludes) throws IOException {
     final List<MethodFingerprint> methods = new ArrayList<>();

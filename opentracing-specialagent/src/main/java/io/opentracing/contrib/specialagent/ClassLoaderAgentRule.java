@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -97,15 +96,15 @@ public class ClassLoaderAgentRule extends AgentRule {
         if (bytecode == null)
           return;
 
-        if (AgentRule.logger.isLoggable(Level.FINEST))
-          AgentRule.logger.finest("<<<<<<<< defineClass(\"" + arg + "\")");
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("<<<<<<<< defineClass(\"" + arg + "\")");
 
         final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
         returned = (Class<?>)defineClass.invoke(thiz, arg, bytecode, 0, bytecode.length, null);
         thrown = null;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
+        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
       }
       finally {
         visited.remove(arg);
@@ -128,7 +127,7 @@ public class ClassLoaderAgentRule extends AgentRule {
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
+        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
       }
       finally {
         visited.remove(arg);
@@ -153,7 +152,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
+        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
       }
       finally {
         visited.remove(arg);

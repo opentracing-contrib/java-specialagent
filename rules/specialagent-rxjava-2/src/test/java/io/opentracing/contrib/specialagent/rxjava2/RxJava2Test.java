@@ -19,13 +19,13 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.reactivex.Observable;
@@ -38,7 +38,7 @@ import io.reactivex.functions.Predicate;
 
 @RunWith(AgentRunner.class)
 public class RxJava2Test {
-  private static final Logger logger = Logger.getLogger(RxJava2Test.class.getName());
+  private static final Logger logger = Logger.getLogger(RxJava2Test.class);
   private static final String COMPLETED = "completed";
 
   @Before
