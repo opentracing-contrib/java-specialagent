@@ -27,11 +27,11 @@ script:
       [ "$TRAVIS_BRANCH" = "master" ] &&
       [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
-    mvn -P report install &&
-    mvn -DrepoToken=$REPO_TOKEN coveralls:report &&
-    mvn -Dassemble -P deploy deploy;
+    mvn -q -P report install &&
+    mvn -q -DrepoToken=$REPO_TOKEN coveralls:report &&
+    mvn -q -Dassemble -P deploy deploy;
   else
-    mvn install;
+    mvn -q install;
   fi'
 cache:
   directories:
