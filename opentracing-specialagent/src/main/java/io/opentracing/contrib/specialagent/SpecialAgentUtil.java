@@ -95,15 +95,27 @@ public final class SpecialAgentUtil {
     return builder.toString();
   }
 
+  private static URL getJavaAgentJar(final String arg) throws MalformedURLException {
+    final int argsIndex = arg.indexOf(".jar=");
+    return new URL("file", null, argsIndex == -1 ? arg : arg.substring(0, argsIndex + 4));
+  }
+
   private static URL getLocation(final Class<?> cls) {
     final CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [CodeSource] -> " + (codeSource == null ? null : codeSource.getLocation()));
+
     if (codeSource != null)
       return codeSource.getLocation();
 
     for (final String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
       if (arg.startsWith("-javaagent:")) {
         try {
-          return new URL("file", null, arg.substring(11));
+          final URL location = getJavaAgentJar(arg.substring(11));
+          if (logger.isLoggable(Level.FINEST))
+            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [MXBean] -> " + location);
+
+          return location;
         }
         catch (final MalformedURLException e) {
           throw new IllegalStateException(e);
@@ -115,12 +127,16 @@ public final class SpecialAgentUtil {
     if (sunJavaCommand == null)
       return null;
 
-    final String[] parts = sunJavaCommand.split("\\s+-");
-    for (int i = 0; i < parts.length; ++i) {
-      final String part = parts[i];
-      if (part.startsWith("javaagent:")) {
+    final String[] args = sunJavaCommand.split("\\s+-");
+    for (int i = 0; i < args.length; ++i) {
+      final String arg = args[i];
+      if (arg.startsWith("javaagent:")) {
         try {
-          return new URL("file", null, part.substring(10));
+          final URL location = getJavaAgentJar(arg.substring(10));
+          if (logger.isLoggable(Level.FINEST))
+            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [sun.java.command] -> " + location);
+
+          return location;
         }
         catch (final MalformedURLException e) {
           throw new IllegalStateException(e);
@@ -132,6 +148,9 @@ public final class SpecialAgentUtil {
   }
 
   private static Manifest getManifest(final URL location) throws IOException {
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getManifest(\"" + location + "\")");
+
     try (final JarInputStream in = new JarInputStream(location.openStream())) {
       return in.getManifest();
     }
@@ -159,7 +178,8 @@ public final class SpecialAgentUtil {
     try {
       final URL location = getLocation(SpecialAgent.class);
       if (location == null) {
-        logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
       }
       else {
         final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location);

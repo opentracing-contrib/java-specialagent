@@ -32,6 +32,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -82,9 +83,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
     final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("Source location (\"" + cls.getName() + "\"): " + testClassesPath);
-
     if (testClassesPath.endsWith("-tests.jar"))
       return new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
 
@@ -137,6 +135,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (sunJavaCommand != null)
       AssembleUtil.absorbProperties(sunJavaCommand);
 
+    SpecialAgentBase.loadProperties();
     inst = install();
   }
 
@@ -363,12 +362,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         setVerbose(true);
 
       events = config.events();
-      if (config.log() != Level.INFO) {
-        final String logLevelProperty = System.getProperty(SpecialAgent.LOG_LEVEL_PROPERTY);
+      if (config.log() != Level.WARNING) {
+        final String logLevelProperty = System.getProperty(Logger.LOG_LEVEL_PROPERTY);
         if (logLevelProperty != null)
-          logger.warning(SpecialAgent.LOG_LEVEL_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log is specified in " + testClass.getName());
-        else
-          System.setProperty(SpecialAgent.LOG_LEVEL_PROPERTY, String.valueOf(config.log()));
+          logger.warning(Logger.LOG_LEVEL_PROPERTY + "=" + logLevelProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log=" + config.log() + " is specified in " + testClass.getName());
+
+        if (logLevelProperty == null || config.log().ordinal() < Level.valueOf(logLevelProperty).ordinal())
+          System.setProperty(Logger.LOG_LEVEL_PROPERTY, String.valueOf(config.log()));
       }
 
       if (!config.isolateClassLoader())
@@ -378,7 +378,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (events != null && events.length > 0) {
       final String eventsProperty = System.getProperty(SpecialAgent.LOG_EVENTS_PROPERTY);
       if (eventsProperty != null) {
-        logger.warning(SpecialAgent.LOG_EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
+        logger.warning(SpecialAgent.LOG_EVENTS_PROPERTY + "=" + eventsProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events=" + Arrays.toString(events) + " is specified in " + testClass.getName());
       }
       else {
         final StringBuilder builder = new StringBuilder();

@@ -15,12 +15,34 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 public final class Logger {
+  static final String LOG_LEVEL_PROPERTY = "sa.log.level";
+  static final String LOG_FILE_PROPERTY = "sa.log.file";
+
   private static final Logger logger = new Logger();
   private static Level level = Level.INFO;
   private static PrintStream out = System.out;
+
+  static {
+    try {
+      // Load user log level
+      final String logLevelProperty = System.getProperty(LOG_LEVEL_PROPERTY);
+      if (logLevelProperty != null)
+        Logger.setLevel(Level.parse(logLevelProperty));
+
+      // Load user log file
+      final String logFileProperty = System.getProperty(LOG_FILE_PROPERTY);
+      if (logFileProperty != null)
+        Logger.setOut(new PrintStream(new FileOutputStream(logFileProperty), true));
+    }
+    catch (final FileNotFoundException e) {
+      throw new ExceptionInInitializerError(e);
+    }
+  }
 
   public static Logger getLogger(final Class<?> cls) {
     return logger;

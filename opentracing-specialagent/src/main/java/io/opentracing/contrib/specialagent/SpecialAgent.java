@@ -16,12 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -35,7 +30,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
@@ -53,19 +47,8 @@ import io.opentracing.util.GlobalTracer;
  * @author Seva Safris
  */
 @SuppressWarnings("restriction")
-public class SpecialAgent {
+public class SpecialAgent extends SpecialAgentBase {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class);
-
-  static final String CONFIG_ARG = "sa.config";
-  static final String AGENT_RUNNER_ARG = "sa.agentrunner";
-  static final String RULE_PATH_ARG = "sa.rulepath";
-  static final String TRACER_PROPERTY = "sa.tracer";
-  static final String LOG_EVENTS_PROPERTY = "sa.log.events";
-  static final String LOG_LEVEL_PROPERTY = "sa.log.level";
-  static final String LOG_FILE_PROPERTY = "sa.log.file";
-
-  static final String DEPENDENCIES_TGF = "dependencies.tgf";
-  static final String TRACER_FACTORY = "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory";
 
   private static class ClassLoaderMap<T> extends IdentityHashMap<ClassLoader,T> {
     private static final long serialVersionUID = 5515722666603482519L;
@@ -134,38 +117,7 @@ public class SpecialAgent {
     if (agentArgs != null)
       AssembleUtil.absorbProperties(agentArgs);
 
-    final String configProperty = System.getProperty(CONFIG_ARG);
-    try (
-      final InputStream defaultConfig = SpecialAgent.class.getResourceAsStream("/default.properties");
-      final FileReader userConfig = configProperty == null ? null : new FileReader(new File(configProperty));
-    ) {
-      final Properties properties = new Properties();
-
-      // Load default config properties
-      properties.load(defaultConfig);
-
-      // Load user config properties
-      if (userConfig != null)
-        properties.load(userConfig);
-
-      // Set config properties as system properties
-      for (final Map.Entry<Object,Object> entry : properties.entrySet())
-        if (System.getProperty((String)entry.getKey()) == null)
-          System.setProperty((String)entry.getKey(), (String)entry.getValue());
-
-      // Load user log level
-      final String logLevelProperty = System.getProperty(LOG_LEVEL_PROPERTY);
-      if (logLevelProperty != null)
-        Logger.setLevel(Level.parse(logLevelProperty));
-
-      // Load user log file
-      final String logFileProperty = System.getProperty(LOG_FILE_PROPERTY);
-      if (logFileProperty != null)
-        Logger.setOut(new PrintStream(new FileOutputStream(logFileProperty), true));
-    }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
+    loadProperties();
 
     BootLoaderAgent.premain(inst);
     SpecialAgent.inst = inst;
