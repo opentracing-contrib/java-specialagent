@@ -56,8 +56,7 @@ public class Aws2Test {
     try {
       createTable(dbClient, "table-1");
     }
-    catch (final Exception e) {
-      e.printStackTrace();
+    catch (final Exception ignore) {
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -75,8 +74,7 @@ public class Aws2Test {
       // If a local instance of dynamodb is NOT present, an exception is thrown.
       assertEquals("asyncRequest", result.tableDescription().tableName());
     }
-    catch (final Exception e) {
-      e.printStackTrace();
+    catch (final Exception ignore) {
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
