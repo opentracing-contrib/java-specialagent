@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,23 +37,29 @@ import redis.embedded.RedisServer;
 
 @RunWith(AgentRunner.class)
 public class JedisTest {
-  private RedisServer redisServer;
+  private static RedisServer redisServer;
   private Jedis jedis;
 
-  @Before
-  public void before(final MockTracer tracer) throws IOException {
-    tracer.reset();
-
+  @BeforeClass
+  public static void beforeClass() throws IOException {
     redisServer = new RedisServer();
     redisServer.start();
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    if (redisServer != null)
+      redisServer.stop();
+  }
+
+  @Before
+  public void before(final MockTracer tracer) {
+    tracer.reset();
     jedis = new Jedis();
   }
 
   @After
   public void after() {
-    if (redisServer != null)
-      redisServer.stop();
-
     if (jedis != null)
       jedis.close();
   }
