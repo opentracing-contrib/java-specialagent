@@ -51,9 +51,8 @@ public class SpecialAgentAgent {
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
-   * @throws Exception If an error has occurred.
    */
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+  public static void premain(final String agentArgs, final Instrumentation inst) {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)

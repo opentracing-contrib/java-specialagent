@@ -337,6 +337,11 @@ public final class SpecialAgentUtil {
         if (outDir == null)
           outDir = destDir.get();
 
+        if (outDir == null) {
+          logger.severe("Unable to continue with null output directory");
+          return;
+        }
+
         final JarURLConnection jarURLConnection = (JarURLConnection)connection;
         jarURLConnection.setUseCaches(false);
         final JarFile jarFile = jarURLConnection.getJarFile();

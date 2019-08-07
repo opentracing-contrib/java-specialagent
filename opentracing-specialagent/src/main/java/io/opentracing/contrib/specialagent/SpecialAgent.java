@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
@@ -111,33 +112,37 @@ public class SpecialAgent extends SpecialAgentBase {
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
-   * @throws Exception If an error has occurred.
    */
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-    if (agentArgs != null)
-      AssembleUtil.absorbProperties(agentArgs);
+  public static void premain(final String agentArgs, final Instrumentation inst) {
+    try {
+      if (agentArgs != null)
+        AssembleUtil.absorbProperties(agentArgs);
 
-    loadProperties();
+      loadProperties();
 
-    BootLoaderAgent.premain(inst);
-    SpecialAgent.inst = inst;
+      BootLoaderAgent.premain(inst);
+      SpecialAgent.inst = inst;
 
-    final String spring = System.getProperty("sa.spring");
-    if (spring != null && !"false".equals(spring)) {
-      SpringAgent.premain(inst, new Thread() {
-        @Override
-        public void run() {
-          try {
-            instrumenter.manager.premain(null, inst);
+      final String spring = System.getProperty("sa.spring");
+      if (spring != null && !"false".equals(spring)) {
+        SpringAgent.premain(inst, new Thread() {
+          @Override
+          public void run() {
+            try {
+              instrumenter.manager.premain(null, inst);
+            }
+            catch (final Exception e) {
+              throw new ExceptionInInitializerError(e);
+            }
           }
-          catch (final Exception e) {
-            throw new ExceptionInInitializerError(e);
-          }
-        }
-      });
+        });
+      }
+      else {
+        instrumenter.manager.premain(null, inst);
+      }
     }
-    else {
-      instrumenter.manager.premain(null, inst);
+    catch (final Throwable t) {
+      logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
     }
   }
 
@@ -212,6 +217,9 @@ public class SpecialAgent extends SpecialAgentBase {
       @Override
       public File get() {
         try {
+          if (true)
+            throw new IllegalStateException(new FileNotFoundException());
+
           return destDir == null ? destDir = Files.createTempDirectory("opentracing-specialagent").toFile() : destDir;
         }
         catch (final IOException e) {

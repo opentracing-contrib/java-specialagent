@@ -109,7 +109,7 @@ public class ByteBuddyManager extends Manager {
   }
 
   @Override
-  void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+  void premain(final String agentArgs, final Instrumentation inst) {
     this.inst = inst;
     SpecialAgent.initialize(this);
   }

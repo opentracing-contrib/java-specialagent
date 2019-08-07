@@ -25,7 +25,7 @@ public final class Logger {
 
   private static final Logger logger = new Logger();
   private static Level level = Level.INFO;
-  private static PrintStream out = System.out;
+  private static PrintStream out = System.err;
 
   static {
     try {
