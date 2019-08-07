@@ -56,7 +56,8 @@ public abstract class AgentRule {
     return pluginVerbose != null && Boolean.parseBoolean(pluginVerbose);
   }
 
-  protected static final Logger logger = Logger.getLogger(AgentRule.class);
+  public static final Logger logger = Logger.getLogger(AgentRule.class);
+
   public abstract Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception;
   // ElementMatcher<? super MethodDescription> onMethod();
   // DynamicAdvice advice();

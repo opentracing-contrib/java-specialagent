@@ -39,12 +39,9 @@ public class CompoundEnumeration<E> implements Enumeration<E> {
   }
 
   private boolean next() {
-    while (index < enums.length) {
+    for (; index < enums.length; ++index)
       if (enums[index] != null && enums[index].hasMoreElements())
         return true;
-
-      index++;
-    }
 
     return false;
   }
@@ -56,9 +53,9 @@ public class CompoundEnumeration<E> implements Enumeration<E> {
 
   @Override
   public E nextElement() {
-    if (!next())
-      throw new NoSuchElementException();
+    if (next())
+      return enums[index].nextElement();
 
-    return enums[index].nextElement();
+    throw new NoSuchElementException();
   }
 }
