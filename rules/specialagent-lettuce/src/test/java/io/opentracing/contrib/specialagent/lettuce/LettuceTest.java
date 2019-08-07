@@ -65,7 +65,7 @@ public class LettuceTest {
   }
 
   @Before
-  public void before(final MockTracer tracer) throws IOException {
+  public void before(final MockTracer tracer) {
     tracer.reset();
     client = RedisClient.create(address);
   }
