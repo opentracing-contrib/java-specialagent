@@ -65,9 +65,8 @@ public abstract class Manager {
    *
    * @param agentArgs The agent arguments.
    * @param instrumentation The {@link Instrumentation}.
-   * @throws Exception If an error has occurred.
    */
-  abstract void premain(String agentArgs, Instrumentation instrumentation) throws Exception;
+  abstract void premain(String agentArgs, Instrumentation instrumentation);
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in

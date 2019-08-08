@@ -32,14 +32,15 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+
 
 import org.apache.maven.cli.MavenCli;
 import org.junit.Assert;
@@ -77,14 +78,11 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  * @author Seva Safris
  */
 public class AgentRunner extends BlockJUnit4ClassRunner {
-  private static final Logger logger = Logger.getLogger(AgentRunner.class.getName());
+  private static final Logger logger = Logger.getLogger(AgentRunner.class);
   private static final Instrumentation inst;
 
   private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
     final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("Source location (\"" + cls.getName() + "\"): " + testClassesPath);
-
     if (testClassesPath.endsWith("-tests.jar"))
       return new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
 
@@ -137,6 +135,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     if (sunJavaCommand != null)
       AssembleUtil.absorbProperties(sunJavaCommand);
 
+    SpecialAgentBase.loadProperties();
     inst = install();
   }
 
@@ -160,28 +159,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Config {
-    public enum Log {
-      SEVERE(Level.SEVERE),
-      WARNING(Level.WARNING),
-      INFO(Level.INFO),
-      CONFIG(Level.CONFIG),
-      FINE(Level.FINE),
-      FINER(Level.FINER),
-      FINEST(Level.FINEST);
-
-      final Level level;
-
-      Log(final Level level) {
-        this.level = level;
-      }
-    }
-
     /**
      * @return Logging level.
      *         <p>
-     *         Default: {@link Log#WARNING}.
+     *         Default: {@link Level#WARNING}.
      */
-    Log log() default Log.WARNING;
+    Level log() default Level.WARNING;
 
     /**
      * @return Output re/transformer events.
@@ -279,6 +262,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       rulePaths.add(classesPath);
 
       final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
+      isolatedClasses.add("io.opentracing.contrib.specialagent.AgentRule");
+      isolatedClasses.add("io.opentracing.contrib.specialagent.Logger");
+      isolatedClasses.add("io.opentracing.contrib.specialagent.Level");
       final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
       final URLClassLoader classLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), new ClassLoader(ClassLoader.getSystemClassLoader()) {
         @Override
@@ -376,12 +362,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         setVerbose(true);
 
       events = config.events();
-      if (config.log() != Config.Log.INFO) {
-        final String logLevelProperty = System.getProperty(SpecialAgent.LOGGING_PROPERTY);
+      if (config.log() != Level.WARNING) {
+        final String logLevelProperty = System.getProperty(Logger.LOG_LEVEL_PROPERTY);
         if (logLevelProperty != null)
-          logger.warning(SpecialAgent.LOGGING_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log is specified in " + testClass.getName());
-        else
-          System.setProperty(SpecialAgent.LOGGING_PROPERTY, String.valueOf(config.log()));
+          logger.warning(Logger.LOG_LEVEL_PROPERTY + "=" + logLevelProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log=" + config.log() + " is specified in " + testClass.getName());
+
+        if (logLevelProperty == null || config.log().ordinal() < Level.valueOf(logLevelProperty).ordinal())
+          System.setProperty(Logger.LOG_LEVEL_PROPERTY, String.valueOf(config.log()));
       }
 
       if (!config.isolateClassLoader())
@@ -389,9 +376,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
 
     if (events != null && events.length > 0) {
-      final String eventsProperty = System.getProperty(SpecialAgent.EVENTS_PROPERTY);
+      final String eventsProperty = System.getProperty(SpecialAgent.LOG_EVENTS_PROPERTY);
       if (eventsProperty != null) {
-        logger.warning(SpecialAgent.EVENTS_PROPERTY + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events is specified in " + testClass.getName());
+        logger.warning(SpecialAgent.LOG_EVENTS_PROPERTY + "=" + eventsProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events=" + Arrays.toString(events) + " is specified in " + testClass.getName());
       }
       else {
         final StringBuilder builder = new StringBuilder();
@@ -399,7 +386,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           builder.append(event).append(",");
 
         builder.setLength(builder.length() - 1);
-        System.setProperty(SpecialAgent.EVENTS_PROPERTY, builder.toString());
+        System.setProperty(SpecialAgent.LOG_EVENTS_PROPERTY, builder.toString());
       }
     }
 

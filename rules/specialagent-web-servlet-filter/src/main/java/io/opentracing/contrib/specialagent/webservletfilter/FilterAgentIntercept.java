@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -32,9 +31,12 @@ import javax.servlet.http.HttpServletResponse;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public class FilterAgentIntercept extends ServletFilterAgentIntercept {
+  private static final Logger logger = Logger.getLogger(FilterAgentIntercept.class);
   public static final Map<Filter,ServletContext> filterToServletContext = new WeakHashMap<>();
   public static final Map<ServletResponse,Integer> servletResponseToStatus = new WeakHashMap<>();
 
@@ -65,20 +67,20 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       servletRequestToState.put(request, Boolean.TRUE);
-      if (AgentRule.logger.isLoggable(Level.FINER))
-        AgentRule.logger.finer(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
 
       tracingFilter.doFilter(request, (ServletResponse)res, new FilterChain() {
         @Override
         public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
           filter.doFilter(request, response, (FilterChain)chain);
-          if (AgentRule.logger.isLoggable(Level.FINER))
-            AgentRule.logger.finer("<< TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(response) +  ")");
+          if (logger.isLoggable(Level.FINER))
+            logger.finer("<< TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(response) +  ")");
         }
       });
     }
     catch (final Exception e) {
-      AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
+      logger.log(Level.WARNING, e.getMessage(), e);
       return;
     }
 

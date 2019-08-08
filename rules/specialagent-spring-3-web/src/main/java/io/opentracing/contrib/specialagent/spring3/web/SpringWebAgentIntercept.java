@@ -38,6 +38,14 @@ public class SpringWebAgentIntercept {
   }
 
   public static void enter(final Object thiz) {
+    try {
+      Class.forName("org.springframework.beans.factory.access.BeanFactoryLocator");
+    }
+    catch (final ClassNotFoundException ignore) {
+      // Spring 5.x doesn't have it
+      return;
+    }
+
     final ClientHttpRequest request = (ClientHttpRequest)thiz;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer

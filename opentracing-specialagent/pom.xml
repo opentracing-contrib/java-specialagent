@@ -120,6 +120,12 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-aws-sdk-2</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-cassandra-driver</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
@@ -139,6 +145,18 @@
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-elasticsearch-client-6</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-elasticsearch-7-rest-client</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
+          <artifactId>specialagent-elasticsearch-7-transport-client</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -411,7 +429,6 @@
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-util</artifactId>
-      <version>${project.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>

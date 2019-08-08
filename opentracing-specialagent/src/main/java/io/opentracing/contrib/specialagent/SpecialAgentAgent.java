@@ -21,7 +21,6 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.logging.Level;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -45,14 +44,15 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class SpecialAgentAgent {
+  public static final Logger logger = Logger.getLogger(SpecialAgentAgent.class);
+
   /**
    * Entrypoint to load the {@code SpecialAgentAgent}.
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
-   * @throws Exception If an error has occurred.
    */
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
+  public static void premain(final String agentArgs, final Instrumentation inst) {
     final Narrowable builder = new AgentBuilder.Default()
       .ignore(none())
       .with(RedefinitionStrategy.RETRANSFORMATION)
@@ -103,11 +103,11 @@ public class SpecialAgentAgent {
             returned = AssembleUtil.readBytes(resource);
         }
 
-        if (AgentRule.logger.isLoggable(Level.FINEST))
-          AgentRule.logger.finest("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("<<<<<<< Agent#findClass(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindClass#exit", t);
+        logger.log(Level.SEVERE, "<><><><> AgentAgent.FindClass#exit", t);
       }
     }
   }
@@ -128,11 +128,11 @@ public class SpecialAgentAgent {
           returned = ruleClassLoader.findResource(arg);
         }
 
-        if (AgentRule.logger.isLoggable(Level.FINEST))
-          AgentRule.logger.finest("<<<<<<< Agent#findResource(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("<<<<<<< Agent#findResource(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResource#exit", t);
+        logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResource#exit", t);
       }
     }
   }
@@ -154,11 +154,11 @@ public class SpecialAgentAgent {
           returned.hasMoreElements(); // For some reason, if I don't call this, the returned value does not have any elements!!!!
         }
 
-        if (AgentRule.logger.isLoggable(Level.FINEST))
-          AgentRule.logger.finest("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest("<<<<<<< Agent#findResources(" + (classLoader == null ? "null" : classLoader.getClass().getName() + "@" + Integer.toString(System.identityHashCode(classLoader), 16)) + "," + arg + "): " + returned);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResources#exit", t);
+        logger.log(Level.SEVERE, "<><><><> AgentAgent.FindResources#exit", t);
       }
     }
   }

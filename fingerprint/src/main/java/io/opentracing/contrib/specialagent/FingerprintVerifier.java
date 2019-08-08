@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.objectweb.asm.ClassVisitor;
 
@@ -33,7 +31,7 @@ import org.objectweb.asm.ClassVisitor;
  * @author Seva Safris
  */
 class FingerprintVerifier {
-  private static final Logger logger = Logger.getLogger(FingerprintVerifier.class.getName());
+  private static final Logger logger = Logger.getLogger(FingerprintVerifier.class);
 
   /**
    * Creates a new {@code Fingerprinter}.

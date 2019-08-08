@@ -16,9 +16,8 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -32,14 +31,9 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 import com.sun.tools.attach.VirtualMachine;
 
@@ -54,18 +48,8 @@ import io.opentracing.util.GlobalTracer;
  * @author Seva Safris
  */
 @SuppressWarnings("restriction")
-public class SpecialAgent {
-  private static final Logger logger = Logger.getLogger(SpecialAgent.class.getName());
-
-  static final String CONFIG_ARG = "sa.config";
-  static final String AGENT_RUNNER_ARG = "sa.agentrunner";
-  static final String RULE_PATH_ARG = "sa.rulepath";
-  static final String TRACER_PROPERTY = "sa.tracer";
-  static final String EVENTS_PROPERTY = "sa.log.events";
-  static final String LOGGING_PROPERTY = "sa.log.level";
-
-  static final String DEPENDENCIES_TGF = "dependencies.tgf";
-  static final String TRACER_FACTORY = "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory";
+public class SpecialAgent extends SpecialAgentBase {
+  private static final Logger logger = Logger.getLogger(SpecialAgent.class);
 
   private static class ClassLoaderMap<T> extends IdentityHashMap<ClassLoader,T> {
     private static final long serialVersionUID = 5515722666603482519L;
@@ -128,68 +112,37 @@ public class SpecialAgent {
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
-   * @throws Exception If an error has occurred.
    */
-  public static void premain(final String agentArgs, final Instrumentation inst) throws Exception {
-    if (agentArgs != null)
-      AssembleUtil.absorbProperties(agentArgs);
+  public static void premain(final String agentArgs, final Instrumentation inst) {
+    try {
+      if (agentArgs != null)
+        AssembleUtil.absorbProperties(agentArgs);
 
-    final String configProperty = System.getProperty(CONFIG_ARG);
-    try (
-      final InputStream configInputStream = SpecialAgent.class.getResourceAsStream("/default.properties");
-      final FileReader reader = configProperty == null ? null : new FileReader(new File(configProperty));
-      final InputStream loggingInputStream = SpecialAgent.class.getResourceAsStream("/logging.properties");
-    ) {
-      final Properties properties = new Properties();
+      loadProperties();
 
-      // Load default config properties
-      properties.load(configInputStream);
+      BootLoaderAgent.premain(inst);
+      SpecialAgent.inst = inst;
 
-      // Load user config properties
-      if (reader != null)
-        properties.load(reader);
-
-      // Set config properties as system properties
-      for (final Map.Entry<Object,Object> entry : properties.entrySet())
-        if (System.getProperty((String)entry.getKey()) == null)
-          System.setProperty((String)entry.getKey(), (String)entry.getValue());
-
-      // Load default logging properties
-      LogManager.getLogManager().readConfiguration(loggingInputStream);
-
-      // Load user logging properties
-      final String loggingProperty = System.getProperty(LOGGING_PROPERTY);
-      if (loggingProperty != null) {
-        final Level level = Level.parse(loggingProperty);
-        final Logger rootLogger = LogManager.getLogManager().getLogger("");
-        rootLogger.setLevel(level);
-        for (final Handler handler : rootLogger.getHandlers())
-          handler.setLevel(level);
+      final String spring = System.getProperty("sa.spring");
+      if (spring != null && !"false".equals(spring)) {
+        SpringAgent.premain(inst, new Thread() {
+          @Override
+          public void run() {
+            try {
+              instrumenter.manager.premain(null, inst);
+            }
+            catch (final Exception e) {
+              throw new ExceptionInInitializerError(e);
+            }
+          }
+        });
+      }
+      else {
+        instrumenter.manager.premain(null, inst);
       }
     }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
-
-    BootLoaderAgent.premain(inst);
-    SpecialAgent.inst = inst;
-
-    final String spring = System.getProperty("sa.spring");
-    if (spring != null && !"false".equals(spring)) {
-      SpringAgent.premain(inst, new Thread() {
-        @Override
-        public void run() {
-          try {
-            instrumenter.manager.premain(null, inst);
-          }
-          catch (final Exception e) {
-            throw new ExceptionInInitializerError(e);
-          }
-        }
-      });
-    }
-    else {
-      instrumenter.manager.premain(null, inst);
+    catch (final Throwable t) {
+      logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
     }
   }
 
@@ -264,6 +217,9 @@ public class SpecialAgent {
       @Override
       public File get() {
         try {
+          if (true)
+            throw new IllegalStateException(new FileNotFoundException());
+
           return destDir == null ? destDir = Files.createTempDirectory("opentracing-specialagent").toFile() : destDir;
         }
         catch (final IOException e) {
@@ -503,7 +459,7 @@ public class SpecialAgent {
         for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
           ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
-        manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(EVENTS_PROPERTY)), fileToPluginManifest);
+        manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY)), fileToPluginManifest);
       }
       catch (final IOException e) {
         logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);

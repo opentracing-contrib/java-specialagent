@@ -43,7 +43,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class EarlyReturnTest {
-  public static void premain(final Instrumentation inst) throws Exception {
+  public static void premain(final Instrumentation inst) {
     final Narrowable builder = new AgentBuilder.Default()
       .with(new DebugListener())
       .with(RedefinitionStrategy.RETRANSFORMATION)

@@ -22,11 +22,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class IsoClassLoader extends URLClassLoader {
-  private static final Logger logger = Logger.getLogger(IsoClassLoader.class.getName());
+  private static final Logger logger = Logger.getLogger(IsoClassLoader.class);
 
   private static class IsoParentClassLoader extends ClassLoader {
     private final AtomicReference<Set<String>> isoNames = new AtomicReference<>();

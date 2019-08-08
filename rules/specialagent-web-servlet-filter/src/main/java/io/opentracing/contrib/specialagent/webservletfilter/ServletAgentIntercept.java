@@ -16,7 +16,6 @@
 package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.io.IOException;
-import java.util.logging.Level;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -24,11 +23,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 
-import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
+  public static final Logger logger = Logger.getLogger(ServletAgentIntercept.class);
+
   public static final FilterChain noopFilterChain = new FilterChain() {
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
@@ -51,15 +53,15 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (servletRequestToState.remove((ServletRequest)req) != null)
         return;
 
-      if (AgentRule.logger.isLoggable(Level.FINER))
-        AgentRule.logger.finer(">> ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">> ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
 
       tracingFilter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
-      if (AgentRule.logger.isLoggable(Level.FINER))
-        AgentRule.logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
     }
     catch (final Exception e) {
-      AgentRule.logger.log(Level.WARNING, e.getMessage(), e);
+      logger.log(Level.WARNING, e.getMessage(), e);
     }
   }
 }

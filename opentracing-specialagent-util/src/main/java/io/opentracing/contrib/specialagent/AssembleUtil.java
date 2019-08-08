@@ -439,7 +439,7 @@ public final class AssembleUtil {
       return a == null ? -1 : 1;
 
     int length = Math.min(a.length, b.length);
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length; ++i) {
       final T oa = a[i];
       final T ob = b[i];
       if (oa != ob) {

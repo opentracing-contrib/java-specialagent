@@ -18,8 +18,6 @@ package io.opentracing.contrib.specialagent;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -38,7 +36,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class MutexAgent {
-  private static final Logger logger = Logger.getLogger(MutexAgent.class.getName());
+  private static final Logger logger = Logger.getLogger(MutexAgent.class);
 
   public static void premain(final Instrumentation inst) {
     if (logger.isLoggable(Level.FINE))

@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.objectweb.asm.AnnotationVisitor;
@@ -38,7 +36,7 @@ import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 class Fingerprinter extends ClassVisitor {
-  private static final Logger logger = Logger.getLogger(Fingerprinter.class.getName());
+  private static final Logger logger = Logger.getLogger(Fingerprinter.class);
   private static final Pattern synthetic = Pattern.compile("access\\$\\d+");
 
   private final Set<String> innerClassExcludes = new HashSet<>();

@@ -26,7 +26,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -41,15 +40,15 @@ public class HttpClientAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   public static Object[] enter(final Object arg0, final Object arg1, final Object arg2) {
-    if (AgentRuleUtil.callerEquals(1, 5, "com.amazonaws.http.apache.client.impl.SdkHttpClient.execute")) {
+    final HttpRequest request = arg0 instanceof HttpRequest ? (HttpRequest)arg0 : arg1 instanceof HttpRequest ? (HttpRequest)arg1 : null;
+    if (request == null)
+      return null;
+
+    if(request.getHeaders("amz-sdk-invocation-id").length > 0) {
       // skip embedded Apache HttpClient in AWS SDK Client, because it breaks
       // request signature and AWS SDK gets traced by the aws-sdk rule
       return null;
     }
-
-    final HttpRequest request = arg0 instanceof HttpRequest ? (HttpRequest)arg0 : arg1 instanceof HttpRequest ? (HttpRequest)arg1 : null;
-    if (request == null)
-      return null;
 
     Context context = contextHolder.get();
     if (context != null) {
