@@ -217,9 +217,6 @@ public class SpecialAgent extends SpecialAgentBase {
       @Override
       public File get() {
         try {
-          if (true)
-            throw new IllegalStateException(new FileNotFoundException());
-
           return destDir == null ? destDir = Files.createTempDirectory("opentracing-specialagent").toFile() : destDir;
         }
         catch (final IOException e) {
