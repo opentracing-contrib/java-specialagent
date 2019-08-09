@@ -92,7 +92,10 @@ public class ByteBuddyManager extends Manager {
 
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(none());
+    AgentBuilder agentBuilder = new AgentBuilder.Default()
+      .disableClassFormatChanges()
+      .ignore(none());
+
     if (AgentRuleUtil.tracerClassLoader != null)
       agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
 

@@ -44,6 +44,7 @@ public class MutexAgent {
 
     new AgentBuilder.Default()
       .ignore(none())
+      .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)

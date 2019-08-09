@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.3.4 (2019-08-09)
+* Support for Spring 4.
+* Standard stream logging.
+* Disable class format changes.
+* Stability updates to [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Apache HTTP Client, Feign.
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring 4 Web, Spring 4 Web MVC, Elasticsearch 7, AWS SDK 2.
+
 ## v1.3.3 (2019-07-26)
 * Support Servlet API 2.3 with `web-servlet-filter` Plugin.
 * Remedy class collision errors of conflicting library versions.
