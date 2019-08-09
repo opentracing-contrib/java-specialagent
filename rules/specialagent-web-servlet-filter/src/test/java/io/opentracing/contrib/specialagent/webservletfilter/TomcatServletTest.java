@@ -51,7 +51,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false, disable = "okhttp")
+@AgentRunner.Config(isolateClassLoader=false, disable="okhttp")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
 
