@@ -50,7 +50,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
    <dependency>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>opentracing-specialagent-api</artifactId>
-     <version>1.3.3</version>
+     <version>1.3.4</version>
      <scope>provided</scope>
    </dependency>
    <dependency>
@@ -158,7 +158,7 @@ The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> mo
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.3.3</version>
+  <version>1.3.4</version>
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -234,7 +234,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
         <artifactId>agentrule-maven-plugin</artifactId>
-        <version>1.3.3</version>
+        <version>1.3.4</version>
         <executions>
           <execution>
             <goals>
