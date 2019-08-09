@@ -51,7 +51,7 @@ import okhttp3.Response;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false, disable = "okhttp")
+@AgentRunner.Config(isolateClassLoader=false, disable="okhttp")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
 
@@ -59,8 +59,7 @@ public class TomcatServletTest {
   private Tomcat tomcatServer;
 
   @Before
-  public void beforeTest(final MockTracer tracer) throws LifecycleException {
-    tracer.reset();
+  public void beforeTest() throws LifecycleException {
     MockFilter.count = 0;
 
     tomcatServer = new Tomcat();
@@ -84,48 +83,13 @@ public class TomcatServletTest {
     context.addFilterMap(filterMap);
 
     // Following triggers creation of NoPluggabilityServletContext object during initialization
-    ((StandardContext)context).addApplicationLifecycleListener(new ServletContextListener() {
-      @Override
-      public void contextInitialized(final ServletContextEvent e) {
-      }
-
-      @Override
-      public void contextDestroyed(final ServletContextEvent e) {
-      }
-    });
+    ((StandardContext)context).addApplicationLifecycleListener(new SCL());
 
     Tomcat.addServlet(context, "helloWorldServlet", new MockServlet());
     context.addServletMappingDecoded("/hello", "helloWorldServlet");
 
     tomcatServer.start();
     logger.info("Tomcat server: http://" + tomcatServer.getHost().getName() + ":" + serverPort + "/");
-  }
-
-  @Test
-  public void testHelloF5Request(final MockTracer tracer) throws IOException {
-    final OkHttpClient client = new OkHttpClient();
-    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello")
-        .addHeader("F5_test", "value")
-        .addHeader("F5_ingressTime", "123")
-        .addHeader("F5_egressTime", "321")
-        .build();
-    final Response response = client.newCall(request).execute();
-
-    assertEquals(HttpServletResponse.SC_OK, response.code());
-    assertEquals(1, MockFilter.count);
-
-    final List<MockSpan> spans = tracer.finishedSpans();
-    assertEquals(spans.toString(), 2, spans.size());
-
-    MockSpan f5Span = spans.get(1);
-    assertEquals("value", f5Span.tags().get("test"));
-    assertEquals("F5", f5Span.tags().get("ServiceName"));
-    assertEquals("TransitTime", f5Span.operationName());
-    assertTrue(f5Span.logEntries().isEmpty());
-    assertEquals(123000, f5Span.startMicros()); // ingressTime
-    assertEquals(321000, f5Span.finishMicros()); // egressTime
-    assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
-    assertEquals(spans.get(0).parentId(), spans.get(1).context().spanId());
   }
 
   @Test
@@ -139,13 +103,22 @@ public class TomcatServletTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(spans.toString(), 1, spans.size());
+  }
 
-    assertEquals("GET", spans.get(0).operationName());
+  public static class SCL implements ServletContextListener {
+    @Override
+    public void contextInitialized(final ServletContextEvent sce) {
+      // NOOP
+    }
+
+    @Override
+    public void contextDestroyed(final ServletContextEvent sce) {
+      // NOOP
+    }
   }
 
   @After
   public void afterTest() throws LifecycleException {
     tomcatServer.stop();
-    tomcatServer.destroy();
   }
 }
