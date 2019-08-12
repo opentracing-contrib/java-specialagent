@@ -16,7 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
@@ -523,19 +522,7 @@ public class SpecialAgent extends SpecialAgentBase {
             // is in a JAR also, which is inside the SpecialAgent JAR), then
             // isolate the tracer JAR in its own class loader.
             if (file.exists() || !isAgentRunner()) {
-              final ClassLoader parent;
-              if (System.getProperty("java.version").startsWith("1.")) {
-                parent = null;
-              }
-              else {
-                try {
-                  parent = (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-                }
-                catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                  throw new IllegalStateException(e);
-                }
-              }
-
+              final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
               AgentRuleUtil.tracerClassLoader = new TracerClassLoader(tracerUrl, parent);
               Thread.currentThread().setContextClassLoader(AgentRuleUtil.tracerClassLoader);
             }
@@ -544,7 +531,7 @@ public class SpecialAgent extends SpecialAgentBase {
             throw new IllegalStateException(TRACER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
           }
         }
-        catch (final IOException e) {
+        catch (final IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
           throw new IllegalStateException(e);
         }
 
@@ -718,24 +705,14 @@ public class SpecialAgent extends SpecialAgentBase {
       return null;
     }
 
+    final String resourceName = name.replace('.', '/').concat(".class");
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
       // Ensure the `RuleClassLoader` is preloaded
       ruleClassLoader.preLoad(classLoader);
 
-      final String resourceName = name.replace('.', '/').concat(".class");
       final URL resourceUrl = ruleClassLoader.getResource(resourceName);
       if (resourceUrl != null) {
-        // Check that the resourceName has not already been retrieved by this method
-        // (this may be a moot check, because the JVM won't call findClass() twice
-        // for the same class)
-        if (ruleClassLoader.markFindResource(classLoader, resourceName)) {
-          if (logger.isLoggable(Level.FINEST))
-            logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): REDUNDANT CALL");
-
-          return null;
-        }
-
         // Return the resource's bytes
         final byte[] bytecode = AssembleUtil.readBytes(resourceUrl);
         if (logger.isLoggable(Level.FINEST))

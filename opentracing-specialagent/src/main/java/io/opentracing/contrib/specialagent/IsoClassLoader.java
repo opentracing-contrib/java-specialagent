@@ -46,9 +46,9 @@ class IsoClassLoader extends URLClassLoader {
 
         final Set<String> names = new HashSet<>();
         try {
-          AssembleUtil.forEachClass(isoClassPaths, new Consumer<String>() {
+          AssembleUtil.<Void>forEachClass(isoClassPaths, null, new BiConsumer<String,Void>() {
             @Override
-            public void accept(final String name) {
+            public void accept(final String name, final Void arg) {
               names.add(name);
             }
           });

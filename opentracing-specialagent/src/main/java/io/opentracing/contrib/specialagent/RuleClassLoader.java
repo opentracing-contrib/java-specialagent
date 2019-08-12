@@ -19,16 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
@@ -37,8 +31,6 @@ import java.util.zip.ZipInputStream;
  * <li>{@link #isCompatible(ClassLoader)}: Determines whether the
  * instrumentation rule it repserents is compatible with a specified
  * {@code ClassLoader}.</li>
- * <li>{@link #markFindResource(ClassLoader,String)}: Keeps track of the names
- * of classes that have been loaded into a specified {@code ClassLoader}.</li>
  * </ol>
  *
  * @author Seva Safris
@@ -60,9 +52,6 @@ class RuleClassLoader extends URLClassLoader {
   private static final BiConsumer<String,ClassLoader> loadClass = new BiConsumer<String,ClassLoader>() {
     @Override
     public void accept(final String path, final ClassLoader classLoader) {
-      if (!path.endsWith(".class") || path.startsWith("META-INF/") || path.startsWith("module-info"))
-        return;
-
       final String className = path.substring(0, path.length() - 6).replace('/', '.');
       try {
         Class.forName(className, false, classLoader);
@@ -74,10 +63,9 @@ class RuleClassLoader extends URLClassLoader {
   };
 
   private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-  private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
   private final PluginManifest pluginManifest;
   private final IsoClassLoader isoClassLoader;
-  private boolean preLoaded;
+  private volatile boolean preLoaded;
 
   /**
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
@@ -93,11 +81,6 @@ class RuleClassLoader extends URLClassLoader {
     super(AssembleUtil.toURLs(files), parent);
     this.pluginManifest = pluginManifest;
     this.isoClassLoader = isoClassLoader;
-  }
-
-  @Override
-  protected Class<?> findClass(String name) throws ClassNotFoundException {
-    return super.findClass(name);
   }
 
   /**
@@ -119,30 +102,11 @@ class RuleClassLoader extends URLClassLoader {
 
     // Call Class.forName(...) for each class in ruleClassLoader to load in
     // the caller's class loader
-    for (final URL pathUrl : getURLs()) {
-      if (pathUrl.toString().endsWith(".jar")) {
-        try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
-          for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
-            final String name = entry.getName();
-            loadClass.accept(name, classLoader);
-          }
-        }
-        catch (final IOException e) {
-          logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
-        }
-      }
-      else {
-        final File dir = new File(URI.create(pathUrl.toString()));
-        final Path path = dir.toPath();
-        AssembleUtil.recurseDir(dir, new Predicate<File>() {
-          @Override
-          public boolean test(final File file) {
-            final String name = path.relativize(file.toPath()).toString();
-            loadClass.accept(name, classLoader);
-            return true;
-          }
-        });
-      }
+    try {
+      AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
@@ -221,39 +185,9 @@ class RuleClassLoader extends URLClassLoader {
     return true;
   }
 
-  /**
-   * Marks the specified resource name with {@code true}, associated with the
-   * specified {@code ClassLoader}, and returns the previous value of the mark.
-   * <p>
-   * The first invocation of this method for a specified {@code ClassLoader} and
-   * resource name will return {@code false}.
-   * <p>
-   * Subsequent calls to this method for a specified {@code ClassLoader} and
-   * resource name will return {@code true}.
-   *
-   * @param classLoader The {@code ClassLoader} to which the value of the mark
-   *          for the specified resource name is associated.
-   * @param resourceName The name of the resource as the target of the mark.
-   * @return {@code false} if this method was never called with the specific
-   *         {@code ClassLoader} and resource name; {@code true} if this method
-   *         was previously called with the specific {@code ClassLoader} and
-   *         resource name.
-   */
-  boolean markFindResource(final ClassLoader classLoader, final String resourceName) {
-    Set<String> classNames = classLoaderToClassName.get(classLoader);
-    if (classNames == null)
-      classLoaderToClassName.put(classLoader, classNames = new HashSet<>());
-    else if (classNames.contains(resourceName))
-      return true;
-
-    classNames.add(resourceName);
-    return false;
-  }
-
   @Override
   public void close() throws IOException {
     super.close();
     compatibility.clear();
-    classLoaderToClassName.clear();
   }
 }

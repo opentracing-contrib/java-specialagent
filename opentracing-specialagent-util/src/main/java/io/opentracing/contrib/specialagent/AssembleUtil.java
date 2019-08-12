@@ -687,14 +687,14 @@ public final class AssembleUtil {
     }
   }
 
-  public static void forEachClass(final URL[] urls, final Consumer<String> consumer) throws IOException {
+  public static <T>void forEachClass(final URL[] urls, final T arg, final BiConsumer<String,T> consumer) throws IOException {
     for (final URL url : urls) {
       if (url.getPath().endsWith(".jar")) {
         try (final ZipInputStream in = new ZipInputStream(url.openStream())) {
           for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
             final String name = entry.getName();
             if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
-              consumer.accept(name);
+              consumer.accept(name, arg);
             }
           }
         }
@@ -710,7 +710,7 @@ public final class AssembleUtil {
 
             final String name = path.relativize(t.toPath()).toString();
             if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info")) {
-              consumer.accept(name);
+              consumer.accept(name, arg);
             }
 
             return true;

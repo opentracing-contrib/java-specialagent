@@ -58,9 +58,9 @@ class FingerprintVerifier {
    * @throws IOException If an I/O error has occurred.
    */
   ClassFingerprint[] fingerprint(final URLClassLoader classLoader) throws IOException {
-    AssembleUtil.forEachClass(classLoader.getURLs(), new Consumer<String>() {
+    AssembleUtil.<Void>forEachClass(classLoader.getURLs(), null, new BiConsumer<String,Void>() {
       @Override
-      public void accept(final String name) {
+      public void accept(final String name, final Void arg) {
         try {
           final ClassFingerprint classFingerprint = fingerprint(classLoader, name);
           if (classFingerprint != null)
