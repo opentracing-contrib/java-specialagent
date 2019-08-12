@@ -54,7 +54,6 @@ public class GrpcTest {
 
   @Before
   public void before(final MockTracer tracer) {
-    System.err.println(System.getProperty("java.class.path"));
     tracer.reset();
   }
 
