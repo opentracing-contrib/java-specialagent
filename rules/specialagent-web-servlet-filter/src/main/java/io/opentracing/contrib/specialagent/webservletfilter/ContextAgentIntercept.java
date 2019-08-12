@@ -49,7 +49,7 @@ public abstract class ContextAgentIntercept {
     }
   }
 
-  public static Method getFilterMethod(final ServletContext context) {
+  public static Method getFilterMethod(final Object context) {
     return getMethod(context.getClass(), "addFilter", String.class, Filter.class);
   }
 }

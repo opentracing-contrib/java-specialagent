@@ -15,6 +15,8 @@
 package io.opentracing.contrib.web.servlet.filter;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -200,8 +202,15 @@ public class TracingFilter implements Filter {
             } finally {
                 if (isAsyncStarted[0]) {
                     // what if async is already finished? This would not be called
-                    httpRequest.getAsyncContext()
-                            .addListener(new TracingAsyncListener(span, spanDecorators));
+                  try {
+                    final Method getAsyncContext = ClassUtil.getMethod(httpRequest.getClass(), "getAsyncContext");
+                    final Object asyncContext = getAsyncContext.invoke(httpRequest);
+                    final Method addListener = ClassUtil.getMethod(asyncContext.getClass(), "addListener", Class.forName("javax.servlet.AsyncListener"));
+                    addListener.invoke(new TracingAsyncListener(span, spanDecorators));
+                  }
+                  catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
+                    throw new IllegalStateException(e);
+                  }
                 } else {
                     // If not async, then need to explicitly finish the span associated with the scope.
                     // This is necessary, as we don't know whether this request is being handled

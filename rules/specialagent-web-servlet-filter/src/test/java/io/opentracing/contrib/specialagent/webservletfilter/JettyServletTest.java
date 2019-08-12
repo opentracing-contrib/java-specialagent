@@ -22,20 +22,12 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.junit.After;
 import org.junit.Before;
@@ -66,12 +58,8 @@ public class JettyServletTest {
 
     server = new Server(0);
 
-    final ServletContextHandler servletContextHandler = new ServletContextHandler();
-    servletContextHandler.setContextPath("/");
-    servletContextHandler.addServlet(MockServlet.class, "/hello");
-    server.setHandler(servletContextHandler);
-
     final ServletHandler servletHandler = new ServletHandler();
+    servletHandler.addServletWithMapping(MockServlet.class, "/hello");
     servletHandler.addFilterWithMapping(MockFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     server.setHandler(servletHandler);
 

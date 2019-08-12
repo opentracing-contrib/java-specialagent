@@ -31,7 +31,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>web-servlet-filter</sa.plugin.name>
     <version.org.apache.tomcat.embed>8.5.40</version.org.apache.tomcat.embed>
-    <version.org.eclipse.jetty>9.3.15.v20161220</version.org.eclipse.jetty>
+    <version.org.eclipse.jetty>9.0.0.v20130308</version.org.eclipse.jetty>
   </properties>
   <dependencies>
     <!--dependency>
@@ -51,18 +51,6 @@
       </exclusions>
     </dependency-->
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${version.org.eclipse.jetty}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${version.org.eclipse.jetty}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
       <version>${version.org.apache.tomcat.embed}</version>
@@ -72,6 +60,18 @@
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
       <version>${version.org.apache.tomcat.embed}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${version.org.eclipse.jetty}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${version.org.eclipse.jetty}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -86,10 +86,17 @@
       being used for tests. This Dependency is only provided here for the sake of creating a
       fingerprint.bin. This is the lowest version that is supported by java-web-servlet-filter.
      -->
-    <!--dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
-    </dependency-->
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 </project>
