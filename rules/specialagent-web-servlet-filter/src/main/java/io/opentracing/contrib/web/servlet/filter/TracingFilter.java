@@ -206,7 +206,7 @@ public class TracingFilter implements Filter {
                     final Method getAsyncContext = ClassUtil.getMethod(httpRequest.getClass(), "getAsyncContext");
                     final Object asyncContext = getAsyncContext.invoke(httpRequest);
                     final Method addListener = ClassUtil.getMethod(asyncContext.getClass(), "addListener", Class.forName("javax.servlet.AsyncListener"));
-                    addListener.invoke(new TracingAsyncListener(span, spanDecorators));
+                    addListener.invoke(asyncContext, new TracingAsyncListener(span, spanDecorators));
                   }
                   catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
                     throw new IllegalStateException(e);
