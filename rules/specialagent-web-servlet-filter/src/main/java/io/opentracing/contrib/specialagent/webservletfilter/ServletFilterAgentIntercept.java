@@ -15,6 +15,8 @@
 
 package io.opentracing.contrib.specialagent.webservletfilter;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -23,14 +25,20 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
 public abstract class ServletFilterAgentIntercept {
+  public static final Logger logger = Logger.getLogger(ServletAgentIntercept.class);
   public static final Map<ServletRequest,Boolean> servletRequestToState = new WeakHashMap<>();
   public static final Map<ServletContext,TracingFilter> servletContextToFilter = new WeakHashMap<>();
 
-  public static TracingFilter getFilter(final ServletContext servletContext) throws ServletException {
+  public static boolean hasFilter(final ServletContext servletContext) {
+    return servletContextToFilter.containsKey(servletContext);
+  }
+
+  public static TracingFilter getProxyFilter(final ServletContext servletContext) throws ServletException {
     Objects.requireNonNull(servletContext);
     TracingFilter filter = servletContextToFilter.get(servletContext);
     if (filter != null)
@@ -43,6 +51,16 @@ public abstract class ServletFilterAgentIntercept {
 
       servletContextToFilter.put(servletContext, filter = new TracingProxyFilter(GlobalTracer.get(), servletContext));
       return filter;
+    }
+  }
+
+  public static Method getMethod(final Class<?> cls, final String name, final Class<?> ... parameterTypes) {
+    try {
+      final Method method = cls.getMethod(name, parameterTypes);
+      return Modifier.isAbstract(method.getModifiers()) ? null : method;
+    }
+    catch (final NoSuchMethodException e) {
+      return null;
     }
   }
 }

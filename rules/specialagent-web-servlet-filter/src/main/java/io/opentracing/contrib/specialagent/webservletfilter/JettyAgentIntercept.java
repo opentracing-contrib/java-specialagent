@@ -17,57 +17,32 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.ServletContext;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.specialagent.Logger;
-import io.opentracing.contrib.web.servlet.filter.TracingFilter;
-import io.opentracing.util.GlobalTracer;
 
 public class JettyAgentIntercept extends ContextAgentIntercept {
-  public static final Logger logger = Logger.getLogger(JettyAgentIntercept.class);
-  public static final Map<Object,Object> state = Collections.synchronizedMap(new WeakHashMap<>());
-
   public static void addFilter(final Object thiz) {
+    ServletContext context = null;
     try {
-      final Object context = thiz.getClass().getMethod("getServletContext").invoke(thiz);
-      if (state.containsKey(context))
-        return;
-
-      if (logger.isLoggable(Level.FINER))
-        logger.finer(">> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
-
-      final Method addFilterMethod = getFilterMethod(context);
-      if (addFilterMethod == null) {
-        if (logger.isLoggable(Level.FINER))
-          logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): isFilterMethodPresent = false");
-
-        return;
-      }
-
-      try {
-        final TracingFilter filter = new TracingFilter(GlobalTracer.get());
-        final Object registration = addFilterMethod.invoke(context, TRACING_FILTER_NAME, filter);
+      context = (ServletContext)thiz.getClass().getMethod("getServletContext").invoke(thiz);
+      final Object registration = getAddFilterMethod(context);
+      if (registration != null) {
         final Method addMappingForUrlPatternsMethod = registration.getClass().getMethod("addMappingForUrlPatterns", EnumSet.class, boolean.class, String[].class);
         addMappingForUrlPatternsMethod.invoke(registration, EnumSet.allOf(DispatcherType.class), true, patterns);
-        state.put(context, null);
       }
-      catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        logger.log(Level.WARNING, e.getMessage(), e);
-      }
-
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
     catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-      logger.log(Level.SEVERE, "Unable to add filter", e);
-      return;
+      logger.log(Level.WARNING, e.getMessage(), e);
+      if (context != null)
+        servletContextToFilter.remove(context);
     }
+
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(thiz) + ")");
   }
 }

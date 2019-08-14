@@ -17,23 +17,81 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.Objects;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 
-public abstract class ContextAgentIntercept {
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.contrib.web.servlet.filter.TracingFilter;
+import io.opentracing.util.GlobalTracer;
+
+public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept {
+  public static final Logger logger = Logger.getLogger(ContextAgentIntercept.class);
+
   public static final String TRACING_FILTER_NAME = "tracingFilter";
   public static final String[] patterns = {"/*"};
 
-  public static Method getMethod(final Class<?> cls, final String name, final Class<?> ... parameterTypes) {
-    try {
-      final Method method = cls.getMethod(name, parameterTypes);
-      return Modifier.isAbstract(method.getModifiers()) ? null : method;
+  public static TracingFilter getFilter(final ServletContext servletContext) {
+    Objects.requireNonNull(servletContext);
+    TracingFilter filter = servletContextToFilter.get(servletContext);
+    if (filter != null)
+      return filter;
+
+    synchronized (servletContextToFilter) {
+      filter = servletContextToFilter.get(servletContext);
+      if (filter != null)
+        return filter;
+
+      servletContextToFilter.put(servletContext, filter = new TracingFilter(GlobalTracer.get()));
+      return filter;
     }
-    catch (final NoSuchMethodException e) {
+  }
+
+  public static Object getAddFilterMethod(final ServletContext context) throws IllegalAccessException, InvocationTargetException {
+    if (hasFilter(context)) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">< ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): hasFilter(context) == true");
+
       return null;
     }
+
+    final Method addFilterMethod = getFilterMethod(context);
+    if (addFilterMethod == null) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">< ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): ServletContext#addFilter(String,Filter) is missing");
+
+      return null;
+    }
+
+    try {
+      Class.forName("javax.servlet.DispatcherType");
+    }
+    catch (final ClassNotFoundException e) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">< ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): javax.servlet.DispatcherType is missing");
+
+      return null;
+    }
+
+    final TracingFilter tracingFilter = getFilter(context);
+    // If the tracingFilter instance is a TracingProxyFilter, then it was
+    // created with ServletFilterAgentIntercept#getProxyFilter. This should
+    // never happen, because ServletContext#addFilter happens first in the
+    // servlet lifecycle.
+    if (tracingFilter instanceof TracingProxyFilter) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">< ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): tracingFilter instanceof TracingProxyFilter");
+
+      return null;
+    }
+
+    if (logger.isLoggable(Level.FINER))
+      logger.finer(">> ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): ServletContext#addFilter(" + TRACING_FILTER_NAME + "," + AgentRuleUtil.getSimpleNameId(tracingFilter) + ")");
+
+    return addFilterMethod.invoke(context, TRACING_FILTER_NAME, tracingFilter);
   }
 
   public static boolean invoke(final Object[] returned, final Object obj, final Method method, final Object ... args) {

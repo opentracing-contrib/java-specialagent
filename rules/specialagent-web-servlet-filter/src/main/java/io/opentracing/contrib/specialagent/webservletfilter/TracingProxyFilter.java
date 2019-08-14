@@ -25,11 +25,11 @@ import io.opentracing.Tracer;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public class TracingProxyFilter extends TracingFilter implements FilterConfig {
-  private final ServletContext servletContext;
+  private final ServletContext context;
 
-  public TracingProxyFilter(final Tracer tracer, final ServletContext servletContext) throws ServletException {
+  public TracingProxyFilter(final Tracer tracer, final ServletContext context) throws ServletException {
     super(tracer);
-    this.servletContext = servletContext;
+    this.context = context;
     init(this);
   }
 
@@ -40,7 +40,7 @@ public class TracingProxyFilter extends TracingFilter implements FilterConfig {
 
   @Override
   public ServletContext getServletContext() {
-    return servletContext;
+    return context;
   }
 
   @Override

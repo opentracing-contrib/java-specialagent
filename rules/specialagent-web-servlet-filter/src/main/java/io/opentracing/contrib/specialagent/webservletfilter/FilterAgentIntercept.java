@@ -28,7 +28,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.specialagent.Level;
@@ -54,11 +53,11 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
 
     try {
       final Filter filter = (Filter)thiz;
-      final ServletContext[] servletContext = new ServletContext[1];
-      if (!ContextAgentIntercept.invoke(servletContext, request, ContextAgentIntercept.getMethod(request.getClass(), "getServletContext")) || servletContext[0] == null)
-        servletContext[0] = filterToServletContext.get(filter);
+      final ServletContext[] context = new ServletContext[1];
+      if (!ContextAgentIntercept.invoke(context, request, getMethod(request.getClass(), "getServletContext")) || context[0] == null)
+        context[0] = filterToServletContext.get(filter);
 
-      final TracingFilter tracingFilter = getFilter(servletContext[0]);
+      final TracingFilter tracingFilter = getProxyFilter(context[0]);
 
       // If the tracingFilter instance is not a TracingProxyFilter, then it was
       // created with ServletContext#addFilter. Therefore, the intercept of the
