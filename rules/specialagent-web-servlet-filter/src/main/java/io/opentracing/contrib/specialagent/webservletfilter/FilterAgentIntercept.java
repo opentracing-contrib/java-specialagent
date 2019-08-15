@@ -31,22 +31,16 @@ import javax.servlet.http.HttpServletResponse;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public class FilterAgentIntercept extends ServletFilterAgentIntercept {
-  private static final Logger logger = Logger.getLogger(FilterAgentIntercept.class);
-  public static final Map<Filter,ServletContext> filterToServletContext = new WeakHashMap<>();
   public static final Map<ServletResponse,Integer> servletResponseToStatus = new WeakHashMap<>();
 
   public static void init(final Object thiz, final Object filterConfig) {
-    filterToServletContext.put((Filter)thiz, ((FilterConfig)filterConfig).getServletContext());
+    filterOrServletToServletContext.put(thiz, ((FilterConfig)filterConfig).getServletContext());
   }
 
   public static void doFilter(final Object thiz, final Object req, final Object res, final Object chain) {
-    if (thiz instanceof TracingFilter)
-      return;
-
     final ServletRequest request = (ServletRequest)req;
     if (servletRequestToState.containsKey(request))
       return;
@@ -55,9 +49,9 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
       final Filter filter = (Filter)thiz;
       final ServletContext[] context = new ServletContext[1];
       if (!ContextAgentIntercept.invoke(context, request, getMethod(request.getClass(), "getServletContext")) || context[0] == null)
-        context[0] = filterToServletContext.get(filter);
+        context[0] = filterOrServletToServletContext.get(filter);
 
-      final TracingFilter tracingFilter = getProxyFilter(context[0]);
+      final TracingFilter tracingFilter = getFilter(context[0], true);
 
       // If the tracingFilter instance is not a TracingProxyFilter, then it was
       // created with ServletContext#addFilter. Therefore, the intercept of the

@@ -17,16 +17,15 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
-import io.opentracing.util.GlobalTracer;
 
 public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept {
   public static final Logger logger = Logger.getLogger(ContextAgentIntercept.class);
@@ -34,24 +33,8 @@ public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept 
   public static final String TRACING_FILTER_NAME = "tracingFilter";
   public static final String[] patterns = {"/*"};
 
-  public static TracingFilter getFilter(final ServletContext servletContext) {
-    Objects.requireNonNull(servletContext);
-    TracingFilter filter = servletContextToFilter.get(servletContext);
-    if (filter != null)
-      return filter;
-
-    synchronized (servletContextToFilter) {
-      filter = servletContextToFilter.get(servletContext);
-      if (filter != null)
-        return filter;
-
-      servletContextToFilter.put(servletContext, filter = new TracingFilter(GlobalTracer.get()));
-      return filter;
-    }
-  }
-
-  public static Object getAddFilterMethod(final ServletContext context) throws IllegalAccessException, InvocationTargetException {
-    if (hasFilter(context)) {
+  public static Object getAddFilterMethod(final ServletContext context) throws IllegalAccessException, InvocationTargetException, ServletException {
+    if (servletContextToFilter.containsKey(context)) {
       if (logger.isLoggable(Level.FINER))
         logger.finer(">< ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): hasFilter(context) == true");
 
@@ -66,17 +49,7 @@ public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept 
       return null;
     }
 
-    try {
-      Class.forName("javax.servlet.DispatcherType");
-    }
-    catch (final ClassNotFoundException e) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer(">< ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): javax.servlet.DispatcherType is missing");
-
-      return null;
-    }
-
-    final TracingFilter tracingFilter = getFilter(context);
+    final TracingFilter tracingFilter = getFilter(context, false);
     // If the tracingFilter instance is a TracingProxyFilter, then it was
     // created with ServletFilterAgentIntercept#getProxyFilter. This should
     // never happen, because ServletContext#addFilter happens first in the
@@ -107,7 +80,7 @@ public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept 
     }
   }
 
-  public static Method getFilterMethod(final Object context) {
+  public static Method getFilterMethod(final ServletContext context) {
     return getMethod(context.getClass(), "addFilter", String.class, Filter.class);
   }
 }

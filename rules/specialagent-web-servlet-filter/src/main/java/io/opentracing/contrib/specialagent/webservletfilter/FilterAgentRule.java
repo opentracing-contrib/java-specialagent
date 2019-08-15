@@ -37,7 +37,9 @@ public class FilterAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ServletAdvice.class).on(named("service")));
+          return builder
+            .visit(Advice.to(ServletInitAdvice.class).on(named("init").and(takesArguments(1)).and(takesArgument(0, named("javax.servlet.ServletConfig")))))
+            .visit(Advice.to(ServletServiceAdvice.class).on(named("service").and(takesArguments(2)).and(takesArgument(0, named("javax.servlet.http.HttpServletRequest")).and(takesArgument(1, named("javax.servlet.http.HttpServletResponse"))))));
         }})
       .type(hasSuperType(named("javax.servlet.http.HttpServletResponse")))
       .transform(new Transformer() {
@@ -47,17 +49,17 @@ public class FilterAgentRule extends AgentRule {
             .visit(Advice.to(HttpServletResponseAdvice.class).on(named("setStatus")))
             .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError")));
         }})
-      .type(hasSuperType(named("javax.servlet.Filter")))
+      .type(hasSuperType(named("javax.servlet.Filter")).and(not(named("io.opentracing.contrib.web.servlet.filter.TracingFilter"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           // TODO: Add method signature...
           return builder
-            .visit(Advice.to(InitAdvice.class).on(named("init")))
+            .visit(Advice.to(FilterInitAdvice.class).on(named("init")))
             .visit(Advice.to(DoFilterEnter.class).on(named("doFilter")));
         }}),
       builder
-      .type(hasSuperType(named("javax.servlet.Filter")))
+      .type(hasSuperType(named("javax.servlet.Filter")).and(not(named("io.opentracing.contrib.web.servlet.filter.TracingFilter"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -66,7 +68,15 @@ public class FilterAgentRule extends AgentRule {
         }}));
   }
 
-  public static class ServletAdvice {
+  public static class ServletInitAdvice {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object servletConfig) {
+      if (isEnabled(origin))
+        ServletAgentIntercept.init(thiz, servletConfig);
+    }
+  }
+
+  public static class ServletServiceAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response) {
       if (isEnabled(origin))
@@ -82,7 +92,7 @@ public class FilterAgentRule extends AgentRule {
     }
   }
 
-  public static class InitAdvice {
+  public static class FilterInitAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object filterConfig) {
       if (isEnabled(origin))

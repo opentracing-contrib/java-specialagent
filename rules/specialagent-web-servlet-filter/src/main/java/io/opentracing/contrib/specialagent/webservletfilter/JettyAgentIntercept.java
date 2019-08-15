@@ -19,13 +19,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 
 public class JettyAgentIntercept extends ContextAgentIntercept {
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public static void addFilter(final Object thiz) {
     ServletContext context = null;
     try {
@@ -33,10 +34,20 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
       final Object registration = getAddFilterMethod(context);
       if (registration != null) {
         final Method addMappingForUrlPatternsMethod = registration.getClass().getMethod("addMappingForUrlPatterns", EnumSet.class, boolean.class, String[].class);
-        addMappingForUrlPatternsMethod.invoke(registration, EnumSet.allOf(DispatcherType.class), true, patterns);
+        EnumSet dispatcherTypes = null;
+        try {
+          final Class<Enum> dispatcherTypeClass = (Class<Enum>)Class.forName("javax.servlet.DispatcherType");
+          dispatcherTypes = EnumSet.allOf(dispatcherTypeClass);
+        }
+        catch (final ClassNotFoundException e) {
+          if (logger.isLoggable(Level.FINER))
+            logger.finer("<> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): javax.servlet.DispatcherType is missing, so using null which defaults to: DispatcherType.REQUEST");
+        }
+
+        addMappingForUrlPatternsMethod.invoke(registration, dispatcherTypes, true, patterns);
       }
     }
-    catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+    catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | ServletException e) {
       logger.log(Level.WARNING, e.getMessage(), e);
       if (context != null)
         servletContextToFilter.remove(context);

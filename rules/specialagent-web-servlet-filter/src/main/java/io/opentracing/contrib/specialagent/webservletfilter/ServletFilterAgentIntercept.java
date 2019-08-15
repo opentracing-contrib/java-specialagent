@@ -17,9 +17,9 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.WeakHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -31,25 +31,22 @@ import io.opentracing.util.GlobalTracer;
 
 public abstract class ServletFilterAgentIntercept {
   public static final Logger logger = Logger.getLogger(ServletAgentIntercept.class);
-  public static final Map<ServletRequest,Boolean> servletRequestToState = new WeakHashMap<>();
-  public static final Map<ServletContext,TracingFilter> servletContextToFilter = new WeakHashMap<>();
+  public static final Map<Object,ServletContext> filterOrServletToServletContext = new HashMap<>();
+  public static final Map<ServletRequest,Boolean> servletRequestToState = new HashMap<>();
+  public static final Map<ServletContext,TracingFilter> servletContextToFilter = new HashMap<>();
 
-  public static boolean hasFilter(final ServletContext servletContext) {
-    return servletContextToFilter.containsKey(servletContext);
-  }
-
-  public static TracingFilter getProxyFilter(final ServletContext servletContext) throws ServletException {
-    Objects.requireNonNull(servletContext);
-    TracingFilter filter = servletContextToFilter.get(servletContext);
+  public static TracingFilter getFilter(final ServletContext context, final boolean proxy) throws ServletException {
+    Objects.requireNonNull(context);
+    TracingFilter filter = servletContextToFilter.get(context);
     if (filter != null)
       return filter;
 
     synchronized (servletContextToFilter) {
-      filter = servletContextToFilter.get(servletContext);
+      filter = servletContextToFilter.get(context);
       if (filter != null)
         return filter;
 
-      servletContextToFilter.put(servletContext, filter = new TracingProxyFilter(GlobalTracer.get(), servletContext));
+      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get()));
       return filter;
     }
   }
