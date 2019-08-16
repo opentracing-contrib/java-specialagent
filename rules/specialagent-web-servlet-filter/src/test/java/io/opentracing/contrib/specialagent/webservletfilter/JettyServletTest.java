@@ -28,8 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,11 +60,10 @@ public class JettyServletTest {
 
     server = new Server(0);
 
-    final ServletContextHandler servletContextHandler = new ServletContextHandler();
-    servletContextHandler.setContextPath("/");
-    server.setHandler(servletContextHandler);
-    servletContextHandler.addFilter(MockFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-    servletContextHandler.addServlet(new ServletHolder(new MockServlet()), "/*");
+    final ServletHandler servletHandler = new ServletHandler();
+    servletHandler.addServletWithMapping(MockServlet.class, "/hello");
+    servletHandler.addFilterWithMapping(MockFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+    server.setHandler(servletHandler);
 
     server.start();
     serverPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
@@ -75,10 +73,10 @@ public class JettyServletTest {
   public void testHelloF5Request(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello")
-        .addHeader("F5_test", "value")
-        .addHeader("F5_ingressTime", "123")
-        .addHeader("F5_egressTime", "321")
-        .build();
+      .addHeader("F5_test", "value")
+      .addHeader("F5_ingressTime", "123")
+      .addHeader("F5_egressTime", "321")
+      .build();
     final Response response = client.newCall(request).execute();
 
     assertEquals(HttpServletResponse.SC_OK, response.code());

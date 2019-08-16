@@ -41,9 +41,9 @@ class FingerprintBuilder {
   static ClassFingerprint[] build(final URLClassLoader classLoader, final int depth, final Phase phase) throws IOException {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
-    AssembleUtil.forEachClass(classLoader.getURLs(), new Consumer<String>() {
+    AssembleUtil.<Void>forEachClass(classLoader.getURLs(), null, new BiConsumer<String,Void>() {
       @Override
-      public void accept(final String name) {
+      public void accept(final String name, final Void arg) {
         try {
           fingerprinter.fingerprint(Phase.LOAD, name);
         }

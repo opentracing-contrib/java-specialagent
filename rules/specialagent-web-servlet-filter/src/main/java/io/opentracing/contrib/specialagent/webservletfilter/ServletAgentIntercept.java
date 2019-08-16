@@ -18,6 +18,8 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -25,22 +27,27 @@ import javax.servlet.http.HttpServlet;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
-  public static final Logger logger = Logger.getLogger(ServletAgentIntercept.class);
-
   public static final FilterChain noopFilterChain = new FilterChain() {
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
     }
   };
 
+  public static void init(final Object thiz, final Object servletConfig) {
+    filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());
+  }
+
   public static void service(final Object thiz, final Object req, final Object res) {
     try {
       final HttpServlet servlet = (HttpServlet)thiz;
-      final TracingFilter tracingFilter = getFilter(servlet.getServletContext());
+      ServletContext context = servlet.getServletContext();
+      if (context == null)
+        context = filterOrServletToServletContext.get(servlet);
+
+      final TracingFilter tracingFilter = getFilter(context, true);
 
       // If the tracingFilter instance is not a TracingProxyFilter, then it was
       // created with ServletContext#addFilter. Therefore, the intercept of the
@@ -54,7 +61,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       if (logger.isLoggable(Level.FINER))
-        logger.finer(">> ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+        logger.log(Level.FINER, ">> ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")", new Exception());
 
       tracingFilter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
       if (logger.isLoggable(Level.FINER))
