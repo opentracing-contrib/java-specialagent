@@ -64,7 +64,6 @@
     <module>specialagent-spymemcached</module>
     <module>specialagent-jdbi</module>
     <module>specialagent-feign</module>
-    <module>specialagent-hystrix</module>
     <module>specialagent-zuul</module>
     <module>specialagent-spring-kafka</module>
     <module>specialagent-spring-scheduling</module>
