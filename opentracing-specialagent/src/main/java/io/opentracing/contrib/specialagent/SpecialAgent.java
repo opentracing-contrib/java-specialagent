@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
@@ -106,6 +107,8 @@ public class SpecialAgent extends SpecialAgentBase {
     }
   }
 
+  private static final String loggingConfigClassProperty = "java.util.logging.config.class";
+
   /**
    * Main entrypoint to load the {@code SpecialAgent} via static attach.
    *
@@ -119,25 +122,33 @@ public class SpecialAgent extends SpecialAgentBase {
 
       loadProperties();
 
-      BootLoaderAgent.premain(inst);
-      SpecialAgent.inst = inst;
+      final String loggingConfigClass = System.clearProperty(loggingConfigClassProperty);
 
-      final String spring = System.getProperty("sa.spring");
-      if (spring != null && !"false".equals(spring)) {
-        SpringAgent.premain(inst, new Thread() {
-          @Override
-          public void run() {
-            try {
-              instrumenter.manager.premain(null, inst);
+      try {
+        BootLoaderAgent.premain(inst);
+        SpecialAgent.inst = inst;
+
+        final String spring = System.getProperty("sa.spring");
+        if (spring != null && !"false".equals(spring)) {
+          SpringAgent.premain(inst, new Thread() {
+            @Override
+            public void run() {
+              try {
+                instrumenter.manager.premain(null, inst);
+              }
+              catch (final Exception e) {
+                throw new ExceptionInInitializerError(e);
+              }
             }
-            catch (final Exception e) {
-              throw new ExceptionInInitializerError(e);
-            }
-          }
-        });
+          });
+        }
+        else {
+          instrumenter.manager.premain(null, inst);
+        }
       }
-      else {
-        instrumenter.manager.premain(null, inst);
+      finally {
+        if (loggingConfigClass != null)
+          System.setProperty(loggingConfigClassProperty, loggingConfigClass);
       }
     }
     catch (final Throwable t) {
