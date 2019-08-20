@@ -19,7 +19,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 class TracerClassLoader extends URLClassLoader {
-  TracerClassLoader(final URL url, final ClassLoader parent) {
-    super(new URL[] {url}, parent);
+  TracerClassLoader(final ClassLoader parent, final URL ... urls) {
+    super(urls, parent);
   }
 }

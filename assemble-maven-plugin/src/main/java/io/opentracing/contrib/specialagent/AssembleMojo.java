@@ -67,6 +67,9 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
 
       final DependencyStatusSets dependencies = getDependencySets(false, false);
       final Set<Artifact> artifacts = dependencies.getResolvedDependencies();
+      if (getLog().isDebugEnabled())
+        getLog().debug("Assembling " + artifacts.size() + " artifacts");
+
       for (final Artifact artifact : artifacts) {
         if (getLog().isDebugEnabled())
           getLog().debug("Assembling artifact: " + artifact.toString());
@@ -78,15 +81,18 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
           if (dependenciesTgf != null) {
             copyDependencies(dependenciesTgf, pluginsPath);
           }
-          else if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory")) {
+          else if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory") || AssembleUtil.hasFileInJar(jarFile, "META-INF/maven/io.opentracing.contrib/opentracing-tracerresolver/pom.xml")) {
             fileCopy(jarFile, new File(pluginsPath, jarFile.getName()));
           }
           else if (artifact.isOptional()) {
             fileCopy(jarFile, new File(extPath, jarFile.getName()));
           }
+          else if (getLog().isDebugEnabled()) {
+            getLog().debug("Skipping artifact [selector]: " + artifact.toString());
+          }
         }
-        else {
-          getLog().info("Skipping2: " + artifact);
+        else if (getLog().isDebugEnabled()) {
+          getLog().debug("Skipping artifact [scope mismatch]: " + artifact.toString());
         }
       }
     }

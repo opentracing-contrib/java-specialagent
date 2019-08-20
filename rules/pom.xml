@@ -236,11 +236,6 @@
       <artifactId>opentracing-util</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-tracerresolver</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
     <dependency>
       <groupId>io.opentracing</groupId>
