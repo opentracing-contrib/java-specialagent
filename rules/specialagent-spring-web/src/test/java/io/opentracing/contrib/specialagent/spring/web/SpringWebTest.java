@@ -62,7 +62,7 @@ public class SpringWebTest {
     assertEquals(2, tracer.finishedSpans().size());
   }
 
-  @Test
+  //@Test
   public void testAsync(final MockTracer tracer) {
     final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
 

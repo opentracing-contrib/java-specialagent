@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -37,7 +38,6 @@ import java.util.jar.JarFile;
 import com.sun.tools.attach.VirtualMachine;
 
 import io.opentracing.Tracer;
-import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
@@ -516,27 +516,37 @@ public class SpecialAgent extends SpecialAgentBase {
         final File file = new File(tracerProperty);
         try {
           final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(pluginsClassLoader, tracerProperty);
+          final URL tracerResolverResourceUrl = pluginsClassLoader.findResource("io/opentracing/contrib/tracerresolver/TracerResolver.class");
+          if (tracerResolverResourceUrl == null)
+            throw new IllegalStateException("Could not find TracerResolver");
+
+          final String tracerResovlerResourcePath = tracerResolverResourceUrl.toString();
+          final URL tracerResovlerUrl = new URL(tracerResovlerResourcePath.substring(4, tracerResovlerResourcePath.indexOf('!')));
+          final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+          AgentRuleUtil.tracerClassLoader = new URLClassLoader(new URL[] {tracerResovlerUrl}, parent);
+          Thread.currentThread().setContextClassLoader(AgentRuleUtil.tracerClassLoader);
           if (tracerUrl != null) {
             // If the desired tracer is in its own JAR file, or if this is not
             // running in an AgentRunner test (because in this case the tracer
             // is in a JAR also, which is inside the SpecialAgent JAR), then
             // isolate the tracer JAR in its own class loader.
             if (file.exists() || !isAgentRunner()) {
-              final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-              AgentRuleUtil.tracerClassLoader = new TracerClassLoader(tracerUrl, parent);
+              AgentRuleUtil.tracerClassLoader = new TracerClassLoader(AgentRuleUtil.tracerClassLoader, tracerUrl, tracerResovlerUrl);
               Thread.currentThread().setContextClassLoader(AgentRuleUtil.tracerClassLoader);
             }
           }
           else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null) {
             throw new IllegalStateException(TRACER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
           }
+
+          final Class<?> tracerResolverClass = Class.forName("io.opentracing.contrib.tracerresolver.TracerResolver", true, AgentRuleUtil.tracerClassLoader);
+          final Method resolveTracerMethod = tracerResolverClass.getMethod("resolveTracer");
+          tracer = (Tracer)resolveTracerMethod.invoke(null);
+          Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
-        catch (final IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
+        catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
           throw new IllegalStateException(e);
         }
-
-        tracer = TracerResolver.resolveTracer();
-        Thread.currentThread().setContextClassLoader(contextClassLoader);
       }
 
       if (tracer == null) {

@@ -407,7 +407,6 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Hazelcast \[3.11.2,\]](https://github.com/opentracing-contrib/opentracing-hazelcast)
 1. [Spymemcached \[2.12.3,\]](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached)
 1. [Feign \[10.2.3,\]](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing)
-1. [Hystrix \[1.5.18,\]](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
 1. [Zuul \[1.3.1,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter)
 1. [Spring @Async and @Scheduled \[5.1.7.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core)
 1. [Spring Messaging \[5.1.6.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-messaging)
@@ -429,6 +428,7 @@ The following libraries are instrumented by existing [<ins>Instrumentation Rules
 
 1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
 1. [JDBI](https://github.com/opentracing-contrib/java-jdbi)
+1. [Hystrix](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
 
 ## 7 Credits

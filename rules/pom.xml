@@ -64,7 +64,6 @@
     <module>specialagent-spymemcached</module>
     <module>specialagent-jdbi</module>
     <module>specialagent-feign</module>
-    <module>specialagent-hystrix</module>
     <module>specialagent-zuul</module>
     <module>specialagent-spring-kafka</module>
     <module>specialagent-spring-scheduling</module>
@@ -234,11 +233,6 @@
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-util</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-tracerresolver</artifactId>
       <scope>provided</scope>
     </dependency>
 
