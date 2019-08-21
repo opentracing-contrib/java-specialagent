@@ -51,7 +51,7 @@
     <maven.compiler.target>1.7</maven.compiler.target>
     <version.maven-dependency-plugin>3.1.1</version.maven-dependency-plugin>
     <version.maven>3.6.1</version.maven>
-    <version.bytebuddy>1.9.13</version.bytebuddy>
+    <version.bytebuddy>1.9.16</version.bytebuddy>
     <version.opentracing>0.32.0</version.opentracing>
     <jaeger-client-bundle>jaeger</jaeger-client-bundle>
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
@@ -494,7 +494,7 @@
     <dependency>
       <groupId>com.lightstep.tracer</groupId>
       <artifactId>lightstep-tracer-jre-bundle</artifactId>
-      <version>0.16.3</version>
+      <version>0.17.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -593,7 +593,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.28.2</version>
+        <version>3.0.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

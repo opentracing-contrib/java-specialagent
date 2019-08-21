@@ -31,15 +31,11 @@ import java.util.Map;
 import java.util.Set;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.Listener;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 /**
@@ -60,18 +56,6 @@ public class ByteBuddyManager extends Manager {
 
   private static void log(final Level level, final String message) {
     logger.log(level, message);
-  }
-
-  private static void installOn(final Narrowable builder, final Class<?> advice, final AgentRule agentRule, final Listener listener, final Instrumentation instrumentation) {
-    builder
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return null;//builder.visit(Advice.to(advice).on(agentRule.onMethod()));
-        }
-      })
-      .with(listener)
-      .installOn(instrumentation);
   }
 
   private static void assertParent(final AgentBuilder expected, final AgentBuilder builder) {

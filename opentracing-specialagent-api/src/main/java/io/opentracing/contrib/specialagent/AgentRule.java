@@ -26,6 +26,8 @@ import net.bytebuddy.agent.builder.AgentBuilder;
  * @author Seva Safris
  */
 public abstract class AgentRule {
+  private static final Logger logger = Logger.getLogger(AgentRule.class);
+  static final Map<String,String> classNameToName = new HashMap<>();
   public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
     @Override
     protected Integer initialValue() {
@@ -35,30 +37,29 @@ public abstract class AgentRule {
 
   public static boolean isEnabled(final String origin) {
     final boolean enabled = latch.get() == 0;
-    if (enabled && logger.isLoggable(Level.FINER))
-      logger.finer("-------> Intercept from: " + origin);
+    if (enabled) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("-------> Intercept from: " + origin);
+    }
+    else if (logger.isLoggable(Level.FINEST)) {
+      logger.finest("-------> Intercept DROP: " + origin);
+    }
 
     return enabled;
   }
 
-  static final Map<String,String> classNameToName = new HashMap<>();
-
   public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {
-    final String allVerbose = System.getProperty("sa.instrumentation.plugins.verbose");
-    if (allVerbose != null && Boolean.parseBoolean(allVerbose))
-      return true;
+    final String pluginsVerboseProperty = System.getProperty("sa.instrumentation.plugins.verbose");
+    final boolean pluginsVerbose = pluginsVerboseProperty != null && !"false".equals(pluginsVerboseProperty);
 
     final String pluginName = classNameToName.get(agentRuleClass.getName());
     if (pluginName == null)
       throw new IllegalStateException("Plugin name should not be null");
 
-    final String pluginVerbose = System.getProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
-    return pluginVerbose != null && Boolean.parseBoolean(pluginVerbose);
+    final String pluginVerboseProperty = System.getProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
+    final boolean pluginVerbose = pluginVerboseProperty != null && !"false".equals(pluginVerboseProperty);
+    return pluginsVerbose || pluginVerbose;
   }
 
-  public static final Logger logger = Logger.getLogger(AgentRule.class);
-
   public abstract Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception;
-  // ElementMatcher<? super MethodDescription> onMethod();
-  // DynamicAdvice advice();
 }
