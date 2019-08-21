@@ -48,7 +48,6 @@ public class OkHttpAgentRule extends AgentRule {
   public static class Interceptors {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      isVerbose(OkHttpAgentRule.class);
       if (isEnabled(origin))
         returned = OkHttpAgentIntercept.exit(returned);
     }

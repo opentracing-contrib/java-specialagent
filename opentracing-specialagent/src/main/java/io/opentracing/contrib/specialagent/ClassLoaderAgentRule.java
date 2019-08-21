@@ -46,6 +46,7 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgentRule extends AgentRule {
+  public static final Logger logger = Logger.getLogger(ClassLoaderAgentRule.class);
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
   @Override
