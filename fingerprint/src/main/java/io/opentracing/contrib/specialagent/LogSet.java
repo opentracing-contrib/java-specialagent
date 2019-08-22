@@ -29,8 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 class LogSet {
-  private final LinkedHashMap<Log,Log> map = new LinkedHashMap<>();
-
+  private final LinkedHashMap<Log,Log> map = new LinkedHashMap<>(100);
   private final boolean debug;
 
   LogSet(final boolean debug) {
