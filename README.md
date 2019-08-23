@@ -75,17 +75,17 @@ To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, first 
 
 ##### 2.1.1.1 Stable
 
-The latest stable release is: [1.3.4][main-release].
+The latest stable release is: [1.3.5][main-release].
 
 ```bash
-wget -O opentracing-specialagent-1.3.4.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.4/opentracing-specialagent-1.3.4.jar"
+wget -O opentracing-specialagent-1.3.5.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.5/opentracing-specialagent-1.3.5.jar"
 ```
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.3.5-SNAPSHOT</ins>.
+The latest development release is: <ins>1.3.6-SNAPSHOT</ins>.
 ```bash
-wget -O opentracing-specialagent-1.3.5-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.3.6-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 This is the main artifact that contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented. This JAR can be specified as the `-javaagent` target for [<ins>Static Attach</ins>](#221-static-attach) to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
@@ -98,13 +98,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.3.4</version> <!--version>1.3.5-SNAPSHOT<version-->
+  <version>1.3.5</version> <!--version>1.3.6-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.3.4</version> <!--version>1.3.5-SNAPSHOT<version-->
+  <version>1.3.5</version> <!--version>1.3.6-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -118,16 +118,16 @@ _**Prerequisite**: The [<ins>SpecialAgent</ins>](#41-specialagent) requires [Ora
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utilize different profiles:
 
-1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.3.4.jar`][main-release]
+1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.3.5.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.3.4.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.3.4.jar`][main-release] will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.3.5.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.3.5.jar`][main-release] will contain the built rules inside it.
 
-    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.3.4.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.3.5.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
 
     _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
@@ -151,7 +151,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) uses [Java’s Instrumentation m
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.3.4.jar -jar MyApp.jar
+java -javaagent:opentracing-specialagent-1.3.5.jar -jar MyApp.jar
 ```
 
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
@@ -167,12 +167,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 1. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.3.4.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.3.5.jar <PID>
     ```
 
 1. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-1.3.4.jar <PID>
+    java -jar opentracing-specialagent-1.3.5.jar <PID>
     ```
 
 **Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
@@ -188,7 +188,7 @@ With <ins>Static Deferred Attach</ins>, the application is executed with the `-j
 The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.3.4.jar -Dsa.spring -jar MySpringApp.jar
+java -javaagent:opentracing-specialagent-1.3.5.jar -Dsa.spring -jar MySpringApp.jar
 ```
 
 ## 3 Configuration
@@ -473,13 +473,13 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jdbc]: https://github.com/opentracing-contrib/java-jdbc
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
-[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.4/opentracing-specialagent-1.3.4.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.5-SNAPSHOT
+[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.5/opentracing-specialagent-1.3.5.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.6-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [pom]: https://maven.apache.org/pom.html
 [specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc
 [specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-1
 [specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-2
 [specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-okhttp
-[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.4/opentracing-specialagent-1.3.4-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.5-SNAPSHOT
+[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.5/opentracing-specialagent-1.3.5-tests.jar
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.6-SNAPSHOT

@@ -40,24 +40,20 @@ final class FingerprintUtil {
     return (mod & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-  static boolean isPrivate(final int mod) {
-    return (mod & Opcodes.ACC_PRIVATE) != 0;
+  static boolean isGetStatic(final int mod) {
+    return (mod & Opcodes.GETSTATIC) != 0;
   }
 
-  static boolean isGetStatic(final int opcode) {
-    return (opcode & Opcodes.GETSTATIC) != 0;
+  static boolean isPutStatic(final int mod) {
+    return (mod & Opcodes.PUTSTATIC) != 0;
   }
 
-  static boolean isPutStatic(final int opcode) {
-    return (opcode & Opcodes.PUTSTATIC) != 0;
+  static boolean isInvokeStatic(final int mod) {
+    return (mod & Opcodes.INVOKESTATIC) != 0;
   }
 
-  static boolean isInvokeStatic(final int opcode) {
-    return (opcode & Opcodes.INVOKESTATIC) != 0;
-  }
-
-  public static boolean isInvokeSpecial(int opcode) {
-    return (opcode & Opcodes.INVOKESPECIAL) != 0;
+  public static boolean isInvokeSpecial(final int mod) {
+    return (mod & Opcodes.INVOKESPECIAL) != 0;
   }
 
   private FingerprintUtil() {

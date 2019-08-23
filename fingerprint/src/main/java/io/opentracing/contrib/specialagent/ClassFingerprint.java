@@ -149,6 +149,9 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
     if (superClass != null ? !superClass.equals(that.superClass) : that.superClass != null)
       return false;
 
+    if (interfaces == null ? that.interfaces != null : that.interfaces == null || !Arrays.equals(interfaces, that.interfaces))
+      return false;
+
     if (constructors == null ? that.constructors != null : that.constructors == null || !Arrays.equals(constructors, that.constructors))
       return false;
 
