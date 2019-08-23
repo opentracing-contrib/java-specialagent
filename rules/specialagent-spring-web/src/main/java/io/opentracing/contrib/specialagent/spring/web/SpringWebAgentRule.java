@@ -25,7 +25,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringWebAgentRule extends AgentRule {
@@ -36,20 +35,27 @@ public class SpringWebAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringWebAgentRule.class).on(named("doExecute")));
+          return builder.visit(Advice.to(RestTemplate.class).on(named("doExecute")));
+        }})
+      .type(named("org.springframework.web.client.AsyncRestTemplate"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AsyncRestTemplate.class).on(named("doExecute")));
         }}));
   }
 
+  public static class RestTemplate {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
-      System.out.println("ENTER!!!");
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled(origin))
         SpringWebAgentIntercept.enter(thiz);
+    }
   }
 
   public static class AsyncRestTemplate {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled(origin))
         SpringWebAgentIntercept.enterAsync(thiz);
     }
