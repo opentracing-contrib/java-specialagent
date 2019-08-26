@@ -36,7 +36,8 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.8</version>
+      <!-- verified minimal version -->
+      <version>4.4</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
