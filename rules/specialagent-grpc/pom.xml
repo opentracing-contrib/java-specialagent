@@ -27,7 +27,7 @@
   <name>SpecialAgent Rule for GRPC</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-grpc</url>
   <properties>
-    <grpc.version>1.19.0</grpc.version>
+    <grpc.version>1.6.0</grpc.version>
     <protobuf.version>3.7.0</protobuf.version>
     <sa.plugin.name>grpc</sa.plugin.name>
   </properties>
