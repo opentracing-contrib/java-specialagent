@@ -1,5 +1,14 @@
 # Changes by Version
 
+## v1.3.5 (2019-08-23)
+* Resolve class signature conflicts in `web-servlet-filter` Plugin.
+* Upgrade core libraries.
+* Improve stability of tests.
+* Improve speed of fingerprint creation.
+* Resolve conflict with Java Logging system properties.
+* Isolate TracerResolver into non-interfering class loader.
+* Remove Hystrix Rule, as its functionality is convered by Java Concurrent Plugin.
+
 ## v1.3.4 (2019-08-09)
 * Support for Spring 4.
 * Standard stream logging.
