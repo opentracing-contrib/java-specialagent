@@ -393,7 +393,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [RabbitMQ Spring \[2.1.5.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-rabbitmq)
 1. [Thrift \[0.12.0,\]](https://github.com/opentracing-contrib/java-thrift)
 1. [GRPC \[1.6.0,\]](https://github.com/opentracing-contrib/java-grpc)
-1. [Jedis Client \[2.10.2,\]](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
+1. [Jedis Client \[2.7.0,\]](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
 1. [Apache HttpClient \[4.4,\]](https://github.com/opentracing-contrib/java-apache-httpclient)
 1. [Lettuce Client \[5.1.6.RELEASE,\]](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce)
 1. [Spring Web \[5.1.6.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-web)
