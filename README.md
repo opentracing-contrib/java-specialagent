@@ -386,7 +386,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Elasticsearch6 Client \[6.5.0,\]](https://github.com/opentracing-contrib/java-elasticsearch-client)
 1. [Elasticsearch7 Client \[7.2.0,\]](https://github.com/opentracing-contrib/java-elasticsearch-client)
 1. [RxJava 2 \[2.2.8,\]](https://github.com/opentracing-contrib/java-rxjava)
-1. [Kafka Client \[2.0.1,\]](https://github.com/opentracing-contrib/java-kafka-client)
+1. [Kafka Client \[1.1.0,\]](https://github.com/opentracing-contrib/java-kafka-client)
 1. [Kafka Spring \[2.2.6.RELEASE,\]](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring)
 1. [AsyncHttpClient \[2.7.0,\]](https://github.com/opentracing-contrib/java-asynchttpclient)
 1. [RabbitMQ Client \[5.6.0,\]](https://github.com/opentracing-contrib/java-rabbitmq-client)
