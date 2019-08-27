@@ -44,10 +44,6 @@
           <groupId>javax.jms</groupId>
           <artifactId>javax.jms-api</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-jms-common</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -56,19 +52,6 @@
       <version>2.0.1</version>
       <optional>true</optional>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jms-common</artifactId>
-      <version>${opentracing.jms.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.jms</groupId>
-          <artifactId>jms-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>

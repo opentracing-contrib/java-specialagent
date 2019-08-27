@@ -31,7 +31,7 @@ public class SpringWebAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.http.client.ClientHttpRequest")))
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.http.client.ClientHttpRequest"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

@@ -32,8 +32,7 @@ public class RabbitMQAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("com.rabbitmq.client.impl.AMQChannel"))
-      .and(not(named("io.opentracing.contrib.rabbitmq.TracingChannel"))))
+      .type(hasSuperType(named("com.rabbitmq.client.impl.AMQChannel")).and(not(named("io.opentracing.contrib.rabbitmq.TracingChannel"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

@@ -23,29 +23,11 @@ import io.opentracing.contrib.jms2.TracingMessageProducer;
 import io.opentracing.util.GlobalTracer;
 
 public class Jms2AgentIntercept {
-  private static boolean isJms2;
-
-  static {
-    try {
-      Class.forName("javax.jms.JMSContext");
-      isJms2 = true;
-    }
-    catch (final ClassNotFoundException ignore) {
-      isJms2 = false;
-    }
-  }
-
   public static Object createProducer(final Object thiz) {
-    if (!isJms2)
-      return thiz;
-
     return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
   }
 
   public static Object createConsumer(final Object thiz) {
-    if (!isJms2)
-      return thiz;
-
     return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz, GlobalTracer.get(), true);
   }
 }
