@@ -407,7 +407,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Hazelcast \[3.11.1,\]](https://github.com/opentracing-contrib/opentracing-hazelcast)
 1. [Spymemcached \[2.12.3,\]](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached)
 1. [Feign \[9.0.0,\]](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing)
-1. [Zuul \[1.3.1,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter)
+1. [Zuul \[1.0.0,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter)
 1. [Spring @Async and @Scheduled \[5.1.7.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core)
 1. [Spring Messaging \[5.1.6.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-messaging)
 1. [Spring 3 Web \[3.0.7.RELEASE,\]](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-web)
