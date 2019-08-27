@@ -36,12 +36,14 @@ public class TypeExcludeFilterAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.boot.context.TypeExcludeFilter"))).transform(new Transformer() {
+      .type(hasSuperType(named("org.springframework.boot.context.TypeExcludeFilter")))
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(TypeExcludeFilter.class).on(named("match").and(takesArguments(2))));
         }}), builder
-      .type(hasSuperType(named("org.springframework.beans.factory.ObjectProvider"))).transform(new Transformer() {
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.beans.factory.ObjectProvider"))))
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(DefaultListableBeanFactory.class).on(named("getIfAvailable").and(takesArguments(0))));

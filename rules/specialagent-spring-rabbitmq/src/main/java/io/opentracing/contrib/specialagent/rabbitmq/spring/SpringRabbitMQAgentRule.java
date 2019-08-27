@@ -31,7 +31,7 @@ public class SpringRabbitMQAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.amqp.core.MessageListener")))
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.amqp.core.MessageListener"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

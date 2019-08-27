@@ -45,7 +45,7 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(Filters.class).on(named("getFilters")));
         }})
-      .type(hasSuperType(named("org.springframework.web.reactive.function.client.WebClient$Builder")))
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.web.reactive.function.client.WebClient$Builder"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

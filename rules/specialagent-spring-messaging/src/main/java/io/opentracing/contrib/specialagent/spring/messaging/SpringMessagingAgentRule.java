@@ -30,7 +30,9 @@ import net.bytebuddy.utility.JavaModule;
 public class SpringMessagingAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder.type(hasSuperType(named("org.springframework.beans.factory.ListableBeanFactory"))).transform(new Transformer() {
+    return Arrays.asList(builder
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.beans.factory.ListableBeanFactory"))))
+      .transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder.visit(Advice.to(SpringMessagingAgentRule.class).on(named("getBeansOfType").and(takesArguments(1))));

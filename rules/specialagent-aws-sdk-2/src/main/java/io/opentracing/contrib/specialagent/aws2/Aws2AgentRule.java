@@ -31,7 +31,7 @@ public class Aws2AgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("software.amazon.awssdk.core.client.builder.SdkClientBuilder")))
+      .type(not(isInterface()).and(hasSuperType(named("software.amazon.awssdk.core.client.builder.SdkClientBuilder"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

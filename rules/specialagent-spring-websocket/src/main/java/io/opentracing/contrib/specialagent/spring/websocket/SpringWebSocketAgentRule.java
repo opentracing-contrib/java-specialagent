@@ -39,7 +39,7 @@ public class SpringWebSocketAgentRule extends AgentRule {
             .visit(Advice.to(InboundChannel.class).on(named("clientInboundChannel")))
             .visit(Advice.to(OutboundChannel.class).on(named("clientOutboundChannel")));
         }}), builder
-      .type(hasSuperType(named("org.springframework.messaging.simp.stomp.StompSession")))
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.messaging.simp.stomp.StompSession"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
