@@ -33,7 +33,7 @@ public class FeignAgentRule extends AgentRule {
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(
       builder
-        .type(hasSuperType(named("feign.Client")).and(not(named("feign.Client$Default"))))
+        .type(not(isInterface()).and(hasSuperType(named("feign.Client")).and(not(named("feign.Client$Default")))))
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

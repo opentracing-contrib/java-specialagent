@@ -17,6 +17,9 @@ package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Array;
 
+import net.bytebuddy.description.method.MethodDescription.AbstractBase;
+import net.bytebuddy.description.type.TypeDefinition;
+
 /**
  * Utility functions for subclasses of {@link AgentRule}.
  *
@@ -239,6 +242,18 @@ public final class AgentRuleUtil {
           return true;
     }
 
+    return false;
+  }
+
+  public static boolean hasMethodNamed(TypeDefinition typeDescription, final String methodName) {
+    do {
+      for (final Object method : typeDescription.getDeclaredMethods()) {
+        if (methodName.equals(((AbstractBase)method).getActualName())) {
+          return true;
+        }
+      }
+    }
+    while (typeDescription.getSuperClass() != null && !"java.lang.Object".equals((typeDescription = typeDescription.getSuperClass()).getActualName()));
     return false;
   }
 
