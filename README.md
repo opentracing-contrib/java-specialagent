@@ -404,7 +404,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Grizzly HTTP Server \[2.3.35,\]](https://github.com/opentracing-contrib/java-grizzly-http-server)
 1. [Grizzly AsyncHttpClient \[1.15,\]](https://github.com/opentracing-contrib/java-grizzly-ahc)
 1. [Reactor \[3.2.3.RELEASE,\]](https://github.com/opentracing-contrib/java-reactor)
-1. [Hazelcast \[3.11.4,\]](https://github.com/opentracing-contrib/opentracing-hazelcast)
+1. [Hazelcast \[3.11.2,\]](https://github.com/opentracing-contrib/opentracing-hazelcast)
 1. [Spymemcached \[2.12.3,\]](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached)
 1. [Feign \[9.0.0,\]](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing)
 1. [Zuul \[1.0.0,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter)
