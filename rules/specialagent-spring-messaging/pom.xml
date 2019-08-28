@@ -30,7 +30,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>spring-messaging</sa.plugin.name>
-    <version.spring>5.1.6.RELEASE</version.spring>
+    <version.spring>5.1.1.RELEASE</version.spring>
     <version.spring.cloud>2.2.0.RELEASE</version.spring.cloud>
   </properties>
   <dependencies>
