@@ -45,7 +45,6 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
-      <!-- verified minimal version -->
       <version>1.11.79</version>
       <optional>true</optional>
       <scope>provided</scope>

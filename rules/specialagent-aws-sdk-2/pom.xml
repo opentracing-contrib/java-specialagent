@@ -35,7 +35,6 @@
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>aws-sdk-java</artifactId>
-      <!-- verified minimal version -->
       <version>2.1.4</version>
       <optional>true</optional>
       <scope>provided</scope>
