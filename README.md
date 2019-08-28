@@ -390,7 +390,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Kafka Spring \[2.2.0.RELEASE,\]](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring)
 1. [AsyncHttpClient \[2.7.0,\]](https://github.com/opentracing-contrib/java-asynchttpclient)
 1. [RabbitMQ Client \[5.0.0,\]](https://github.com/opentracing-contrib/java-rabbitmq-client)
-1. [RabbitMQ Spring \[2.1.5.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-rabbitmq)
+1. [RabbitMQ Spring \[2.0.0.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-rabbitmq)
 1. [Thrift \[0.12.0,\]](https://github.com/opentracing-contrib/java-thrift)
 1. [GRPC \[1.6.0,\]](https://github.com/opentracing-contrib/java-grpc)
 1. [Jedis Client \[2.7.0,\]](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis)
