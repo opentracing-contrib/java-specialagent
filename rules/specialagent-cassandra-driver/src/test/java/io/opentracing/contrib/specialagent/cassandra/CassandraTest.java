@@ -46,7 +46,7 @@ public class CassandraTest {
     tracer.reset();
     if (isJdkSupported) {
       EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-      EmbeddedCassandraServerHelper.getSession();
+      //EmbeddedCassandraServerHelper.getSession();
     }
   }
 
