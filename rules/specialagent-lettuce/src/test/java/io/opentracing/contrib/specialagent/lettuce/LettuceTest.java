@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,30 +49,27 @@ import redis.embedded.RedisServer;
 public class LettuceTest {
   private static final String address = "redis://localhost";
   private static RedisServer server;
-  private RedisClient client;
+  private static RedisClient client;
 
   @BeforeClass
   public static void beforeClass() throws IOException {
     server = new RedisServer();
     server.start();
+    client = RedisClient.create(address);
   }
 
   @AfterClass
   public static void afterClass() {
     if (server != null)
       server.stop();
+
+    if (client != null)
+      client.shutdown();
   }
 
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();
-    client = RedisClient.create(address);
-  }
-
-  @After
-  public void after() {
-    if (client != null)
-      client.shutdown();
   }
 
   @Test
