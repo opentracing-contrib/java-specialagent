@@ -60,11 +60,11 @@ public class LettuceTest {
 
   @AfterClass
   public static void afterClass() {
-    if (server != null)
-      server.stop();
-
     if (client != null)
       client.shutdown();
+
+    if (server != null)
+      server.stop();
   }
 
   @Before
