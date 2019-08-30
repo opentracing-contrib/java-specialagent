@@ -178,11 +178,7 @@ public class Elasticsearch6Test {
 
   private static class PluginConfigurableNode extends Node {
     public PluginConfigurableNode(final Settings settings, final Collection<Class<? extends Plugin>> classpathPlugins) {
-      super(InternalSettingsPreparer.prepareEnvironment(settings, null), classpathPlugins, true);
-    }
-
-    @Override
-    protected void registerDerivedNodeNameWithLogger(final String s) {
+      super(InternalSettingsPreparer.prepareEnvironment(settings, null), classpathPlugins);
     }
   }
 }
