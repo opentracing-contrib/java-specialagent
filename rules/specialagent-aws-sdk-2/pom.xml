@@ -30,12 +30,13 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>aws-sdk-2</sa.plugin.name>
+    <aws2.version>2.1.4</aws2.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
-      <artifactId>aws-sdk-java</artifactId>
-      <version>2.1.4</version>
+      <artifactId>sdk-core</artifactId>
+      <version>${aws2.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -43,6 +44,12 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>aws-sdk-java</artifactId>
+      <version>${aws2.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
