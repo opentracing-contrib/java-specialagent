@@ -411,7 +411,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Spring @Async and @Scheduled \[5.0.0.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core)
 1. [Spring Messaging \[5.1.1.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-messaging)
 1. [Spring 3 Web \[3.0.3.RELEASE,\]](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-web)
-1. [Spring 3 Web MVC \[3.0.7.RELEASE,\]](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-webmvc)
+1. [Spring 3 Web MVC \[3.0.2.RELEASE,\]](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-webmvc)
 1. [JAX-RS Client \[2.0,\]](https://github.com/opentracing-contrib/java-jaxrs)
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
