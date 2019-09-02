@@ -30,7 +30,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>okhttp</sa.plugin.name>
-    <version.okhttp3>3.6.0</version.okhttp3>
+    <version.okhttp3>3.5.0</version.okhttp3>
   </properties>
   <dependencies>
     <dependency>

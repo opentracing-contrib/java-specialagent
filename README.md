@@ -372,7 +372,7 @@ Examples:
 
 The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
 
-1. [OkHttp3 \[3.6.0,\]][java-okhttp]
+1. [OkHttp3 \[3.5.0,\]][java-okhttp]
 1. [JDBC API (`java.sql`) \[3.1,\]][java-jdbc]
 1. [Concurrent API (`java.util.concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
 1. [Java Servlet API (`javax.servlet`) \[2.3,\] \[\]](https://github.com/opentracing-contrib/java-web-servlet-filter)
