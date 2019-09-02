@@ -30,8 +30,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>spring-kafka</sa.plugin.name>
-    <kafka.version>2.0.1</kafka.version>
-    <spring.kafka.version>2.2.6.RELEASE</spring.kafka.version>
+    <kafka.version>2.0.0</kafka.version>
+    <spring.kafka.version>2.2.0.RELEASE</spring.kafka.version>
   </properties>
   <dependencies>
     <dependency>

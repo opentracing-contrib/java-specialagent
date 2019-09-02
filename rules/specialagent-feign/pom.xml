@@ -30,7 +30,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>feign</sa.plugin.name>
-    <feign.version>10.2.3</feign.version>
+    <feign.version>9.0.0</feign.version>
   </properties>
   <dependencies>
     <dependency>

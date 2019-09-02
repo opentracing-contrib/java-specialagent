@@ -19,8 +19,6 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +142,7 @@ public class KafkaTest {
         try (final KafkaConsumer<Integer,String> consumer = new KafkaConsumer<>(consumerProps)) {
           consumer.subscribe(Collections.singletonList("messages"));
           while (latch.getCount() > 0) {
-            final ConsumerRecords<Integer,String> records = consumer.poll(Duration.of(100, ChronoUnit.MILLIS));
+            final ConsumerRecords<Integer,String> records = consumer.poll(100);
             for (final ConsumerRecord<Integer,String> record : records) {
               final SpanContext spanContext = TracingKafkaUtils.extractSpanContext(record.headers(), tracer);
               assertNotNull(spanContext);

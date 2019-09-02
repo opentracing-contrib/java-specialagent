@@ -292,12 +292,6 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
-        <!-- Removed because JDBI instruments the same thing as JDBC dependency>
-          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>specialagent-jdbi</artifactId>
-          <version>${project.version}</version>
-          <scope>provided</scope>
-        </dependency-->
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>specialagent-feign</artifactId>
