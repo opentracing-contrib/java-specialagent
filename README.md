@@ -398,7 +398,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Lettuce Client \[5.1.0.RELEASE,\]](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce)
 1. [Spring Web \[5.0.0.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-web)
 1. [Spring Web MVC \[5.0.0.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-web)
-1. [Spring WebFlux \[2.1.3.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-web)
+1. [Spring WebFlux \[5.1.0.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-web)
 1. [Spring WebSocket STOMP \[5.1.3.RELEASE,\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter)
 1. [Redisson \[3.6.0,\]](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson)
 1. [Grizzly HTTP Server \[2.3.35,\]](https://github.com/opentracing-contrib/java-grizzly-http-server)
