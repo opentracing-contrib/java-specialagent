@@ -58,10 +58,9 @@ class LogSet {
   private final Set<String> checked = new HashSet<>();
 
   boolean compass(final Fingerprinter fingerprinter) throws IOException {
-    final int before = map.entrySet().size();
+    final int before = map.values().size();
     int count = 0;
-    for (final Map.Entry<Log,Log> entry : new HashSet<>(map.entrySet())) {
-      final Log log = entry.getValue();
+    for (final Log log : new ArrayList<>(map.values())) {
       if (!log.isResolved()) {
         if (log.getPhase() == Phase.NONE) {
           log.resolve();
@@ -70,18 +69,21 @@ class LogSet {
 
         ++count;
         final String className = log.getClassName();
-        if (checked.contains(className))
-          throw new IllegalStateException("Should have already checked: " + className);
+        if (checked.contains(className)) {
+          log.setPhase(Phase.NONE);
+          log.resolve();
+          System.err.println("FIXME: Should have already checked: " + className);
+          continue;
+        }
 
         checked.add(className);
         if (!fingerprinter.fingerprint(log.getPhase(), className.replace('.', '/').concat(".class")))
           log.resolve();
       }
-
     }
 
     System.out.println("Checked: " + checked.size() + ", Remaining: " + count);
-    return before != map.entrySet().size();
+    return before != map.values().size();
   }
 
   public boolean contains(final Log log) {

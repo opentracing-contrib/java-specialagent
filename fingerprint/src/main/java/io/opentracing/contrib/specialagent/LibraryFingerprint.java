@@ -65,9 +65,10 @@ public class LibraryFingerprint extends Fingerprint {
    * @param parent The parent {@code ClassLoader} to use for resolution of
    *          classes that should not be part of the fingerprint.
    * @param scanUrls The {@code URL} objects referencing JAR files.
-   * @throws NullPointerException If {@code manifest} or {@code urls} is null.
-   * @throws IllegalArgumentException If the number of members in {@code urls}
-   *           is zero.
+   * @throws NullPointerException If {@code manifest} or {@code scanUrls} is
+   *           null.
+   * @throws IllegalArgumentException If the number of members in
+   *           {@code scanUrls} is zero.
    * @throws IOException If an I/O error has occurred.
    */
   LibraryFingerprint(final ClassLoader parent, final URL ... scanUrls) throws IOException {
@@ -100,9 +101,6 @@ public class LibraryFingerprint extends Fingerprint {
   }
 
   /**
-   * Returns the {@code ClassFingerprint} array of this
-   * {@code LibraryFingerprint}.
-   *
    * @return The {@code ClassFingerprint} array of this
    *         {@code LibraryFingerprint}.
    */

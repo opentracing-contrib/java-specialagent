@@ -66,7 +66,6 @@ class Fingerprinter extends ClassVisitor {
 
   boolean fingerprint(final Phase phase, final String resourcePath) throws IOException {
     this.phase = phase;
-    this.filtering = false;
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);
       return true;
@@ -276,7 +275,7 @@ class Fingerprinter extends ClassVisitor {
 
         // Skip if INVOKESPECIAL, because the later scan via addClassRef(type..) will pick up the constructor
         // Skipping this avoids the virtual constructors of member inner classes
-        if (synthetic.matcher(name).matches() || FingerprintUtil.isInvokeSpecial(opcode))
+        if (synthetic.matcher(name).matches())
           return;
 
         final Type type = Type.getObjectType(owner);

@@ -61,21 +61,21 @@
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-core</artifactId>
       <version>${version.org.apache.camel}</version>
-      <optional>true</optional>
+      <!--optional>true</optional-->
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.fastinfoset</groupId>
       <artifactId>FastInfoset</artifactId>
       <version>1.2.15</version>
-      <optional>true</optional>
+      <!--optional>true</optional-->
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
       <version>2.3.1</version>
-      <optional>true</optional>
+      <!--optional>true</optional-->
       <scope>provided</scope>
     </dependency>
     <dependency>
