@@ -144,19 +144,13 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>specialagent-elasticsearch-client-6</artifactId>
+          <artifactId>specialagent-elasticsearch-rest-client</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>specialagent-elasticsearch-7-rest-client</artifactId>
-          <version>${project.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>specialagent-elasticsearch-7-transport-client</artifactId>
+          <artifactId>specialagent-elasticsearch-transport-client</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
