@@ -15,7 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a
@@ -26,8 +26,8 @@ import java.util.Arrays;
 class ConstructorFingerprint extends Fingerprint implements Comparable<ConstructorFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;
 
-  private final String[] parameterTypes;
-  private final String[] exceptionTypes;
+  private final List<String> parameterTypes;
+  private final List<String> exceptionTypes;
 
   /**
    * Creates a new {@code ConstructorFingerprint} for the specified arrays of
@@ -36,9 +36,9 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
    * @param parameterTypes The array of class names in the parameter signature,
    *          or {@code null} if there are no parameters.
    * @param exceptionTypes The sorted array of class names in the exception
-   *          signature, or {@code null} if there are no exceptions.
+   *          signature, or {@cList<String>ode null} if there are no exceptions.
    */
-  ConstructorFingerprint(final String[] parameterTypes, final String[] exceptionTypes) {
+  ConstructorFingerprint(final List<String> parameterTypes, final List<String> exceptionTypes) {
     this.parameterTypes = AssembleUtil.sort(parameterTypes);
     this.exceptionTypes = AssembleUtil.sort(exceptionTypes);
   }
@@ -46,14 +46,14 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
   /**
    * @return The parameter type names.
    */
-  String[] getParameterTypes() {
+  List<String> getParameterTypes() {
     return this.parameterTypes;
   }
 
   /**
    * @return The exception type names.
    */
-  String[] getExceptionTypes() {
+  List<String> getExceptionTypes() {
     return this.exceptionTypes;
   }
 
@@ -75,10 +75,10 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
       return false;
 
     final ConstructorFingerprint that = (ConstructorFingerprint)obj;
-    if (parameterTypes == null ? that.parameterTypes != null : that.parameterTypes == null || !Arrays.equals(parameterTypes, that.parameterTypes))
+    if (parameterTypes == null ? that.parameterTypes != null : that.parameterTypes == null || !parameterTypes.equals(that.parameterTypes))
       return false;
 
-    if (exceptionTypes == null ? that.exceptionTypes != null : that.exceptionTypes == null || !Arrays.equals(exceptionTypes, that.exceptionTypes))
+    if (exceptionTypes == null ? that.exceptionTypes != null : that.exceptionTypes == null || !exceptionTypes.equals(that.exceptionTypes))
       return false;
 
     return true;

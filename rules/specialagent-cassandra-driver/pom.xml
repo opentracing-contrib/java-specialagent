@@ -36,7 +36,7 @@
       <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cassandra-driver</artifactId>
-      <version>0.1.2</version>
+      <version>0.1.4</version>
       <exclusions>
         <exclusion>
           <groupId>com.datastax.cassandra</groupId>

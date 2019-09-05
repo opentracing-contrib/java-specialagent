@@ -15,8 +15,10 @@
 
 package io.opentracing.contrib.specialagent;
 
-enum Phase {
-  CALL,
-  LOAD,
-  NONE
+public class IncompatiblePluginException extends IllegalStateException {
+  private static final long serialVersionUID = -85760513192900860L;
+
+  public IncompatiblePluginException(final String className) {
+    super(className);
+  }
 }

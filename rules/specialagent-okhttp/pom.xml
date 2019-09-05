@@ -40,10 +40,6 @@
       <version>2.0.1</version>
       <exclusions>
         <exclusion>
-          <groupId>com.squareup.okhttp3</groupId>
-          <artifactId>okhttp</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>io.opentracing.contrib</groupId>
           <artifactId>opentracing-concurrent</artifactId>
         </exclusion>

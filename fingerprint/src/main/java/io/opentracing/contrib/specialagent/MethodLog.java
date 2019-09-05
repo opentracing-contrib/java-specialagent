@@ -19,16 +19,28 @@ import java.util.List;
 import java.util.Objects;
 
 class MethodLog extends Log {
-  final String methodName;
-  final String returnType;
-  final List<String> parameterTypes;
+  private final String methodName;
+  private final String returnType;
+  private final List<String> parameterTypes;
   private List<String> exceptionTypes;
 
-  MethodLog(final Phase phase, final String className, final String methodName, final String returnType, final List<String> parameterTypes) {
-    super(phase, className);
+  MethodLog(final String className, final String methodName, final String returnType, final List<String> parameterTypes) {
+    super(className);
     this.methodName = Objects.requireNonNull(methodName);
     this.returnType = returnType;
     this.parameterTypes = parameterTypes;
+  }
+
+  String getMethodName() {
+    return this.methodName;
+  }
+
+  String getReturnType() {
+    return this.returnType;
+  }
+
+  List<String> getParameterTypes() {
+    return this.parameterTypes;
   }
 
   List<String> getExceptionTypes() {
@@ -39,20 +51,17 @@ class MethodLog extends Log {
     this.exceptionTypes = exceptionTypes;
   }
 
-  void resolve(final List<String> exceptionTypes) {
+  MethodLog resolve(final List<String> exceptionTypes) {
     this.exceptionTypes = exceptionTypes;
     resolve();
+    return this;
   }
 
   @Override
   public int hashCode() {
-    int hashCode = className.hashCode() ^ methodName.hashCode();
-    if (returnType != null)
-      hashCode = hashCode * 37 + returnType.hashCode();
-
-    if (parameterTypes != null)
-      hashCode = hashCode * 37 + parameterTypes.hashCode();
-
+    int hashCode = getClassName().hashCode() ^ methodName.hashCode();
+    hashCode = hashCode * 37 + (returnType == null ? 0 : returnType.hashCode());
+    hashCode = hashCode * 37 + (parameterTypes == null ? 0 : parameterTypes.hashCode());
     return hashCode;
   }
 
@@ -65,7 +74,7 @@ class MethodLog extends Log {
       return false;
 
     final MethodLog that = (MethodLog)obj;
-    return className.equals(that.className) && methodName.equals(that.methodName) && (returnType != null ? returnType.equals(that.returnType) : that.returnType == null) && (parameterTypes != null ? parameterTypes.equals(that.parameterTypes) : that.parameterTypes == null);
+    return getClassName().equals(that.getClassName()) && methodName.equals(that.methodName) && (returnType != null ? returnType.equals(that.returnType) : that.returnType == null) && (parameterTypes != null ? parameterTypes.equals(that.parameterTypes) : that.parameterTypes == null);
   }
 
   @Override
@@ -82,6 +91,8 @@ class MethodLog extends Log {
       }
     }
 
+    builder.append("):");
+    builder.append(returnType != null ? returnType :"void");
     if (exceptionTypes != null) {
       builder.append(" throws ");
       for (int i = 0; i < exceptionTypes.size(); ++i) {
@@ -92,8 +103,6 @@ class MethodLog extends Log {
       }
     }
 
-    builder.append("):");
-    builder.append(returnType != null ? returnType :"void");
     return builder.toString();
   }
 }

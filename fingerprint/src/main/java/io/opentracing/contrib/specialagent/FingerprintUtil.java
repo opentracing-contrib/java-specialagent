@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 final class FingerprintUtil {
   private static final String[] excludePrefixes = {"io.opentracing.", "java.", "javax.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.jvnet.staxex.", "org.w3c.dom.", "org.xml.sax.", "sun."};
@@ -54,6 +55,14 @@ final class FingerprintUtil {
 
   public static boolean isInvokeSpecial(final int mod) {
     return (mod & Opcodes.INVOKESPECIAL) != 0;
+  }
+
+  public static boolean isPrimitive(final Type type) {
+    if (type.getSort() == Type.ARRAY)
+      throw new IllegalArgumentException("Type cannot be an array type");
+
+    final String name = type.getClassName();
+    return "boolean".equals(name) || "byte".equals(name) || "char".equals(name) || "short".equals(name) || "int".equals(name) || "long".equals(name) || "float".equals(name) || "double".equals(name);
   }
 
   private FingerprintUtil() {

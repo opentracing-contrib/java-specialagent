@@ -26,6 +26,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
@@ -418,7 +420,7 @@ public final class AssembleUtil {
    * {@code b}:
    *
    * <pre>
-   * {@code Arrays.equals(a, b) == (Arrays.compare(a, b) == 0)}
+   * {@code Arrays.equals(a, b) == (AssembleUtil.compare(a, b) == 0)}
    * </pre>
    *
    * @param a The first array to compare.
@@ -457,6 +459,59 @@ public final class AssembleUtil {
   }
 
   /**
+   * Compares two {@code Object} lists, within comparable elements,
+   * lexicographically.
+   * <p>
+   * A {@code null} list reference is considered lexicographically less than a
+   * non-{@code null} list reference. Two {@code null} list references are
+   * considered equal. A {@code null} list element is considered
+   * lexicographically than a non-{@code null} list element. Two {@code null}
+   * list elements are considered equal.
+   * <p>
+   * The comparison is consistent with {@link Objects#equals(Object,Object)
+   * equals}, more specifically the following holds for arrays {@code a} and
+   * {@code b}:
+   *
+   * <pre>
+   * {@code Objects.equals(a, b) == (AssembleUtil.compare(a, b) == 0)}
+   * </pre>
+   *
+   * @param a The first list to compare.
+   * @param b The second list to compare.
+   * @param <T> The type of comparable list elements.
+   * @return The value {@code 0} if the first and second list are equal and
+   *         contain the same elements in the same order; a value less than
+   *         {@code 0} if the first list is lexicographically less than the
+   *         second list; and a value greater than {@code 0} if the first list
+   *         is lexicographically greater than the second list.
+   */
+  public static <T extends Comparable<? super T>>int compare(final List<T> a, final List<T> b) {
+    if (a == b)
+      return 0;
+
+    // A null array is less than a non-null array
+    if (a == null || b == null)
+      return a == null ? -1 : 1;
+
+    int length = Math.min(a.size(), b.size());
+    for (int i = 0; i < length; ++i) {
+      final T oa = a.get(i);
+      final T ob = b.get(i);
+      if (oa != ob) {
+        // A null element is less than a non-null element
+        if (oa == null || ob == null)
+          return oa == null ? -1 : 1;
+
+        final int v = oa.compareTo(ob);
+        if (v != 0)
+          return v;
+      }
+    }
+
+    return a.size() - b.size();
+  }
+
+  /**
    * Tests whether the first specified array contains all {@link Comparable}
    * elements in the second specified array.
    *
@@ -467,7 +522,7 @@ public final class AssembleUtil {
    *         the second specified array.
    * @throws NullPointerException If {@code a} or {@code b} are null.
    */
-  public static <T extends Comparable<T>>boolean containsAll(final T[] a, final T[] b) {
+  public static <T extends Comparable<? super T>>boolean containsAll(final T[] a, final T[] b) {
     for (int i = 0, j = 0;;) {
       if (j == b.length)
         return true;
@@ -539,7 +594,7 @@ public final class AssembleUtil {
    * @throws NullPointerException If {@code a} or {@code b} are null.
    */
   @SuppressWarnings("unchecked")
-  public static <T extends Comparable<T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
+  public static <T extends Comparable<? super T>>T[] retain(final T[] a, final T[] b, final int i, final int j, final int r) {
     for (int d = 0;; ++d) {
       int comparison = 0;
       if (i + d == a.length || j + d == b.length || (comparison = a[i + d].compareTo(b[j + d])) != 0) {
@@ -578,6 +633,27 @@ public final class AssembleUtil {
 
     Arrays.sort(array);
     return array;
+  }
+
+  /**
+   * Sorts the specified list of objects into ascending order, according to the
+   * natural ordering of its elements. All elements in the list must implement
+   * the {@link Comparable} interface. Furthermore, all elements in the list
+   * must be mutually comparable (that is, {@code e1.compareTo(e2)} must not
+   * throw a {@link ClassCastException} for any elements {@code e1} and
+   * {@code e2} in the list).
+   *
+   * @param <T> The component type of the specified list.
+   * @param list The list to be sorted.
+   * @return The specified list, which is sorted in-place (unless it is null).
+   * @see Collections#sort(List)
+   */
+  public static <T extends Comparable<? super T>>List<T> sort(final List<T> list) {
+    if (list == null)
+      return null;
+
+    Collections.sort(list);
+    return list;
   }
 
   /**

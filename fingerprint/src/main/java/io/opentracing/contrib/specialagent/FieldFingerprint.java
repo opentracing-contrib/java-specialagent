@@ -31,7 +31,7 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
    * Creates a new {@code FieldFingerprint} for the specified name and type.
    *
    * @param name The name of the field.
-   * @param type THe class name of the field's type.
+   * @param type The class name of the field's type.
    */
   FieldFingerprint(final String name, final String type) {
     super(name);
@@ -60,6 +60,6 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
 
   @Override
   public String toString() {
-    return (type != null ? type : "java.lang.Object") + " " + getName();
+    return type + " " + getName();
   }
 }

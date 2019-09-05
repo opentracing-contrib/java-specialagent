@@ -15,7 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a {@code Method}.
@@ -26,8 +26,8 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   private static final long serialVersionUID = -6005870987922050364L;
 
   private final String returnType;
-  private final String[] parameterTypes;
-  private final String[] exceptionTypes;
+  private final List<String> parameterTypes;
+  private final List<String> exceptionTypes;
 
   /**
    * Creates a new {@code MethodFingerprint} for the specified {@code Method}.
@@ -39,7 +39,7 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
    * @param exceptionTypes The sorted array of class names in the exception
    *          signature, or {@code null} if there are no exceptions.
    */
-  MethodFingerprint(final String name, final String returnType, final String[] parameterTypes, final String[] exceptionTypes) {
+  MethodFingerprint(final String name, final String returnType, final List<String> parameterTypes, final List<String> exceptionTypes) {
     super(name);
     this.returnType = returnType;
     this.parameterTypes = AssembleUtil.sort(parameterTypes);
@@ -56,14 +56,14 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   /**
    * @return The names of the parameter types.
    */
-  String[] getParameterTypes() {
+  List<String> getParameterTypes() {
     return this.parameterTypes;
   }
 
   /**
    * @return The names of the exception types.
    */
-  String[] getExceptionTypes() {
+  List<String> getExceptionTypes() {
     return this.exceptionTypes;
   }
 
@@ -92,14 +92,14 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     if (!getName().equals(that.getName()))
       return false;
 
-    if (returnType != null ? !returnType.equals(that.returnType) : that.returnType != null)
+    if (returnType == null ? that.returnType != null : !returnType.equals(that.returnType))
       return false;
 
-    if (parameterTypes == null ? that.parameterTypes != null : that.parameterTypes == null || !Arrays.equals(parameterTypes, that.parameterTypes))
+    if (parameterTypes == null ? that.parameterTypes != null : !parameterTypes.equals(that.parameterTypes))
       return false;
 
-    if (exceptionTypes == null ? that.exceptionTypes != null : that.exceptionTypes == null || !Arrays.equals(exceptionTypes, that.exceptionTypes))
-      return false;
+//    if (exceptionTypes == null ? that.exceptionTypes != null : !exceptionTypes.equals(that.exceptionTypes))
+//      return false;
 
     return true;
   }
@@ -108,9 +108,9 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
   public int hashCode() {
     int hashCode = 0;
     hashCode = hashCode * 37 + getName().hashCode();
-    hashCode = hashCode * 37 + returnType.hashCode();
-    hashCode = hashCode * 37 + Arrays.hashCode(parameterTypes);
-    hashCode = hashCode * 37 + Arrays.hashCode(exceptionTypes);
+    hashCode = hashCode * 37 + (returnType == null ? 0 : returnType.hashCode());
+    hashCode = hashCode * 37 + (parameterTypes == null ? 0 : parameterTypes.hashCode());
+//    hashCode = hashCode * 37 + (exceptionTypes == null ? 0 : exceptionTypes.hashCode());
     return hashCode;
   }
 
@@ -122,11 +122,11 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     if (parameterTypes != null)
       builder.append(AssembleUtil.toString(parameterTypes, ", "));
 
-    builder.append(")");
+    builder.append(')');
     if (exceptionTypes != null)
       builder.append(" throws ").append(AssembleUtil.toString(exceptionTypes, ", "));
 
-    builder.append(";");
+    builder.append(';');
     return builder.toString();
   }
 }

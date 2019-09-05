@@ -17,35 +17,41 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 class FingerprintBuilder {
   static boolean debugVisitor = false;
-  static Phase debugLog = null;
+  static boolean debugLog = false;
 
-  private static void debug(final LogSet logs) {
-    if (debugLog != null)
-      System.out.println(logs.toString(debugLog));
+  private static void debug(final String message, final LogSet logs) {
+    if (debugLog)
+      System.out.println(message + "\n" + logs.toString());
   }
 
-  static ClassFingerprint[] build(final ClassLoader classLoader, final int depth, final Phase phase, final Class<?> ... classes) throws IOException {
+  static List<ClassFingerprint> build(final ClassLoader classLoader, final int depth, final Class<?> ... classes) throws IOException {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     for (final Class<?> cls : classes)
-      fingerprinter.fingerprint(Phase.LOAD, cls.getName().replace('.', '/').concat(".class"));
+      fingerprinter.fingerprint(cls.getName().replace('.', '/').concat(".class"));
 
+    debug("Before compass...", logs);
     fingerprinter.compass(depth);
-    debug(logs);
-    return logs.collate(phase);
+    debug("After compass...", logs);
+    return logs.collate();
   }
 
-  static ClassFingerprint[] build(final URLClassLoader classLoader, final int depth, final Phase phase) throws IOException {
+  static List<ClassFingerprint> build(final URLClassLoader classLoader, final int depth) throws IOException {
     final LogSet logs = new LogSet(debugVisitor);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
+    final Set<String> excludeClassNames = new HashSet<>();
     AssembleUtil.<Void>forEachClass(classLoader.getURLs(), null, new BiConsumer<String,Void>() {
       @Override
       public void accept(final String name, final Void arg) {
         try {
-          fingerprinter.fingerprint(Phase.LOAD, name);
+          fingerprinter.fingerprint(name);
+          excludeClassNames.add(name.substring(0, name.length() - 6).replace('/', '.'));
         }
         catch (final IOException e) {
           throw new IllegalStateException(e);
@@ -53,9 +59,12 @@ class FingerprintBuilder {
       }
     });
 
+    debug("Before compass...", logs);
     fingerprinter.compass(depth);
-    debug(logs);
-    return logs.collate(phase);
+    debug("After compass...", logs);
+    logs.purge(excludeClassNames);
+    debug("After purge...", logs);
+    return logs.collate();
   }
 
   private FingerprintBuilder() {

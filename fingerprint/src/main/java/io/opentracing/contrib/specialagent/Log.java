@@ -18,21 +18,11 @@ package io.opentracing.contrib.specialagent;
 import java.util.Objects;
 
 abstract class Log {
-  private Phase phase;
-  final String className;
+  private final String className;
   boolean resolved;
 
-  Log(final Phase phase, final String className) {
-    this.phase = Objects.requireNonNull(phase);
+  Log(final String className) {
     this.className = Objects.requireNonNull(className);
-  }
-
-  void setPhase(final Phase phase) {
-    this.phase = phase;
-  }
-
-  Phase getPhase() {
-    return phase;
   }
 
   String getClassName() {
@@ -55,6 +45,6 @@ abstract class Log {
 
   @Override
   public String toString() {
-    return (resolved ? "+" : "-") + phase + " " + className;
+    return getClass().getSimpleName().charAt(0) + (resolved ? "+" : "-") + " " + className;
   }
 }

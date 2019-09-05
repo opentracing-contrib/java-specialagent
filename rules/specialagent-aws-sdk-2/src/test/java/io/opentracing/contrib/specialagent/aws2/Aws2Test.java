@@ -15,8 +15,8 @@
 
 package io.opentracing.contrib.specialagent.aws2;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.net.URI;
@@ -89,8 +89,7 @@ public class Aws2Test {
 
   private static DynamoDbClient buildClient() {
     final AwsSessionCredentials awsCreds = AwsSessionCredentials.create("access_key_id", "secret_key_id", "session_token");
-    return DynamoDbClient
-      .builder()
+    return DynamoDbClient.builder()
       .endpointOverride(URI.create("http://localhost:8000"))
       .region(Region.US_WEST_2)
       .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
@@ -100,8 +99,7 @@ public class Aws2Test {
 
   private static DynamoDbAsyncClient buildAsyncClient() {
     final AwsSessionCredentials awsCreds = AwsSessionCredentials.create("access_key_id", "secret_key_id", "session_token");
-    final DynamoDbAsyncClient build = DynamoDbAsyncClient
-      .builder()
+    final DynamoDbAsyncClient build = DynamoDbAsyncClient.builder()
       .endpointOverride(URI.create("http://localhost:8000"))
       .region(Region.US_WEST_2)
       .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
@@ -113,7 +111,7 @@ public class Aws2Test {
 
   private static void createTable(final DynamoDbClient dbClient, final String tableName) {
     final String partitionKeyName = tableName + "Id";
-    final CreateTableRequest createTableRequest =CreateTableRequest.builder()
+    final CreateTableRequest createTableRequest = CreateTableRequest.builder()
       .tableName(tableName)
       .keySchema(KeySchemaElement.builder().attributeName(partitionKeyName).keyType(KeyType.HASH).build())
       .attributeDefinitions(AttributeDefinition.builder().attributeName(partitionKeyName).attributeType("S").build())
@@ -124,8 +122,7 @@ public class Aws2Test {
 
   private static CompletableFuture<CreateTableResponse> createTableAsync(final DynamoDbAsyncClient dbClient, final String tableName) {
     final String partitionKeyName = tableName + "Id";
-    final CreateTableRequest createTableRequest = CreateTableRequest
-      .builder()
+    final CreateTableRequest createTableRequest = CreateTableRequest.builder()
       .tableName(tableName).keySchema(KeySchemaElement.builder().attributeName(partitionKeyName).keyType(KeyType.HASH).build())
       .attributeDefinitions(AttributeDefinition.builder().attributeName(partitionKeyName).attributeType("S").build())
       .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(5L).build()).build();

@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 public final class Logger {
+  static final String LOG_REFRESH_PROPERTY = "sa.log.refresh";
   static final String LOG_LEVEL_PROPERTY = "sa.log.level";
   static final String LOG_FILE_PROPERTY = "sa.log.file";
 
@@ -28,6 +29,10 @@ public final class Logger {
   private static PrintStream out = System.err;
 
   static {
+    init();
+  }
+
+  static void init() {
     try {
       // Load user log level
       final String logLevelProperty = System.getProperty(LOG_LEVEL_PROPERTY);
@@ -44,6 +49,14 @@ public final class Logger {
     }
   }
 
+  private static void refresh() {
+    if (System.getProperty(LOG_REFRESH_PROPERTY) == null)
+      return;
+
+    System.clearProperty(LOG_REFRESH_PROPERTY);
+    init();
+  }
+
   public static Logger getLogger(final Class<?> cls) {
     return logger;
   }
@@ -57,6 +70,7 @@ public final class Logger {
   }
 
   public boolean isLoggable(final Level level) {
+    refresh();
     return Logger.level.isLoggable(level);
   }
 

@@ -45,7 +45,10 @@ class Fingerprinter extends ClassVisitor {
   private final SignatureVisitor signatureVisitor;
 
   private String superClass;
-  private String[] interfaces;
+  private List<String> interfaces;
+
+  private String className;
+  private boolean filtering = false;
 
   Fingerprinter(final ClassLoader classLoader, final LogSet logs, final boolean debug) {
     super(Opcodes.ASM5, debug ? new LoggingClassVisitor(Opcodes.ASM5) : null);
@@ -54,18 +57,17 @@ class Fingerprinter extends ClassVisitor {
     this.signatureVisitor = debug ? new LoggingSignatureVisitor(api) {
       @Override
       public void visitClassType(final String name) {
-        addClassRef(Type.getObjectType(name), Phase.NONE);
+//        addClassRef(Type.getObjectType(name));
       }
     } : new SignatureVisitor(api) {
       @Override
       public void visitClassType(final String name) {
-        addClassRef(Type.getObjectType(name), Phase.NONE);
+//        addClassRef(Type.getObjectType(name));
       }
     };
   }
 
-  boolean fingerprint(final Phase phase, final String resourcePath) throws IOException {
-    this.phase = phase;
+  boolean fingerprint(final String resourcePath) throws IOException {
     try (final InputStream in = classLoader.getResourceAsStream(resourcePath)) {
       new ClassReader(in).accept(this, 0);
       return true;
@@ -74,29 +76,16 @@ class Fingerprinter extends ClassVisitor {
       if (logger.isLoggable(Level.FINE))
         logger.log(Level.FINE, (e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath, e);
 
-      if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
-        throw e;
+      if (e instanceof IOException && "Class not found".equals(e.getMessage()))
+        return false;
 
-      return false;
+      throw e;
     }
   }
 
   void compass(final int depth) throws IOException {
     filtering = true;
     for (int i = 0; logs.compass(this) && i < depth; ++i);
-  }
-
-  private String className;
-
-  private boolean filtering = false;
-  private Phase phase;
-
-  private static boolean isPrimitive(final Type type) {
-    if (type.getSort() == Type.ARRAY)
-      throw new IllegalArgumentException("Type cannot be an array type");
-
-    final String name = type.getClassName();
-    return "boolean".equals(name) || "byte".equals(name) || "char".equals(name) || "short".equals(name) || "int".equals(name) || "long".equals(name) || "float".equals(name) || "double".equals(name);
   }
 
   private static String typeToClassName(Type type, final boolean withExcludes) {
@@ -108,30 +97,30 @@ class Fingerprinter extends ClassVisitor {
       type = Type.getObjectType(className.substring(0, className.length() - 2));
     }
 
-    if (withExcludes && isPrimitive(type))
+    if (withExcludes && FingerprintUtil.isPrimitive(type))
       return null;
 
     final String className = type.getClassName();
     return withExcludes && FingerprintUtil.isExcluded(className) ? null : className;
   }
 
-  private ClassLog addClassRef(final Type type, final Phase lifecyclePhase) {
+  private ClassLog addClassRef(final Type type) {
     final String className = typeToClassName(type, true);
-    return className == null ? null : logs.add(new ClassLog(lifecyclePhase, className));
+    return className == null ? null : logs.addClassLog(className);
   }
 
-  private FieldLog addFieldRef(final Type type, final String name, final Phase phase) {
+  private FieldLog addFieldRef(final Type type, final String name) {
     final String className = typeToClassName(type, true);
-    return className == null ? null : logs.add(new FieldLog(phase, className, name));
+    return className == null ? null : logs.addFieldLog(className, name);
   }
 
-  private static MethodLog makeMethodCall(final String className, final String name, final Type methodDescriptor, final Phase lifecyclePhase) {
+  private static List<String> getParameterTypes(final Type methodDescriptor) {
     final Type[] argumentTypes = methodDescriptor.getArgumentTypes();
     final List<String> parameterTypes = argumentTypes.length == 0 ? null : new ArrayList<String>(argumentTypes.length);
     for (int i = 0; i < argumentTypes.length; ++i)
       parameterTypes.add(argumentTypes[i].getClassName());
 
-    return new MethodLog(lifecyclePhase, className, name, methodDescriptor.getReturnType().getClassName(), parameterTypes);
+    return parameterTypes;
   }
 
   @Override
@@ -146,7 +135,7 @@ class Fingerprinter extends ClassVisitor {
     final Type type = Type.getObjectType(name);
     this.className = type.getClassName();
 
-    final ClassLog log = addClassRef(type, Phase.LOAD);
+    final ClassLog log = addClassRef(type);
     if (log == null || log.isResolved())
       return;
 
@@ -155,7 +144,7 @@ class Fingerprinter extends ClassVisitor {
     }
     else {
       final Type superType = Type.getObjectType(superName);
-      addClassRef(superType, Phase.LOAD);
+      addClassRef(superType);
       this.superClass = superType.getClassName();
     }
 
@@ -163,11 +152,12 @@ class Fingerprinter extends ClassVisitor {
       this.interfaces = null;
     }
     else {
-      this.interfaces = interfaces;
+      this.interfaces = new ArrayList<>(interfaces.length);
       for (int i = 0; i < interfaces.length; ++i) {
         final Type cls = Type.getObjectType(interfaces[i]);
         interfaces[i] = cls.getClassName();
-        addClassRef(cls, Phase.LOAD);
+        addClassRef(cls);
+        this.interfaces.add(interfaces[i]);
       }
     }
 
@@ -179,8 +169,8 @@ class Fingerprinter extends ClassVisitor {
     super.visitInnerClass(name, outerName, innerName, access);
     if (FingerprintUtil.isSynthetic(access))
       innerClassExcludes.add(Type.getObjectType(name).getClassName());
-    else if (!name.startsWith(className.replace('.', '/') + "$"))
-      addClassRef(Type.getObjectType(name), Phase.NONE);
+//    else if (!name.startsWith(className.replace('.', '/') + "$"))
+//      addClassRef(Type.getObjectType(name));
   }
 
   @Override
@@ -190,8 +180,11 @@ class Fingerprinter extends ClassVisitor {
 
     final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
     final Type type = Type.getType(desc);
-    addClassRef(type, filtering ? Phase.NONE : Phase.CALL);
-    final FieldLog log = addFieldRef(Type.getObjectType(className), name, filtering ? Phase.NONE : Phase.CALL);
+    if (filtering)
+      return null;
+
+    addClassRef(type);
+    final FieldLog log = addFieldRef(Type.getObjectType(className), name);
     if (log == null)
       return null;
 
@@ -205,43 +198,36 @@ class Fingerprinter extends ClassVisitor {
   @Override
   public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
     final AnnotationVisitor annotationVisitor = super.visitAnnotation(desc, visible);
-    addClassRef(Type.getType(desc), Phase.NONE);
+//    addClassRef(Type.getType(desc));
     return annotationVisitor;
   }
 
   @Override
   public AnnotationVisitor visitTypeAnnotation(final int typeRef, final TypePath typePath, final String desc, final boolean visible) {
     final AnnotationVisitor annotationVisitor = super.visitTypeAnnotation(typeRef, typePath, desc, visible);
-    addClassRef(Type.getType(desc), Phase.NONE);
+//    addClassRef(Type.getType(desc));
     return annotationVisitor;
-  }
-
-  private Phase getPhase(final boolean condition) {
-    return condition ? (filtering ? Phase.NONE : phase) : (filtering ? phase : Phase.CALL);
   }
 
   @Override
   public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
     final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
     if (Visibility.get(access) == Visibility.PRIVATE || FingerprintUtil.isSynthetic(access))
-      return null;
+      return methodVisitor;
 
     if (!FingerprintUtil.isExcluded(className) && !"<clinit>".equals(name)) {
       final Type methodType = Type.getMethodType(desc);
-      final Type[] argumentTypes = methodType.getArgumentTypes();
-      final String[] parameterTypes = argumentTypes.length == 0 ? null : new String[argumentTypes.length];
-      for (int i = 0; i < argumentTypes.length; ++i)
-        parameterTypes[i] = argumentTypes[i].getClassName();
-
-      final MethodLog log = logs.add(makeMethodCall(className, name, methodType, filtering ? Phase.NONE : Phase.CALL));
-      if (filtering && !logs.contains(log))
+      final List<String> parameterTypes = getParameterTypes(methodType);
+      if (filtering && logs.getMethodLog(className, name, methodType.getReturnType().getClassName(), parameterTypes) == null)
         return null;
 
       final List<String> exceptionTypes = exceptions == null || exceptions.length == 0 ? null : new ArrayList<String>(exceptions.length);
       if (exceptions != null) {
         for (int i = 0; i < exceptions.length; ++i) {
           final Type type = Type.getObjectType(exceptions[i]);
-          addClassRef(type, filtering ? Phase.NONE : Phase.CALL);
+          if (!filtering)
+            addClassRef(type);
+
           exceptionTypes.add(type.getClassName());
         }
       }
@@ -249,22 +235,22 @@ class Fingerprinter extends ClassVisitor {
       if (signature != null)
         new SignatureReader(signature).accept(signatureVisitor);
 
-      log.resolve(exceptionTypes);
+      logs.addMethodLog(className, name, methodType.getReturnType().getClassName(), parameterTypes).resolve(exceptionTypes);
     }
 
     return new MethodVisitor(api, methodVisitor) {
       @Override
       public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
         final AnnotationVisitor annotationVisitor = super.visitAnnotation(desc, visible);
-        addClassRef(Type.getType(desc), Phase.NONE);
+//        addClassRef(Type.getType(desc));
         return annotationVisitor;
       }
 
       @Override
       public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
         super.visitFieldInsn(opcode, owner, name, desc);
-        if (!FingerprintUtil.isPutStatic(opcode))
-          addFieldRef(Type.getObjectType(owner), name, getPhase(FingerprintUtil.isGetStatic(opcode)));
+        if (!FingerprintUtil.isPutStatic(opcode) && !FingerprintUtil.isGetStatic(opcode))
+          addFieldRef(Type.getObjectType(owner), name);
       }
 
       @Override
@@ -273,8 +259,6 @@ class Fingerprinter extends ClassVisitor {
         if (filtering)
           return;
 
-        // Skip if INVOKESPECIAL, because the later scan via addClassRef(type..) will pick up the constructor
-        // Skipping this avoids the virtual constructors of member inner classes
         if (synthetic.matcher(name).matches())
           return;
 
@@ -283,23 +267,28 @@ class Fingerprinter extends ClassVisitor {
         if (className == null)
           return;
 
-        addClassRef(type, phase);
-        logs.add(makeMethodCall(className, name, Type.getMethodType(desc), getPhase(FingerprintUtil.isInvokeStatic(opcode))));
+        addClassRef(type);
+//        if (FingerprintUtil.isGetStatic(opcode))
+//          return;
+
+        final Type methodType = Type.getMethodType(desc);
+        logs.addMethodLog(className, name, methodType.getReturnType().getClassName(), getParameterTypes(methodType));
       }
 
       @Override
       public void visitTypeInsn(final int opcode, final String type) {
         super.visitTypeInsn(opcode, type);
-        if (filtering)
-          return;
-
-        addClassRef(Type.getObjectType(type), filtering ? Phase.NONE : Phase.CALL);
+        if (!filtering)
+          addClassRef(Type.getObjectType(type));
       }
 
       @Override
       public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
         super.visitLocalVariable(name, desc, signature, start, end, index);
-        addClassRef(Type.getType(desc), filtering ? Phase.NONE : Phase.CALL);
+        if (filtering)
+          return;
+
+        addClassRef(Type.getType(desc));
         if (signature != null)
           new SignatureReader(signature).accept(signatureVisitor);
       }

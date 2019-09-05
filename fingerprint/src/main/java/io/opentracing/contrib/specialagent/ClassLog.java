@@ -15,23 +15,25 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.util.List;
+
 class ClassLog extends Log {
   private String superClass;
-  private String[] interfaces;
+  private List<String> interfaces;
 
-  ClassLog(final Phase phase, final String className) {
-    super(phase, className);
+  ClassLog(final String className) {
+    super(className);
   }
 
   String getSuperClass() {
     return this.superClass;
   }
 
-  String[] getInterfaces() {
+  List<String> getInterfaces() {
     return this.interfaces;
   }
 
-  void resolve(final String superClass, final String[] interfaces) {
+  void resolve(final String superClass, final List<String> interfaces) {
     this.superClass = superClass;
     this.interfaces = interfaces;
     resolve();
@@ -39,7 +41,7 @@ class ClassLog extends Log {
 
   @Override
   public int hashCode() {
-    return className.hashCode();
+    return getClassName().hashCode();
   }
 
   @Override
@@ -51,7 +53,7 @@ class ClassLog extends Log {
       return false;
 
     final ClassLog that = (ClassLog)obj;
-    return className.equals(that.className);
+    return getClassName().equals(that.getClassName());
   }
 
   @Override
@@ -62,11 +64,11 @@ class ClassLog extends Log {
 
     if (interfaces != null) {
       builder.append(" implements ");
-      for (int i = 0; i < interfaces.length; ++i) {
+      for (int i = 0; i < interfaces.size(); ++i) {
         if (i > 0)
           builder.append(", ");
 
-        builder.append(interfaces[i]);
+        builder.append(interfaces.get(i));
       }
     }
 
