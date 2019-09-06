@@ -19,7 +19,7 @@ import java.util.Objects;
 
 abstract class Log {
   private final String className;
-  boolean resolved;
+  private boolean resolved;
 
   Log(final String className) {
     this.className = Objects.requireNonNull(className);

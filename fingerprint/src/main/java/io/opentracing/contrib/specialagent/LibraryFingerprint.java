@@ -64,17 +64,18 @@ public class LibraryFingerprint extends Fingerprint {
    *
    * @param classLoader The {@code ClassLoader} to use for resolution of classes
    *          that should not be part of the fingerprint.
+   * @param logger The logger to be used during the fingerprinting execution.
    * @throws NullPointerException If {@code manifest} or {@code scanUrls} is
    *           null.
    * @throws IllegalArgumentException If the number of members in
    *           {@code scanUrls} is zero.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final URLClassLoader classLoader) throws IOException {
+  LibraryFingerprint(final URLClassLoader classLoader, final Logger logger) throws IOException {
     if (classLoader.getURLs().length == 0)
       throw new IllegalArgumentException("Number of scan URLs must be greater than 0");
 
-    this.classes = FingerprintBuilder.build(classLoader, Integer.MAX_VALUE).toArray(new ClassFingerprint[0]);
+    this.classes = new FingerprintBuilder(logger).build(classLoader, Integer.MAX_VALUE).toArray(new ClassFingerprint[0]);
   }
 
   /**

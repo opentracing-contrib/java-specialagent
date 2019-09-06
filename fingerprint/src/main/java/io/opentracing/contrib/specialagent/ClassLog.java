@@ -66,7 +66,7 @@ class ClassLog extends Log {
       builder.append(" implements ");
       for (int i = 0; i < interfaces.size(); ++i) {
         if (i > 0)
-          builder.append(", ");
+          builder.append(',');
 
         builder.append(interfaces.get(i));
       }

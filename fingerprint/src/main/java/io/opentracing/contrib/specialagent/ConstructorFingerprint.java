@@ -36,7 +36,7 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
    * @param parameterTypes The array of class names in the parameter signature,
    *          or {@code null} if there are no parameters.
    * @param exceptionTypes The sorted array of class names in the exception
-   *          signature, or {@cList<String>ode null} if there are no exceptions.
+   *          signature, or {@code null} if there are no exceptions.
    */
   ConstructorFingerprint(final List<String> parameterTypes, final List<String> exceptionTypes) {
     this.parameterTypes = AssembleUtil.sort(parameterTypes);
@@ -59,11 +59,7 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
 
   @Override
   public int compareTo(final ConstructorFingerprint o) {
-    final int comparison = AssembleUtil.compare(parameterTypes, o.parameterTypes);
-    if (comparison != 0)
-      return comparison;
-
-    return AssembleUtil.compare(exceptionTypes, o.exceptionTypes);
+    return AssembleUtil.compare(parameterTypes, o.parameterTypes);
   }
 
   @Override
@@ -78,9 +74,6 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
     if (parameterTypes == null ? that.parameterTypes != null : that.parameterTypes == null || !parameterTypes.equals(that.parameterTypes))
       return false;
 
-    if (exceptionTypes == null ? that.exceptionTypes != null : that.exceptionTypes == null || !exceptionTypes.equals(that.exceptionTypes))
-      return false;
-
     return true;
   }
 
@@ -89,13 +82,12 @@ class ConstructorFingerprint extends Fingerprint implements Comparable<Construct
     final StringBuilder builder = new StringBuilder();
     builder.append("(");
     if (parameterTypes != null)
-      builder.append(AssembleUtil.toString(parameterTypes, ", "));
+      builder.append(AssembleUtil.toString(parameterTypes, ","));
 
     builder.append(")");
     if (exceptionTypes != null)
-      builder.append(" throws ").append(AssembleUtil.toString(exceptionTypes, ", "));
+      builder.append(" throws ").append(AssembleUtil.toString(exceptionTypes, ","));
 
-    builder.append(";");
     return builder.toString();
   }
 }

@@ -60,6 +60,6 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
 
   @Override
   public String toString() {
-    return type + " " + getName();
+    return getName() + ":" + type;
   }
 }

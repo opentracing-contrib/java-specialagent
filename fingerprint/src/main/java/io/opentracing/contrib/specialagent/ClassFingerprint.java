@@ -122,8 +122,8 @@ class ClassFingerprint extends NamedFingerprint<ClassFingerprint> {
       return false;
 
     final ClassFingerprint that = (ClassFingerprint)obj;
-    if (superClass == null ? that.superClass != null : !superClass.equals(that.superClass))
-      return false;
+//    if (superClass == null ? that.superClass != null : !superClass.equals(that.superClass))
+//      return false;
 
     if (constructors == null ? that.constructors != null : !constructors.equals(that.constructors))
       return false;

@@ -23,15 +23,20 @@ import java.util.Set;
 
 class FingerprintBuilder {
   static boolean debugVisitor = false;
-  static boolean debugLog = false;
 
-  private static void debug(final String message, final LogSet logs) {
-    if (debugLog)
-      System.out.println(message + "\n" + logs.toString());
+  private final Logger logger;
+
+  FingerprintBuilder(final Logger logger) {
+    this.logger = logger;
   }
 
-  static List<ClassFingerprint> build(final ClassLoader classLoader, final int depth, final Class<?> ... classes) throws IOException {
-    final LogSet logs = new LogSet(debugVisitor);
+  private void debug(final String message, final LogSet logs) {
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(message + "\n" + logs.toString());
+  }
+
+  List<ClassFingerprint> build(final ClassLoader classLoader, final int depth, final Class<?> ... classes) throws IOException {
+    final LogSet logs = new LogSet(logger);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     for (final Class<?> cls : classes)
       fingerprinter.fingerprint(cls.getName().replace('.', '/').concat(".class"));
@@ -42,8 +47,8 @@ class FingerprintBuilder {
     return logs.collate();
   }
 
-  static List<ClassFingerprint> build(final URLClassLoader classLoader, final int depth) throws IOException {
-    final LogSet logs = new LogSet(debugVisitor);
+  List<ClassFingerprint> build(final URLClassLoader classLoader, final int depth) throws IOException {
+    final LogSet logs = new LogSet(logger);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     final Set<String> excludeClassNames = new HashSet<>();
     AssembleUtil.<Void>forEachClass(classLoader.getURLs(), null, new BiConsumer<String,Void>() {
@@ -65,8 +70,5 @@ class FingerprintBuilder {
     logs.purge(excludeClassNames);
     debug("After purge...", logs);
     return logs.collate();
-  }
-
-  private FingerprintBuilder() {
   }
 }

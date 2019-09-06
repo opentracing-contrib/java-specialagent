@@ -85,7 +85,7 @@ class MethodLog extends Log {
     if (parameterTypes != null) {
       for (int i = 0; i < parameterTypes.size(); ++i) {
         if (i > 0)
-          builder.append(", ");
+          builder.append(',');
 
         builder.append(parameterTypes.get(i));
       }
@@ -97,7 +97,7 @@ class MethodLog extends Log {
       builder.append(" throws ");
       for (int i = 0; i < exceptionTypes.size(); ++i) {
         if (i > 0)
-          builder.append(", ");
+          builder.append(',');
 
         builder.append(exceptionTypes.get(i));
       }

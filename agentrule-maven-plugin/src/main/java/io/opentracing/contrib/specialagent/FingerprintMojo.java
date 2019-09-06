@@ -179,7 +179,7 @@ public final class FingerprintMojo extends TreeMojo {
       compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
 
       try (final URLClassLoader classLoader = new URLClassLoader(compileDeps, new URLClassLoader(optionalDeps, null))) {
-        final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader);
+        final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, new MavenLogger(getLog()));
         fingerprint.toFile(destFile);
         if (getLog().isDebugEnabled())
           getLog().debug(fingerprint.toString());

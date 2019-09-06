@@ -32,8 +32,8 @@ public class FingerprintTest {
   @Test
   public void test2() throws IOException {
     FingerprintBuilder.debugVisitor = false;
-    FingerprintBuilder.debugLog = true;
-    final List<ClassFingerprint> classFingerprints = FingerprintBuilder.build(ClassLoader.getSystemClassLoader(), Integer.MAX_VALUE, FpTestClass1.class, FpTestClass2.MemberInner.class, FpTestClass2.Inner.class, FpTestClass2.class);
+    Logger.setLevel(Level.FINEST);
+    final List<ClassFingerprint> classFingerprints = new FingerprintBuilder(logger).build(ClassLoader.getSystemClassLoader(), Integer.MAX_VALUE, FpTestClass1.class, FpTestClass2.MemberInner.class, FpTestClass2.Inner.class, FpTestClass2.class);
     System.out.println(AssembleUtil.toIndentedString(classFingerprints));
   }
 
@@ -51,7 +51,7 @@ public class FingerprintTest {
     if (jarURL == null)
       fail("Could not find JAR resource");
 
-    final LibraryFingerprint lib = new LibraryFingerprint(new URLClassLoader(new URL[] {jarURL}, ClassLoader.getSystemClassLoader()));
+    final LibraryFingerprint lib = new LibraryFingerprint(new URLClassLoader(new URL[] {jarURL}, ClassLoader.getSystemClassLoader()), logger);
     logger.fine(lib.toString());
     assertEquals(37, lib.getClasses().length);
 

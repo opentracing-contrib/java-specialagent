@@ -19,7 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-public final class Logger {
+public class Logger {
   static final String LOG_REFRESH_PROPERTY = "sa.log.refresh";
   static final String LOG_LEVEL_PROPERTY = "sa.log.level";
   static final String LOG_FILE_PROPERTY = "sa.log.file";
@@ -117,6 +117,6 @@ public final class Logger {
       out.println(msg);
   }
 
-  private Logger() {
+  protected Logger() {
   }
 }

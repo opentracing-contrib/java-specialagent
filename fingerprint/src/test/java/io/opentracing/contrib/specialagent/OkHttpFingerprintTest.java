@@ -25,12 +25,14 @@ import io.opentracing.contrib.okhttp3.TracingInterceptor;
 import okhttp3.OkHttpClient;
 
 public class OkHttpFingerprintTest {
+  private static final Logger logger = Logger.getLogger(OkHttpFingerprintTest.class);
+
   @Test
   public void test() throws IOException {
     FingerprintBuilder.debugVisitor = false;
-    FingerprintBuilder.debugLog = true;
+    Logger.setLevel(Level.FINEST);
 
-    final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(new URL[] {TracingInterceptor.class.getProtectionDomain().getCodeSource().getLocation()}, new URLClassLoader(new URL[] {OkHttpClient.class.getProtectionDomain().getCodeSource().getLocation()})));
+    final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(new URL[] {TracingInterceptor.class.getProtectionDomain().getCodeSource().getLocation()}, new URLClassLoader(new URL[] {OkHttpClient.class.getProtectionDomain().getCodeSource().getLocation()})), logger);
     System.out.println(fingerprint.toString());
   }
 }

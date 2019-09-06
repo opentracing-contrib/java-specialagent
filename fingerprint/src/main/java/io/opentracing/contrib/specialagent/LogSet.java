@@ -31,10 +31,10 @@ import java.util.Set;
 
 class LogSet {
   private final HashMap<String,Map<Log,Log>> map = new LinkedHashMap<>(100);
-  private final boolean debug;
+  private final Logger logger;
 
-  LogSet(final boolean debug) {
-    this.debug = debug;
+  LogSet(final Logger logger) {
+    this.logger = logger;
   }
 
   ClassLog addClassLog(final String className) {
@@ -77,8 +77,7 @@ class LogSet {
     final int before = map.keySet().size();
     int count = 0;
     for (final Map<Log,Log> logs : new ArrayList<>(map.values())) {
-      final List<Log> l = new ArrayList<>(logs.keySet());
-      for (final Log log : l) {
+      for (final Log log : new ArrayList<>(logs.keySet())) {
         if (!log.isResolved()) {
           ++count;
           final String className = log.getClassName();
@@ -91,29 +90,15 @@ class LogSet {
             // If not, it means it's been deliberately or conditionally excluded by
             // the agent rule or plugin dependency spec.
             map.remove(log.getClassName());
-            System.out.println("Class not found: " + log.getClassName());
+            logger.warning("Class not found: " + log.getClassName());
             break;
           }
         }
       }
     }
 
-    System.out.println("Checked: " + checked.size() + ", Remaining: " + count);
+    logger.info("Scanned: " + checked.size() + ", Remaining: " + count);
     return before != map.keySet().size();
-  }
-
-  void consolidate() {
-    final Iterator<Map.Entry<String,Map<Log,Log>>> mapIterator = map.entrySet().iterator();
-    while (mapIterator.hasNext()) {
-      final Map<Log,Log> logs = mapIterator.next().getValue();
-      final Iterator<Map.Entry<Log,Log>> logsIterator = logs.entrySet().iterator();
-      while (logsIterator.hasNext()) {
-        final Log log = logsIterator.next().getKey();
-        if (!log.isResolved()) {
-          map.get(log.getClassName());
-        }
-      }
-    }
   }
 
   boolean contains(final Log log) {
@@ -133,9 +118,10 @@ class LogSet {
             log.resolve();
           }
           else {
+            if (logger.isLoggable(Level.FINEST))
+              logger.finest("Unresolved: " + log);
+
             logsIterator.remove();
-            if (debug)
-              System.err.println("Removed: " + log);
           }
         }
       }

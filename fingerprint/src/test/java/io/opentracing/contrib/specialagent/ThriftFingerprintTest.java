@@ -25,17 +25,19 @@ import org.junit.Test;
 import io.opentracing.thrift.SpanProcessor;
 
 public class ThriftFingerprintTest {
+  private static final Logger logger = Logger.getLogger(ThriftFingerprintTest.class);
+
   @Test
   public void test() throws IOException {
     FingerprintBuilder.debugVisitor = false;
-    FingerprintBuilder.debugLog = true;
+    Logger.setLevel(Level.FINEST);
 
     final URLClassLoader classLoader = new URLClassLoader(new URL[] {SpanProcessor.class.getProtectionDomain().getCodeSource().getLocation()}, new URLClassLoader(new URL[] {TProcessor.class.getProtectionDomain().getCodeSource().getLocation()}));
-    final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader);
-    System.out.println(fingerprint.toString());
+    final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, logger);
+    logger.info(fingerprint.toString());
 
     final ClassFingerprint[] classFingerprints = new FingerprintVerifier().fingerprint(classLoader);
     for (final ClassFingerprint cfp : classFingerprints)
-      System.err.println(cfp);
+      logger.info(cfp.toString());
   }
 }

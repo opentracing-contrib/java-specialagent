@@ -69,15 +69,8 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
 
   @Override
   public int compareTo(final MethodFingerprint o) {
-    int comparison = super.compareTo(o);
-    if (comparison != 0)
-      return comparison;
-
-    comparison = AssembleUtil.compare(parameterTypes, o.parameterTypes);
-    if (comparison != 0)
-      return comparison;
-
-    return 0; // Util.compare(exceptionTypes, o.exceptionTypes);
+    final int comparison = super.compareTo(o);
+    return comparison != 0 ? comparison : AssembleUtil.compare(parameterTypes, o.parameterTypes);
   }
 
   @Override
@@ -98,9 +91,6 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     if (parameterTypes == null ? that.parameterTypes != null : !parameterTypes.equals(that.parameterTypes))
       return false;
 
-//    if (exceptionTypes == null ? that.exceptionTypes != null : !exceptionTypes.equals(that.exceptionTypes))
-//      return false;
-
     return true;
   }
 
@@ -110,23 +100,21 @@ class MethodFingerprint extends NamedFingerprint<MethodFingerprint> {
     hashCode = hashCode * 37 + getName().hashCode();
     hashCode = hashCode * 37 + (returnType == null ? 0 : returnType.hashCode());
     hashCode = hashCode * 37 + (parameterTypes == null ? 0 : parameterTypes.hashCode());
-//    hashCode = hashCode * 37 + (exceptionTypes == null ? 0 : exceptionTypes.hashCode());
     return hashCode;
   }
 
   @Override
   public String toString() {
     final StringBuilder builder = new StringBuilder();
-    builder.append(returnType == null ? "void" : returnType).append(' ');
-    builder.append(getName()).append("(");
+    builder.append(getName()).append('(');
     if (parameterTypes != null)
-      builder.append(AssembleUtil.toString(parameterTypes, ", "));
+      builder.append(AssembleUtil.toString(parameterTypes, ","));
 
-    builder.append(')');
+    builder.append("):");
+    builder.append(returnType == null ? "void" : returnType);
     if (exceptionTypes != null)
-      builder.append(" throws ").append(AssembleUtil.toString(exceptionTypes, ", "));
+      builder.append(" throws ").append(AssembleUtil.toString(exceptionTypes, ","));
 
-    builder.append(';');
     return builder.toString();
   }
 }
