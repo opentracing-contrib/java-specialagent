@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.3.6 (2019-09-06)
+* Resolve minimum versions of 3rd-party libraries supported by each [Instrumentation Plugin](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins).
+* Resolve false negative compatibility tests in fingerprinting algorithm.
+* Remove reliance of JMS-2 plugin onto JMS-1 plugin.
+* Improve performance of fingerprint generation.
+* Fix issue that may result in NoClassDefFoundError during JVM shutdown hook.
+
 ## v1.3.5 (2019-08-23)
 * Resolve class signature conflicts in `web-servlet-filter` Plugin.
 * Upgrade core libraries.
