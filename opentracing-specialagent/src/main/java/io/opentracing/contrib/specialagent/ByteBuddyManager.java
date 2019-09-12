@@ -48,7 +48,7 @@ public class ByteBuddyManager extends Manager {
   private static final String RULES_FILE = "otarules.mf";
 
   private static void log(final Level level, final String message, final Throwable t) {
-    if (t instanceof IllegalStateException && t.getMessage().startsWith("Cannot resolve type description for "))
+    if (t instanceof IncompatiblePluginException || t instanceof IllegalStateException && t.getMessage().startsWith("Cannot resolve type description for "))
       logger.log(level, message + "\n" + t.getClass().getName() + ": " + t.getMessage());
     else
       logger.log(level, message, t);
@@ -208,7 +208,7 @@ public class ByteBuddyManager extends Manager {
         log(Level.SEVERE, "Event::onTransformation(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
       if (index != -1 && !SpecialAgent.linkRule(index, classLoader))
-        throw new IllegalStateException("Disallowing transformation due to incompatibility");
+        throw new IncompatiblePluginException(typeDescription.getName());
     }
 
     @Override

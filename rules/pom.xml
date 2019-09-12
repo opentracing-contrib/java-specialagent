@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.3.6-SNAPSHOT</version>
+    <version>1.3.7-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.rules</groupId>
   <artifactId>rules</artifactId>
@@ -40,9 +40,8 @@
     <module>specialagent-cassandra-driver</module>
     <module>specialagent-jms-1</module>
     <module>specialagent-jms-2</module>
-    <module>specialagent-elasticsearch-client-6</module>
-    <module>specialagent-elasticsearch-7-rest-client</module>
-    <module>specialagent-elasticsearch-7-transport-client</module>
+    <module>specialagent-elasticsearch-rest-client</module>
+    <module>specialagent-elasticsearch-transport-client</module>
     <module>specialagent-rxjava-2</module>
     <module>specialagent-kafka-client</module>
     <module>specialagent-asynchttpclient</module>
@@ -62,7 +61,6 @@
     <module>specialagent-redisson</module>
     <module>specialagent-hazelcast</module>
     <module>specialagent-spymemcached</module>
-    <module>specialagent-jdbi</module>
     <module>specialagent-feign</module>
     <module>specialagent-zuul</module>
     <module>specialagent-spring-kafka</module>

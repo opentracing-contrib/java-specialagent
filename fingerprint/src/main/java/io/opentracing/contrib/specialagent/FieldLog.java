@@ -21,8 +21,8 @@ class FieldLog extends Log {
   final String fieldName;
   private String fieldType;
 
-  FieldLog(final Phase phase, final String className, final String fieldName) {
-    super(phase, className);
+  FieldLog(final String className, final String fieldName) {
+    super(className);
     this.fieldName = Objects.requireNonNull(fieldName);
   }
 
@@ -41,7 +41,7 @@ class FieldLog extends Log {
 
   @Override
   public int hashCode() {
-    return className.hashCode() ^ fieldName.hashCode();
+    return getClassName().hashCode() ^ fieldName.hashCode();
   }
 
   @Override
@@ -53,11 +53,11 @@ class FieldLog extends Log {
       return false;
 
     final FieldLog that = (FieldLog)obj;
-    return className.equals(that.className) && fieldName.equals(that.fieldName);
+    return getClassName().equals(that.getClassName()) && fieldName.equals(that.fieldName);
   }
 
   @Override
   public String toString() {
-    return super.toString() + "#" + fieldName;
+    return super.toString() + "#" + fieldName + ":" + fieldType;
   }
 }

@@ -42,6 +42,9 @@ public class FpTestClass2 extends org.junit.Assert implements RunnerScheduler {
     }
   }
 
+  class MemberInner {
+  }
+
   @Parameter
   private static DataPoint staticFieldDep;
 

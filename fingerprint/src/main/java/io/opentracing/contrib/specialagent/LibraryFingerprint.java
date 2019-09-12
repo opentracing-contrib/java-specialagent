@@ -62,21 +62,20 @@ public class LibraryFingerprint extends Fingerprint {
    * Creates a new {@code LibraryFingerprint} with the specified {@code URL}
    * objects referencing JAR files.
    *
-   * @param parent The parent {@code ClassLoader} to use for resolution of
-   *          classes that should not be part of the fingerprint.
-   * @param scanUrls The {@code URL} objects referencing JAR files.
-   * @throws NullPointerException If {@code manifest} or {@code urls} is null.
-   * @throws IllegalArgumentException If the number of members in {@code urls}
-   *           is zero.
+   * @param classLoader The {@code ClassLoader} to use for resolution of classes
+   *          that should not be part of the fingerprint.
+   * @param logger The logger to be used during the fingerprinting execution.
+   * @throws NullPointerException If {@code manifest} or {@code scanUrls} is
+   *           null.
+   * @throws IllegalArgumentException If the number of members in
+   *           {@code scanUrls} is zero.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final ClassLoader parent, final URL ... scanUrls) throws IOException {
-    if (scanUrls.length == 0)
+  LibraryFingerprint(final URLClassLoader classLoader, final Logger logger) throws IOException {
+    if (classLoader.getURLs().length == 0)
       throw new IllegalArgumentException("Number of scan URLs must be greater than 0");
 
-    try (final URLClassLoader classLoader = new URLClassLoader(scanUrls, parent)) {
-      this.classes = FingerprintBuilder.build(classLoader, Integer.MAX_VALUE, Phase.LOAD);
-    }
+    this.classes = new FingerprintBuilder(logger).build(classLoader, Integer.MAX_VALUE).toArray(new ClassFingerprint[0]);
   }
 
   /**
@@ -100,9 +99,6 @@ public class LibraryFingerprint extends Fingerprint {
   }
 
   /**
-   * Returns the {@code ClassFingerprint} array of this
-   * {@code LibraryFingerprint}.
-   *
    * @return The {@code ClassFingerprint} array of this
    *         {@code LibraryFingerprint}.
    */

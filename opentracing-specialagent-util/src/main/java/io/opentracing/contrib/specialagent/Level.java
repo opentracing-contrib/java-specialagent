@@ -18,15 +18,15 @@ package io.opentracing.contrib.specialagent;
 import java.util.Objects;
 
 public enum Level {
-  OFF(Integer.MAX_VALUE),
-  SEVERE(1000),
-  WARNING(900),
-  INFO(800),
-  CONFIG(700),
-  FINE(500),
-  FINER(400),
+  ALL(0),
   FINEST(300),
-  ALL(0);
+  FINER(400),
+  FINE(500),
+  CONFIG(700),
+  INFO(800),
+  WARNING(900),
+  SEVERE(1000),
+  OFF(Integer.MAX_VALUE);
 
   public static Level parse(final String str) {
     Objects.requireNonNull(str);

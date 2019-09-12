@@ -31,10 +31,6 @@ import io.opentracing.util.GlobalTracer;
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader = false)
 public class ThreadTest {
-  static {
-    System.out.println(System.getProperty("sa.log.level"));
-  }
-
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();

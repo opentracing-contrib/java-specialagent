@@ -370,24 +370,39 @@ public final class SpecialAgentUtil {
       }
       while (resources.hasMoreElements());
 
-      if (outDir != null) {
-        final File targetDir = outDir;
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-          @Override
-          public void run() {
-            AssembleUtil.recurseDir(targetDir, new Predicate<File>() {
-              @Override
-              public boolean test(final File t) {
-                return t.delete();
-              }
-            });
-          }
-        });
-      }
+      if (outDir != null)
+        deleteOnShutdown(outDir);
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static Set<File> deleteDirs;
+
+  private static final Predicate<File> deletePredicate = new Predicate<File>() {
+    @Override
+    public boolean test(final File t) {
+      return t.delete();
+    }
+  };
+
+  private static class ShutdownHook extends Thread {
+    @Override
+    public void run() {
+      for (final File deleteDir : deleteDirs) {
+        AssembleUtil.recurseDir(deleteDir, deletePredicate);
+      }
+    }
+  }
+
+  private static void deleteOnShutdown(final File dir) {
+    if (deleteDirs == null) {
+      deleteDirs = new HashSet<>();
+      Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+    }
+
+    deleteDirs.add(dir);
   }
 
   /**

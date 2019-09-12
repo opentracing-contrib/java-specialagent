@@ -364,11 +364,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       events = config.events();
       if (config.log() != Level.WARNING) {
         final String logLevelProperty = System.getProperty(Logger.LOG_LEVEL_PROPERTY);
-        if (logLevelProperty != null)
+        if (logLevelProperty != null) {
           logger.warning(Logger.LOG_LEVEL_PROPERTY + "=" + logLevelProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".log=" + config.log() + " is specified in " + testClass.getName());
+        }
 
-        if (logLevelProperty == null || config.log().ordinal() < Level.valueOf(logLevelProperty).ordinal())
+        if (logLevelProperty == null || config.log().ordinal() < Level.valueOf(logLevelProperty).ordinal()) {
           System.setProperty(Logger.LOG_LEVEL_PROPERTY, String.valueOf(config.log()));
+          System.setProperty(Logger.LOG_REFRESH_PROPERTY, "true");
+        }
       }
 
       if (!config.isolateClassLoader())
