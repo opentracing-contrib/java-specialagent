@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.ClassLoaderAgentRule.*;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import io.opentracing.contrib.specialagent.ClassLoaderAgentRule.LocalLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -44,7 +46,7 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class BootLoaderAgent {
-  public static final Logger logger = Logger.getLogger(BootLoaderAgent.class);
+//  public static final Logger logger = Logger.getLogger(BootLoaderAgent.class);
   public static final CachedClassFileLocator cachedLocator;
 
   static {
@@ -66,13 +68,12 @@ public class BootLoaderAgent {
   private static boolean loaded = false;
 
   public static void premain(final Instrumentation inst, final JarFile ... jarFiles) {
-    if (loaded)
+    if (loaded || jarFiles == null || jarFiles.length == 0)
       return;
 
-    if (jarFiles != null)
-      for (final JarFile jarFile : jarFiles)
-        if (jarFile != null)
-          BootLoaderAgent.jarFiles.add(jarFile);
+    for (final JarFile jarFile : jarFiles)
+      if (jarFile != null)
+        BootLoaderAgent.jarFiles.add(jarFile);
 
     final AgentBuilder builder = new AgentBuilder.Default()
       .ignore(none())
@@ -140,17 +141,15 @@ public class BootLoaderAgent {
 
       try {
         URL resource = null;
-        if (jarFiles.size() > 0) {
-          for (final JarFile jarFile : jarFiles) {
-            final JarEntry entry = jarFile.getJarEntry(arg);
-            if (entry != null) {
-              try {
-                resource = new URL("jar:file:" + jarFile.getName() + "!/" + arg);
-                break;
-              }
-              catch (final MalformedURLException e) {
-                throw new UnsupportedOperationException(e);
-              }
+        for (final JarFile jarFile : jarFiles) {
+          final JarEntry entry = jarFile.getJarEntry(arg);
+          if (entry != null) {
+            try {
+              resource = new URL("jar:file:" + jarFile.getName() + "!/" + arg);
+              break;
+            }
+            catch (final MalformedURLException e) {
+              throw new UnsupportedOperationException(e);
             }
           }
         }
@@ -159,7 +158,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
+        log("<><><><> BootLoaderAgent.FindBootstrapResource#exit", t, LocalLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -201,7 +200,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
+        log("<><><><> BootLoaderAgent.FindBootstrapResources#exit", t, LocalLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -216,7 +215,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
+        log("<><><><> BootLoaderAgent.AppendToBootstrap#exit", t, LocalLevel.SEVERE);
       }
     }
   }

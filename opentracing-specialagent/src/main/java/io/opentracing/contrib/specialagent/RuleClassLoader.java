@@ -91,23 +91,25 @@ class RuleClassLoader extends URLClassLoader {
    * loader (i.e. the parent, or parent's parent, and so on).
    *
    * @param classLoader The {@code ClassLoader}.
+   * @return Whether this {@code RuleClassLoader} has been preloaded.
    */
-  void preLoad(final ClassLoader classLoader) {
-    if (preLoaded)
-      return;
+  boolean preLoad(final ClassLoader classLoader) {
+    if (!preLoaded) {
+      preLoaded = true;
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(ClassLoader<" + AssembleUtil.getNameId(classLoader) + ">)");
 
-    preLoaded = true;
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(ClassLoader<" + AssembleUtil.getNameId(classLoader) + ">)");
+      // Call Class.forName(...) for each class in ruleClassLoader to load in
+      // the caller's class loader
+      try {
+        AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
 
-    // Call Class.forName(...) for each class in ruleClassLoader to load in
-    // the caller's class loader
-    try {
-      AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
-    }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
+    return preLoaded;
   }
 
   /**

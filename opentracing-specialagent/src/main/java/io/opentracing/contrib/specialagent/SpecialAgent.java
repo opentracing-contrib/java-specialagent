@@ -477,7 +477,7 @@ public class SpecialAgent extends SpecialAgentBase {
     }
   }
 
-  private static boolean isAgentRunner() {
+  public static boolean isAgentRunner() {
     return System.getProperty(AGENT_RUNNER_ARG) != null;
   }
 
@@ -694,7 +694,7 @@ public class SpecialAgent extends SpecialAgentBase {
     if (logger.isLoggable(Level.FINER))
       logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes called from SpecialAgent#linkRule(...)");
 
-    ruleClassLoader.preLoad(classLoader);
+//    ruleClassLoader.preLoad(classLoader);
     return true;
   }
 
@@ -730,6 +730,7 @@ public class SpecialAgent extends SpecialAgentBase {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
       // Ensure the `RuleClassLoader` is preloaded
       ruleClassLoader.preLoad(classLoader);
+//        continue;
 
       final URL resourceUrl = ruleClassLoader.getResource(resourceName);
       if (resourceUrl != null) {
@@ -758,7 +759,12 @@ public class SpecialAgent extends SpecialAgentBase {
       return null;
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
-      final URL resource = ruleClassLoaders.get(i).findResource(name);
+      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+      // Ensure the `RuleClassLoader` is preloaded
+      ruleClassLoader.preLoad(classLoader);
+//        continue;
+
+      final URL resource = ruleClassLoader.findResource(name);
       if (resource != null)
         return resource;
     }
@@ -776,7 +782,12 @@ public class SpecialAgent extends SpecialAgentBase {
       return null;
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
-      final Enumeration<URL> resources = ruleClassLoaders.get(i).findResources(name);
+      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+      // Ensure the `RuleClassLoader` is preloaded
+      ruleClassLoader.preLoad(classLoader);
+//        continue;
+
+      final Enumeration<URL> resources = ruleClassLoader.findResources(name);
       if (resources.hasMoreElements())
         return resources;
     }

@@ -46,13 +46,41 @@ import net.bytebuddy.utility.JavaModule;
  * @author Seva Safris
  */
 public class ClassLoaderAgentRule extends AgentRule {
-  public static final Logger logger = Logger.getLogger(ClassLoaderAgentRule.class);
+  public enum LocalLevel {
+    SEVERE,
+    FINE,
+    FINEST
+  }
+
+  public static Logger logger;
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
+  public static Boolean isAgentRunner;
+
+  public static void log(final String message, final Throwable thrown, final LocalLevel level) {
+    if (isAgentRunner == null ? isAgentRunner = SpecialAgent.isAgentRunner() : isAgentRunner) {
+      final String logLevel = System.getProperty("sa.log.level");
+      if (level == LocalLevel.SEVERE || logLevel != null && logLevel.startsWith("FINE")) {
+        System.err.println(message);
+        if (thrown != null)
+          thrown.printStackTrace(System.err);
+      }
+    }
+    else {
+      if (logger == null)
+        logger = Logger.getLogger(ClassLoaderAgentRule.class);
+
+      if (level == LocalLevel.SEVERE)
+        logger.log(Level.SEVERE, message, thrown);
+      else if (level == LocalLevel.FINE && logger.isLoggable(Level.FINE))
+        logger.log(Level.FINE, message, thrown);
+      else if (level == LocalLevel.FINEST && logger.isLoggable(Level.FINEST))
+        logger.log(Level.FINEST, message, thrown);
+    }
+  }
 
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n");
+    log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, LocalLevel.FINE);
 
     final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(PluginsClassLoader.class)))));
     final List<Extendable> builders = Arrays.asList(
@@ -75,9 +103,7 @@ public class ClassLoaderAgentRule extends AgentRule {
           return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }}));
 
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n");
-
+    log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, LocalLevel.FINE);
     return builders;
   }
 
@@ -97,15 +123,14 @@ public class ClassLoaderAgentRule extends AgentRule {
         if (bytecode == null)
           return;
 
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("<<<<<<<< defineClass(\"" + arg + "\")");
+        log("<<<<<<<< defineClass(\"" + arg + "\")", null, LocalLevel.FINEST);
 
         final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
         returned = (Class<?>)defineClass.invoke(thiz, arg, bytecode, 0, bytecode.length, null);
         thrown = null;
       }
       catch (final Throwable t) {
-        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
+        log("<><><><> ClassLoaderAgent.FindClass#exit", t, LocalLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -128,7 +153,7 @@ public class ClassLoaderAgentRule extends AgentRule {
           returned = resource;
       }
       catch (final Throwable t) {
-        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
+        log("<><><><> ClassLoaderAgent.FindResource#exit", t, LocalLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -153,7 +178,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
-        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
+//        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
       }
       finally {
         visited.remove(arg);
