@@ -131,10 +131,6 @@ public class ClassLoaderAgentRule extends AgentRule {
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
-      for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
-        if (stackTraceElement.getClassName().startsWith("net.bytebuddy."))
-          return;
-
       try {
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
@@ -164,10 +160,6 @@ public class ClassLoaderAgentRule extends AgentRule {
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
-      for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
-        if (stackTraceElement.getClassName().startsWith("net.bytebuddy."))
-          return;
-
       if (name.startsWith("io/lettuce/core/api/Stateful"))
         new Exception().printStackTrace();
 
@@ -193,10 +185,6 @@ public class ClassLoaderAgentRule extends AgentRule {
       final Set<String> visited;
       if (!(visited = mutex.get()).add(name))
         return;
-
-      for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
-        if (stackTraceElement.getClassName().startsWith("net.bytebuddy."))
-          return;
 
       try {
         final Enumeration<URL> resources = SpecialAgent.findResources(thiz, name);
