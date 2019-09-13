@@ -57,7 +57,7 @@
     <module>specialagent-spring-3-web</module>
     <module>specialagent-spring-webmvc</module>
     <module>specialagent-spring-3-webmvc</module>
-    <!--module>specialagent-spring-webflux</module-->
+    <module>specialagent-spring-webflux</module>
     <module>specialagent-redisson</module>
     <module>specialagent-hazelcast</module>
     <module>specialagent-spymemcached</module>
