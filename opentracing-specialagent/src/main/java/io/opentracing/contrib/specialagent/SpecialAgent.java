@@ -46,7 +46,6 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
-@SuppressWarnings("restriction")
 public class SpecialAgent extends SpecialAgentBase {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class);
 
@@ -76,7 +75,6 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final Map<File,PluginManifest> fileToPluginManifest = new HashMap<>();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
-  private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
   private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
 
   private static PluginsClassLoader pluginsClassLoader;
@@ -681,21 +679,19 @@ public class SpecialAgent extends SpecialAgentBase {
       }
     }
 
-    // Attempt to preload classes if the callstack is not coming from ClassLoader#defineClass
-//    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-//      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
-//        if (logger.isLoggable(Level.FINER))
-//          logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes deferred to SpecialAgent#findClass(...)");
-//
-//        return true;
-//      }
-//    }
-
-    if (logger.isLoggable(Level.FINER))
-      logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes called from SpecialAgent#linkRule(...)");
-
-    ruleClassLoader.preLoad(classLoader);
     return true;
+  }
+
+  public static void preLoad(final ClassLoader classLoader) {
+    // Check if the class loader matches a ruleClassLoader
+    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
+    if (ruleClassLoaders == null)
+      return;
+
+    for (int i = 0; i < ruleClassLoaders.size(); ++i) {
+      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+      ruleClassLoader.preLoad(classLoader);
+    }
   }
 
   /**
@@ -728,9 +724,8 @@ public class SpecialAgent extends SpecialAgentBase {
     final String resourceName = name.replace('.', '/').concat(".class");
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      // Ensure the `RuleClassLoader` is preloaded
-      ruleClassLoader.preLoad(classLoader);
-//        continue;
+      if (ruleClassLoader.isClosed(classLoader))
+        continue;
 
       final URL resourceUrl = ruleClassLoader.getResource(resourceName);
       if (resourceUrl != null) {
@@ -760,9 +755,8 @@ public class SpecialAgent extends SpecialAgentBase {
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      // Ensure the `RuleClassLoader` is preloaded
-      ruleClassLoader.preLoad(classLoader);
-//        continue;
+      if (ruleClassLoader.isClosed(classLoader))
+        continue;
 
       final URL resource = ruleClassLoader.findResource(name);
       if (resource != null)
@@ -783,9 +777,8 @@ public class SpecialAgent extends SpecialAgentBase {
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      // Ensure the `RuleClassLoader` is preloaded
-      ruleClassLoader.preLoad(classLoader);
-//        continue;
+      if (ruleClassLoader.isClosed(classLoader))
+        continue;
 
       final Enumeration<URL> resources = ruleClassLoader.findResources(name);
       if (resources.hasMoreElements())

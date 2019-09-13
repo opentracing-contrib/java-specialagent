@@ -111,7 +111,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (logger.isLoggable(Level.FINE))
         logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
 
-      // FIXME: Can this be done in a better way?
       final Instrumentation inst = ByteBuddyAgent.install();
       final JarFile jarFile0 = appendSourceLocationToBootstrap(inst, AgentRunner.class);
       if (logger.isLoggable(Level.FINE))
@@ -126,7 +125,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private static final File CWD = new File("").getAbsoluteFile();
-  private static final BootProxyClassLoader bootLoaderProxy = BootProxyClassLoader.INSTANCE;
 
   static {
     System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
@@ -236,9 +234,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
     try {
-      final String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
-      final File testClassesPath = new File(path);
-      final File classesPath = new File(path.endsWith(".jar") ? path.replace(".jar", "-tests.jar") : path.replace("/test-classes/", "/classes/"));
       URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
       if (dependenciesUrl == null) {
         logger.warning(SpecialAgent.DEPENDENCIES_TGF + " was not found: invoking `mvn generate-resources`");
@@ -256,35 +251,32 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }
       }
 
-      final List<File> testRulePaths = findRulePaths(dependenciesUrl, false);
       final List<File> rulePaths = findRulePaths(dependenciesUrl, true);
-      testRulePaths.add(testClassesPath);
-//      rulePaths.add(classesPath);
-      final Set<String> isolatedTestClasses = TestUtil.getClassFiles(testRulePaths);
       final Set<String> pluginClasses = TestUtil.getClassFiles(rulePaths);
-//      isolatedTestClasses.add("io.opentracing.contrib.specialagent.AgentRule");
-//      isolatedTestClasses.add("io.opentracing.contrib.specialagent.Logger");
-//      isolatedTestClasses.add("io.opentracing.contrib.specialagent.Level");
+
+      final List<File> testRulePaths = findRulePaths(dependenciesUrl, false);
+      testRulePaths.add(0, new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
+      final Set<String> testClasses = TestUtil.getClassFiles(testRulePaths);
+
       final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
       final URLClassLoader isolatedClassLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), parent) {
         @Override
         protected Class<?> findClass(final String name) throws ClassNotFoundException {
-          if (name.contains("MongoDriverAgentRule"))
-            System.out.println("a");
           final String resourceName = name.replace('.', '/').concat(".class");
+
+          // Plugin classes must be unresolvable by this class loader, so they
+          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
           if (pluginClasses.contains(resourceName))
             return null;
 
-          if (name.contains("MongoDriverAgentRule"))
-            System.out.println("b");
-
-          if (isolatedTestClasses.contains(resourceName))
+          // Test classes must be resolvable by the classpath {@code URL[]} of
+          // this {@code URLClassLoader}.
+          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          if (testClasses.contains(resourceName))
             return super.findClass(name);
 
-          if (name.contains("MongoDriverAgentRule"))
-            System.out.println("c");
-
+          // All other classes belong to the system class loader.
           return ClassLoader.getSystemClassLoader().loadClass(name);
         }
       };

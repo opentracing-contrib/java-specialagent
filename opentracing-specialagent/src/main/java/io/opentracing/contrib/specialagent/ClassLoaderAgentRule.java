@@ -87,6 +87,12 @@ public class ClassLoaderAgentRule extends AgentRule {
       narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          final Advice advice = locatorProxy != null ? Advice.to(DefineClass.class, locatorProxy) : Advice.to(DefineClass.class);
+          return builder.visit(advice.on(named("defineClass").and(returns(Class.class).and(takesArgument(0, String.class)))));
+        }}),
+      narrowable.transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           final Advice advice = locatorProxy != null ? Advice.to(FindClass.class, locatorProxy) : Advice.to(FindClass.class);
           return builder.visit(advice.on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
         }}),
@@ -105,6 +111,13 @@ public class ClassLoaderAgentRule extends AgentRule {
 
     log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, LocalLevel.FINE);
     return builders;
+  }
+
+  public static class DefineClass {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.This ClassLoader thiz) {
+      SpecialAgent.preLoad(thiz);
+    }
   }
 
   public static class FindClass {

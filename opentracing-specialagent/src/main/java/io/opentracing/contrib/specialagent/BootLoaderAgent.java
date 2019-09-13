@@ -55,7 +55,7 @@ public class BootLoaderAgent {
         // BootLoaderAgent @Advice classes
         FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
-        ClassLoaderAgentRule.FindClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
+        ClassLoaderAgentRule.DefineClass.class, ClassLoaderAgentRule.FindClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
     }
