@@ -72,6 +72,7 @@ public class SpecialAgent extends SpecialAgentBase {
     }
   }
 
+  private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
   private static final Map<File,PluginManifest> fileToPluginManifest = new HashMap<>();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
@@ -679,18 +680,46 @@ public class SpecialAgent extends SpecialAgentBase {
       }
     }
 
+    // Attempt to preload classes if the callstack is not coming from
+    // ClassLoader#defineClass
+    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes deferred");
+
+        return true;
+      }
+    }
+
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes called");
+
+    ruleClassLoader.preLoad(classLoader);
     return true;
   }
 
   public static void preLoad(final ClassLoader classLoader) {
     // Check if the class loader matches a ruleClassLoader
-    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoaders == null)
-      return;
+    List<RuleClassLoader> ruleClassLoaders = null;
+    ClassLoader linkedLoader = classLoader;
+    while (true) {
+      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
+      if (ruleClassLoaders != null)
+        break;
+
+      if (linkedLoader == null) {
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest(">>>>>>>> preLoad(" + AssembleUtil.getNameId(classLoader) + "): Missing RuleClassLoader");
+
+        return;
+      }
+
+      linkedLoader = linkedLoader.getParent();
+    }
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      ruleClassLoader.preLoad(classLoader);
+      ruleClassLoader.preLoad(linkedLoader);
     }
   }
 
@@ -713,18 +742,27 @@ public class SpecialAgent extends SpecialAgentBase {
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
     // Check if the class loader matches a ruleClassLoader
-    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoaders == null) {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
+    List<RuleClassLoader> ruleClassLoaders = null;
+    ClassLoader linkedLoader = classLoader;
+    while (true) {
+      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
+      if (ruleClassLoaders != null)
+        break;
 
-      return null;
+      if (linkedLoader == null) {
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
+
+        return null;
+      }
+
+      linkedLoader = linkedLoader.getParent();
     }
 
     final String resourceName = name.replace('.', '/').concat(".class");
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      if (ruleClassLoader.isClosed(classLoader))
+      if (ruleClassLoader.isClosed(linkedLoader))
         continue;
 
       final URL resourceUrl = ruleClassLoader.getResource(resourceName);
@@ -749,13 +787,26 @@ public class SpecialAgent extends SpecialAgentBase {
       logger.finest(">>>>>>>> findResource(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
-    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoaders == null)
-      return null;
+    List<RuleClassLoader> ruleClassLoaders = null;
+    ClassLoader linkedLoader = classLoader;
+    while (true) {
+      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
+      if (ruleClassLoaders != null)
+        break;
+
+      if (linkedLoader == null) {
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
+
+        return null;
+      }
+
+      linkedLoader = linkedLoader.getParent();
+    }
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      if (ruleClassLoader.isClosed(classLoader))
+      if (ruleClassLoader.isClosed(linkedLoader))
         continue;
 
       final URL resource = ruleClassLoader.findResource(name);
@@ -771,13 +822,26 @@ public class SpecialAgent extends SpecialAgentBase {
       logger.finest(">>>>>>>> findResources(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\")");
 
     // Check if the class loader matches a ruleClassLoader
-    final List<RuleClassLoader> ruleClassLoaders = classLoaderToRuleClassLoader.get(classLoader);
-    if (ruleClassLoaders == null)
-      return null;
+    List<RuleClassLoader> ruleClassLoaders = null;
+    ClassLoader linkedLoader = classLoader;
+    while (true) {
+      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
+      if (ruleClassLoaders != null)
+        break;
+
+      if (linkedLoader == null) {
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
+
+        return null;
+      }
+
+      linkedLoader = linkedLoader.getParent();
+    }
 
     for (int i = 0; i < ruleClassLoaders.size(); ++i) {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      if (ruleClassLoader.isClosed(classLoader))
+      if (ruleClassLoader.isClosed(linkedLoader))
         continue;
 
       final Enumeration<URL> resources = ruleClassLoader.findResources(name);

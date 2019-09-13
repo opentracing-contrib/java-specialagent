@@ -21,8 +21,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
@@ -54,6 +54,9 @@ class RuleClassLoader extends URLClassLoader {
     @Override
     public void accept(final String path, final ClassLoader classLoader) {
       final String className = path.substring(0, path.length() - 6).replace('/', '.');
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("Class#forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
+
       try {
         Class.forName(className, false, classLoader);
       }
@@ -62,8 +65,8 @@ class RuleClassLoader extends URLClassLoader {
     }
   };
 
-  private final Map<ClassLoader,Boolean> compatibility = new ConcurrentHashMap<>();
-  private final Map<ClassLoader,Boolean> preLoaded = new ConcurrentHashMap<>();
+  private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
+  private final Map<ClassLoader,Boolean> preLoaded = new IdentityHashMap<>();
   private final PluginManifest pluginManifest;
   private final IsoClassLoader isoClassLoader;
 
@@ -81,6 +84,8 @@ class RuleClassLoader extends URLClassLoader {
     super(AssembleUtil.toURLs(files), parent);
     this.pluginManifest = pluginManifest;
     this.isoClassLoader = isoClassLoader;
+    if (parent == null || parent == ClassLoader.getSystemClassLoader())
+      preLoaded.put(parent, Boolean.TRUE);
   }
 
   /**

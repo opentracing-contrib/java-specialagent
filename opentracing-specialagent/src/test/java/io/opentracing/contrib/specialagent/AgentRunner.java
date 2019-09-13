@@ -320,10 +320,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     // on the classpath may be used in the implementation of the test method.
     // The JARs with classes in the Boot-Path are already excluded due to their
     // provided scope.
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("rulePaths of forked process will be:\n" + AssembleUtil.toIndentedString(rulePaths));
+    if (isMain) {
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("rulePaths of runner will be:\n" + AssembleUtil.toIndentedString(rulePaths));
 
-    System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
+      System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
+    }
 
     if (!isMain) {
       // Add scope={"test", "provided"}, optional=true to rulePaths

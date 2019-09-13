@@ -125,28 +125,32 @@ public class ClassLoaderAgentRule extends AgentRule {
 
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
-    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
+    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
 //      System.err.println(">>>>>>># findClass(" + SpecialAgentUtil.getIdentityCode(thiz) + ", \"" + arg + "\"): " + returned);
       final Set<String> visited;
-      if (returned != null || !(visited = mutex.get()).add(arg))
+      if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
+      for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
+        if (stackTraceElement.getClassName().startsWith("net.bytebuddy."))
+          return;
+
       try {
-        final byte[] bytecode = SpecialAgent.findClass(thiz, arg);
+        final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
           return;
 
-        log("<<<<<<<< defineClass(\"" + arg + "\")", null, LocalLevel.FINEST);
+        log("<<<<<<<< defineClass(\"" + name + "\")", null, LocalLevel.FINEST);
 
         final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-        returned = (Class<?>)defineClass.invoke(thiz, arg, bytecode, 0, bytecode.length, null);
+        returned = (Class<?>)defineClass.invoke(thiz, name, bytecode, 0, bytecode.length, null);
         thrown = null;
       }
       catch (final Throwable t) {
-        log("<><><><> ClassLoaderAgent.FindClass#exit", t, LocalLevel.SEVERE);
+        log("<><><><> ClassLoaderAgent.FindClass#exit(\"" + name + "\")", t, LocalLevel.SEVERE);
       }
       finally {
-        visited.remove(arg);
+        visited.remove(name);
       }
     }
   }
@@ -155,13 +159,20 @@ public class ClassLoaderAgentRule extends AgentRule {
     public static final Mutex mutex = new Mutex();
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
+    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
       final Set<String> visited;
-      if (returned != null || !(visited = mutex.get()).add(arg))
+      if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
+      for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
+        if (stackTraceElement.getClassName().startsWith("net.bytebuddy."))
+          return;
+
+      if (name.startsWith("io/lettuce/core/api/Stateful"))
+        new Exception().printStackTrace();
+
       try {
-        final URL resource = SpecialAgent.findResource(thiz, arg);
+        final URL resource = SpecialAgent.findResource(thiz, name);
         if (resource != null)
           returned = resource;
       }
@@ -169,7 +180,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         log("<><><><> ClassLoaderAgent.FindResource#exit", t, LocalLevel.SEVERE);
       }
       finally {
-        visited.remove(arg);
+        visited.remove(name);
       }
     }
   }
@@ -178,13 +189,17 @@ public class ClassLoaderAgentRule extends AgentRule {
     public static final Mutex mutex = new Mutex();
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
+    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
       final Set<String> visited;
-      if (!(visited = mutex.get()).add(arg))
+      if (!(visited = mutex.get()).add(name))
         return;
 
+      for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace())
+        if (stackTraceElement.getClassName().startsWith("net.bytebuddy."))
+          return;
+
       try {
-        final Enumeration<URL> resources = SpecialAgent.findResources(thiz, arg);
+        final Enumeration<URL> resources = SpecialAgent.findResources(thiz, name);
         if (resources == null)
           return;
 
@@ -194,7 +209,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         log("<><><><> ClassLoaderAgent.FindResources#exit", t, LocalLevel.SEVERE);
       }
       finally {
-        visited.remove(arg);
+        visited.remove(name);
       }
     }
   }
