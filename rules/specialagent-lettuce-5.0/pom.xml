@@ -21,7 +21,7 @@
       <!-- https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-lettuce5.0</artifactId>
-      <version>0.1.8</version>
+      <version>0.1.9</version>
       <exclusions>
         <exclusion>
           <groupId>io.lettuce</groupId>

@@ -32,19 +32,19 @@ public class Lettuce50AgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection"))))
+      .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(StatefulRedis.class).on(named("async")));
         }})
-      .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection"))))
+      .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(StatefulRedisCluster.class).on(named("async")));
         }})
-      .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.pubsub.StatefulRedisPubSubConnection"))))
+      .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.pubsub.StatefulRedisPubSubConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

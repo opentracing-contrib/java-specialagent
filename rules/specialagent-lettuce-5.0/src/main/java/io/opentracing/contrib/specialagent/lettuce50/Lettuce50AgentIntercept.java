@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.lettuce50;
 
+import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
@@ -27,6 +28,10 @@ import io.opentracing.contrib.redis.lettuce.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
 public class Lettuce50AgentIntercept {
+  static {
+    StatefulRedisConnection.class.getName();
+  }
+
   @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
     if (returned instanceof TracingRedisAsyncCommands)
@@ -49,7 +54,7 @@ public class Lettuce50AgentIntercept {
   @SuppressWarnings("unchecked")
   public static Object addPubSubListener(final Object arg) {
     if (arg instanceof TracingRedisPubSubListener)
-        return arg;
+      return arg;
 
     return new TracingRedisPubSubListener<>((RedisPubSubListener<Object,Object>)arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }

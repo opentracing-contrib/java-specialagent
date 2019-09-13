@@ -49,7 +49,7 @@ public class LettuceAgentIntercept {
   @SuppressWarnings("unchecked")
   public static Object addPubSubListener(final Object arg) {
     if (arg instanceof TracingRedisPubSubListener)
-        return arg;
+      return arg;
 
     return new TracingRedisPubSubListener<>((RedisPubSubListener<Object,Object>)arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
