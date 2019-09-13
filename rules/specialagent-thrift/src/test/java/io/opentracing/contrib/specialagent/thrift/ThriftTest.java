@@ -67,6 +67,7 @@ import io.opentracing.util.GlobalTracer;
 import io.opentracing.util.GlobalTracerTestUtil;
 
 @RunWith(AgentRunner.class)
+@AgentRunner.Config(isolateClassLoader = false)
 public class ThriftTest {
   private TServer server;
   private static int port = 8883;

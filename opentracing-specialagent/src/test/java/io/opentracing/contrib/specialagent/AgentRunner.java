@@ -25,6 +25,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -39,8 +40,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
-
-
 
 import org.apache.maven.cli.MavenCli;
 import org.junit.Assert;
@@ -112,7 +111,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (logger.isLoggable(Level.FINE))
         logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
 
-      // FIXME: Can this be done in a better way?
       final Instrumentation inst = ByteBuddyAgent.install();
       final JarFile jarFile0 = appendSourceLocationToBootstrap(inst, AgentRunner.class);
       if (logger.isLoggable(Level.FINE))
@@ -127,7 +125,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   private static final File CWD = new File("").getAbsoluteFile();
-  private static final ClassLoader bootLoaderProxy = BootProxyClassLoader.INSTANCE;
 
   static {
     System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
@@ -237,9 +234,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
     try {
-      final String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
-      final File testClassesPath = new File(path);
-      final File classesPath = new File(path.endsWith(".jar") ? path.replace(".jar", "-tests.jar") : path.replace("/test-classes/", "/classes/"));
       URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
       if (dependenciesUrl == null) {
         logger.warning(SpecialAgent.DEPENDENCIES_TGF + " was not found: invoking `mvn generate-resources`");
@@ -257,29 +251,43 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         }
       }
 
-      final List<File> rulePaths = findRulePaths(dependenciesUrl);
-      rulePaths.add(testClassesPath);
-      rulePaths.add(classesPath);
+      final List<File> rulePaths = findRulePaths(dependenciesUrl, true);
+      final Set<String> pluginClasses = TestUtil.getClassFiles(rulePaths);
 
-      final Set<String> isolatedClasses = TestUtil.getClassFiles(rulePaths);
-      isolatedClasses.add("io.opentracing.contrib.specialagent.AgentRule");
-      isolatedClasses.add("io.opentracing.contrib.specialagent.Logger");
-      isolatedClasses.add("io.opentracing.contrib.specialagent.Level");
+      final List<File> testRulePaths = findRulePaths(dependenciesUrl, false);
+      testRulePaths.add(0, new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
+      final Set<String> testClasses = TestUtil.getClassFiles(testRulePaths);
+
       final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
-      final URLClassLoader classLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), new ClassLoader(ClassLoader.getSystemClassLoader()) {
+      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      final URLClassLoader isolatedClassLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), parent) {
         @Override
-        protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-          return isolatedClasses.contains(name.replace('.', '/').concat(".class")) ? bootLoaderProxy.loadClass(name) : super.loadClass(name, resolve);
-        }
-      });
+        protected Class<?> findClass(final String name) throws ClassNotFoundException {
+          final String resourceName = name.replace('.', '/').concat(".class");
 
-      final Class<?> classInClassLoader = Class.forName(testClass.getName(), false, classLoader);
+          // Plugin classes must be unresolvable by this class loader, so they
+          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          if (pluginClasses.contains(resourceName))
+            return null;
+
+          // Test classes must be resolvable by the classpath {@code URL[]} of
+          // this {@code URLClassLoader}.
+          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          if (testClasses.contains(resourceName))
+            return super.findClass(name);
+
+          // All other classes belong to the system class loader.
+          return ClassLoader.getSystemClassLoader().loadClass(name);
+        }
+      };
+
+      final Class<?> classInClassLoader = Class.forName(testClass.getName(), false, isolatedClassLoader);
       Assert.assertNotNull("Test class is not resolvable in URLClassLoader: " + testClass.getName(), classInClassLoader);
       Assert.assertNotNull("Test class must not be resolvable in bootstrap class loader: " + testClass.getName(), classInClassLoader.getClassLoader());
-      Assert.assertEquals(URLClassLoader.class, classInClassLoader.getClassLoader().getClass());
+      Assert.assertEquals(isolatedClassLoader, classInClassLoader.getClassLoader());
       return classInClassLoader;
     }
-    catch (final ClassNotFoundException | IOException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
       throw new InitializationError(e);
     }
   }
@@ -291,19 +299,22 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    *          file.
    * @return A list of the rule paths.
    * @throws IOException If an I/O error has occurred.
+   * @throws NullPointerException If {@code dependenciesUrl} is null.
    */
-  private static List<File> findRulePaths(final URL dependenciesUrl) throws IOException {
-    final String dependenciesTgf = dependenciesUrl == null ? null : new String(AssembleUtil.readBytes(dependenciesUrl));
+  private static List<File> findRulePaths(final URL dependenciesUrl, final boolean isMain) throws IOException {
+    final String dependenciesTgf = new String(AssembleUtil.readBytes(dependenciesUrl));
 
     final List<File> rulePaths = new ArrayList<>();
     final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
 
-    final File[] dependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
-    if (dependencies == null)
-      throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
+    if (isMain) {
+      final File[] dependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
+      if (dependencies == null)
+        throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
-    for (int i = 0; i < dependencies.length; ++i)
-      rulePaths.add(dependencies[i]);
+      for (int i = 0; i < dependencies.length; ++i)
+        rulePaths.add(dependencies[i]);
+    }
 
     // Use the whole java.class.path for the forked process, because any class
     // on the classpath may be used in the implementation of the test method.
@@ -314,13 +325,15 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
     System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
 
-    // Add scope={"test", "provided"}, optional=true to rulePaths
-    final File[] testDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
-    if (testDependencies == null)
-      throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
+    if (!isMain) {
+      // Add scope={"test", "provided"}, optional=true to rulePaths
+      final File[] testDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
+      if (testDependencies == null)
+        throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
 
-    for (final File testDependency : testDependencies)
-      rulePaths.add(testDependency);
+      for (final File testDependency : testDependencies)
+        rulePaths.add(testDependency);
+    }
 
     return rulePaths;
   }
@@ -505,7 +518,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
         if (config == null || config.isolateClassLoader()) {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
-          Assert.assertEquals("Method " + getName() + " should be executed in URLClassLoader", URLClassLoader.class, classLoader == null ? null : classLoader.getClass());
+          Assert.assertTrue("Method \"" + getName() + "\" should be executed in URLClassLoader", classLoader instanceof URLClassLoader);
         }
 
         final TestConfig testConfig = method.getMethod().getAnnotation(TestConfig.class);

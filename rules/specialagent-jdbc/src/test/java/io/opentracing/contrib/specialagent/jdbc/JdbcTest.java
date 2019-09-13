@@ -42,7 +42,6 @@ public class JdbcTest {
     ) {
       final Statement statement = connection.createStatement();
       statement.executeUpdate("CREATE TABLE employer (id INTEGER)");
-      connection.close();
 
       final List<MockSpan> spans = tracer.finishedSpans();
       assertEquals(2, spans.size());

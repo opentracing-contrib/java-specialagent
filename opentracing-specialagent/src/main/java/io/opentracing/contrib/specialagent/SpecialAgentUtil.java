@@ -47,7 +47,7 @@ import java.util.zip.ZipEntry;
  * @author Seva Safris
  */
 public final class SpecialAgentUtil {
-  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
+//  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
 
   static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();
@@ -102,8 +102,8 @@ public final class SpecialAgentUtil {
 
   private static URL getLocation(final Class<?> cls) {
     final CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [CodeSource] -> " + (codeSource == null ? null : codeSource.getLocation()));
+//    if (logger.isLoggable(Level.FINEST))
+//      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [CodeSource] -> " + (codeSource == null ? null : codeSource.getLocation()));
 
     if (codeSource != null)
       return codeSource.getLocation();
@@ -112,8 +112,8 @@ public final class SpecialAgentUtil {
       if (arg.startsWith("-javaagent:")) {
         try {
           final URL location = getJavaAgentJar(arg.substring(11));
-          if (logger.isLoggable(Level.FINEST))
-            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [MXBean] -> " + location);
+//          if (logger.isLoggable(Level.FINEST))
+//            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [MXBean] -> " + location);
 
           return location;
         }
@@ -133,8 +133,8 @@ public final class SpecialAgentUtil {
       if (arg.startsWith("javaagent:")) {
         try {
           final URL location = getJavaAgentJar(arg.substring(10));
-          if (logger.isLoggable(Level.FINEST))
-            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [sun.java.command] -> " + location);
+//          if (logger.isLoggable(Level.FINEST))
+//            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [sun.java.command] -> " + location);
 
           return location;
         }
@@ -148,8 +148,8 @@ public final class SpecialAgentUtil {
   }
 
   private static Manifest getManifest(final URL location) throws IOException {
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getManifest(\"" + location + "\")");
+//    if (logger.isLoggable(Level.FINEST))
+//      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getManifest(\"" + location + "\")");
 
     try (final JarInputStream in = new JarInputStream(location.openStream())) {
       return in.getManifest();
@@ -178,14 +178,14 @@ public final class SpecialAgentUtil {
     try {
       final URL location = getLocation(SpecialAgent.class);
       if (location == null) {
-        if (logger.isLoggable(Level.FINE))
-          logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+//        if (logger.isLoggable(Level.FINE))
+//          logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
       }
       else {
         final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location);
         if (bootClassPathManifestEntry == null) {
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+//          if (logger.isLoggable(Level.FINE))
+//            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
         }
         else {
           final String jarName = getName(location.getPath());
@@ -195,7 +195,7 @@ public final class SpecialAgentUtil {
       }
     }
     catch (final IOException e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+//      logger.log(Level.WARNING, e.getMessage(), e);
     }
   }
 
@@ -331,14 +331,14 @@ public final class SpecialAgentUtil {
         if (!(connection instanceof JarURLConnection))
           continue;
 
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("SpecialAgent Rule Path: " + resource);
+//        if (logger.isLoggable(Level.FINEST))
+//          logger.finest("SpecialAgent Rule Path: " + resource);
 
         if (outDir == null)
           outDir = destDir.get();
 
         if (outDir == null) {
-          logger.severe("Unable to continue with null output directory");
+//          logger.severe("Unable to continue with null output directory");
           return;
         }
 

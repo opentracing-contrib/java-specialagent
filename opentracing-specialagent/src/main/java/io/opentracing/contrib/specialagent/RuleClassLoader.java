@@ -21,8 +21,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
@@ -47,7 +47,8 @@ class RuleClassLoader extends URLClassLoader {
 
   /**
    * Callback that is used to load a class by the specified resource path into
-   * the provided {@code ClassLoader}.
+   * the provided {@code ClassLoader}. The {@code ClassNotFoundException}
+   * invokes {@link ClassLoaderAgentRule.FindClass#exit}.
    */
   private static final BiConsumer<String,ClassLoader> loadClass = new BiConsumer<String,ClassLoader>() {
     @Override
@@ -57,15 +58,14 @@ class RuleClassLoader extends URLClassLoader {
         Class.forName(className, false, classLoader);
       }
       catch (final ClassNotFoundException e) {
-        logger.log(Level.SEVERE, "Failed to load class " + className + " in " + classLoader, e);
       }
     }
   };
 
-  private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
+  private final Map<ClassLoader,Boolean> compatibility = new ConcurrentHashMap<>();
+  private final Map<ClassLoader,Boolean> preLoaded = new ConcurrentHashMap<>();
   private final PluginManifest pluginManifest;
   private final IsoClassLoader isoClassLoader;
-  private volatile boolean preLoaded;
 
   /**
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
@@ -93,12 +93,12 @@ class RuleClassLoader extends URLClassLoader {
    * @param classLoader The {@code ClassLoader}.
    */
   void preLoad(final ClassLoader classLoader) {
-    if (preLoaded)
+    if (preLoaded.containsKey(classLoader))
       return;
 
-    preLoaded = true;
+    preLoaded.put(classLoader, Boolean.FALSE);
     if (logger.isLoggable(Level.FINE))
-      logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(ClassLoader<" + AssembleUtil.getNameId(classLoader) + ">)");
+      logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(" + AssembleUtil.getNameId(classLoader) + ")");
 
     // Call Class.forName(...) for each class in ruleClassLoader to load in
     // the caller's class loader
@@ -108,6 +108,14 @@ class RuleClassLoader extends URLClassLoader {
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
+    finally {
+      preLoaded.put(classLoader, Boolean.TRUE);
+    }
+  }
+
+  boolean isClosed(final ClassLoader classLoader) {
+    final Boolean preLoaded = this.preLoaded.get(classLoader);
+    return preLoaded != null && preLoaded;
   }
 
   /**
