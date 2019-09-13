@@ -25,6 +25,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -34,14 +35,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
-
-
 
 import org.apache.maven.cli.MavenCli;
 import org.junit.Assert;
@@ -268,10 +266,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 //      isolatedTestClasses.add("io.opentracing.contrib.specialagent.Logger");
 //      isolatedTestClasses.add("io.opentracing.contrib.specialagent.Level");
       final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
-      final URLClassLoader isolatedClassLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), null) {
+      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      final URLClassLoader isolatedClassLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), parent) {
         @Override
         protected Class<?> findClass(final String name) throws ClassNotFoundException {
-          System.out.println(name);
           if (name.contains("MongoDriverAgentRule"))
             System.out.println("a");
           final String resourceName = name.replace('.', '/').concat(".class");
@@ -297,7 +295,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       Assert.assertEquals(isolatedClassLoader, classInClassLoader.getClassLoader());
       return classInClassLoader;
     }
-    catch (final ClassNotFoundException | IOException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
       throw new InitializationError(e);
     }
   }

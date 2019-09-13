@@ -178,7 +178,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
-//        logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
+        log("<><><><> ClassLoaderAgent.FindResources#exit", t, LocalLevel.SEVERE);
       }
       finally {
         visited.remove(arg);

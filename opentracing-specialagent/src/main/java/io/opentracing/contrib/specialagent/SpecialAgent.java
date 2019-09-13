@@ -682,19 +682,19 @@ public class SpecialAgent extends SpecialAgentBase {
     }
 
     // Attempt to preload classes if the callstack is not coming from ClassLoader#defineClass
-    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
-        if (logger.isLoggable(Level.FINER))
-          logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes deferred to SpecialAgent#findClass(...)");
-
-        return true;
-      }
-    }
+//    for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+//      if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
+//        if (logger.isLoggable(Level.FINER))
+//          logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes deferred to SpecialAgent#findClass(...)");
+//
+//        return true;
+//      }
+//    }
 
     if (logger.isLoggable(Level.FINER))
       logger.finer("[" + pluginManifest.name + "] Preload of instrumentation classes called from SpecialAgent#linkRule(...)");
 
-//    ruleClassLoader.preLoad(classLoader);
+    ruleClassLoader.preLoad(classLoader);
     return true;
   }
 

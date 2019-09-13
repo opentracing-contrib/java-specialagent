@@ -31,7 +31,7 @@ public class RxJava2AgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object enter(final Object thiz, final int argc, final Object arg0, final Object arg1, final Object arg2, final Object arg3) {
-    if (arg0 == null || arg0.getClass().getPackage().getName().startsWith("io.reactivex.internal"))
+    if (arg0 == null || arg0.getClass().getName().startsWith("io.reactivex.internal"))
       return NULL;
 
     if (arg0 instanceof TracingConsumer)
@@ -48,8 +48,6 @@ public class RxJava2AgentIntercept {
     if (!(arg0 instanceof Consumer))
       return NULL;
 
-    final Observable<Object> observable = (Observable<Object>)thiz;
-
     final TracingConsumer<Object> tracingConsumer;
     if (argc == 1)
       tracingConsumer = new TracingConsumer<>((Consumer<Object>)arg0, "consumer", GlobalTracer.get());
@@ -63,7 +61,7 @@ public class RxJava2AgentIntercept {
       tracingConsumer = null;
 
     if (tracingConsumer != null)
-      observable.subscribe(tracingConsumer);
+      ((Observable<Object>)thiz).subscribe(tracingConsumer);
 
     return null;
   }
