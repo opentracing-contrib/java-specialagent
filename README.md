@@ -83,9 +83,9 @@ wget -O opentracing-specialagent-1.3.6.jar "http://central.maven.org/maven2/io/o
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.3.7-SNAPSHOT</ins>.
+The latest development release is: <ins>1.4.0-SNAPSHOT</ins>.
 ```bash
-wget -O opentracing-specialagent-1.3.7-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.4.0-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 This is the main artifact that contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented. This JAR can be specified as the `-javaagent` target for [<ins>Static Attach</ins>](#221-static-attach) to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
@@ -98,13 +98,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.3.6</version> <!--version>1.3.7-SNAPSHOT<version-->
+  <version>1.3.6</version> <!--version>1.4.0-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.3.6</version> <!--version>1.3.7-SNAPSHOT<version-->
+  <version>1.3.6</version> <!--version>1.4.0-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -473,7 +473,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.6/opentracing-specialagent-1.3.6.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.7-SNAPSHOT
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.0-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [pom]: https://maven.apache.org/pom.html
 [specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc
@@ -481,4 +481,4 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-2
 [specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-okhttp
 [test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.6/opentracing-specialagent-1.3.6-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.3.7-SNAPSHOT
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.0-SNAPSHOT
