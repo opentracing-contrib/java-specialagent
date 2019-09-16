@@ -80,9 +80,9 @@ public class SpringWebFluxTest {
   @Test
   public void testClient(final MockTracer tracer) {
     final WebClient client = WebClient.builder().build();
-    client.get().uri(URI.create("http://example.com")).retrieve().bodyToMono(String.class).block();
-
-    Assert.assertEquals(1, tracer.finishedSpans().size());
+    client.get().uri(URI.create("http://example.com")).retrieve().bodyToMono(String.class).doAfterTerminate(() -> {
+      Assert.assertEquals(1, tracer.finishedSpans().size());
+    });
   }
 
   @Test
