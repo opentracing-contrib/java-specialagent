@@ -60,9 +60,6 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (servletRequestToState.remove((ServletRequest)req) != null)
         return;
 
-      if (logger.isLoggable(Level.FINER))
-        logger.log(Level.FINER, ">> ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")", new Exception());
-
       tracingFilter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
