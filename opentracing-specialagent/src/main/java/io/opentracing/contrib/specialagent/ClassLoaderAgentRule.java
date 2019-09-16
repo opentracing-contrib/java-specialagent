@@ -160,9 +160,6 @@ public class ClassLoaderAgentRule extends AgentRule {
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
-      if (name.startsWith("io/lettuce/core/api/Stateful"))
-        new Exception().printStackTrace();
-
       try {
         final URL resource = SpecialAgent.findResource(thiz, name);
         if (resource != null)
