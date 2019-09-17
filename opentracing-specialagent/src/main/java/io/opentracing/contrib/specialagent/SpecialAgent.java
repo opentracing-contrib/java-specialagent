@@ -46,6 +46,7 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
+@SuppressWarnings("restriction")
 public class SpecialAgent extends SpecialAgentBase {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class);
 
@@ -78,6 +79,8 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
 
+  private static final Set<String> jarEntries;
+
   private static PluginsClassLoader pluginsClassLoader;
 
   // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
@@ -86,7 +89,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static Instrumentation inst;
 
   static {
-    SpecialAgentUtil.assertJavaAgentJarName();
+    jarEntries = SpecialAgentUtil.assertJavaAgentJarName();
   }
 
   public static void main(final String[] args) throws Exception {
@@ -721,6 +724,20 @@ public class SpecialAgent extends SpecialAgentBase {
       final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
       ruleClassLoader.preLoad(linkedLoader);
     }
+  }
+
+  public static Class<?> findBootstrapClass(final String name) {
+    if (jarEntries == null || !jarEntries.contains(name))
+      return null;
+
+    final Class<?> cls = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
+    if (cls == null)
+      logger.warning("Expected to load bootstrap class: " + name);
+
+    if (logger.isLoggable(Level.FINEST))
+      logger.finest(">>>>>>>> findBootstrapClass(\"" + name + "\"): " + cls);
+
+    return cls;
   }
 
   /**

@@ -106,7 +106,7 @@ class RuleClassLoader extends URLClassLoader {
       logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(" + AssembleUtil.getNameId(classLoader) + ")");
 
     // Call Class.forName(...) for each class in ruleClassLoader to load in
-    // the caller's class loader
+    // the caller's class loader.
     try {
       AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
     }
@@ -196,11 +196,5 @@ class RuleClassLoader extends URLClassLoader {
       logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
-  }
-
-  @Override
-  public void close() throws IOException {
-    super.close();
-    compatibility.clear();
   }
 }

@@ -131,6 +131,16 @@ public class ClassLoaderAgentRule extends AgentRule {
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
+      final Class<?> bootstrapClass = SpecialAgent.findBootstrapClass(name);
+      if (bootstrapClass != null) {
+        returned = bootstrapClass;
+        thrown = null;
+        return;
+      }
+
+      if ("io.opentracing.contrib.specialagent.AgentRule".equals(name))
+        System.err.println("XXX");
+
       try {
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
