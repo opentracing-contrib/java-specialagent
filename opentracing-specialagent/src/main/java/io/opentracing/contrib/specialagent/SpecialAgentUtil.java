@@ -147,23 +147,17 @@ public final class SpecialAgentUtil {
     return null;
   }
 
-  private static Manifest getManifest(final URL location, final Set<String> entries) throws IOException {
+  private static Manifest getManifest(final URL location) throws IOException {
 //    if (logger.isLoggable(Level.FINEST))
 //      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getManifest(\"" + location + "\")");
 
     try (final JarInputStream in = new JarInputStream(location.openStream())) {
-      for (ZipEntry entry; (entry = in.getNextEntry()) != null;) {
-        final String name = entry.getName();
-        if (name.endsWith(".class") && !name.startsWith("META-INF/") && !name.startsWith("module-info"))
-          entries.add(name.substring(0, name.length() - 6).replace('/', '.'));
-      }
-
       return in.getManifest();
     }
   }
 
-  private static String getBootClassPathManifestEntry(final URL location, final Set<String> entries) throws IOException {
-    final Manifest manifest = SpecialAgentUtil.getManifest(location, entries);
+  private static String getBootClassPathManifestEntry(final URL location) throws IOException {
+    final Manifest manifest = SpecialAgentUtil.getManifest(location);
     if (manifest == null)
       return null;
 
@@ -178,38 +172,31 @@ public final class SpecialAgentUtil {
    * Asserts that the name of the JAR used on the command line matches the name
    * for the "Boot-Class-Path" entry in META-INF/MANIFEST.MF.
    *
-   * @return A set of JAR entries in the agent JAR (can be null, when run from
-   *         IDE).
    * @throws IllegalStateException If the name is not what is expected.
    */
-  static Set<String> assertJavaAgentJarName() {
+  static void assertJavaAgentJarName() {
     try {
       final URL location = getLocation(SpecialAgent.class);
       if (location == null) {
 //        if (logger.isLoggable(Level.FINE))
 //          logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
-
-        return null;
       }
-
-      final Set<String> entries = new HashSet<>();
-      final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location, entries);
-      if (bootClassPathManifestEntry != null) {
-        final String jarName = getName(location.getPath());
-        if (!jarName.equals(bootClassPathManifestEntry))
-          throw new IllegalStateException("Name of -javaagent JAR, which is currently " + jarName + ", must be: " + bootClassPathManifestEntry);
-
-        return entries;
+      else {
+        final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location);
+        if (bootClassPathManifestEntry == null) {
+//          if (logger.isLoggable(Level.FINE))
+//            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+        }
+        else {
+          final String jarName = getName(location.getPath());
+          if (!jarName.equals(bootClassPathManifestEntry))
+            throw new IllegalStateException("Name of -javaagent JAR, which is currently " + jarName + ", must be: " + bootClassPathManifestEntry);
+        }
       }
-
-      //    if (logger.isLoggable(Level.FINE))
-      //    logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
     }
     catch (final IOException e) {
 //      logger.log(Level.WARNING, e.getMessage(), e);
     }
-
-    return null;
   }
 
   /**

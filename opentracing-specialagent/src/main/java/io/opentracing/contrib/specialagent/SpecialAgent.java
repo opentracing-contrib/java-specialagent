@@ -79,8 +79,6 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
 
-  private static final Set<String> jarEntries;
-
   private static PluginsClassLoader pluginsClassLoader;
 
   // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
@@ -89,7 +87,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static Instrumentation inst;
 
   static {
-    jarEntries = SpecialAgentUtil.assertJavaAgentJarName();
+    SpecialAgentUtil.assertJavaAgentJarName();
   }
 
   public static void main(final String[] args) throws Exception {
@@ -701,44 +699,69 @@ public class SpecialAgent extends SpecialAgentBase {
     return true;
   }
 
-  public static void preLoad(final ClassLoader classLoader) {
+  private static <R,T extends Throwable>R invoke(final String name, final ClassLoader classLoader, final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,R,T> function) throws T {
     // Check if the class loader matches a ruleClassLoader
-    List<RuleClassLoader> ruleClassLoaders = null;
+    List<RuleClassLoader> ruleClassLoaders;
     ClassLoader linkedLoader = classLoader;
     while (true) {
       ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
       if (ruleClassLoaders != null)
         break;
 
-      if (linkedLoader == null) {
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest(">>>>>>>> preLoad(" + AssembleUtil.getNameId(classLoader) + "): Missing RuleClassLoader");
-
-        return;
-      }
+      if (linkedLoader == null)
+        return null;
 
       linkedLoader = linkedLoader.getParent();
     }
 
-    for (int i = 0; i < ruleClassLoaders.size(); ++i) {
-      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      ruleClassLoader.preLoad(linkedLoader);
-    }
+    return function.apply(classLoader, name, ruleClassLoaders, linkedLoader);
   }
 
-  public static Class<?> findBootstrapClass(final String name) {
-    if (jarEntries == null || !jarEntries.contains(name))
+  private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Void,RuntimeException> preLoad = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Void,RuntimeException>() {
+    @Override
+    public Void apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) {
+      for (int i = 0; i < ruleClassLoaders.size(); ++i) {
+        final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+        ruleClassLoader.preLoad(linkedLoader);
+      }
+
       return null;
+    }
+  };
 
-    final Class<?> cls = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
-    if (cls == null)
-      logger.warning("Expected to load bootstrap class: " + name);
-
+  public static void preLoad(final ClassLoader classLoader) {
     if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findBootstrapClass(\"" + name + "\"): " + cls);
+      logger.finest(">>>>>>>> preLoad(" + AssembleUtil.getNameId(classLoader) + ")");
 
-    return cls;
+    invoke(null, classLoader, preLoad);
   }
+
+  private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,byte[],RuntimeException> findClass = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,byte[],RuntimeException>() {
+    @Override
+    public byte[] apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) {
+      final String resourceName = name.replace('.', '/').concat(".class");
+      for (int i = 0; i < ruleClassLoaders.size(); ++i) {
+        final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+        if (ruleClassLoader.isClosed(linkedLoader))
+          continue;
+
+        final URL resourceUrl = ruleClassLoader.getResource(resourceName);
+        if (resourceUrl != null) {
+          // Return the resource's bytes
+          final byte[] bytecode = AssembleUtil.readBytes(resourceUrl);
+          if (logger.isLoggable(Level.FINEST))
+            logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
+
+          return bytecode;
+        }
+      }
+
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Not found in " + ruleClassLoaders.size() + " RuleClassLoader(s)");
+
+      return null;
+    }
+  };
 
   /**
    * Returns the bytecode of the {@code Class} by the name of {@code name}, if
@@ -758,114 +781,54 @@ public class SpecialAgent extends SpecialAgentBase {
    *         {@code classLoader} and {@code name}.
    */
   public static byte[] findClass(final ClassLoader classLoader, final String name) {
-    // Check if the class loader matches a ruleClassLoader
-    List<RuleClassLoader> ruleClassLoaders = null;
-    ClassLoader linkedLoader = classLoader;
-    while (true) {
-      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
-      if (ruleClassLoaders != null)
-        break;
-
-      if (linkedLoader == null) {
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
-
-        return null;
-      }
-
-      linkedLoader = linkedLoader.getParent();
-    }
-
-    final String resourceName = name.replace('.', '/').concat(".class");
-    for (int i = 0; i < ruleClassLoaders.size(); ++i) {
-      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      if (ruleClassLoader.isClosed(linkedLoader))
-        continue;
-
-      final URL resourceUrl = ruleClassLoader.getResource(resourceName);
-      if (resourceUrl != null) {
-        // Return the resource's bytes
-        final byte[] bytecode = AssembleUtil.readBytes(resourceUrl);
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
-
-        return bytecode;
-      }
-    }
-
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Not found in " + ruleClassLoaders.size() + " RuleClassLoader(s)");
-
-    return null;
+    return invoke(name, classLoader, findClass);
   }
+
+  private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,URL,RuntimeException> findResource = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,URL,RuntimeException>() {
+    @Override
+    public URL apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) {
+      for (int i = 0; i < ruleClassLoaders.size(); ++i) {
+        final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+        if (ruleClassLoader.isClosed(linkedLoader))
+          continue;
+
+        final URL resource = ruleClassLoader.findResource(name);
+        if (resource != null)
+          return resource;
+      }
+
+      return null;
+    }
+  };
 
   public static URL findResource(final ClassLoader classLoader, final String name) {
     if (logger.isLoggable(Level.FINEST))
       logger.finest(">>>>>>>> findResource(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\")");
 
-    // Check if the class loader matches a ruleClassLoader
-    List<RuleClassLoader> ruleClassLoaders = null;
-    ClassLoader linkedLoader = classLoader;
-    while (true) {
-      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
-      if (ruleClassLoaders != null)
-        break;
+    return invoke(name, classLoader, findResource);
+  }
 
-      if (linkedLoader == null) {
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
+  private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Enumeration<URL>,IOException> findResources = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Enumeration<URL>,IOException>() {
+    @Override
+    public Enumeration<URL> apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) throws IOException {
+      for (int i = 0; i < ruleClassLoaders.size(); ++i) {
+        final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
+        if (ruleClassLoader.isClosed(linkedLoader))
+          continue;
 
-        return null;
+        final Enumeration<URL> resources = ruleClassLoader.findResources(name);
+        if (resources.hasMoreElements())
+          return resources;
       }
 
-      linkedLoader = linkedLoader.getParent();
+      return null;
     }
-
-    for (int i = 0; i < ruleClassLoaders.size(); ++i) {
-      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      if (ruleClassLoader.isClosed(linkedLoader))
-        continue;
-
-      final URL resource = ruleClassLoader.findResource(name);
-      if (resource != null)
-        return resource;
-    }
-
-    return null;
-  }
+  };
 
   public static Enumeration<URL> findResources(final ClassLoader classLoader, final String name) throws IOException {
     if (logger.isLoggable(Level.FINEST))
       logger.finest(">>>>>>>> findResources(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\")");
 
-    // Check if the class loader matches a ruleClassLoader
-    List<RuleClassLoader> ruleClassLoaders = null;
-    ClassLoader linkedLoader = classLoader;
-    while (true) {
-      ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
-      if (ruleClassLoaders != null)
-        break;
-
-      if (linkedLoader == null) {
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): Missing RuleClassLoader");
-
-        return null;
-      }
-
-      linkedLoader = linkedLoader.getParent();
-    }
-
-    for (int i = 0; i < ruleClassLoaders.size(); ++i) {
-      final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
-      if (ruleClassLoader.isClosed(linkedLoader))
-        continue;
-
-      final Enumeration<URL> resources = ruleClassLoader.findResources(name);
-      if (resources.hasMoreElements())
-        return resources;
-    }
-
-    return null;
+    return invoke(name, classLoader, findResources);
   }
 }

@@ -126,20 +126,18 @@ public class ClassLoaderAgentRule extends AgentRule {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-//      System.err.println(">>>>>>># findClass(" + SpecialAgentUtil.getIdentityCode(thiz) + ", \"" + arg + "\"): " + returned);
       final Set<String> visited;
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
-      final Class<?> bootstrapClass = SpecialAgent.findBootstrapClass(name);
+      final Class<?> bootstrapClass = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
       if (bootstrapClass != null) {
+        log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, LocalLevel.FINEST);
+
         returned = bootstrapClass;
         thrown = null;
         return;
       }
-
-      if ("io.opentracing.contrib.specialagent.AgentRule".equals(name))
-        System.err.println("XXX");
 
       try {
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
