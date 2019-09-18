@@ -82,7 +82,8 @@ public class ClassLoaderAgentRule extends AgentRule {
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, LocalLevel.FINE);
 
-    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(PluginsClassLoader.class)))));
+//    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(nameStartsWith(RuleClassLoader.class.getName()))).and(not(nameStartsWith(PluginsClassLoader.class.getName()))));
+    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class));
     final List<Extendable> builders = Arrays.asList(
       narrowable.transform(new Transformer() {
         @Override
@@ -98,10 +99,16 @@ public class ClassLoaderAgentRule extends AgentRule {
     return builders;
   }
 
+  public static boolean isExcluded(final ClassLoader thiz) {
+    final String className = thiz.getClass().getName();
+    return className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader");
+  }
+
   public static class DefineClass {
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz) {
-      SpecialAgent.preLoad(thiz);
+      if (!isExcluded(thiz))
+        SpecialAgent.preLoad(thiz);
     }
   }
 
@@ -112,6 +119,9 @@ public class ClassLoaderAgentRule extends AgentRule {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
+      if (isExcluded(thiz))
+        return;
+
       final Set<String> visited;
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
@@ -152,6 +162,9 @@ public class ClassLoaderAgentRule extends AgentRule {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
+      if (isExcluded(thiz))
+        return;
+
       final Set<String> visited;
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
@@ -175,6 +188,9 @@ public class ClassLoaderAgentRule extends AgentRule {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
+      if (isExcluded(thiz))
+        return;
+
       final Set<String> visited;
       if (!(visited = mutex.get()).add(name))
         return;

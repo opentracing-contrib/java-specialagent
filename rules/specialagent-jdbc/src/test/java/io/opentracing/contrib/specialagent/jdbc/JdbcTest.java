@@ -33,17 +33,9 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-//@AgentRunner.Config(log = Level.FINEST)
 public class JdbcTest {
-  private static final boolean isJdk178 = System.getProperty("java.version").startsWith("1.");
-
   @Test
   public void test(final MockTracer tracer) throws Exception {
-    if (!isJdk178) {
-      System.err.println("[FIXME] This does not work for J9+");
-      return;
-    }
-
     DriverManager.setLogWriter(new PrintWriter(System.err));
     Driver.load();
     try (

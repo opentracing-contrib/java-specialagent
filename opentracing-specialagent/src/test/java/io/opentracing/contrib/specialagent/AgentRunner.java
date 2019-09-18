@@ -262,7 +262,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
       final URLClassLoader isolatedClassLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), parent) {
         @Override
-        protected Class<?> findClass(final String name) throws ClassNotFoundException {
+        protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           final String resourceName = name.replace('.', '/').concat(".class");
 
           // Plugin classes must be unresolvable by this class loader, so they
@@ -274,7 +274,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           // this {@code URLClassLoader}.
           // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
           if (testClasses.contains(resourceName))
-            return super.findClass(name);
+            return super.loadClass(name, resolve);
 
           // All other classes belong to the system class loader.
           return ClassLoader.getSystemClassLoader().loadClass(name);
