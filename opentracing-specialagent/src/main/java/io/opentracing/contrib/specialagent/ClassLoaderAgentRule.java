@@ -93,8 +93,8 @@ public class ClassLoaderAgentRule extends AgentRule {
       narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindClass.class, locatorProxy) : Advice.to(FindClass.class);
-          return builder.visit(advice.on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
+          final Advice advice = locatorProxy != null ? Advice.to(LoadClass.class, locatorProxy) : Advice.to(LoadClass.class);
+          return builder.visit(advice.on(named("loadClass").and(returns(Class.class).and(takesArguments(String.class)))));
         }}),
       narrowable.transform(new Transformer() {
         @Override
@@ -120,7 +120,7 @@ public class ClassLoaderAgentRule extends AgentRule {
     }
   }
 
-  public static class FindClass {
+  public static class LoadClass {
     public static final Mutex mutex = new Mutex();
     public static Method defineClass;
 
@@ -154,7 +154,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         thrown = null;
       }
       catch (final Throwable t) {
-        log("<><><><> ClassLoaderAgent.FindClass#exit(\"" + name + "\")", t, LocalLevel.SEVERE);
+        log("<><><><> ClassLoaderAgent.LoadClass#exit(\"" + name + "\")", t, LocalLevel.SEVERE);
       }
       finally {
         visited.remove(name);

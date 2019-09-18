@@ -746,14 +746,15 @@ public class SpecialAgent extends SpecialAgentBase {
           continue;
 
         final URL resourceUrl = ruleClassLoader.getResource(resourceName);
-        if (resourceUrl != null) {
-          // Return the resource's bytes
-          final byte[] bytecode = AssembleUtil.readBytes(resourceUrl);
-          if (logger.isLoggable(Level.FINEST))
-            logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): BYTECODE != null (" + (bytecode != null) + ")");
+        if (resourceUrl == null)
+          continue;
 
-          return bytecode;
-        }
+        // Return the resource's bytes
+        final byte[] bytecode = AssembleUtil.readBytes(resourceUrl);
+        if (logger.isLoggable(Level.FINEST))
+          logger.finest(">>>>>>>> findClass(" + AssembleUtil.getNameId(classLoader) + ", \"" + name + "\"): BYTECODE " + (bytecode != null ? "!" : "=") + "= null");
+
+        return bytecode;
       }
 
       if (logger.isLoggable(Level.FINEST))
