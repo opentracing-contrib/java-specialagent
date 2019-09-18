@@ -705,27 +705,28 @@ public class SpecialAgent extends SpecialAgentBase {
     ClassLoader linkedLoader = classLoader;
     while (true) {
       ruleClassLoaders = classLoaderToRuleClassLoader.get(linkedLoader);
-      if (ruleClassLoaders != null)
-        break;
+      if (ruleClassLoaders != null) {
+        final R r = function.apply(classLoader, name, ruleClassLoaders, linkedLoader);
+        if (r != null)
+          return r;
+      }
 
       if (linkedLoader == null)
         return null;
 
       linkedLoader = linkedLoader.getParent();
     }
-
-    return function.apply(classLoader, name, ruleClassLoaders, linkedLoader);
   }
 
-  private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Void,RuntimeException> preLoad = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Void,RuntimeException>() {
+  private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Boolean,RuntimeException> preLoad = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,Boolean,RuntimeException>() {
     @Override
-    public Void apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) {
+    public Boolean apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) {
       for (int i = 0; i < ruleClassLoaders.size(); ++i) {
         final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
         ruleClassLoader.preLoad(linkedLoader);
       }
 
-      return null;
+      return Boolean.TRUE;
     }
   };
 

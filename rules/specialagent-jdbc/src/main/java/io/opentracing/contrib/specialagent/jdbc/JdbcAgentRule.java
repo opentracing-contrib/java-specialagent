@@ -44,8 +44,8 @@ public class JdbcAgentRule extends AgentRule {
       driverJunction = named("java.sql.DriverManager").or(driverJunction);
 
     final Narrowable narrowable = builder.type(driverJunction);
-    Extendable extendable =
-      narrowable.transform(new Transformer() {
+    Extendable extendable = narrowable
+      .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(DriverEnter.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));

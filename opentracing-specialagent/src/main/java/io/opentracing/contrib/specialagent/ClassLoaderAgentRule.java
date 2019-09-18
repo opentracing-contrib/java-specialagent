@@ -87,26 +87,11 @@ public class ClassLoaderAgentRule extends AgentRule {
       narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(DefineClass.class, locatorProxy) : Advice.to(DefineClass.class);
-          return builder.visit(advice.on(named("defineClass").and(returns(Class.class).and(takesArgument(0, String.class)))));
-        }}),
-      narrowable.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(LoadClass.class, locatorProxy) : Advice.to(LoadClass.class);
-          return builder.visit(advice.on(named("loadClass").and(returns(Class.class).and(takesArguments(String.class)))));
-        }}),
-      narrowable.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindResource.class);
-          return builder.visit(advice.on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
-        }}),
-      narrowable.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class);
-          return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
+          return builder
+            .visit((locatorProxy != null ? Advice.to(DefineClass.class, locatorProxy) : Advice.to(DefineClass.class)).on(named("defineClass").and(returns(Class.class).and(takesArgument(0, String.class)))))
+            .visit((locatorProxy != null ? Advice.to(LoadClass.class, locatorProxy) : Advice.to(LoadClass.class)).on(named("loadClass").and(returns(Class.class).and(takesArguments(String.class)))))
+            .visit((locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindResource.class)).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))))
+            .visit((locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class)).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }}));
 
     log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, LocalLevel.FINE);
