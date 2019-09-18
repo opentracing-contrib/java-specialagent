@@ -122,6 +122,7 @@ public class ClassLoaderAgentRule extends AgentRule {
 
   public static class FindClass {
     public static final Mutex mutex = new Mutex();
+    public static Method defineClass;
 
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
@@ -146,7 +147,9 @@ public class ClassLoaderAgentRule extends AgentRule {
 
         log("<<<<<<<< defineClass(\"" + name + "\")", null, LocalLevel.FINEST);
 
-        final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
+        if (defineClass == null)
+          defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
+
         returned = (Class<?>)defineClass.invoke(thiz, name, bytecode, 0, bytecode.length, null);
         thrown = null;
       }
