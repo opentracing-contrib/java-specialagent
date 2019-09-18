@@ -472,6 +472,7 @@
           ${project.build.directory}/classes. -->
         <excludes>
           <exclude>**/*.jar</exclude>
+          <exclude>**/*.jar</exclude>
         </excludes>
       </testResource>
       <testResource>
@@ -524,6 +525,7 @@
             <configuration>
               <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
               <includeScope>runtime</includeScope>
+              <excludes>META-INF/</excludes>
             </configuration>
           </execution>
           <execution>
@@ -540,6 +542,7 @@
               <outputDirectory>${project.build.directory}/test-dependencies</outputDirectory>
               <!--includeScope>test</includeScope--> <!-- No idea why this needs to be commented out for this to work?! -->
               <excludeScope>provided</excludeScope>
+              <excludes>META-INF/</excludes>
             </configuration>
           </execution>
         </executions>
