@@ -248,7 +248,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
         </executions>
       </plugin>
       ```
-      The `<name>` property is specifies the name of the plugin. This name will be used by users to configure the plugin.
+      The `<name>` property specifies the name of the plugin. This name will be used by users to configure the plugin.
 
 #### 5.1.2 Testing
 
