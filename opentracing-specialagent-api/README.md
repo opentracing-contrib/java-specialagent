@@ -252,7 +252,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
 
 #### 5.1.2 Testing
 
-The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#test-usage) for instructions.
+The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#5-agentrunner-usage) for instructions.
 
 #### 5.1.3 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
 
