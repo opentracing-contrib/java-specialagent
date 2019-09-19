@@ -39,8 +39,9 @@ public class Cassandra4Test {
   private static final Logger logger = Logger.getLogger(Cassandra4Test.class);
 
   @Before
-  public void before(final MockTracer tracer) {
+  public void before(final MockTracer tracer) throws Exception {
     tracer.reset();
+    EmbeddedCassandraServerHelper.startEmbeddedCassandra();
   }
 
   @After
