@@ -375,7 +375,11 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [OkHttp3 \[3.5.0,\]][java-okhttp]
 1. [JDBC API (`java.sql`) \[3.1,\]][java-jdbc]
 1. [Concurrent API (`java.util.concurrent`)](https://github.com/opentracing-contrib/java-concurrent)
-1. [Java Servlet API (`javax.servlet`) \[2.3,\] \[\]](https://github.com/opentracing-contrib/java-web-servlet-filter)
+1. [Java Servlet API (`javax.servlet`) \[2.3,\]](https://github.com/opentracing-contrib/java-web-servlet-filter)
+
+   * Minimum supported version of Tomcat (Servlet API 3.0): 7.0.96
+   * Minimum supported version of Jetty (Servlet API 2.5): 7.6.21.v20160908
+
 1. [Mongo Driver \[3.9.0,\]](https://github.com/opentracing-contrib/java-mongo-driver)
 1. [Apache Camel \[2.24.0,\]](https://github.com/apache/camel/tree/master/components/camel-opentracing)
 1. [AWS SDK \[1.11.79,\]](https://github.com/opentracing-contrib/java-aws-sdk)

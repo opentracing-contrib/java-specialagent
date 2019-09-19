@@ -30,9 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.deploy.FilterDef;
+import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.tomcat.util.descriptor.web.FilterDef;
-import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,7 +86,7 @@ public class TomcatServletTest {
     ((StandardContext)context).addApplicationLifecycleListener(new SCL());
 
     Tomcat.addServlet(context, "helloWorldServlet", new MockServlet());
-    context.addServletMappingDecoded("/hello", "helloWorldServlet");
+    context.addServletMapping("/hello", "helloWorldServlet");
 
     tomcatServer.start();
     logger.info("Tomcat server: http://" + tomcatServer.getHost().getName() + ":" + serverPort + "/");
