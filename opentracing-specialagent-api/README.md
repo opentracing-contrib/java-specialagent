@@ -142,7 +142,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 
 1. **Implement a JUnit test that uses `AgentRunner`**
 
-   Please refer to the [Test Usage][test-usage] section in the <ins>SpecialAgent</ins>.
+   Please refer to the [`AgentRunner` Usage](#5-agentrunner-usage) section in the <ins>SpecialAgent</ins>.
 
 ## 5 `AgentRunner` Usage
 
@@ -252,7 +252,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
 
 #### 5.1.2 Testing
 
-The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#5-agentrunner-usage) for instructions.
+The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [`AgentRunner` Usage](#5-agentrunner-usage) for instructions.
 
 #### 5.1.3 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
 
@@ -281,4 +281,3 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-okhttp/pom.xml
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml
-[test-usage]: https://github.com/opentracing-contrib/java-specialagent/#test-usage
