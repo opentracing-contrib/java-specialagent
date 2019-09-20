@@ -15,15 +15,17 @@
 
 package io.opentracing.contrib.specialagent.cassandra4;
 
+import java.util.concurrent.CompletionStage;
+
 import com.datastax.oss.driver.api.core.CqlSession;
+
 import io.opentracing.contrib.cassandra4.TracingCqlSession;
 import io.opentracing.util.GlobalTracer;
-import java.util.concurrent.CompletionStage;
 
 public class Cassandra4AgentIntercept {
   public static Object exit(final Object thiz) {
-    return ((CompletionStage<?>) thiz).thenApply(session ->
-      new TracingCqlSession((CqlSession) session, GlobalTracer.get())
+    return ((CompletionStage<?>)thiz).thenApply(session ->
+      new TracingCqlSession((CqlSession)session, GlobalTracer.get())
     );
   }
 }

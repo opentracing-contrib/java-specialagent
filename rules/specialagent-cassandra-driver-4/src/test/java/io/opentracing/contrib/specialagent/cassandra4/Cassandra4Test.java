@@ -15,23 +15,26 @@
 
 package io.opentracing.contrib.specialagent.cassandra4;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.specialagent.Logger;
-import io.opentracing.mock.MockTracer;
 import java.net.InetSocketAddress;
+
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
+
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
@@ -48,7 +51,8 @@ public class Cassandra4Test {
   public void after() {
     try {
       EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    } catch (final Exception e) {
+    }
+    catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
     }
   }
@@ -64,9 +68,9 @@ public class Cassandra4Test {
 
   private static CqlSession createSession() {
     return CqlSession.builder()
-        .addContactEndPoint(new DefaultEndPoint(new InetSocketAddress("127.0.0.1", 9142)))
-        .withLocalDatacenter("datacenter1")
-        .build();
+      .addContactEndPoint(new DefaultEndPoint(new InetSocketAddress("127.0.0.1", 9142)))
+      .withLocalDatacenter("datacenter1")
+      .build();
   }
 
   private static void createKeyspace(final CqlSession session) {
