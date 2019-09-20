@@ -1,5 +1,13 @@
 # Changes by Version
 
+## v1.4.0 (2019-09-20)
+* Improved rigor in requirements imposed onto JUnit tests by `AgentRunner`,
+* Improved class loading architecture.
+* Improved class loading policy for `RuleClassLoader`.
+* Improved stability and resilience to `LinkageError`s.
+* Support Tomcat 7.0.96 with `web-servlet-filter`.
+* Optimized load time and runtime performance.
+
 ## v1.3.6 (2019-09-06)
 * Resolve minimum versions of 3rd-party libraries supported by each [Instrumentation Plugin](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins).
 * Resolve false negative compatibility tests in fingerprinting algorithm.
