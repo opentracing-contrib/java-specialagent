@@ -28,7 +28,7 @@ This project provides the API for <ins>Instrumentation Plugins</ins> to integrat
 
 ### 2 Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>
 
-The [opentracing-contrib][opentracing-contrib] organization contains 40+ OpenTracing <ins>Instrumentation Plugins</ins> for Java. Only a handful of these plugins are currently [supported by SpecialAgent](#supported-instrumentation-plugins).
+The [opentracing-contrib][opentracing-contrib] organization contains 40+ OpenTracing <ins>Instrumentation Plugins</ins> for Java. Many of these plugins are currently [supported by SpecialAgent](https://github.com/opentracing-contrib/java-specialagent/#61-instrumentation-plugins).
 
 If you are interested in contributing to the <ins>SpecialAgent</ins> project by integrating support for existing plugins in the [opentracing-contrib][opentracing-contrib] organization, or by implementing a new plugin with support for <ins>SpecialAgent</ins>, the following guide is for you:...
 
@@ -80,50 +80,50 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
    An example implementation for an <ins>Instrumentation Rule</ins> that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
 
    ```java
-     public class TargetAgentRule implements AgentRule {
-       public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
-         return Arrays.asList(new AgentBuilder.Default()
-           .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
-           .with(InitializationStrategy.NoOp.INSTANCE)   // Singleton instantiation of loaded type initializers.
-           .with(TypeStrategy.Default.REDEFINE)          // Allows loaded classes to be redefined.
-           .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
-                                                         // the class name is expressed in string form, as opposed
-                                                         // to is(com.example.TargetBuilder.class), or
-                                                         // named(com.example.TargetBuilder.class.getName()).
-                                                         // Directly referencing the class will cause the JVM to
-                                                         // attempt to load the class when the intercept rule is
-                                                         // being defined. Such an operation may fail, because the
-                                                         // class may not be present in the class loader from where
-                                                         // the intercept rule is being defined.
-           .transform(new Transformer() {
-             @Override
-             public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-               return builder.visit(Advice
-                 .to(TargetAgentRule.class)            // A class literal reference to this class.
-                 .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
-                   .and(takesArguments(String.class)))); // Additional specification for the method intercept.
-             }}));
-         }
-
-         // The @Advice method that defines the intercept callback. It is important this method does not require any
-         // classes of the 3rd-party library to be loaded, because the classes may not be present in the class loader
-         // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
-         // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
-         @Advice.OnMethodExit
-         public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-           if (AgentRuleUtil.isEnabled())              // Prevents the SpecialAgent from instrumenting the tracer itself.
-             returned = TargetAgentIntercept.exit(returned);
-         }
+   public class TargetAgentRule implements AgentRule {
+     public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
+       return Arrays.asList(new AgentBuilder.Default()
+         .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
+         .with(InitializationStrategy.NoOp.INSTANCE)   // Singleton instantiation of loaded type initializers.
+         .with(TypeStrategy.Default.REDEFINE)          // Allows loaded classes to be redefined.
+         .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
+                                                       // the class name is expressed in string form, as opposed
+                                                       // to is(com.example.TargetBuilder.class), or
+                                                       // named(com.example.TargetBuilder.class.getName()).
+                                                       // Directly referencing the class will cause the JVM to
+                                                       // attempt to load the class when the intercept rule is
+                                                       // being defined. Such an operation may fail, because the
+                                                       // class may not be present in the class loader from where
+                                                       // the intercept rule is being defined.
+         .transform(new Transformer() {
+           @Override
+           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+             return builder.visit(Advice
+               .to(TargetAgentRule.class)              // A class literal reference to this class.
+               .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
+                 .and(takesArguments(String.class)))); // Additional specification for the method intercept.
+           }}));
        }
 
-       // This class can reference 3rd-party library classes, because this class will only be loaded at intercept time,
-       // where the target object's class loader is guaranteed to have the 3rd-party classes either loaded or on the
-       // class path.
-       public class TargetAgentIntercept {
-         public static Builder exit(final Object returned) {
-           // The OpenTracing instrumentation logic goes here
-         }
-       }
+     // The @Advice method that defines the intercept callback. It is important this method does not require any
+     // classes of the 3rd-party library to be loaded, because the classes may not be present in the class loader
+     // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
+     // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
+     @Advice.OnMethodExit
+     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
+       if (AgentRuleUtil.isEnabled())                  // Prevents the SpecialAgent from instrumenting the tracer itself.
+         returned = TargetAgentIntercept.exit(returned);
+     }
+   }
+
+   // This class can reference 3rd-party library classes, because this class will only be loaded at intercept time,
+   // where the target object's class loader is guaranteed to have the 3rd-party classes either loaded or on the
+   // class path.
+   public class TargetAgentIntercept {
+     public static Builder exit(final Object returned) {
+       // The OpenTracing instrumentation logic goes here
+     }
+   }
    ```
 
 1. **Create a `otarules.mf` file**
