@@ -98,7 +98,7 @@ public class ClassLoaderAgentRule extends AgentRule {
     log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, LocalLevel.FINE);
     return builders;
   }
-
+  
   public static boolean isExcluded(final ClassLoader thiz) {
     final String className = thiz.getClass().getName();
     return className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader");
