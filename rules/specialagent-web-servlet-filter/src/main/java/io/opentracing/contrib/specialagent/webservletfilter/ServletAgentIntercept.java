@@ -47,6 +47,10 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (context == null)
         context = filterOrServletToServletContext.get(servlet);
 
+      // First try to dynamically add filter for Tomcat 6.0.32
+      if (TomcatAgentIntercept.addFilter(context))
+        return;
+
       final TracingFilter tracingFilter = getFilter(context, true);
 
       // If the tracingFilter instance is not a TracingProxyFilter, then it was
