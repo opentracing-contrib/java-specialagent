@@ -1,7 +1,7 @@
 # Changes by Version
 
 ## v1.4.0 (2019-09-20)
-* Improved rigor in requirements imposed onto JUnit tests by `AgentRunner`,
+* Improved rigor in requirements imposed onto JUnit tests by `AgentRunner`.
 * Improved class loading architecture.
 * Improved class loading policy for `RuleClassLoader`.
 * Improved stability and resilience to `LinkageError`s.
