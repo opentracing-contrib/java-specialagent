@@ -25,12 +25,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.EarlyReturnException;
 
 public class JdbcAgentIntercept {
   public static AtomicReference<TracingDriver> tracingDriver = new AtomicReference<>();
 
-  public static Class<?> caller(final Class<?> caller) {
-    return TracingDriver.class.equals(caller) ? AgentRuleUtil.getExecutionStack()[8] : caller;
+  public static void isDriverAllowed(final Class<?> caller) {
+    // FIXME: LS-11527
+    if (JdbcAgentIntercept.class.getName().equals(caller.getName()) || TracingDriver.class.getName().equals(caller.getName()))
+      throw new EarlyReturnException();
   }
 
   public static Connection connect(final String url, final Properties info) throws SQLException {

@@ -25,7 +25,6 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -35,43 +34,52 @@ import net.bytebuddy.matcher.ElementMatcher.Junction;
 import net.bytebuddy.utility.JavaModule;
 
 public class JdbcAgentRule extends AgentRule {
-  private static final boolean isJdk178 = System.getProperty("java.version").startsWith("1.");
-
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    Junction<TypeDescription> driverJunction = hasSuperType(named("java.sql.Driver")).and(not(named("io.opentracing.contrib.jdbc.TracingDriver")));
-    if (isJdk178)
-      driverJunction = named("java.sql.DriverManager").or(driverJunction);
-
-    final Narrowable narrowable = builder.type(driverJunction);
-    Extendable extendable = narrowable
+    final Junction<TypeDescription> driverJunction = named("java.sql.DriverManager").or(hasSuperType(named("java.sql.Driver")).and(not(named("io.opentracing.contrib.jdbc.TracingDriver"))));
+    final Extendable enter = builder.type(driverJunction)
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(DriverEnter.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
+        }})
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(DriverManagerEnter.class).on(isPrivate().and(isStatic()).and(named("isDriverAllowed")).and(takesArgument(1, Class.class))));
         }});
 
-    if (isJdk178)
-      extendable = extendable
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(DriverManagerEnter.class).on(isPrivate().and(isStatic()).and(named("isDriverAllowed")).and(takesArgument(1, Class.class))));
-          }});
-
-    return Arrays.asList(extendable, narrowable
+    final Extendable exit = builder.type(driverJunction)
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(DriverManagerExit.class).on(isPrivate().and(isStatic()).and(named("isDriverAllowed")).and(takesArgument(1, Class.class))));
+        }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(DriverExit.class).on(not(isAbstract()).and(named("connect").and(takesArguments(String.class, Properties.class)))));
-        }}));
+        }});
+
+    return Arrays.asList(enter, exit);
   }
 
   public static class DriverManagerEnter {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Class<?> caller) throws Exception {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Class<?> caller) throws Exception {
       if (isEnabled(origin))
-        caller = JdbcAgentIntercept.caller(caller);
+        JdbcAgentIntercept.isDriverAllowed(caller);
+    }
+  }
+
+  public static class DriverManagerExit {
+    @SuppressWarnings("unused")
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Boolean returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) {
+      if (thrown instanceof EarlyReturnException) {
+        thrown = null;
+        returned = Boolean.TRUE;
+      }
     }
   }
 
