@@ -74,6 +74,7 @@
     <module>specialagent-reactor</module>
     <module>specialagent-jaxrs</module>
     <module>specialagent-thread</module>
+    <module>specialagent-akka</module>
   </modules>
   <profiles>
     <profile>
