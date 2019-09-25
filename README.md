@@ -390,7 +390,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 | [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | 3.7 | LATEST |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | 1.5 | LATEST |
 | [Java JDBC API \[`java.sql`\]][java-jdbc] | 3.1 | LATEST |
-| [Java JMS API (`javax.jms`)][java-jms] | 1.1 | LATEST |
+| [Java JMS API \[`javax.jms`\]][java-jms] | 1.1 | LATEST |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | 2.3 | LATEST |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | 7.6.21.v20160908 | LATEST |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | 7.0.96 | LATEST |
