@@ -33,10 +33,11 @@ public final class TracedMessage<T> {
     return span;
   }
 
-  public void closeScope() {
+  public void closeScopeAndSpan() {
     if (scope != null) {
       scope.close();
       scope = null;
+      span.finish();
     }
   }
 

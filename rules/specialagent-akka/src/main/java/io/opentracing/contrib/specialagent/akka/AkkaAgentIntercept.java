@@ -19,7 +19,6 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.DeadLetterActorRef;
-import akka.actor.RepointableActorRef;
 import akka.pattern.PromiseActorRef;
 import io.opentracing.References;
 import io.opentracing.Scope;
@@ -92,12 +91,7 @@ public class AkkaAgentIntercept {
   }
 
   public static Object askStart(Object arg0, Object message, String method, Object sender) {
-    if (arg0 instanceof RepointableActorRef) {
-      RepointableActorRef actorRef = (RepointableActorRef) arg0;
-      if (!actorRef.isStarted()) {
-        return message;
-      }
-    } else if (arg0 instanceof DeadLetterActorRef) {
+    if (arg0 instanceof DeadLetterActorRef) {
       return message;
     } else if (arg0 instanceof ActorRef) {
       ActorRef actorRef = (ActorRef) arg0;
@@ -139,9 +133,7 @@ public class AkkaAgentIntercept {
         if (thrown != null) {
           onError(thrown, span);
         }
-        tracedMessage.closeScope();
-
-        span.finish();
+        tracedMessage.closeScopeAndSpan();
       }
     }
   }

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.util.Timeout;
@@ -68,11 +69,32 @@ public class AkkaTest {
     tracer.reset();
   }
 
-  //@Test
+  @Test
   public void testTell(final MockTracer tracer) {
-    ActorRef actorRef = system.actorOf(TestActor.props(tracer), "tell");
+    final ActorRef actorRef = system.actorOf(TestActor.props(tracer, false), "tell");
 
     actorRef.tell("tell", ActorRef.noSender());
+
+    final ActorSelection actorSelection = system.actorSelection(actorRef.path());
+    actorSelection.tell("tell-selection", ActorRef.noSender());
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(4));
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(4, spans.size());
+    for (MockSpan span : spans) {
+      assertEquals(AkkaAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
+    }
+  }
+
+  @Test
+  public void testAsk(final MockTracer tracer) throws Exception {
+    ActorRef actorRef = system.actorOf(TestActor.props(tracer, false), "ask");
+    Timeout timeout = new Timeout(getDefaultDuration());
+
+    Future<Object> future = ask(actorRef, "ask", timeout);
+    Boolean isSpanNull = (Boolean) Await.result(future, getDefaultDuration());
+    assertFalse(isSpanNull);
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
 
@@ -84,11 +106,11 @@ public class AkkaTest {
   }
 
   @Test
-  public void testAsk(final MockTracer tracer) throws Exception {
-    ActorRef actorRef = system.actorOf(TestActor.props(tracer), "ask");
+  public void testForward(final MockTracer tracer) throws Exception {
+    ActorRef actorRef = system.actorOf(TestActor.props(tracer, true), "forward");
     Timeout timeout = new Timeout(getDefaultDuration());
 
-    Future<Object> future = ask(actorRef, "ask", timeout);
+    Future<Object> future = ask(actorRef, "forward", timeout);
     Boolean isSpanNull = (Boolean) Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
@@ -107,13 +129,15 @@ public class AkkaTest {
 
   static class TestActor extends AbstractActor {
     private final MockTracer tracer;
+    private final boolean forward;
 
-    TestActor(MockTracer tracer) {
+    TestActor(MockTracer tracer, boolean forward) {
       this.tracer = tracer;
+      this.forward = forward;
     }
 
-    static Props props(MockTracer tracer) {
-      return Props.create(TestActor.class, () -> new TestActor(tracer));
+    static Props props(MockTracer tracer, boolean forward) {
+      return Props.create(TestActor.class, () -> new TestActor(tracer, forward));
     }
 
     @Override
@@ -121,7 +145,11 @@ public class AkkaTest {
       return receiveBuilder()
           .matchAny(x -> {
             final Span span = tracer.activeSpan();
-            getSender().tell(span == null, getSelf());
+            if (forward) {
+              getSender().forward(span == null, getContext());
+            } else {
+              getSender().tell(span == null, getSelf());
+            }
           })
           .build();
     }
