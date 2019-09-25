@@ -416,6 +416,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 1. [Spring 3 Web \[3.0.3.RELEASE,\]](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-web)
 1. [Spring 3 Web MVC \[3.0.2.RELEASE,\]](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-webmvc)
 1. [JAX-RS Client \[2.0,\]](https://github.com/opentracing-contrib/java-jaxrs)
+1. [Akka \[2.5.0,\]](https://github.com/opentracing-contrib/java-akka)
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
