@@ -24,7 +24,7 @@
     <version>1.4.1-SNAPSHOT</version>
   </parent>
   <artifactId>specialagent-cassandra-driver-4</artifactId>
-  <name>SpecialAgent Rule for Cassandra Driver 4</name>
+  <name>SpecialAgent Rule for Cassandra 4 Driver</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-cassandra-driver</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -40,6 +40,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cassandra-driver-4</artifactId>
       <version>0.1.5</version>
