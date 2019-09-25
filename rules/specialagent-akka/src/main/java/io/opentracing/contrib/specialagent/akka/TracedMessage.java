@@ -1,4 +1,4 @@
-/* Copyright 2018 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,25 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.akka;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 
 public final class TracedMessage<T> {
-
-  private T message;
-  private Span span;
+  public final T message;
+  public final Span span;
   private Scope scope;
 
-  public TracedMessage(T message, Span span, Scope scope) {
+  public TracedMessage(final T message, final Span span, final Scope scope) {
     this.message = message;
     this.span = span;
     this.scope = scope;
-  }
-
-  public Span span() {
-    return span;
   }
 
   public void closeScopeAndSpan() {
@@ -39,9 +35,5 @@ public final class TracedMessage<T> {
       scope = null;
       span.finish();
     }
-  }
-
-  public T message() {
-    return message;
   }
 }

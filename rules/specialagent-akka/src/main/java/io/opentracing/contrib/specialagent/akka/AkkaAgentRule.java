@@ -1,4 +1,4 @@
-/* Copyright 2018 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,13 @@ public class AkkaAgentRule extends AgentRule {
       .type(named("akka.pattern.AskSupport"))
       .transform(new Transformer() {
         @Override
-        public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule javaModule) {
           return  builder.visit(Advice.to(Ask.class).on(named("ask").and(takesArguments(2).or(takesArguments(3).or(takesArguments(4))))));
         }})
       .type(hasSuperType(named("akka.actor.ActorRef")))
       .transform(new Transformer() {
         @Override
-        public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule javaModule) {
           return  builder.visit(Advice.to(Tell.class).on(named("tell").and(takesArguments(2))));
       }})
     );
@@ -55,49 +55,43 @@ public class AkkaAgentRule extends AgentRule {
 
   public static class Receive {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object message) {
-      if (isEnabled(origin)) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object message) {
+      if (isEnabled(origin))
        message = AkkaAgentIntercept.aroundReceiveStart(thiz, message);
-      }
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(origin)) {
+      if (isEnabled(origin))
         AkkaAgentIntercept.aroundReceiveEnd(thrown);
-      }
     }
   }
 
   public static class Tell {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object message, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object sender) {
-      if (isEnabled(origin)) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object message, final @Advice.Argument(value = 1) Object sender) {
+      if (isEnabled(origin))
         message = AkkaAgentIntercept.askStart(thiz, message, "tell", sender);
-      }
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz, final @Advice.Thrown Throwable thrown, @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object message, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object sender) {
-      if (isEnabled(origin)) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message, final @Advice.Argument(value = 1) Object sender, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(origin))
         AkkaAgentIntercept.askEnd(thiz, message, thrown, sender);
-      }
     }
   }
 
   public static class Ask {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object actorRef, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object message) {
-      if (isEnabled(origin)) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object actorRef, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object message) {
+      if (isEnabled(origin))
         message = AkkaAgentIntercept.askStart(actorRef, message, "ask", null);
-      }
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object actorRef, final @Advice.Thrown Throwable thrown, @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object message) {
-      if (isEnabled(origin)) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object actorRef, final @Advice.Argument(value = 1) Object message, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(origin))
         AkkaAgentIntercept.askEnd(actorRef, message, thrown, null);
-      }
     }
   }
 }

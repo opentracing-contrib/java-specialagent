@@ -1,4 +1,4 @@
-/* Copyright 2018 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,20 @@
 
 package io.opentracing.contrib.specialagent.akka;
 
-import static akka.pattern.Patterns.ask;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static akka.pattern.Patterns.*;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
@@ -33,19 +42,10 @@ import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
-
 
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
@@ -59,13 +59,12 @@ public class AkkaTest {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    if (system != null) {
+    if (system != null)
       Await.result(system.terminate(), getDefaultDuration());
-    }
   }
 
   @Before
-  public void before(MockTracer tracer) {
+  public void before(final MockTracer tracer) {
     tracer.reset();
   }
 
@@ -82,45 +81,42 @@ public class AkkaTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(4, spans.size());
-    for (MockSpan span : spans) {
+    for (final MockSpan span : spans)
       assertEquals(AkkaAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
-    }
   }
 
   @Test
   public void testAsk(final MockTracer tracer) throws Exception {
-    ActorRef actorRef = system.actorOf(TestActor.props(tracer, false), "ask");
-    Timeout timeout = new Timeout(getDefaultDuration());
+    final ActorRef actorRef = system.actorOf(TestActor.props(tracer, false), "ask");
+    final Timeout timeout = new Timeout(getDefaultDuration());
 
-    Future<Object> future = ask(actorRef, "ask", timeout);
-    Boolean isSpanNull = (Boolean) Await.result(future, getDefaultDuration());
+    final Future<Object> future = ask(actorRef, "ask", timeout);
+    final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
-    for (MockSpan span : spans) {
+    for (final MockSpan span : spans)
       assertEquals(AkkaAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
-    }
   }
 
   @Test
   public void testForward(final MockTracer tracer) throws Exception {
-    ActorRef actorRef = system.actorOf(TestActor.props(tracer, true), "forward");
-    Timeout timeout = new Timeout(getDefaultDuration());
+    final ActorRef actorRef = system.actorOf(TestActor.props(tracer, true), "forward");
+    final Timeout timeout = new Timeout(getDefaultDuration());
 
-    Future<Object> future = ask(actorRef, "forward", timeout);
-    Boolean isSpanNull = (Boolean) Await.result(future, getDefaultDuration());
+    final Future<Object> future = ask(actorRef, "forward", timeout);
+    final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
-    for (MockSpan span : spans) {
+    for (final MockSpan span : spans)
       assertEquals(AkkaAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
-    }
   }
 
   private static FiniteDuration getDefaultDuration() {
@@ -131,27 +127,24 @@ public class AkkaTest {
     private final MockTracer tracer;
     private final boolean forward;
 
-    TestActor(MockTracer tracer, boolean forward) {
+    TestActor(final MockTracer tracer, final boolean forward) {
       this.tracer = tracer;
       this.forward = forward;
     }
 
-    static Props props(MockTracer tracer, boolean forward) {
+    static Props props(final MockTracer tracer, final boolean forward) {
       return Props.create(TestActor.class, () -> new TestActor(tracer, forward));
     }
 
     @Override
     public Receive createReceive() {
-      return receiveBuilder()
-          .matchAny(x -> {
-            final Span span = tracer.activeSpan();
-            if (forward) {
-              getSender().forward(span == null, getContext());
-            } else {
-              getSender().tell(span == null, getSelf());
-            }
-          })
-          .build();
+      return receiveBuilder().matchAny(x -> {
+        final Span span = tracer.activeSpan();
+        if (forward)
+          getSender().forward(span == null, getContext());
+        else
+          getSender().tell(span == null, getSelf());
+      }).build();
     }
   }
 
@@ -163,5 +156,4 @@ public class AkkaTest {
       }
     };
   }
-
 }
