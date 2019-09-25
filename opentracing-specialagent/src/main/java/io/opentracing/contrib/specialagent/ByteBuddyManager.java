@@ -209,6 +209,22 @@ public class ByteBuddyManager extends Manager {
 
       if (index != -1 && !SpecialAgent.linkRule(index, classLoader))
         throw new IncompatiblePluginException(typeDescription.getName());
+
+      if (classLoader != null) {
+        try {
+          final JavaModule unnamedModule = JavaModule.of(ClassLoader.class.getMethod("getUnnamedModule").invoke(classLoader));
+          if (!module.canRead(unnamedModule)) {
+            module.addReads(inst, unnamedModule);
+            if (logger.isLoggable(Level.FINEST))
+              logger.finest("Added module reads: " + module + " -> " + unnamedModule);
+          }
+        }
+        catch (final IllegalAccessException | InvocationTargetException e) {
+          throw new IllegalStateException(e);
+        }
+        catch (final NoSuchMethodException e) {
+        }
+      }
     }
 
     @Override
