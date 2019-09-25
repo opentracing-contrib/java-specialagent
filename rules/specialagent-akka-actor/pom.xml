@@ -23,13 +23,13 @@
     <artifactId>rules</artifactId>
     <version>1.4.1-SNAPSHOT</version>
   </parent>
-  <artifactId>specialagent-akka</artifactId>
+  <artifactId>specialagent-akka-actor</artifactId>
   <name>SpecialAgent Rule for Akka</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-akka</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.plugin.name>akka</sa.plugin.name>
+    <sa.plugin.name>akka-actor</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
