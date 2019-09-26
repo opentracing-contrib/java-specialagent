@@ -34,6 +34,7 @@
   </properties>
   <dependencies>
     <dependency>
+      <!-- https://github.com/OpenFeign/feign-opentracing -->
       <groupId>io.github.openfeign.opentracing</groupId>
       <artifactId>feign-opentracing</artifactId>
       <version>0.3.0</version>

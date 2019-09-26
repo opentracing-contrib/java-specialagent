@@ -32,8 +32,8 @@
     <sa.plugin.name>apache-httpclient</sa.plugin.name>
   </properties>
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
     <dependency>
+      <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>4.4</version>

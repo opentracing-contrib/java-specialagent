@@ -49,10 +49,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-common -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-common</artifactId>
       <version>0.1.4</version>
-      <scope>provided</scope> <!-- It's a hack because we already have it from jms-1/jms-2 -->
+      <scope>provided</scope> <!-- FIXME: It's a hack because we already have it from jms-1/jms-2 -->
       <exclusions>
         <exclusion>
           <groupId>javax.jms</groupId>

@@ -33,8 +33,9 @@
     <version.org.apache.camel>2.24.0</version.org.apache.camel>
   </properties>
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.apache.camel/camel-opentracing -->
     <dependency>
+      <!-- https://github.com/apache/camel/blob/master/components/camel-opentracing/src/main/docs/opentracing.adoc -->
+      <!-- https://mvnrepository.com/artifact/org.apache.camel/camel-opentracing -->
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-opentracing</artifactId>
       <version>${version.org.apache.camel}</version>
