@@ -61,14 +61,14 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
 
       servletRequestToState.put(request, Boolean.TRUE);
       if (logger.isLoggable(Level.FINER))
-        logger.finer(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+        logger.finer(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
 
       tracingFilter.doFilter(request, (ServletResponse)res, new FilterChain() {
         @Override
         public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
           filter.doFilter(request, response, (FilterChain)chain);
           if (logger.isLoggable(Level.FINER))
-            logger.finer("<< TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + ", " + AgentRuleUtil.getSimpleNameId(response) +  ")");
+            logger.finer("<< TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(response) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
         }
       });
     }

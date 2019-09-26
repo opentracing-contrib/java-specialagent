@@ -185,7 +185,7 @@ public class TracingFilter implements Filter {
                 spanDecorator.onRequest(httpRequest, span);
             }
 
-            final Boolean[] isAsyncStarted = new Boolean[] {false};
+            final Boolean[] isAsyncStarted = {Boolean.FALSE};
             try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
                 if (!ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) || !isAsyncStarted[0]) {
@@ -201,10 +201,9 @@ public class TracingFilter implements Filter {
                 throw ex;
             } finally {
                 if (isAsyncStarted[0]) {
-                    // what if async is already finished? This would not be called
+                  // what if async is already finished? This would not be called
                   try {
-                    final Method getAsyncContext = ClassUtil.getMethod(httpRequest.getClass(), "getAsyncContext");
-                    final Object asyncContext = getAsyncContext.invoke(httpRequest);
+                    final Object asyncContext = ClassUtil.getMethod(httpRequest.getClass(), "getAsyncContext").invoke(httpRequest);
                     final Method addListener = ClassUtil.getMethod(asyncContext.getClass(), "addListener", Class.forName("javax.servlet.AsyncListener"));
                     addListener.invoke(asyncContext, new TracingAsyncListener(span, spanDecorators));
                   }

@@ -62,7 +62,7 @@ public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept 
     }
 
     if (logger.isLoggable(Level.FINER))
-      logger.finer(">> ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): ServletContext#addFilter(" + TRACING_FILTER_NAME + "," + AgentRuleUtil.getSimpleNameId(tracingFilter) + ")");
+      logger.finer(">> ContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): ServletContext#addFilter(\"" + TRACING_FILTER_NAME + "\"," + AgentRuleUtil.getSimpleNameId(tracingFilter) + ")");
 
     return addFilterMethod.invoke(context, TRACING_FILTER_NAME, tracingFilter);
   }

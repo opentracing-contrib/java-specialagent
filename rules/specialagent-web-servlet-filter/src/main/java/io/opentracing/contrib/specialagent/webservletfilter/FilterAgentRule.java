@@ -53,7 +53,6 @@ public class FilterAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          // TODO: Add method signature...
           return builder
             .visit(Advice.to(FilterInitAdvice.class).on(named("init")))
             .visit(Advice.to(DoFilterEnter.class).on(named("doFilter")));
@@ -63,7 +62,6 @@ public class FilterAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          // TODO: Add method signature...
           return builder.visit(Advice.to(DoFilterExit.class).on(named("doFilter")));
         }}));
   }

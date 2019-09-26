@@ -44,6 +44,9 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
             logger.finer("<> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): javax.servlet.DispatcherType is missing, so using null which defaults to: DispatcherType.REQUEST");
         }
 
+        if (logger.isLoggable(Level.FINER))
+          logger.finer(">> " + registration.getClass().getSimpleName() + "#addMappingForUrlPatterns(" + registration + "," + dispatcherTypes + ",true," + patterns + ")");
+
         addMappingForUrlPatternsMethod.invoke(registration, dispatcherTypes, true, patterns);
       }
     }

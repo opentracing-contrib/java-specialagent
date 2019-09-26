@@ -62,7 +62,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
       tracingFilter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
       if (logger.isLoggable(Level.FINER))
-        logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + ", " + AgentRuleUtil.getSimpleNameId(res) +  ")");
+        logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
