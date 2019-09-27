@@ -27,8 +27,6 @@
   <name>SpecialAgent Rule for java.lang.Thread</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-thread</url>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>thread</sa.plugin.name>
   </properties>
 </project>
