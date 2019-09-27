@@ -41,10 +41,9 @@ public class ThreadAgentIntercept {
   }
 
   public static void start(final Object thiz) {
-    Thread thread = (Thread)thiz;
     final Span span = GlobalTracer.get().activeSpan();
     if (span != null)
-      cache.put(thread.getId(), span);
+      cache.put(((Thread)thiz).getId(), span);
 
   }
 
@@ -58,8 +57,7 @@ public class ThreadAgentIntercept {
   }
 
   public static void runExit(final Object thiz) {
-    final Thread thread = (Thread)thiz;
-    final Span span = cache.remove(thread.getId());
+    final Span span = cache.remove(((Thread)thiz).getId());
     final Scope scope = scopeHandler.get();
     if (scope != null)
       scope.close();

@@ -66,7 +66,7 @@ public class ThreadAgentRule extends AgentRule {
 
   public static class RunError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.This Object thiz) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Thrown Throwable thrown) {
       if (isEnabled(origin) && thrown != null)
         ThreadAgentIntercept.runExit(thiz);
     }
