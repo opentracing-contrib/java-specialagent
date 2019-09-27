@@ -55,6 +55,7 @@
     <version.opentracing>0.32.0</version.opentracing>
     <jaeger-client-bundle>jaeger</jaeger-client-bundle>
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
+    <wavefront-opentracing-bundle-java>wavefront</wavefront-opentracing-bundle-java>
   </properties>
   <modules>
     <module>opentracing-specialagent-api</module>
@@ -495,6 +496,12 @@
       <groupId>com.lightstep.tracer</groupId>
       <artifactId>lightstep-tracer-jre-bundle</artifactId>
       <version>0.17.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.wavefront</groupId>
+      <artifactId>wavefront-opentracing-bundle-java</artifactId>
+      <version>0.9.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

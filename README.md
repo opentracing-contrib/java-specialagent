@@ -11,9 +11,9 @@
 
 ## What is SpecialAgent?
 
-<ins>SpecialAgent</ins> automatically instruments 3rd-party libraries in Java applications. The architecture of <ins>SpecialAgent</ins> was designed to involve contributions from the community, whereby its platform integrates and automates OpenTracing <ins>Instrumentation Plugins</ins> written by individual contributors. In addition to <ins>Instrumentation Plugins</ins>, the <ins>SpecialAgent</ins> also supports <ins>Tracer Plugins</ins>, which connect an instrumented runtime to OpenTracing-compliant tracer vendors, such as LightStep or Jaeger. Both the <ins>Instrumentation Plugins</ins> and the <ins>Tracer Plugins</ins> are decoupled from <ins>SpecialAgent</ins> -- i.e. neither kinds of plugins need to know anything about <ins>SpecialAgent</ins>. At its core, the <ins>SpecialAgent</ins> is itself nothing more than an engine that abstracts the functionality for automatic installation of <ins>Instrumentation Plugins</ins>, and then connecting them to <ins>Tracer Plugins</ins>. A benefit of this approach is that the <ins>SpecialAgent</ins> intrinsically embodies and encourages community involvement.
+<ins>SpecialAgent</ins> automatically instruments 3rd-party libraries in Java applications. The architecture of <ins>SpecialAgent</ins> was designed to involve contributions from the community, whereby its platform integrates and automates OpenTracing <ins>Instrumentation Plugins</ins> written by individual contributors. In addition to <ins>Instrumentation Plugins</ins>, the <ins>SpecialAgent</ins> also supports <ins>Tracer Plugins</ins>, which connect an instrumented runtime to OpenTracing-compliant tracer vendors, such as LightStep, Wavefront, or Jaeger. Both the <ins>Instrumentation Plugins</ins> and the <ins>Tracer Plugins</ins> are decoupled from <ins>SpecialAgent</ins> -- i.e. neither kinds of plugins need to know anything about <ins>SpecialAgent</ins>. At its core, the <ins>SpecialAgent</ins> is itself nothing more than an engine that abstracts the functionality for automatic installation of <ins>Instrumentation Plugins</ins>, and then connecting them to <ins>Tracer Plugins</ins>. A benefit of this approach is that the <ins>SpecialAgent</ins> intrinsically embodies and encourages community involvement.
 
-In additiona to its engine, the <ins>SpecialAgent</ins> packages a set of pre-supported [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) and [<ins>Tracer Plugins</ins>](#62-tracer-plugins).
+In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-supported [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) and [<ins>Tracer Plugins</ins>](#62-tracer-plugins).
 
 ## Table of Contents
 
@@ -237,8 +237,9 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenTracing-compatible 
 
     1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
     1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
+    1. [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)
 
-    The `-Dsa.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which [<ins>Tracer Plugin</ins>](#43-tracer-plugin) will be used. The value of `${TRACER_PLUGIN}` is the short name of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), i.e. `jaeger` or `lightstep`.
+    The `-Dsa.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which [<ins>Tracer Plugin</ins>](#43-tracer-plugin) will be used. The value of `${TRACER_PLUGIN}` is the short name of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), i.e. `jaeger`, `lightstep`, or `wavefront`.
 
 1. **External [<ins>Tracer Plugins</ins>](#43-tracer-plugin)**
 
@@ -296,7 +297,7 @@ To disable _an individual **tracer** plugin_, specify a system property, either 
 sa.tracer.plugin.${SHORT_NAME}.disable
 ```
 
-The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep` or `jaeger`.
+The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
 
 ## 4 Definitions
 
@@ -315,6 +316,7 @@ Service provider of the OpenTracing standard, providing an implementation of the
 Examples:
 * [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
 * [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
+* [Wavefront Tracer](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java)
 * [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
 <sub>_[<ins>Tracers</ins>](#42-tracer) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
@@ -426,6 +428,7 @@ Here is a [demo](https://github.com/opentracing-contrib/java-specialagent-demo).
 
 1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) ([Configuration reference](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment))
 1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
+1. [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)
 
 ### 6.3 [<ins>Instrumented libraries by existing rules</ins>](#46-instrumented-libs)
 
