@@ -29,52 +29,52 @@
   <name>SpecialAgent Rules</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules</url>
   <modules>
-    <module>specialagent-okhttp</module>
-    <module>specialagent-jdbc</module>
-    <module>specialagent-concurrent</module>
-    <module>specialagent-mongo-driver</module>
-    <module>specialagent-web-servlet-filter</module>
-    <module>specialagent-camel</module>
-    <module>specialagent-aws-sdk</module>
-    <module>specialagent-aws-sdk-2</module>
-    <module>specialagent-cassandra-driver</module>
-    <module>specialagent-cassandra-driver-4</module>
-    <module>specialagent-jms-1</module>
-    <module>specialagent-jms-2</module>
-    <module>specialagent-elasticsearch-rest-client</module>
-    <module>specialagent-elasticsearch-transport-client</module>
-    <module>specialagent-rxjava-2</module>
-    <module>specialagent-kafka-client</module>
-    <module>specialagent-asynchttpclient</module>
-    <module>specialagent-rabbitmq-client</module>
-    <module>specialagent-spring-rabbitmq</module>
-    <module>specialagent-thrift</module>
-    <module>specialagent-grpc</module>
-    <module>specialagent-jedis</module>
-    <module>specialagent-apache-httpclient</module>
-    <module>specialagent-lettuce</module>
-    <module>specialagent-lettuce-5.0</module>
-    <module>specialagent-spring-web</module>
-    <module>specialagent-spring-3-web</module>
-    <module>specialagent-spring-webmvc</module>
-    <module>specialagent-spring-3-webmvc</module>
-    <module>specialagent-spring-webflux</module>
-    <module>specialagent-redisson</module>
-    <module>specialagent-hazelcast</module>
-    <module>specialagent-spymemcached</module>
-    <module>specialagent-feign</module>
-    <module>specialagent-zuul</module>
-    <module>specialagent-spring-kafka</module>
-    <module>specialagent-spring-scheduling</module>
-    <module>specialagent-spring-websocket</module>
-    <module>specialagent-spring-jms</module>
-    <module>specialagent-spring-messaging</module>
-    <module>specialagent-grizzly-ahc</module>
-    <module>specialagent-grizzly-http-server</module>
-    <module>specialagent-reactor</module>
-    <module>specialagent-jaxrs</module>
-    <module>specialagent-thread</module>
-    <module>specialagent-akka-actor</module>
+    <module>okhttp</module>
+    <module>jdbc</module>
+    <module>concurrent</module>
+    <module>mongo-driver</module>
+    <module>web-servlet-filter</module>
+    <module>camel</module>
+    <module>aws-sdk-1</module>
+    <module>aws-sdk-2</module>
+    <module>cassandra-3-driver</module>
+    <module>cassandra-4-driver</module>
+    <module>jms-1</module>
+    <module>jms-2</module>
+    <module>elasticsearch-rest-client</module>
+    <module>elasticsearch-transport-client</module>
+    <module>rxjava-2</module>
+    <module>kafka-client</module>
+    <module>asynchttpclient</module>
+    <module>rabbitmq-client</module>
+    <module>spring-rabbitmq</module>
+    <module>thrift</module>
+    <module>grpc</module>
+    <module>jedis</module>
+    <module>apache-httpclient</module>
+    <module>lettuce</module>
+    <module>lettuce-5.0</module>
+    <module>spring-web</module>
+    <module>spring-3-web</module>
+    <module>spring-webmvc</module>
+    <module>spring-3-webmvc</module>
+    <module>spring-webflux</module>
+    <module>redisson</module>
+    <module>hazelcast</module>
+    <module>spymemcached</module>
+    <module>feign</module>
+    <module>zuul</module>
+    <module>spring-kafka</module>
+    <module>spring-scheduling</module>
+    <module>spring-websocket</module>
+    <module>spring-jms</module>
+    <module>spring-messaging</module>
+    <module>grizzly-ahc</module>
+    <module>grizzly-http-server</module>
+    <module>reactor</module>
+    <module>jaxrs</module>
+    <module>thread</module>
+    <module>akka-actor</module>
   </modules>
   <profiles>
     <profile>
@@ -119,9 +119,6 @@
                   <goal>fingerprint</goal>
                 </goals>
                 <phase>process-classes</phase>
-                <configuration>
-                  <name>${sa.plugin.name}</name>
-                </configuration>
               </execution>
             </executions>
           </plugin>
