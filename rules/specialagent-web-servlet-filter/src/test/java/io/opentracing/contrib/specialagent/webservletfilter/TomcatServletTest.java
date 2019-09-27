@@ -33,8 +33,8 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.startup.Tomcat;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,14 +54,11 @@ import okhttp3.Response;
 @AgentRunner.Config(isolateClassLoader=false, disable="okhttp")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
+  private static final int serverPort = 9786;
+  private static Tomcat tomcatServer;
 
-  private final int serverPort = 9786;
-  private Tomcat tomcatServer;
-
-  @Before
-  public void beforeTest() throws LifecycleException {
-    MockFilter.count = 0;
-
+  @BeforeClass
+  public static void beforeClass() throws LifecycleException {
     tomcatServer = new Tomcat();
     tomcatServer.setPort(serverPort);
 
@@ -71,7 +68,7 @@ public class TomcatServletTest {
     final File applicationDir = new File(new File(baseDir, "webapps"), "ROOT");
     applicationDir.mkdirs();
 
-    final Context context = tomcatServer.addWebapp("", applicationDir.getAbsolutePath());
+    final Context context = tomcatServer.addContext("", applicationDir.getAbsolutePath());
     final FilterDef filterDef = new FilterDef();
     filterDef.setFilterName(MockFilter.class.getSimpleName());
     filterDef.setFilterClass(MockFilter.class.getName());
@@ -94,15 +91,24 @@ public class TomcatServletTest {
 
   @Test
   public void testHelloRequest(final MockTracer tracer) throws IOException {
+    MockFilter.count = 0;
+    MockServlet.count = 0;
+
     final OkHttpClient client = new OkHttpClient();
     final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
     final Response response = client.newCall(request).execute();
 
-    assertEquals(HttpServletResponse.SC_OK, response.code());
-    assertEquals(1, MockFilter.count);
+    assertEquals("MockServlet response", HttpServletResponse.SC_ACCEPTED, response.code());
+    assertEquals("MockServlet count", 1, MockServlet.count);
+    assertEquals("MockFilter count", 1, MockFilter.count);
 
     final List<MockSpan> spans = tracer.finishedSpans();
-    assertEquals(spans.toString(), 1, spans.size());
+    assertEquals("MockTracer spans: " + spans, 1, spans.size());
+  }
+
+  @AfterClass
+  public static void afterClass() throws LifecycleException {
+    tomcatServer.stop();
   }
 
   public static class SCL implements ServletContextListener {
@@ -115,10 +121,5 @@ public class TomcatServletTest {
     public void contextDestroyed(final ServletContextEvent sce) {
       // NOOP
     }
-  }
-
-  @After
-  public void afterTest() throws LifecycleException {
-    tomcatServer.stop();
   }
 }

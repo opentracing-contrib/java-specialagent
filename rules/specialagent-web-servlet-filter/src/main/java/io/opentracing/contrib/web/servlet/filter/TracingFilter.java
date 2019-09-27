@@ -38,6 +38,10 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.webservletfilter.ServletFilterAgentIntercept;
+import io.opentracing.contrib.specialagent.webservletfilter.TracingProxyFilter;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -160,10 +164,14 @@ public class TracingFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-        if (!isTraced(httpRequest, httpResponse)) {
+        if (ServletFilterAgentIntercept.servletRequestToState.containsKey(servletRequest) || !isTraced(httpRequest, httpResponse)) {
             chain.doFilter(httpRequest, httpResponse);
             return;
         }
+
+        ServletFilterAgentIntercept.servletRequestToState.put(servletRequest, Boolean.TRUE);
+        if (ServletFilterAgentIntercept.logger.isLoggable(Level.FINER))
+          ServletFilterAgentIntercept.logger.finer(">> " + getClass().getSimpleName() + "#doFilter(" + AgentRuleUtil.getSimpleNameId(servletRequest) + "," + AgentRuleUtil.getSimpleNameId(servletResponse) + "," + AgentRuleUtil.getSimpleNameId(chain) + ")");
 
         /**
          * If request is traced then do not start new span.
@@ -216,6 +224,8 @@ public class TracingFilter implements Filter {
                     // asynchronously until after the scope has already been started.
                     span.finish();
                 }
+
+                ServletFilterAgentIntercept.servletRequestToState.remove(servletRequest);
             }
         }
     }

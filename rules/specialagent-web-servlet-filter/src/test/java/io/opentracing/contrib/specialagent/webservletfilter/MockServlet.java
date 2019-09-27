@@ -28,9 +28,11 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class MockServlet extends HttpServlet {
   private static final long serialVersionUID = 976450353590523027L;
+  static volatile int count;
 
   @Override
   public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+    ++count;
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 }

@@ -36,15 +36,18 @@ public class ServletContextAgentIntercept extends ContextAgentIntercept {
     final ServletContext context = (ServletContext)thiz;
     try {
       final FilterRegistration.Dynamic registration = (FilterRegistration.Dynamic)getAddFilterMethod(context);
-      if (registration != null)
+      if (registration != null) {
+        registration.setAsyncSupported(true);
         registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
+      }
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
       servletContextToFilter.remove(context);
     }
-
-    if (logger.isLoggable(Level.FINER))
-      logger.finer("<< ServletContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(thiz) + ")");
+    finally {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("<< ServletContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(thiz) + ")");
+    }
   }
 }

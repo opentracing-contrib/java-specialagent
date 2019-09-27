@@ -32,31 +32,37 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
     try {
       context = (ServletContext)thiz.getClass().getMethod("getServletContext").invoke(thiz);
       final Object registration = getAddFilterMethod(context);
-      if (registration != null) {
-        final Method addMappingForUrlPatternsMethod = registration.getClass().getMethod("addMappingForUrlPatterns", EnumSet.class, boolean.class, String[].class);
-        EnumSet dispatcherTypes = null;
-        try {
-          final Class<Enum> dispatcherTypeClass = (Class<Enum>)Class.forName("javax.servlet.DispatcherType");
-          dispatcherTypes = EnumSet.allOf(dispatcherTypeClass);
-        }
-        catch (final ClassNotFoundException e) {
-          if (logger.isLoggable(Level.FINER))
-            logger.finer("<> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): javax.servlet.DispatcherType is missing, so using null which defaults to: DispatcherType.REQUEST");
-        }
+      if (registration == null)
+        return;
 
-        if (logger.isLoggable(Level.FINER))
-          logger.finer(">> " + registration.getClass().getSimpleName() + "#addMappingForUrlPatterns(" + registration + "," + dispatcherTypes + ",true," + patterns + ")");
+      final Class<?> registrationClass = registration.getClass();
+      final Method addMappingForUrlPatternsMethod = registrationClass.getMethod("addMappingForUrlPatterns", EnumSet.class, boolean.class, String[].class);
+      final Method setAsyncSupportedMethod = registrationClass.getMethod("setAsyncSupported", boolean.class);
+      setAsyncSupportedMethod.invoke(registration, Boolean.TRUE);
 
-        addMappingForUrlPatternsMethod.invoke(registration, dispatcherTypes, true, patterns);
+      EnumSet dispatcherTypes = null;
+      try {
+        final Class<Enum> dispatcherTypeClass = (Class<Enum>)Class.forName("javax.servlet.DispatcherType");
+        dispatcherTypes = EnumSet.allOf(dispatcherTypeClass);
       }
+      catch (final ClassNotFoundException e) {
+        if (logger.isLoggable(Level.FINER))
+          logger.finer("<> JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(context) + "): javax.servlet.DispatcherType is missing, so using null which defaults to: DispatcherType.REQUEST");
+      }
+
+      if (logger.isLoggable(Level.FINER))
+        logger.finer(">> " + registrationClass.getSimpleName() + "#addMappingForUrlPatterns(" + registration + "," + dispatcherTypes + ",true," + patterns + ")");
+
+      addMappingForUrlPatternsMethod.invoke(registration, dispatcherTypes, true, patterns);
     }
     catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | ServletException e) {
       logger.log(Level.WARNING, e.getMessage(), e);
       if (context != null)
         servletContextToFilter.remove(context);
     }
-
-    if (logger.isLoggable(Level.FINER))
-      logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(thiz) + ")");
+    finally {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("<< JettyAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(thiz) + ")");
+    }
   }
 }

@@ -59,7 +59,6 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
       if (!(tracingFilter instanceof TracingProxyFilter))
         return;
 
-      servletRequestToState.put(request, Boolean.TRUE);
       if (logger.isLoggable(Level.FINER))
         logger.finer(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
 
