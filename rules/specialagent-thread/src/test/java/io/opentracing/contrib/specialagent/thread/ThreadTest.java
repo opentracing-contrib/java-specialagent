@@ -29,7 +29,7 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
+@AgentRunner.Config
 public class ThreadTest {
   @Before
   public void before(final MockTracer tracer) {
@@ -79,6 +79,26 @@ public class ThreadTest {
 
   @Test
   public void testCustomThread(final MockTracer tracer) throws InterruptedException {
+    final AtomicBoolean foundSpan = new AtomicBoolean(false);
+    final Thread thread = new CustomThread(null) {
+      @Override
+      public void run() {
+        foundSpan.set(tracer.activeSpan() != null);
+      }
+    };
+
+    try (final Scope scope = tracer.buildSpan("parent").startActive(true)) {
+      thread.start();
+    }
+
+    thread.join(10_000);
+    assertTrue(foundSpan.get());
+    assertEquals(1, tracer.finishedSpans().size());
+    assertNull(GlobalTracer.get().activeSpan());
+  }
+
+  @Test
+  public void testCustomThreadRunnable(final MockTracer tracer) throws InterruptedException {
     final AtomicBoolean foundSpan = new AtomicBoolean(false);
     final Thread thread = new CustomThread(new Runnable() {
       @Override
