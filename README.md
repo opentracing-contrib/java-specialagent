@@ -450,6 +450,7 @@ Thank you to the following contributors for developing instrumentation plugins:
 Thank you to the following contributors for developing tracer plugins:
 
 * [Carlos Alberto Cortez](https://github.com/carlosalberto)
+* [Han Zhang](https://github.com/hanwavefront)
 
 Thank you to the following developers for filing issues and helping us fix them:
 
