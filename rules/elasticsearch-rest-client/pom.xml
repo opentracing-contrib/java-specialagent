@@ -25,7 +25,7 @@
   </parent>
   <artifactId>elasticsearch-rest-client</artifactId>
   <name>SpecialAgent Rule for Elasticsearch Rest Client</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-elasticsearch-7-rest-client</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-rest-client</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

@@ -25,7 +25,7 @@
   </parent>
   <artifactId>cassandra-4-driver</artifactId>
   <name>SpecialAgent Rule for Cassandra 4 Driver</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-cassandra-driver</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/cassandra-4-driver</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

@@ -25,7 +25,7 @@
   </parent>
   <artifactId>web-servlet-filter</artifactId>
   <name>SpecialAgent Rule for Web Servlet Filter</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-web-servlet-filter</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/web-servlet-filter</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

@@ -25,7 +25,7 @@
   </parent>
   <artifactId>jms-1</artifactId>
   <name>SpecialAgent Rule for JMS 1</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-1</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/jms-1</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

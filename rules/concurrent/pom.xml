@@ -25,5 +25,5 @@
   </parent>
   <artifactId>concurrent</artifactId>
   <name>SpecialAgent Rule for Java Concurrent</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-concurrent</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/concurrent</url>
 </project>

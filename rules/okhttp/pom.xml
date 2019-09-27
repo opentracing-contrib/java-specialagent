@@ -25,7 +25,7 @@
   </parent>
   <artifactId>okhttp</artifactId>
   <name>SpecialAgent Rule for OkHttp</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-okhttp</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/okhttp</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

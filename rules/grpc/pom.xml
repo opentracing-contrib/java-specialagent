@@ -25,7 +25,7 @@
   </parent>
   <artifactId>grpc</artifactId>
   <name>SpecialAgent Rule for GRPC</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-grpc</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/grpc</url>
   <properties>
     <grpc.version>1.6.0</grpc.version>
     <protobuf.version>3.7.0</protobuf.version>

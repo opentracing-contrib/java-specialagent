@@ -10,7 +10,7 @@
   </parent>
   <artifactId>lettuce</artifactId>
   <name>SpecialAgent Rule for Lettuce</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-lettuce</url>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/lettuce</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
