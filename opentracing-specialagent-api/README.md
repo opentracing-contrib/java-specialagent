@@ -248,7 +248,20 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
         </executions>
       </plugin>
       ```
-      The `<name>` property specifies the name of the plugin. This name will be used by users to configure the plugin.
+      The `<name>` property specifies the name of the plugin. This name will be used by users to configure the plugin. If the `<name>` property is not specified, the plugin's `artifactId` will be used as the plugin's name.
+1. Each plugin can declare a priority for order when plugins are loaded by the SpecialAgent. To declare a priority, the plugin's `pom.xml` must specify the following:
+   ```xml
+   <project>
+    ...
+    <properties>
+      <sa.rule.priority>VALUE</sa.rule.priority>
+    </properties>
+    ...
+   </project>
+   ```
+   The value of `sa.rule.priority` can be between `0` and `2147483647`. Plugins with the highest `sa.rule.priority` value are loaded last (i.e. the order for loading of plugins is as per inverse `sa.rule.priority`).
+
+   If the `sa.rule.priority` property is missing, a priority of `0` is used as default.
 
 #### 5.1.2 Testing
 

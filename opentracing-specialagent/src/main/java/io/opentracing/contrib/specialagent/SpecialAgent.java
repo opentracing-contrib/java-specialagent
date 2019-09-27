@@ -25,10 +25,13 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +77,7 @@ public class SpecialAgent extends SpecialAgentBase {
   }
 
   private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
-  private static final Map<File,PluginManifest> fileToPluginManifest = new HashMap<>();
+  private static final Map<File,PluginManifest> fileToPluginManifest = new LinkedHashMap<>();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
@@ -303,13 +306,32 @@ public class SpecialAgent extends SpecialAgentBase {
 
     // Add plugins specified on in the RULE_PATH_ARG
     final File[] pluginFiles = SpecialAgentUtil.classPathToFiles(System.getProperty(RULE_PATH_ARG));
-    if (pluginFiles != null) {
-      for (final File pluginFile : pluginFiles) {
-        PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
-        if (pluginManifest == null)
-          fileToPluginManifest.put(pluginFile, pluginManifest = PluginManifest.getPluginManifest(pluginFile));
+    if (pluginFiles != null)
+      for (final File pluginFile : pluginFiles)
+        if (!fileToPluginManifest.containsKey(pluginFile))
+          fileToPluginManifest.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
+
+    // Identify all non-null PluginManifest(s), put them into a list,
+    // sort it based on priority, and re-add to fileToPluginManifest
+    final List<PluginManifest> pluginManifests = new ArrayList<>();
+    final Iterator<Map.Entry<File,PluginManifest>> iterator = fileToPluginManifest.entrySet().iterator();
+    while (iterator.hasNext()) {
+      final Map.Entry<File,PluginManifest> entry = iterator.next();
+      if (entry.getValue() != null) {
+        pluginManifests.add(entry.getValue());
+        iterator.remove();
       }
     }
+
+    pluginManifests.sort(new Comparator<PluginManifest>() {
+      @Override
+      public int compare(final PluginManifest o1, final PluginManifest o2) {
+        return Integer.compare(o1.getPriority(), o2.getPriority());
+      }
+    });
+
+    for (final PluginManifest pluginManifest : pluginManifests)
+      fileToPluginManifest.put(pluginManifest.file, pluginManifest);
 
     if (logger.isLoggable(Level.FINER))
       logger.finer("Loading " + fileToPluginManifest.size() + " rule paths:\n" + AssembleUtil.toIndentedString(fileToPluginManifest.keySet()));
@@ -322,7 +344,6 @@ public class SpecialAgent extends SpecialAgentBase {
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
     deferredTracer = loadTracer();
-
     loadRules(manager);
   }
 

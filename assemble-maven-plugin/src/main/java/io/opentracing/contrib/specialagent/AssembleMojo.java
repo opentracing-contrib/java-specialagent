@@ -17,10 +17,14 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Enumeration;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -77,15 +81,46 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
         File jarFile = AssembleUtil.getFileForDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
         if (jarFile != null) {
           jarFile = new File(localRepository.getBasedir(), jarFile.getPath());
-          final String dependenciesTgf = AssembleUtil.readFileFromJar(jarFile, "dependencies.tgf");
+          String dependenciesTgf = null;
+          String pluginName = null;
+          try (final ZipFile zipFile = new ZipFile(jarFile)) {
+            final Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+            while (enumeration.hasMoreElements()) {
+              final ZipEntry entry = enumeration.nextElement();
+              if ("dependencies.tgf".equals(entry.getName())) {
+                try (final InputStream in = zipFile.getInputStream(entry)) {
+                  dependenciesTgf = new String(AssembleUtil.readBytes(in));
+                }
+              }
+              else if (entry.getName().startsWith("sa.plugin.name.")) {
+                pluginName = entry.getName().substring(16);
+              }
+
+              if (dependenciesTgf != null && pluginName != null)
+                break;
+            }
+          }
+
           if (dependenciesTgf != null) {
             copyDependencies(dependenciesTgf, pluginsPath);
           }
           else if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory") || AssembleUtil.hasFileInJar(jarFile, "META-INF/maven/io.opentracing.contrib/opentracing-tracerresolver/pom.xml")) {
-            fileCopy(jarFile, new File(pluginsPath, jarFile.getName()));
+            pluginName = (String)getProject().getProperties().get(artifact.getArtifactId());
+            if (pluginName == null) {
+              pluginName += ".jar";
+            }
+            else {
+              getLog().warn("Name of Tracer Plugin is missing: <properties><" + artifact.getArtifactId() + ">NAME</" + artifact.getArtifactId() + "></properties>");
+              pluginName = jarFile.getName();
+            }
+
+            fileCopy(jarFile, new File(pluginsPath, pluginName));
           }
           else if (artifact.isOptional()) {
-            fileCopy(jarFile, new File(extPath, jarFile.getName()));
+            if (pluginName == null)
+              pluginName = artifact.getArtifactId() + ".jar";
+
+            fileCopy(jarFile, new File(extPath, pluginName));
           }
           else if (getLog().isDebugEnabled()) {
             getLog().debug("Skipping artifact [selector]: " + artifact.toString());

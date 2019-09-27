@@ -16,14 +16,19 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class PluginManifest {
   static enum Type {
@@ -32,13 +37,17 @@ public class PluginManifest {
   }
 
   private static PluginManifest getPluginManifestFromEntry(final File file, final String entry) {
-    if (entry.startsWith("sa.plugin.name."))
-      return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(15));
+    if ("otarules.mf".equals(entry))
+      return new PluginManifest(file, Type.INSTRUMENTATION, file.getName().substring(0, file.getName().length() - 4));
 
     if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
       return new PluginManifest(file, Type.TRACER, file.getName().substring(0, file.getName().length() - 4));
 
     return null;
+  }
+
+  public static PluginManifest id(final File file) {
+    return new PluginManifest(file, null, null);
   }
 
   public static PluginManifest getPluginManifest(final File file) {
@@ -79,6 +88,8 @@ public class PluginManifest {
   public final File file;
   public final Type type;
   public final String name;
+  private URL fingerprintUrl;
+  private int priority = -1;
 
   private PluginManifest(final File file, final Type type, final String name) {
     this.file = file;
@@ -86,12 +97,72 @@ public class PluginManifest {
     this.name = name;
   }
 
+  public int getPriority() {
+    if (priority != -1)
+      return priority;
+
+    try {
+      String pom = null;
+      if (file.isDirectory()) {
+        pom = new String(Files.readAllBytes(new File(new File(file, "../.."), "pom.xml").toPath()));
+      }
+      else {
+        try (final ZipFile zipFile = new ZipFile(file)) {
+          final Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+          while (enumeration.hasMoreElements()) {
+            final ZipEntry entry = enumeration.nextElement();
+            if (entry.getName().startsWith("META-INF/maven/") && entry.getName().endsWith("pom.xml")) {
+              try (final InputStream in = zipFile.getInputStream(entry)) {
+                pom = new String(AssembleUtil.readBytes(in));
+                break;
+              }
+            }
+          }
+        }
+
+        if (pom == null)
+          throw new FileNotFoundException("Could not find META-INF/maven/.../pom.xml in " + file);
+      }
+
+      final int start = pom.indexOf("<sa.rule.priority>");
+      if (start == -1)
+        return priority = 0;
+
+      final int end = pom.indexOf("</sa.rule.priority>", start + 18);
+      priority = Integer.parseInt(pom.substring(start + 18, end));
+      if (priority < 0)
+        throw new IllegalArgumentException("sa.rule.priority must be between 0 and 2147483647");
+
+      return priority;
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   public URL getFingerprint() {
     try {
-      return new URL(file.isDirectory() ? "file:" + file + "/fingerprint.bin" : "jar:file:" + file + "!/fingerprint.bin");
+      return fingerprintUrl == null ? fingerprintUrl = new URL(file.isDirectory() ? "file:" + file + "/fingerprint.bin" : "jar:file:" + file + "!/fingerprint.bin") : fingerprintUrl;
     }
     catch (final MalformedURLException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @Override
+  public int hashCode() {
+    return file.hashCode();
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (obj == this)
+      return true;
+
+    if (!(obj instanceof PluginManifest))
+      return false;
+
+    final PluginManifest that = (PluginManifest)obj;
+    return file.equals(that.file);
   }
 }

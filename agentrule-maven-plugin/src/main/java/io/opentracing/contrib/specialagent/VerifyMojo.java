@@ -79,7 +79,6 @@ public final class VerifyMojo extends AbstractMojo {
         boolean hasFingerprintBin = false;
         boolean hasDependenciesTgf = false;
         boolean hasTestManifest = false;
-        String name = null;
         try (final JarFile jarFile = new JarFile(file)) {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
@@ -92,8 +91,6 @@ public final class VerifyMojo extends AbstractMojo {
               hasDependenciesTgf = true;
             else if (UtilConstants.META_INF_TEST_MANIFEST.equals(entry))
               hasTestManifest = true;
-            else if (entry.startsWith("sa.plugin.name."))
-              name = entry.substring(15);
           }
         }
 
@@ -113,9 +110,6 @@ public final class VerifyMojo extends AbstractMojo {
 
         if (!hasTestManifest)
           throw new MojoExecutionException(file.getName() + " does not have AgentRunner tests");
-
-        if (name == null)
-          throw new MojoExecutionException(file.getName() + " does not have sa.plugin.name.<name>");
       }
     }
     catch (final IOException | XmlPullParserException e) {

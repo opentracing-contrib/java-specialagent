@@ -134,7 +134,7 @@ public final class FingerprintMojo extends TreeMojo {
   @Parameter(defaultValue="${localRepository}", required=true, readonly=true)
   private ArtifactRepository localRepository;
 
-  @Parameter(defaultValue="${sa.plugin.name}", required=true, readonly=true)
+  @Parameter(defaultValue="${sa.plugin.name}")
   private String name;
 
   private void setField(final Class<? super FingerprintMojo> cls, final String fieldName, final Object value) {
@@ -158,9 +158,11 @@ public final class FingerprintMojo extends TreeMojo {
     try {
       final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
       destFile.getParentFile().mkdirs();
-      final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
-      if (!nameFile.exists() && !nameFile.createNewFile())
-        throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
+      if (name != null && !name.equals(getProject().getArtifact().getArtifactId())) {
+        final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
+        if (!nameFile.exists() && !nameFile.createNewFile())
+          throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
+      }
 
       // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
       final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
