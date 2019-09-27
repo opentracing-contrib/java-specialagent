@@ -27,7 +27,10 @@ import net.bytebuddy.agent.builder.AgentBuilder;
  */
 public abstract class AgentRule {
   private static final Logger logger = Logger.getLogger(AgentRule.class);
+
   static final Map<String,String> classNameToName = new HashMap<>();
+  static boolean initialized = false;
+
   public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
     @Override
     protected Integer initialValue() {
@@ -36,7 +39,7 @@ public abstract class AgentRule {
   };
 
   public static boolean isEnabled(final String origin) {
-    final boolean enabled = latch.get() == 0;
+    final boolean enabled = initialized && latch.get() == 0;
     if (enabled) {
       if (logger.isLoggable(Level.FINER))
         logger.finer("-------> Intercept from: " + origin);

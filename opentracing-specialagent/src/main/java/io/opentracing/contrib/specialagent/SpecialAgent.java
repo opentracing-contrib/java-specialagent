@@ -153,6 +153,8 @@ public class SpecialAgent extends SpecialAgentBase {
     catch (final Throwable t) {
       logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
     }
+
+    AgentRule.initialized = true;
   }
 
   /**
