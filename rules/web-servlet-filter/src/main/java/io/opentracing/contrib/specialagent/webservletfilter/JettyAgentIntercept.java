@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.webservletfilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import javax.servlet.ServletContext;
@@ -51,7 +52,7 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
       }
 
       if (logger.isLoggable(Level.FINER))
-        logger.finer(">> " + registrationClass.getSimpleName() + "#addMappingForUrlPatterns(" + registration + "," + dispatcherTypes + ",true," + patterns + ")");
+        logger.finer(">> " + registrationClass.getSimpleName() + "#addMappingForUrlPatterns(" + registration + "," + dispatcherTypes + ",true," + Arrays.toString(patterns) + ")");
 
       addMappingForUrlPatternsMethod.invoke(registration, dispatcherTypes, true, patterns);
     }
