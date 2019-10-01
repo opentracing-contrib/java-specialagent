@@ -32,12 +32,10 @@ import feign.Target;
 import feign.okhttp.OkHttpClient;
 import io.opentracing.Scope;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class FeignTest {
   @Before
   public void before(final MockTracer tracer) {

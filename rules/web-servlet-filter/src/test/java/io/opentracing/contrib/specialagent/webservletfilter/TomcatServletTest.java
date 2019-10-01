@@ -80,7 +80,15 @@ public class TomcatServletTest {
     context.addFilterMap(filterMap);
 
     // Following triggers creation of NoPluggabilityServletContext object during initialization
-    ((StandardContext)context).addApplicationLifecycleListener(new SCL());
+    ((StandardContext)context).addApplicationLifecycleListener(new ServletContextListener() {
+      @Override
+      public void contextInitialized(final ServletContextEvent event) {
+      }
+
+      @Override
+      public void contextDestroyed(final ServletContextEvent event) {
+      }
+    });
 
     Tomcat.addServlet(context, "helloWorldServlet", new MockServlet());
     context.addServletMapping("/hello", "helloWorldServlet");
@@ -109,17 +117,5 @@ public class TomcatServletTest {
   @AfterClass
   public static void afterClass() throws LifecycleException {
     tomcatServer.stop();
-  }
-
-  public static class SCL implements ServletContextListener {
-    @Override
-    public void contextInitialized(final ServletContextEvent sce) {
-      // NOOP
-    }
-
-    @Override
-    public void contextDestroyed(final ServletContextEvent sce) {
-      // NOOP
-    }
   }
 }

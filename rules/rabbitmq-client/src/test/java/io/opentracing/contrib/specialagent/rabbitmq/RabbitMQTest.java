@@ -63,7 +63,7 @@ public class RabbitMQTest {
   @Before
   public void before(final MockTracer tracer) throws IOException, TimeoutException {
     tracer.reset();
-    ConnectionFactory factory = new ConnectionFactory();
+    final ConnectionFactory factory = new ConnectionFactory();
     factory.setUsername("guest");
     factory.setPassword("guest");
     factory.setHost("localhost");

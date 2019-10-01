@@ -131,7 +131,7 @@ public class SpringJmsTest {
     }
 
     @JmsListener(destination = "mailbox", containerFactory = "jmsListenerContainerFactory")
-    public void receiveMessage(String message) {
+    public void receiveMessage(final String message) {
       assertNotNull(GlobalTracer.get().activeSpan());
       assertEquals("message", message);
       counter.incrementAndGet();

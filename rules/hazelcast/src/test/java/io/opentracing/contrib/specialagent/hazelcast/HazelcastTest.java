@@ -78,13 +78,14 @@ public class HazelcastTest {
   @Test
   public void testGetAllHazelcastInstances(final MockTracer tracer) {
     final Set<HazelcastInstance> instances = Hazelcast.getAllHazelcastInstances();
-    test(instances.iterator().next(), tracer);
+    for (final HazelcastInstance instance : instances)
+      test(instance, tracer);
   }
 
   @Test
   public void testNewHazelcastClientInstance(final MockTracer tracer) {
-    HazelcastInstance hazelcast2 = HazelcastClient.newHazelcastClient();
-    test(hazelcast2, tracer);
+    final HazelcastInstance instance = HazelcastClient.newHazelcastClient();
+    test(instance, tracer);
   }
 
   private static void test(final HazelcastInstance instance, final MockTracer tracer) {

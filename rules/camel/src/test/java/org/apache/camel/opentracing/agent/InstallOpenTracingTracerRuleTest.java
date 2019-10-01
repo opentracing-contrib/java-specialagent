@@ -45,7 +45,7 @@ public class InstallOpenTracingTracerRuleTest extends CamelTestSupport {
 
   @BeforeClass
   public static void beforeClass() {
-    GlobalTracer.register(tracer = new MockTracer(Propagator.TEXT_MAP));
+    GlobalTracer.registerIfAbsent(tracer = new MockTracer(Propagator.TEXT_MAP));
   }
 
   @EndpointInject(uri = "mock:result")

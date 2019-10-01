@@ -29,11 +29,9 @@ import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 @SuppressWarnings("deprecation")
 public class SpringWebTest {
   @Before
@@ -42,21 +40,19 @@ public class SpringWebTest {
   }
 
   @Test
-  public void test(final MockTracer tracer) {
+  public void testSync(final MockTracer tracer) {
     final RestTemplate restTemplate = new RestTemplate();
 
     try {
       restTemplate.getForEntity("http://localhost:12345", String.class);
     }
     catch (final Exception ignore) {
-
     }
 
     try {
       restTemplate.getForObject("http://localhost:12345", String.class);
     }
     catch (final Exception ignore) {
-
     }
 
     assertEquals(2, tracer.finishedSpans().size());

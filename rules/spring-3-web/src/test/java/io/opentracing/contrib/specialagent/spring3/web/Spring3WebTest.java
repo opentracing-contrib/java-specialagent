@@ -17,23 +17,15 @@ package io.opentracing.contrib.specialagent.spring3.web;
 
 import static org.junit.Assert.*;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class Spring3WebTest {
-  @Before
-  public void before(final MockTracer tracer) {
-    tracer.reset();
-  }
-
   @Test
   public void test(final MockTracer tracer) {
     final RestTemplate restTemplate = new RestTemplate();
