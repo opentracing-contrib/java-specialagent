@@ -399,7 +399,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 | [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | 2.0 | LATEST |
 | [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | 2.7.0 | LATEST |
 | [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | 1.1.0 | LATEST |
-| [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | 5.0.0.RELEASE | LATEST |
+| [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | 5.1.0.RC1 | LATEST |
 | [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver) | 3.9.0 | LATEST |
 | [OkHttp3][java-okhttp] | 3.5.0 | 3.14.3 |
 | [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | 5.0.0 | LATEST |
