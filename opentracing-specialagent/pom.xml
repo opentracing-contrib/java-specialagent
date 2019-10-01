@@ -222,12 +222,6 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>lettuce-5.0</artifactId>
-          <version>${project.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>spring-web</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>

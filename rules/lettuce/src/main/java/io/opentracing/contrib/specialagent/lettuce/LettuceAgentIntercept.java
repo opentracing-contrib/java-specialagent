@@ -27,15 +27,40 @@ import io.opentracing.contrib.redis.lettuce.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
 public class LettuceAgentIntercept {
+  private static Boolean IS_LETTUCE_50;
+
   @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
     if (returned instanceof TracingRedisAsyncCommands)
       return returned;
 
-    if (returned instanceof RedisPubSubAsyncCommands)
-      return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    if (returned instanceof io.opentracing.contrib.redis.lettuce50.TracingRedisAsyncCommands)
+      return returned;
 
-    return new TracingRedisAsyncCommands<>((RedisAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    if (returned instanceof RedisPubSubAsyncCommands)
+      if (isLettuce50()) {
+        return new io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<Object, Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+      } else {
+        return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<Object, Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+      }
+
+    if (isLettuce50())
+      return new io.opentracing.contrib.redis.lettuce50.TracingRedisAsyncCommands<>((RedisAsyncCommands<Object, Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+
+    return new TracingRedisAsyncCommands<>((RedisAsyncCommands<Object, Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+  }
+
+  private static boolean isLettuce50() {
+    if (IS_LETTUCE_50 != null) {
+      return IS_LETTUCE_50;
+    }
+    try {
+      Class.forName("io.lettuce.core.XAddArgs");
+      IS_LETTUCE_50 = false;
+    } catch (ClassNotFoundException e) {
+      IS_LETTUCE_50 = true;
+    }
+    return IS_LETTUCE_50;
   }
 
   @SuppressWarnings("unchecked")
@@ -43,7 +68,13 @@ public class LettuceAgentIntercept {
     if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
       return returned;
 
-    return new TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    if (returned instanceof io.opentracing.contrib.redis.lettuce50.TracingRedisAdvancedClusterAsyncCommands)
+      return returned;
+
+    if (isLettuce50())
+      return new io.opentracing.contrib.redis.lettuce50.TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<Object, Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+
+    return new TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<Object, Object>) returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 
   @SuppressWarnings("unchecked")
@@ -51,6 +82,12 @@ public class LettuceAgentIntercept {
     if (arg instanceof TracingRedisPubSubListener)
       return arg;
 
-    return new TracingRedisPubSubListener<>((RedisPubSubListener<Object,Object>)arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    if (arg instanceof io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubListener)
+      return arg;
+
+    if (isLettuce50())
+      return new io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubListener<>((RedisPubSubListener<Object, Object>) arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+
+    return new TracingRedisPubSubListener<>((RedisPubSubListener<Object, Object>) arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 }
