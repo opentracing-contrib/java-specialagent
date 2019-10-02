@@ -41,6 +41,13 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <!-- https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-client</artifactId>

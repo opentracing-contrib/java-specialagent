@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.kafka.spring;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -28,6 +29,8 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringKafkaAgentRule extends AgentRule {
+  private static final Logger logger = Logger.getLogger(SpringKafkaAgentRule.class.getName());
+
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
