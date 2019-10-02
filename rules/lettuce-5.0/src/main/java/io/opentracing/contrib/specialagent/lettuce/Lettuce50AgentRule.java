@@ -29,6 +29,16 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class Lettuce50AgentRule extends AgentRule {
+  private static boolean isLettuce50(final ClassLoader classLoader) {
+    try {
+      Class.forName("io.lettuce.core.XAddArgs", false, classLoader);
+      return false;
+    }
+    catch (final ClassNotFoundException e) {
+      return true;
+    }
+  }
+
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
@@ -36,19 +46,19 @@ public class Lettuce50AgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StatefulRedis.class).on(named("async")));
+          return isLettuce50(classLoader) ? builder.visit(Advice.to(StatefulRedis.class).on(named("async"))) : builder.visit(Advice.to(StatefulRedis.class).on(none()));
         }})
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StatefulRedisCluster.class).on(named("async")));
+          return isLettuce50(classLoader) ? builder.visit(Advice.to(StatefulRedisCluster.class).on(named("async"))) : builder.visit(Advice.to(StatefulRedisCluster.class).on(none()));
         }})
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.pubsub.StatefulRedisPubSubConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AddPubSubListener.class).on(named("addListener")));
+          return isLettuce50(classLoader) ? builder.visit(Advice.to(AddPubSubListener.class).on(named("addListener"))) : builder.visit(Advice.to(AddPubSubListener.class).on(none()));
         }}));
   }
 
