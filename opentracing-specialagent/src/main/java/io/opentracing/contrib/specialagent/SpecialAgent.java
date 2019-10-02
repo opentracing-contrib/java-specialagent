@@ -661,7 +661,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
     if (classLoader == null) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("[" + pluginManifest.name + "] Target class loader is bootstrap, so adding rule JARs to the bootstrap class loader directly");
+        logger.finer("[" + pluginManifest.name + "] Target class loader is: <bootstrap>null");
 
       for (final File pluginDependencyFile : pluginDependencyFiles) {
         try {
@@ -675,7 +675,7 @@ public class SpecialAgent extends SpecialAgentBase {
     }
     else if (classLoader == ClassLoader.getSystemClassLoader()) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("[" + pluginManifest.name + "] Target class loader is system, so adding rule JARs to the system class loader directly");
+        logger.finer("[" + pluginManifest.name + "] Target class loader is: <system>" + AssembleUtil.getNameId(classLoader));
 
       for (final File pluginDependencyFile : pluginDependencyFiles) {
         try {
@@ -685,6 +685,9 @@ public class SpecialAgent extends SpecialAgentBase {
           logger.log(Level.SEVERE, "[" + pluginManifest.name + "] Failed to add path to system class loader: " + pluginDependencyFile, e);
         }
       }
+    }
+    else if (logger.isLoggable(Level.FINER)) {
+      logger.finer("[" + pluginManifest.name + "] Target class loader is: " + AssembleUtil.getNameId(classLoader));
     }
 
     // Associate the RuleClassLoader with the target class's class loader
