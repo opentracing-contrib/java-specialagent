@@ -22,14 +22,6 @@ import io.opentracing.util.GlobalTracer;
 
 public class SpringWebMvcAgentIntercept {
   public static Object getInterceptors(final Object thiz) {
-    try {
-      Class.forName("org.springframework.beans.factory.access.BeanFactoryLocator");
-    }
-    catch (final ClassNotFoundException ignore) {
-      // Spring 5.x doesn't have it
-      return thiz;
-    }
-
     final HandlerInterceptor[] interceptors = (HandlerInterceptor[])thiz;
     if (interceptors == null || interceptors.length == 0)
       return new HandlerInterceptor[] {new TracingHandlerInterceptor(GlobalTracer.get())};
