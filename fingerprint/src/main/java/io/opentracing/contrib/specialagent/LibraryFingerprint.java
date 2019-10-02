@@ -147,6 +147,9 @@ public class LibraryFingerprint extends Fingerprint {
           fingerprint.compatible(classes[i]);
           error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
         }
+        else if (logger.isLoggable(Level.FINER)) {
+          logger.finer("ClassFingerprint#compatible[true](" + classes[i].getName() + ")");
+        }
       }
       catch (final IOException e) {
         logger.log(Level.WARNING, "Failed generate class fingerprint due to IOException -- resorting to default behavior (permit instrumentation)", e);
