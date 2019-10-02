@@ -20,13 +20,13 @@ import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
 import io.opentracing.contrib.redis.common.TracingConfiguration;
-import io.opentracing.contrib.redis.lettuce.TracingRedisAdvancedClusterAsyncCommands;
-import io.opentracing.contrib.redis.lettuce.TracingRedisAsyncCommands;
-import io.opentracing.contrib.redis.lettuce.TracingRedisPubSubAsyncCommands;
-import io.opentracing.contrib.redis.lettuce.TracingRedisPubSubListener;
+import io.opentracing.contrib.redis.lettuce50.TracingRedisAdvancedClusterAsyncCommands;
+import io.opentracing.contrib.redis.lettuce50.TracingRedisAsyncCommands;
+import io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubAsyncCommands;
+import io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
-public class LettuceAgentIntercept {
+public class Lettuce50AgentIntercept {
   private static Boolean IS_LETTUCE_50;
 
   private static boolean isLettuce50() {
@@ -46,7 +46,7 @@ public class LettuceAgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
-    if (isLettuce50())
+    if (!isLettuce50())
       return returned;
 
     if (returned instanceof TracingRedisAsyncCommands)
@@ -60,7 +60,7 @@ public class LettuceAgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object getAsyncClusterCommands(final Object returned) {
-    if (isLettuce50())
+    if (!isLettuce50())
       return returned;
 
     if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
@@ -71,7 +71,7 @@ public class LettuceAgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object addPubSubListener(final Object arg) {
-    if (isLettuce50())
+    if (!isLettuce50())
       return arg;
 
     if (arg instanceof TracingRedisPubSubListener)
