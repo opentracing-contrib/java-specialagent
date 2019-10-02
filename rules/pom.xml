@@ -53,6 +53,7 @@
     <module>jedis</module>
     <module>apache-httpclient</module>
     <module>lettuce</module>
+    <module>lettuce-5.0</module>
     <module>spring-web</module>
     <module>spring-3-web</module>
     <module>spring-webmvc</module>
