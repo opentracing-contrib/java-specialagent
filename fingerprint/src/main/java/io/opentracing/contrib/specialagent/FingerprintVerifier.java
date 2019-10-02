@@ -35,7 +35,6 @@ class FingerprintVerifier {
 
   /**
    * Creates a new {@code Fingerprinter}.
-   * @throws NullPointerException If {@code manifest} is null.
    */
   FingerprintVerifier() {
     super();
