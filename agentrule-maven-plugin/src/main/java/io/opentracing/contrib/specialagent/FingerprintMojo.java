@@ -164,14 +164,6 @@ public final class FingerprintMojo extends TreeMojo {
           throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
       }
 
-      // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
-      final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
-      if (optionalDeps == null) {
-        getLog().warn("No dependencies were found with (scope=*, optional=true), " + UtilConstants.FINGERPRINT_FILE + " will be empty");
-        new LibraryFingerprint().toFile(destFile);
-        return;
-      }
-
       // The `compileDeps` represent the Instrumentation Plugin (this is the dependency(ies)
       // that bridges/links between the 3rd-Party Library to the Instrumentation Rule).
       final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, getProject().getArtifacts().iterator(), 1);
@@ -180,7 +172,10 @@ public final class FingerprintMojo extends TreeMojo {
       // bridges/links between the 3rd-Party Library to itself).
       compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
 
-      try (final URLClassLoader classLoader = new URLClassLoader(compileDeps, new URLClassLoader(optionalDeps, null))) {
+      // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
+      final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
+
+      try (final URLClassLoader classLoader = new URLClassLoader(compileDeps, new URLClassLoader(optionalDeps != null ? optionalDeps : new URL[0], null))) {
         final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, new MavenLogger(getLog()));
         fingerprint.toFile(destFile);
         if (getLog().isDebugEnabled())

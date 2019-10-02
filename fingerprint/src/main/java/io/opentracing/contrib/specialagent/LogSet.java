@@ -251,6 +251,9 @@ class LogSet {
 
   @Override
   public String toString() {
+    if (map.values().size() == 0)
+      return "";
+
     final StringBuilder builder = new StringBuilder();
     for (final Map<Log,Log> logs : map.values())
       for (final Log log : logs.keySet())

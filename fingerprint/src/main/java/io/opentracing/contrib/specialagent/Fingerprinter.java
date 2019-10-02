@@ -136,7 +136,7 @@ class Fingerprinter extends ClassVisitor {
     this.className = type.getClassName();
 
     final ClassLog log = addClassRef(type);
-    if (log == null || log.isResolved())
+    if (log != null && log.isResolved())
       return;
 
     if (superName == null || "java/lang/Object".equals(superName)) {
@@ -161,7 +161,8 @@ class Fingerprinter extends ClassVisitor {
       }
     }
 
-    log.resolve(this.superClass, this.interfaces);
+    if (log != null)
+      log.resolve(this.superClass, this.interfaces);
   }
 
   @Override

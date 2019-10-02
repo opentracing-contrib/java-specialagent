@@ -148,7 +148,7 @@ public class LibraryFingerprint extends Fingerprint {
           error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
         }
         else if (logger.isLoggable(Level.FINER)) {
-          logger.finer("ClassFingerprint#compatible[true](" + classes[i].getName() + ")");
+          logger.finer("ClassFingerprint#compatible[true](\"" + classes[i].getName() + "\")");
         }
       }
       catch (final IOException e) {
