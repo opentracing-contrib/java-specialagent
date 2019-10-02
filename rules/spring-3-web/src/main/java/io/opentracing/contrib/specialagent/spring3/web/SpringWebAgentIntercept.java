@@ -38,15 +38,6 @@ public class SpringWebAgentIntercept {
   }
 
   public static void enter(final Object thiz) {
-    try {
-      Class.forName("org.springframework.web.client.AsyncRestTemplate");
-      // Spring 3.x doesn't have it
-      return;
-    }
-    catch (final ClassNotFoundException ignore) {
-      // OK
-    }
-
     final ClientHttpRequest request = (ClientHttpRequest)thiz;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer
