@@ -349,8 +349,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   private static void setDisable(final String[] disable) {
     for (final String name : disable) {
-      System.setProperty("sa.instrumentation.plugin." + name + ".enable", "false");
-      System.setProperty("sa.tracer.plugin." + name + ".enable", "false");
+      System.setProperty("sa.instrumentation.plugin." + name + ".disable", "");
+      System.setProperty("sa.tracer.plugin." + name + ".disable", "");
     }
   }
 

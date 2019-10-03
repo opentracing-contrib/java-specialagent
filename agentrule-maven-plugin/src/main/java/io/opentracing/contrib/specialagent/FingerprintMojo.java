@@ -154,37 +154,36 @@ public final class FingerprintMojo extends TreeMojo {
     super.execute();
   }
 
-  private void createFingerprintBin() throws MojoExecutionException, MojoFailureException {
-    try {
-      final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
-      destFile.getParentFile().mkdirs();
-      if (name != null && !name.equals(getProject().getArtifact().getArtifactId())) {
-        final File nameFile = new File(destFile.getParentFile(), "sa.plugin.name." + name);
-        if (!nameFile.exists() && !nameFile.createNewFile())
-          throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
-      }
+  private void createFingerprintBin() throws IOException {
+    final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
+    destFile.getParentFile().mkdirs();
 
-      // The `compileDeps` represent the Instrumentation Plugin (this is the dependency(ies)
-      // that bridges/links between the 3rd-Party Library to the Instrumentation Rule).
-      final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, getProject().getArtifacts().iterator(), 1);
-      // Include the compile path of the Instrumentation Rule itself, which solves the use-
-      // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
-      // bridges/links between the 3rd-Party Library to itself).
-      compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
+    // The `compileDeps` represent the Instrumentation Plugin (this is the dependency(ies)
+    // that bridges/links between the 3rd-Party Library to the Instrumentation Rule).
+    final URL[] compileDeps = getDependencyPaths(localRepository, "compile", false, getProject().getArtifacts().iterator(), 1);
+    // Include the compile path of the Instrumentation Rule itself, which solves the use-
+    // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
+    // bridges/links between the 3rd-Party Library to itself).
+    compileDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
 
-      // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
-      final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
+    // The `optionalDeps` represent the 3rd-Party Library that is being instrumented
+    final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
 
-      try (final URLClassLoader classLoader = new URLClassLoader(compileDeps, new URLClassLoader(optionalDeps != null ? optionalDeps : new URL[0], null))) {
-        final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, new MavenLogger(getLog()));
-        fingerprint.toFile(destFile);
-        if (getLog().isDebugEnabled())
-          getLog().debug(fingerprint.toString());
-      }
+    try (final URLClassLoader classLoader = new URLClassLoader(compileDeps, new URLClassLoader(optionalDeps != null ? optionalDeps : new URL[0], null))) {
+      final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, new MavenLogger(getLog()));
+      fingerprint.toFile(destFile);
+      if (getLog().isDebugEnabled())
+        getLog().debug(fingerprint.toString());
     }
-    catch (final IOException e) {
-      throw new MojoFailureException(null, e);
-    }
+  }
+
+  private void createPluginName() throws IOException, MojoExecutionException {
+    if (name == null)
+      name = getProject().getArtifact().getArtifactId();
+
+    final File nameFile = new File(getProject().getBuild().getOutputDirectory(), "sa.plugin.name." + name);
+    if (!nameFile.exists() && !nameFile.createNewFile())
+      throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
   }
 
   @Override
@@ -194,7 +193,13 @@ public final class FingerprintMojo extends TreeMojo {
       return;
     }
 
-    createDependenciesTgf();
-    createFingerprintBin();
+    try {
+      createDependenciesTgf();
+      createFingerprintBin();
+      createPluginName();
+    }
+    catch (final IOException e) {
+      throw new MojoFailureException(e.getMessage(), e);
+    }
   }
 }
