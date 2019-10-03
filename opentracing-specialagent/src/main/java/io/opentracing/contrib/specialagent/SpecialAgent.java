@@ -210,11 +210,11 @@ public class SpecialAgent extends SpecialAgentBase {
       else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".enable"))
         instruPluginNameToEnable.put(key.substring(26, key.length() - 7), Boolean.parseBoolean(value));
       else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".disable"))
-        instruPluginNameToEnable.put(key.substring(26, key.length() - 7), "false".equals(value));
+        instruPluginNameToEnable.put(key.substring(26, key.length() - 8), "false".equals(value));
       else if (key.startsWith("sa.tracer.plugin.") && key.endsWith(".enable"))
         tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), Boolean.parseBoolean(value));
       else if (key.startsWith("sa.tracer.plugin.") && key.endsWith(".disable"))
-        tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), "false".equals(value));
+        tracerPluginNameToEnable.put(key.substring(17, key.length() - 8), "false".equals(value));
     }
 
     final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey(null) || instruPluginNameToEnable.remove(null);
