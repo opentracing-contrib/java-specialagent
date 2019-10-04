@@ -1,5 +1,14 @@
 # Changes by Version
 
+## v1.4.1 (2019-10-03)
+* Fix class loader issues in JDBC Plugin.
+* Fix J9+ cross-module readability issues.
+* Support ASYNC mode in `web-servlet-filter`.
+* Integrate [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java) into SpecialAgent.
+* Exclusively rely on Fingerprint Algo to qualify plugin compatibility in all cases.
+* Update Lettuce and Lettuce-50 plugins to load mutually exclusively.
+* Update Spring Web and WebMVC plugins (for versions 3, 4, and 5) to load mutually exclusively.
+
 ## v1.4.0 (2019-09-20)
 * Improved rigor in requirements imposed onto JUnit tests by `AgentRunner`.
 * Improved class loading architecture.
