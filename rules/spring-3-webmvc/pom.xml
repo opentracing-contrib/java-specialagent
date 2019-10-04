@@ -29,14 +29,27 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <spring.version>3.0.2.RELEASE</spring.version>
+    <version.spring>3.0.2.RELEASE</version.spring>
     <version.jetty>9.3.15.v20161220</version.jetty>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>agentrule-maven-plugin</artifactId>
+        <configuration>
+          <presents>
+            <present>org.springframework.beans.factory.access.BeanFactoryLocator</present>
+          </presents>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

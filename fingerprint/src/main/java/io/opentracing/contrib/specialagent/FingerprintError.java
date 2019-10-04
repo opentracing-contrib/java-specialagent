@@ -25,25 +25,26 @@ class FingerprintError {
    * An enum representing the reason for the error.
    */
   static enum Reason {
+    MUST_BE_PRESENT,
+    MUST_BE_ABSENT,
     MISSING,
     MISMATCH
   }
 
   private final Reason reason;
-  private final ClassFingerprint expected;
-  private final ClassFingerprint actual;
+  private final NamedFingerprint<?> expected;
+  private final NamedFingerprint<?> actual;
 
   /**
    * Creates a new {@code FingerprintError} with the specified {@code Reason}
-   * and provided {@code ClassFingerprint} objects for which the failure
+   * and provided {@code NamedFingerprint} objects for which the failure
    * occurred.
    *
    * @param reason The reason for the error.
-   * @param expected The expected {@code ClassFingerprint} object.
-   * @param actual The actual {@code ClassFingerprint} object, or {@code null} if the
-   *          fingerprint is missing.
+   * @param expected The expected {@code NamedFingerprint} object.
+   * @param actual The actual {@code NamedFingerprint} object.
    */
-  FingerprintError(final Reason reason, final ClassFingerprint expected, final ClassFingerprint actual) {
+  FingerprintError(final Reason reason, final NamedFingerprint<?> expected, final NamedFingerprint<?> actual) {
     this.reason = reason;
     this.expected = expected;
     this.actual = actual;
@@ -51,6 +52,9 @@ class FingerprintError {
 
   @Override
   public String toString() {
-    return reason == Reason.MISSING ? " " + reason + " " + expected.getName() : (reason + " " + expected.getName() + " (expected <> actual):\n(expected) " + expected.toString().replace("\n", "\n    ") + "\n  (actual) " + actual.toString().replace("\n", "\n    "));
+    if (reason == Reason.MUST_BE_PRESENT || reason == Reason.MUST_BE_ABSENT || reason == Reason.MISSING)
+      return " " + reason + " " + expected.getName();
+
+    return reason + " " + expected.getName() + " (expected <> actual):\n(expected) " + expected.toString().replace("\n", "\n    ") + "\n  (actual) " + actual.toString().replace("\n", "\n    ");
   }
 }

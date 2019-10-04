@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -137,6 +138,12 @@ public final class FingerprintMojo extends TreeMojo {
   @Parameter(defaultValue="${sa.plugin.name}")
   private String name;
 
+  @Parameter
+  private List<String> presents;
+
+  @Parameter
+  private List<String> absents;
+
   private void setField(final Class<? super FingerprintMojo> cls, final String fieldName, final Object value) {
     try {
       final Field field = cls.getDeclaredField(fieldName);
@@ -170,7 +177,7 @@ public final class FingerprintMojo extends TreeMojo {
     final URL[] optionalDeps = getDependencyPaths(localRepository, null, true, getProject().getArtifacts().iterator(), 0);
 
     try (final URLClassLoader classLoader = new URLClassLoader(compileDeps, new URLClassLoader(optionalDeps != null ? optionalDeps : new URL[0], null))) {
-      final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, new MavenLogger(getLog()));
+      final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, presents, absents, new MavenLogger(getLog()));
       fingerprint.toFile(destFile);
       if (getLog().isDebugEnabled())
         getLog().debug(fingerprint.toString());

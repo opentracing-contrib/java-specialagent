@@ -28,16 +28,6 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringWebAgentRule extends AgentRule {
-  private static boolean isSpring3(final ClassLoader classLoader) {
-    try {
-      Class.forName("org.springframework.web.client.AsyncRestTemplate", false, classLoader);
-      return false;
-    }
-    catch (final ClassNotFoundException e) {
-      return true;
-    }
-  }
-
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
@@ -45,7 +35,7 @@ public class SpringWebAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return isSpring3(classLoader) ? builder.visit(Advice.to(RestTemplate.class).on(named("execute"))) : builder.visit(Advice.to(RestTemplate.class).on(none()));
+          return builder.visit(Advice.to(RestTemplate.class).on(named("execute")));
         }}));
   }
 

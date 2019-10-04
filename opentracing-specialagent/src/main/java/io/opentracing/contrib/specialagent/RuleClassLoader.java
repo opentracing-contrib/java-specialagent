@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -177,7 +178,7 @@ class RuleClassLoader extends URLClassLoader {
     final Object fingerprint = fromFileMethod.invoke(null, pluginManifest.getFingerprint());
     if (fingerprint != null) {
       final Method isCompatibleMethod = libraryFingerprintClass.getDeclaredMethod("isCompatible", ClassLoader.class);
-      final Object[] errors = (Object[])isCompatibleMethod.invoke(fingerprint, classLoader);
+      final List<?> errors = (List<?>)isCompatibleMethod.invoke(fingerprint, classLoader);
       if (errors != null) {
         if (logger.isLoggable(Level.FINE))
           logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + "\nin:\n" + AssembleUtil.toIndentedString(getURLs()));

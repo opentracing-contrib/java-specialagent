@@ -121,6 +121,9 @@
                 <phase>process-classes</phase>
               </execution>
             </executions>
+            <configuration>
+              <name>${sa.plugin.name}</name>
+            </configuration>
           </plugin>
         </plugins>
       </build>

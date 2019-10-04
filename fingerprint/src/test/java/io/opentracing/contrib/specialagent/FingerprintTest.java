@@ -51,7 +51,7 @@ public class FingerprintTest {
     if (jarURL == null)
       fail("Could not find JAR resource");
 
-    final LibraryFingerprint lib = new LibraryFingerprint(new URLClassLoader(new URL[] {jarURL}, ClassLoader.getSystemClassLoader()), logger);
+    final LibraryFingerprint lib = new LibraryFingerprint(new URLClassLoader(new URL[] {jarURL}, ClassLoader.getSystemClassLoader()), null, null, logger);
     logger.fine(lib.toString());
     assertEquals(37, lib.getClasses().length);
 

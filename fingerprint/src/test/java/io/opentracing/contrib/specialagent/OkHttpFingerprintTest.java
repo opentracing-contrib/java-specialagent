@@ -32,7 +32,7 @@ public class OkHttpFingerprintTest {
     FingerprintBuilder.debugVisitor = false;
     Logger.setLevel(Level.FINEST);
 
-    final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(new URL[] {TracingInterceptor.class.getProtectionDomain().getCodeSource().getLocation()}, new URLClassLoader(new URL[] {OkHttpClient.class.getProtectionDomain().getCodeSource().getLocation()})), logger);
+    final LibraryFingerprint fingerprint = new LibraryFingerprint(new URLClassLoader(new URL[] {TracingInterceptor.class.getProtectionDomain().getCodeSource().getLocation()}, new URLClassLoader(new URL[] {OkHttpClient.class.getProtectionDomain().getCodeSource().getLocation()})), null, null, logger);
     System.out.println(fingerprint.toString());
   }
 }

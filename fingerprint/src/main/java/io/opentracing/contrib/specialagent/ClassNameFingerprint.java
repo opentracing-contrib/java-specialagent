@@ -13,15 +13,12 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.kafka.spring;
+package io.opentracing.contrib.specialagent;
 
-import org.apache.kafka.common.header.Headers;
+class ClassNameFingerprint extends NamedFingerprint<ClassNameFingerprint> {
+  private static final long serialVersionUID = -988772402375839455L;
 
-/**
- * This interface is here purely to put "Headers" on the fingerprint. The
- * presence of "Headers" identifies a runtime as v1.0.0+.
- *
- * @author Seva Safris
- */
-public interface Requires extends Headers {
+  ClassNameFingerprint(final String name) {
+    super(name);
+  }
 }

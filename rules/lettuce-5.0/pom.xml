@@ -17,6 +17,19 @@
     <version.opentracing-lettuce>0.1.12</version.opentracing-lettuce>
     <version.apache-logging>2.11.2</version.apache-logging>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>agentrule-maven-plugin</artifactId>
+        <configuration>
+          <absents>
+            <absent>io.lettuce.core.XAddArgs</absent>
+          </absents>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce -->

@@ -33,7 +33,7 @@ public class ThriftFingerprintTest {
     Logger.setLevel(Level.FINEST);
 
     final URLClassLoader classLoader = new URLClassLoader(new URL[] {SpanProcessor.class.getProtectionDomain().getCodeSource().getLocation()}, new URLClassLoader(new URL[] {TProcessor.class.getProtectionDomain().getCodeSource().getLocation()}));
-    final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, logger);
+    final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, null, null, logger);
     logger.info(fingerprint.toString());
 
     final ClassFingerprint[] classFingerprints = new FingerprintVerifier().fingerprint(classLoader);
