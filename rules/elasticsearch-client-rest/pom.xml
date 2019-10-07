@@ -23,13 +23,15 @@
     <artifactId>rules</artifactId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>elasticsearch-transport-client</artifactId>
-  <name>SpecialAgent Rule for Elasticsearch Transport Client</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-transport-client</url>
+  <artifactId>elasticsearch-client-rest</artifactId>
+  <name>SpecialAgent Rule for Elasticsearch Rest Client</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-rest-client</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.apache.logging>2.11.2</version.apache.logging>
+    <elasticsearch.version>6.4.0</elasticsearch.version>
+    <sa.plugin.name>elasticsearch:client-transport</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
@@ -46,10 +48,16 @@
     </dependency>
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
-      <artifactId>transport</artifactId>
-      <version>6.4.0</version>
+      <artifactId>elasticsearch-rest-client</artifactId>
+      <version>${elasticsearch.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>transport</artifactId>
+      <version>${elasticsearch.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>

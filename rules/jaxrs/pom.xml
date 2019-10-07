@@ -30,6 +30,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.jetty>9.3.15.v20161220</version.jetty>
+    <sa.plugin.name>jax-rs</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

@@ -23,48 +23,46 @@
     <artifactId>rules</artifactId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>cassandra-4-driver</artifactId>
-  <name>SpecialAgent Rule for Cassandra 4 Driver</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/cassandra-4-driver</url>
+  <artifactId>elasticsearch-client-transport</artifactId>
+  <name>SpecialAgent Rule for Elasticsearch Transport Client</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-transport-client</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <version.apache.logging>2.11.2</version.apache.logging>
+    <sa.plugin.name>elasticsearch:client-transport</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>com.datastax.oss</groupId>
-      <artifactId>java-driver-core</artifactId>
-      <version>4.0.0</version>
-      <scope>provided</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
+      <!-- https://github.com/opentracing-contrib/java-elasticsearch-client -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-cassandra-driver-4</artifactId>
-      <version>0.1.5</version>
+      <artifactId>opentracing-elasticsearch-client-common</artifactId>
+      <version>0.1.2</version>
       <exclusions>
         <exclusion>
-          <groupId>io.opentracing</groupId>
-          <artifactId>opentracing-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.datastax.oss</groupId>
-          <artifactId>java-driver-core</artifactId>
+          <groupId>org.elasticsearch.client</groupId>
+          <artifactId>transport</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.cassandraunit</groupId>
-      <artifactId>cassandra-unit</artifactId>
-      <version>3.11.2.0</version>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>transport</artifactId>
+      <version>6.4.0</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${version.apache.logging}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${version.apache.logging}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
