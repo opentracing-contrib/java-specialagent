@@ -20,7 +20,6 @@ import static junit.framework.TestCase.*;
 import com.netflix.zuul.context.RequestContext;
 import io.opentracing.mock.MockTracer;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
