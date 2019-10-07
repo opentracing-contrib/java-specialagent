@@ -17,6 +17,10 @@ package io.opentracing.contrib.specialagent.zuul;
 
 import static junit.framework.TestCase.*;
 
+import com.netflix.zuul.context.RequestContext;
+import io.opentracing.mock.MockTracer;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -24,6 +28,7 @@ import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.ZuulFilter;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import org.mockito.Mockito;
 
 @RunWith(AgentRunner.class)
 public class ZuulTest {
@@ -32,7 +37,35 @@ public class ZuulTest {
     final ZuulFilter preFilter = FilterLoader.getInstance().getFiltersByType("pre").get(0);
     assertTrue(preFilter instanceof TracePreZuulFilter);
 
+    // verify we don't add pre filter continuously
+    assertEquals(1, FilterLoader.getInstance().getFiltersByType("pre").size());
+    assertEquals(1, FilterLoader.getInstance().getFiltersByType("pre").size());
+
     final ZuulFilter postFilter = FilterLoader.getInstance().getFiltersByType("post").get(0);
     assertTrue(postFilter instanceof TracePostZuulFilter);
+
+    // verify we don't add post filter continuously
+    assertEquals(1, FilterLoader.getInstance().getFiltersByType("post").size());
+    assertEquals(1, FilterLoader.getInstance().getFiltersByType("post").size());
+  }
+
+  @Test
+  public void verifyContextCleared(MockTracer tracer) {
+    final RequestContext context = RequestContext.getCurrentContext();
+    final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+    context.setRequest(httpServletRequest);
+    Mockito.when(httpServletRequest.getMethod()).thenReturn("GET");
+
+    final ZuulFilter preFilter = FilterLoader.getInstance().getFiltersByType("pre").get(0);
+    preFilter.run();
+
+
+    assertNotNull(context.get(TracePreZuulFilter.CONTEXT_SPAN_KEY));
+
+    final ZuulFilter postFilter = FilterLoader.getInstance().getFiltersByType("post").get(0);
+    postFilter.run();
+    assertNull(context.get(TracePreZuulFilter.CONTEXT_SPAN_KEY));
+
+    assertEquals(1, tracer.finishedSpans().size());
   }
 }
