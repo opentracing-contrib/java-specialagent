@@ -430,7 +430,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 | [Spring WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | `spring:websocket` | 5.1.0.RELEASE | LATEST |
 | [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | `spymemcached` | 2.11.0 | LATEST |
 | [Thrift](https://github.com/opentracing-contrib/java-thrift) | `thrift` | 0.12.0 | LATEST |
-| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | `zool` | 1.0.0 | LATEST |
+| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | `zuul` | 1.0.0 | LATEST |
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
