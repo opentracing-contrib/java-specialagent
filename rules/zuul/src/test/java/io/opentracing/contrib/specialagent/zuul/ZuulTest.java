@@ -58,7 +58,6 @@ public class ZuulTest {
 
     final ZuulFilter preFilter = FilterLoader.getInstance().getFiltersByType("pre").get(0);
     preFilter.run();
-
     assertNotNull(context.get(TracePreZuulFilter.CONTEXT_SPAN_KEY));
 
     final ZuulFilter postFilter = FilterLoader.getInstance().getFiltersByType("post").get(0);
