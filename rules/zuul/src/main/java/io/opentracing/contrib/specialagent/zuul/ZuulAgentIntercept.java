@@ -22,19 +22,21 @@ import com.netflix.zuul.ZuulFilter;
 import io.opentracing.util.GlobalTracer;
 
 public class ZuulAgentIntercept {
+  @SuppressWarnings("unchecked")
   public static Object exit(final Object returned, final Object arg) {
     final List<ZuulFilter> filters = (List<ZuulFilter>)returned;
     if (arg.equals(TracePreZuulFilter.TYPE)) {
-      for (ZuulFilter filter : filters) {
-        if(filter instanceof TracePreZuulFilter)
+      for (final ZuulFilter filter : filters)
+        if (filter instanceof TracePreZuulFilter)
           return returned;
-      }
+
       filters.add(new TracePreZuulFilter(GlobalTracer.get()));
-    } else if (arg.equals(TracePostZuulFilter.TYPE)) {
-      for (ZuulFilter filter : filters) {
-        if(filter instanceof TracePostZuulFilter)
+    }
+    else if (arg.equals(TracePostZuulFilter.TYPE)) {
+      for (final ZuulFilter filter : filters)
+        if (filter instanceof TracePostZuulFilter)
           return returned;
-      }
+
       filters.add(new TracePostZuulFilter());
     }
 
