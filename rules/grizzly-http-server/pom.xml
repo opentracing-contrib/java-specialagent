@@ -30,6 +30,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.glassfish.grizzly>2.3.35</version.org.glassfish.grizzly>
+    <sa.plugin.name>grizzly:http-server</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

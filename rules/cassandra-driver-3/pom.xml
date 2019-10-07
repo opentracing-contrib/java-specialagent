@@ -23,51 +23,50 @@
     <artifactId>rules</artifactId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>elasticsearch-rest-client</artifactId>
-  <name>SpecialAgent Rule for Elasticsearch Rest Client</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-rest-client</url>
+  <artifactId>cassandra-driver-3</artifactId>
+  <name>SpecialAgent Rule for Cassandra 3 Driver</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/cassandra-3-driver</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.apache.logging>2.11.2</version.apache.logging>
-    <elasticsearch.version>6.4.0</elasticsearch.version>
+    <sa.plugin.name>cassandra:driver:3</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-elasticsearch-client -->
+      <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-elasticsearch-client-common</artifactId>
-      <version>0.1.2</version>
+      <artifactId>opentracing-cassandra-driver</artifactId>
+      <version>0.1.4</version>
       <exclusions>
         <exclusion>
-          <groupId>org.elasticsearch.client</groupId>
-          <artifactId>transport</artifactId>
+          <groupId>com.datastax.cassandra</groupId>
+          <artifactId>cassandra-driver-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>elasticsearch-rest-client</artifactId>
-      <version>${elasticsearch.version}</version>
+      <groupId>com.datastax.cassandra</groupId>
+      <artifactId>cassandra-driver-core</artifactId>
+      <version>3.0.0</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>transport</artifactId>
-      <version>${elasticsearch.version}</version>
+      <groupId>org.cassandraunit</groupId>
+      <artifactId>cassandra-unit</artifactId>
+      <version>2.2.2.1</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <version>${version.apache.logging}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${version.apache.logging}</version>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>16.0.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

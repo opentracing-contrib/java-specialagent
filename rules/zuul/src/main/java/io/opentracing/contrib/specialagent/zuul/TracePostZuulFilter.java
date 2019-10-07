@@ -15,13 +15,15 @@
 
 package io.opentracing.contrib.specialagent.zuul;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TracePostZuulFilter extends ZuulFilter {
   private static final String ROUTE_HOST_TAG = "route.host";
@@ -66,6 +68,7 @@ public class TracePostZuulFilter extends ZuulFilter {
         ((Scope)scopeObject).close();
 
       span.finish();
+      context.remove(TracePreZuulFilter.CONTEXT_SPAN_KEY);
     }
 
     return null;

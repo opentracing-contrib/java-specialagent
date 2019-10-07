@@ -31,6 +31,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <spring.boot.version>2.1.0.RELEASE</spring.boot.version>
     <spring.version>5.1.0.RELEASE</spring.version>
+    <sa.plugin.name>spring:webflux</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

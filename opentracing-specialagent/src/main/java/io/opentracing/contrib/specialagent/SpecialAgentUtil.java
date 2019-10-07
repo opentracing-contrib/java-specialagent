@@ -473,6 +473,26 @@ public final class SpecialAgentUtil {
     return events;
   }
 
+  static String convertToRegex(String pattern) {
+    if (pattern.length() == 0)
+      throw new IllegalArgumentException("Empty pattern");
+
+    final char lastCh = pattern.charAt(pattern.length() - 1);
+    if (lastCh == '*')
+      pattern = pattern.substring(0, pattern.length() - 1);
+
+    final String regex = pattern
+      .replace("\\", "\\\\")
+      .replace(".", "\\.")
+      .replace("^", "\\^")
+      .replace("$", "\\$")
+      .replace("*", "[^:]*")
+      .replace("/", "\\/")
+      .replace('?', '.');
+
+    return lastCh != '?' ? regex + ".*" : regex;
+  }
+
   private SpecialAgentUtil() {
   }
 }

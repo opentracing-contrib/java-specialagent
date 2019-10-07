@@ -52,7 +52,7 @@ public abstract class AgentRule {
   }
 
   public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {
-    final String pluginsVerboseProperty = System.getProperty("sa.instrumentation.plugins.verbose");
+    final String pluginsVerboseProperty = System.getProperty("sa.instrumentation.plugin.*.verbose");
     final boolean pluginsVerbose = pluginsVerboseProperty != null && !"false".equals(pluginsVerboseProperty);
 
     final String pluginName = classNameToName.get(agentRuleClass.getName());

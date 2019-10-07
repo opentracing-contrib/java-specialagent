@@ -102,7 +102,7 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>web-servlet-filter</artifactId>
+          <artifactId>servlet</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -126,13 +126,13 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>cassandra-3-driver</artifactId>
+          <artifactId>cassandra-driver-3</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>cassandra-4-driver</artifactId>
+          <artifactId>cassandra-driver-4</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -150,13 +150,13 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>elasticsearch-rest-client</artifactId>
+          <artifactId>elasticsearch-client-rest</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>elasticsearch-transport-client</artifactId>
+          <artifactId>elasticsearch-client-transport</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -240,7 +240,7 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>spring-3-web</artifactId>
+          <artifactId>spring-web-3</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -252,7 +252,7 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>spring-3-webmvc</artifactId>
+          <artifactId>spring-webmvc-3</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>

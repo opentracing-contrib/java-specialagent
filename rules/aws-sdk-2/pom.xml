@@ -30,6 +30,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <aws2.version>2.1.4</aws2.version>
+    <sa.plugin.name>aws:sdk:2</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

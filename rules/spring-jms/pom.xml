@@ -31,6 +31,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <artemis.version>2.7.0</artemis.version>
     <spring.version>5.0.0.RELEASE</spring.version>
+    <sa.plugin.name>spring:jms</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

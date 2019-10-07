@@ -194,19 +194,14 @@ public class SpecialAgent extends SpecialAgentBase {
     }
 
     // Process the system properties to determine which Instrumentation and Tracer Plugins to enable
+    final ArrayList<String> pluginNameToVerbose = new ArrayList<>();
     final HashMap<String,Boolean> instruPluginNameToEnable = new HashMap<>();
     final HashMap<String,Boolean> tracerPluginNameToEnable = new HashMap<>();
     for (final Map.Entry<String,String> property : properties.entrySet()) {
       final String key = property.getKey();
       final String value = property.getValue();
-      if ("sa.instrumentation.plugins.enable".equals(key))
-        instruPluginNameToEnable.put(null, Boolean.parseBoolean(value));
-      else if ("sa.instrumentation.plugins.disable".equals(key))
-        instruPluginNameToEnable.put(null, "false".equals(value));
-      else if ("sa.tracer.plugins.enable".equals(key))
-        tracerPluginNameToEnable.put(null, Boolean.parseBoolean(value));
-      else if ("sa.tracer.plugins.disable".equals(key))
-        tracerPluginNameToEnable.put(null, "false".equals(value));
+      if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".verbose"))
+        pluginNameToVerbose.add(key.substring(26, key.length() - 8));
       else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".enable"))
         instruPluginNameToEnable.put(key.substring(26, key.length() - 7), Boolean.parseBoolean(value));
       else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".disable"))
@@ -217,11 +212,11 @@ public class SpecialAgent extends SpecialAgentBase {
         tracerPluginNameToEnable.put(key.substring(17, key.length() - 8), "false".equals(value));
     }
 
-    final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey(null) || instruPluginNameToEnable.remove(null);
+    final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey("*") || instruPluginNameToEnable.remove("*");
     if (logger.isLoggable(Level.FINER))
       logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
 
-    final boolean allTracerEnabled = !tracerPluginNameToEnable.containsKey(null) || tracerPluginNameToEnable.remove(null);
+    final boolean allTracerEnabled = !tracerPluginNameToEnable.containsKey("*") || tracerPluginNameToEnable.remove("*");
     if (logger.isLoggable(Level.FINER))
       logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
 
@@ -269,12 +264,19 @@ public class SpecialAgent extends SpecialAgentBase {
           // Next, see if it is included or excluded
           enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
           final Map<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
+          for (final String verbose : pluginNameToVerbose) {
+            if (pluginManifest.name.matches(SpecialAgentUtil.convertToRegex(verbose))) {
+              System.setProperty("sa." + (isInstruPlugin ? "instrumentation" : "tracer") + ".plugin." + pluginManifest.name + ".verbose", "true");
+              break;
+            }
+          }
+
           for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
-            final String pluginName = entry.getKey();
-            if (pluginName.equals(pluginManifest.name)) {
+            final String namePattern = SpecialAgentUtil.convertToRegex(entry.getKey());
+            if (pluginManifest.name.matches(namePattern)) {
               enablePlugin = entry.getValue();
               if (logger.isLoggable(Level.FINER))
-                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginName + " is " + (enablePlugin ? "en" : "dis") + "abled");
+                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + namePattern + " is " + (enablePlugin ? "en" : "dis") + "abled");
 
               break;
             }

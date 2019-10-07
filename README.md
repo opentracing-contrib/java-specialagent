@@ -217,7 +217,7 @@ The following properties are supported by all instrumentation plugins:
 
    The `-Dsa.log.file` system property can be used to set the logging output file for <ins>SpecialAgent</ins>.
 
-1. Verbose Mode: `-Dsa.instrumentation.plugins.verbose`, `-Dsa.instrumentation.plugin.${PLUGIN_NAME}.verbose`
+1. Verbose Mode: `-Dsa.instrumentation.plugin.*.verbose`, `-Dsa.instrumentation.plugin.${PLUGIN_NAME_PATTERN}.verbose`
 
    Sets verbose mode for all or one plugin (Default: false). This property can also be set in an `AgentRunner` JUnit test with the `@AgentRunner.Config(verbose=true)` for all tests in a JUnit class, or `@AgentRunner.TestConfig(verbose=true)` for an individual JUnit test method.
 
@@ -258,7 +258,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Instrumenta
 To disable _all **instrumentation** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.instrumentation.plugins.disable
+sa.instrumentation.plugin.*.disable
 ```
 
 #### 3.4.2 Disabling One Instrumentation Plugin
@@ -266,17 +266,26 @@ sa.instrumentation.plugins.disable
 To disable _an individual **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.instrumentation.plugin.${PLUGIN_NAME}.disable
+sa.instrumentation.plugin.${PLUGIN_NAME_PATTERN}.disable
 ```
 
-The value of `${PLUGIN_NAME}` is the name of the plugin as declared in the plugin's POM ([Project Object Model][pom]). The names follow a consice pattern, such as `okhttp` for the `specialagent-okhttp` plugin artifactId, and `web-servlet-filter` for the `specialagent-web-servlet-filter` plugin artifactId.
+The value of `${PLUGIN_NAME_PATTERN}` represents the Plugin Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins). The `${PLUGIN_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple plugins simultaneously. For instance:
+
+1. `lettuce:5.?`<br>Match all Lettuce plugins, including `lettuce:5.0` and `lettuce:5.1`.
+1. `spring:web:*`<br>Match all Spring Web plugins, including `spring:web:3` and `spring:web:4`.
+1. `spring:web*`<br>Match all Spring Web and WebMVC plugins, including `spring:web:3`, `spring:web:4`, `spring:webmvc:3`, and `spring:webmvc:4`.
+
+If the `${PLUGIN_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
+
+1. `spring:web:`<br>Match all Spring Web plugins, including `spring:web:3` and `spring:web:4`.
+1. `spring:web`<br>Match all Spring Web and WebMVC plugins, including `spring:web:3`, `spring:web:4`, `spring:webmvc:3`, and `spring:webmvc:4`.
 
 #### 3.4.3 Disabling `AgentRule`s of an Instrumentation Plugin
 
 To disable _an individual `AgentRule` of an **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
-sa.instrumentation.plugin.${PLUGIN_NAME}.${AGENT_RULE_SIMPLE_CLASS_NAME}.disable
+sa.instrumentation.plugin.${PLUGIN_NAME}#${AGENT_RULE_SIMPLE_CLASS_NAME}.disable
 ```
 
 The value of `${AGENT_RULE_SIMPLE_CLASS_NAME}` is the simple class name of the `AgentRule` subclass that is to be disabled.
@@ -374,52 +383,54 @@ Examples:
 
 The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
 
-| Integration | Min Version | Max Version |
-|:-|:-:|:-:|
-| [Akka Actor](https://github.com/opentracing-contrib/java-akka) | 2.5.0 | LATEST |
-| [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | 2.24.0 | LATEST |
-| [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | 4.4 | LATEST |
-| [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | 2.7.0 | LATEST |
-| [AWS SDK 1](https://github.com/opentracing-contrib/java-aws-sdk) | 1.11.79 | LATEST |
-| [AWS SDK 2](https://github.com/opentracing-contrib/java-aws-sdk) | 2.1.4 | LATEST |
-| [Cassandra 3 Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | 3.0.0 | 3.7.2 |
-| [Cassandra 4 Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | 4.0.0 | LATEST |
-| [Elasticsearch Client](https://github.com/opentracing-contrib/java-elasticsearch-client) | 6.4.0 | LATEST |
-| [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | 9.0.0 | LATEST |
-| [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | 1.15 | LATEST |
-| [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | 2.3.35 | LATEST |
-| [GRPC](https://github.com/opentracing-contrib/java-grpc) | 1.6.0 | LATEST |
-| [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | 3.7 | LATEST |
-| [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | 1.5 | LATEST |
-| [Java JDBC API \[`java.sql`\]][java-jdbc] | 3.1 | LATEST |
-| [Java JMS API \[`javax.jms`\]][java-jms] | 1.1 | LATEST |
-| [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | 2.3 | LATEST |
-| &nbsp;&nbsp;&nbsp;&nbsp;Jetty | 7.6.21.v20160908 | LATEST |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | 7.0.96 | LATEST |
-| [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | 2.0 | LATEST |
-| [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | 2.7.0 | LATEST |
-| [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | 1.1.0 | LATEST |
-| [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | 5.0.0.RELEASE | LATEST |
-| [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver) | 3.9.0 | LATEST |
-| [OkHttp3][java-okhttp] | 3.5.0 | 3.14.3 |
-| [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | 5.0.0 | LATEST |
-| [Reactor](https://github.com/opentracing-contrib/java-reactor) | 3.2.3.RELEASE | LATEST |
-| [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | 3.6.0 | LATEST |
-| [RxJava 2](https://github.com/opentracing-contrib/java-rxjava) | 2.1.0 | LATEST |
-| [Spring `@Async` and `@Scheduled`](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | 5.0.0.RELEASE | LATEST |
-| [Spring JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | 5.0.0.RELEASE | LATEST |
-| [Spring Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | 2.2.0.RELEASE | LATEST |
-| [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | 5.1.1.RELEASE | LATEST |
-| [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | 2.0.0.RELEASE | LATEST |
-| [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | 5.0.0.RELEASE | LATEST |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Spring 3 Web](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-web) | 3.0.3.RELEASE | 3.2.18.RELEASE |
-| [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | 5.0.0.RELEASE | LATEST |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Spring 3 Web MVC](https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-spring-webmvc) | 3.0.2.RELEASE | 3.2.18.RELEASE |
-| [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | 5.1.0.RELEASE | LATEST |
-| [Spring WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | 5.1.0.RELEASE | LATEST |
-| [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | 2.11.0 | LATEST |
-| [Thrift](https://github.com/opentracing-contrib/java-thrift) | 0.12.0 | LATEST |
-| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | 1.0.0 | LATEST |
+| Integration | Plugin Name | Min Version | Max Version |
+|:-|:-|:-:|:-:|
+| [Akka Actor](https://github.com/opentracing-contrib/java-akka) | `akka:actor` | 2.5.0 | LATEST |
+| [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | `camel` | 2.24.0 | LATEST |
+| [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | `apache:httpclient` | 4.4 | LATEST |
+| [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | `asynchttpclient` | 2.7.0 | LATEST |
+| [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | `aws:sdk:1` | 1.11.79 | LATEST |
+| | `aws:sdk:2` | 2.1.4 | LATEST |
+| [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | `cassandra:driver:3` | 3.0.0 | 3.7.2 |
+| | `cassandra:driver:4` | 4.0.0 | LATEST |
+| [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | `elasticsearch:client-transport`<br>`elasticsearch:client-rest` | 6.4.0<br>&nbsp; | LATEST<br>&nbsp; |
+| [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | `feign` | 9.0.0 | LATEST |
+| [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | `grizzly:ahc` | 1.15 | LATEST |
+| [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | `grizzly:http-server` | 2.3.35 | LATEST |
+| [GRPC](https://github.com/opentracing-contrib/java-grpc) | `grpc` | 1.6.0 | LATEST |
+| [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | `hazelcast` | 3.7 | LATEST |
+| [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | `concurrent` | 1.5 | LATEST |
+| [Java JDBC API \[`java.sql`\]][java-jdbc] | `jdbc` | 3.1 | LATEST |
+| [Java JMS API \[`javax.jms`\]][java-jms] | `jms:1` | 1.1 | 1.1 |
+| | `jms:2` | 2.0 | 2.0a |
+| [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | `servlet` | 2.3 | LATEST |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | LATEST |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.96 | LATEST |
+| [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | `jax-rs` | 2.0 | LATEST |
+| [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | `jedis` | 2.7.0 | LATEST |
+| [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | `kafka:client` | 1.1.0 | LATEST |
+| [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | `lettuce:5.0` | 5.0.0.RELEASE | 5.0.5.RELEASE |
+| | `lettuce:5.1` | 5.1.0.M1 | 5.1.8.RELEASE |
+| [Mongo Driver](https://github.com/opentracing-contrib/java-mongo-driver) | `mongo:driver` | 3.9.0 | LATEST |
+| [OkHttp3][java-okhttp] | `okhttp` | 3.5.0 | 3.14.3 |
+| [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | `rabbitmq:client` | 5.0.0 | LATEST |
+| [Reactor](https://github.com/opentracing-contrib/java-reactor) | `reactor` | 3.2.3.RELEASE | LATEST |
+| [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | `redisson` | 3.6.0 | LATEST |
+| [RxJava 2](https://github.com/opentracing-contrib/java-rxjava) | `rxjava:2` | 2.1.0 | LATEST |
+| [Spring `@Async` and `@Scheduled`](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | `spring:scheduling` | 5.0.0.RELEASE | LATEST |
+| [Spring JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | `spring:jms` | 5.0.0.RELEASE | LATEST |
+| [Spring Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | `spring:kafka` | 2.2.0.RELEASE | LATEST |
+| [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | `spring:messaging` | 5.1.1.RELEASE | LATEST |
+| [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | `spring:rabbitmq` | 2.0.0.RELEASE | LATEST |
+| [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | `spring:web:3` | 3.0.3.RELEASE | 3.2.18.RELEASE |
+| | `spring:web:4` | 5.0.0.RELEASE | LATEST |
+| [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | `spring:webmvc:3` | 3.0.2.RELEASE | 3.2.18.RELEASE |
+| | `spring:webmvc:4` | 5.0.0.RELEASE | LATEST |
+| [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | `spring:webflux` | 5.1.0.RELEASE | LATEST |
+| [Spring WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | `spring:websocket` | 5.1.0.RELEASE | LATEST |
+| [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | `spymemcached` | 2.11.0 | LATEST |
+| [Thrift](https://github.com/opentracing-contrib/java-thrift) | `thrift` | 0.12.0 | LATEST |
+| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | `zuul` | 1.0.0 | LATEST |
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 

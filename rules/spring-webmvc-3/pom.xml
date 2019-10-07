@@ -23,7 +23,7 @@
     <groupId>io.opentracing.contrib.specialagent.rules</groupId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>spring-3-webmvc</artifactId>
+  <artifactId>spring-webmvc-3</artifactId>
   <name>SpecialAgent Rule for Spring 3 Web MVC</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc</url>
   <properties>
@@ -31,6 +31,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.spring>3.0.2.RELEASE</version.spring>
     <version.jetty>9.3.15.v20161220</version.jetty>
+    <sa.plugin.name>spring:webmvc:3</sa.plugin.name>
   </properties>
   <build>
     <plugins>
