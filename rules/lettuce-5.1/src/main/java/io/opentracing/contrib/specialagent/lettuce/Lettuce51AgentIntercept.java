@@ -20,33 +20,38 @@ import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
 import io.opentracing.contrib.redis.common.TracingConfiguration;
-import io.opentracing.contrib.redis.lettuce50.TracingRedisAdvancedClusterAsyncCommands;
-import io.opentracing.contrib.redis.lettuce50.TracingRedisAsyncCommands;
-import io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubAsyncCommands;
-import io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubListener;
+import io.opentracing.contrib.redis.lettuce51.TracingRedisAdvancedClusterAsyncCommands;
+import io.opentracing.contrib.redis.lettuce51.TracingRedisAsyncCommands;
+import io.opentracing.contrib.redis.lettuce51.TracingRedisPubSubAsyncCommands;
+import io.opentracing.contrib.redis.lettuce51.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
-public class Lettuce50AgentIntercept {
-  private static Boolean IS_LETTUCE_50;
+public class Lettuce51AgentIntercept {
+  private static Boolean IS_LETTUCE_51;
 
-  private static boolean isLettuce50() {
-    if (IS_LETTUCE_50 != null)
-      return IS_LETTUCE_50;
+  private static boolean isLettuce51() {
+    if (IS_LETTUCE_51 != null)
+      return IS_LETTUCE_51;
 
     try {
-      Class.forName("io.lettuce.core.XAddArgs");
-      IS_LETTUCE_50 = false;
-    }
-    catch (final ClassNotFoundException e) {
-      IS_LETTUCE_50 = true;
+      Class.forName("io.lettuce.core.XGroupCreateArgs");
+      IS_LETTUCE_51 = false;
+    } catch (ClassNotFoundException ignore) {
+      try {
+        Class.forName("io.lettuce.core.XAddArgs");
+        IS_LETTUCE_51 = true;
+      }
+      catch (final ClassNotFoundException e) {
+        IS_LETTUCE_51 = false;
+      }
     }
 
-    return IS_LETTUCE_50;
+    return IS_LETTUCE_51;
   }
 
   @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
-    if (!isLettuce50())
+    if (!isLettuce51())
       return returned;
 
     if (returned instanceof TracingRedisAsyncCommands)
@@ -60,7 +65,7 @@ public class Lettuce50AgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object getAsyncClusterCommands(final Object returned) {
-    if (!isLettuce50())
+    if (!isLettuce51())
       return returned;
 
     if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
@@ -71,7 +76,7 @@ public class Lettuce50AgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object addPubSubListener(final Object arg) {
-    if (!isLettuce50())
+    if (!isLettuce51())
       return arg;
 
     if (arg instanceof TracingRedisPubSubListener)

@@ -28,7 +28,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class LettuceAgentRule extends AgentRule {
+public class Lettuce52AgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
@@ -56,7 +56,7 @@ public class LettuceAgentRule extends AgentRule {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled(origin))
-        returned = LettuceAgentIntercept.getAsyncCommands(returned);
+        returned = Lettuce52AgentIntercept.getAsyncCommands(returned);
     }
   }
 
@@ -64,7 +64,7 @@ public class LettuceAgentRule extends AgentRule {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled(origin))
-        returned = LettuceAgentIntercept.getAsyncClusterCommands(returned);
+        returned = Lettuce52AgentIntercept.getAsyncClusterCommands(returned);
     }
   }
 
@@ -72,7 +72,7 @@ public class LettuceAgentRule extends AgentRule {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
       if (isEnabled(origin))
-        arg = LettuceAgentIntercept.addPubSubListener(arg);
+        arg = Lettuce52AgentIntercept.addPubSubListener(arg);
     }
   }
 }
