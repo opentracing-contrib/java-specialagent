@@ -27,27 +27,9 @@ import io.opentracing.contrib.redis.lettuce52.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
 public class Lettuce52AgentIntercept {
-  private static Boolean IS_LETTUCE_52;
-
-  private static boolean isLettuce52() {
-    if (IS_LETTUCE_52 != null)
-      return IS_LETTUCE_52;
-
-    try {
-      Class.forName("io.lettuce.core.XGroupCreateArgs");
-      IS_LETTUCE_52 = true;
-    } catch (ClassNotFoundException ignore) {
-        IS_LETTUCE_52 = false;
-    }
-
-    return IS_LETTUCE_52;
-  }
 
   @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
-    if (!isLettuce52())
-      return returned;
-
     if (returned instanceof TracingRedisAsyncCommands)
       return returned;
 
@@ -59,9 +41,6 @@ public class Lettuce52AgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object getAsyncClusterCommands(final Object returned) {
-    if (!isLettuce52())
-      return returned;
-
     if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
       return returned;
 
@@ -70,9 +49,6 @@ public class Lettuce52AgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object addPubSubListener(final Object arg) {
-    if (!isLettuce52())
-      return arg;
-
     if (arg instanceof TracingRedisPubSubListener)
       return arg;
 
