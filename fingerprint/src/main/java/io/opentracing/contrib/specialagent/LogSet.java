@@ -90,14 +90,14 @@ class LogSet {
             // If not, it means it's been deliberately or conditionally excluded by
             // the agent rule or plugin dependency spec.
             map.remove(log.getClassName());
-            logger.warning("Class not found: " + log.getClassName());
+            logger.warning("Skipping fingerprint for missing class: " + log.getClassName());
             break;
           }
         }
       }
     }
 
-    logger.info("Scanned: " + checked.size() + ", Remaining: " + count);
+    logger.info("Fingerprinted: " + checked.size() + ", Remaining: " + count);
     return before != map.keySet().size();
   }
 
