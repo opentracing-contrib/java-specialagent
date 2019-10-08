@@ -272,13 +272,13 @@ sa.instrumentation.plugin.${RULE_NAME_PATTERN}.disable
 The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
 1. `lettuce:5.?`<br>Matches all Lettuce plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
-1. `spring:web:*`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:4`.
-1. `spring:web*`<br>Matches all Spring Web and WebMVC plugins, including `spring:web:3`, `spring:web:4`, `spring:webmvc:3`, and `spring:webmvc:4`.
+1. `spring:web:*`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
+1. `spring:web*`<br>Matches all Spring Web and WebMVC plugins, including `spring:web:3`, `spring:web:5`, `spring:webmvc:3`, and `spring:webmvc:5`.
 
 If the _version part_ of the `${RULE_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
 
 1. `lettuce:5`<br>Matches all Lettuce v5 plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
-1. `spring:web`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:4`.
+1. `spring:web`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
 1. `spring`<br>Matches all Spring plugins.
 1. `spring:w`<br>Does not match any plugins.
 
@@ -427,9 +427,9 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 | [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.1.RELEASE | LATEST |
 | [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | LATEST |
 | [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
-| | [`spring:web:4`][spring-web] | 5.0.0.RELEASE | LATEST |
+| | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | LATEST |
 | [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc:3`][spring-webmvc-3] | 3.0.2.RELEASE | 3.2.18.RELEASE |
-| | [`spring:webmvc:4`][spring-webmvc] | 5.0.0.RELEASE | LATEST |
+| | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | LATEST |
 | [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | LATEST |
 | [Spring WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 5.1.0.RELEASE | LATEST |
 | [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | LATEST |
@@ -530,10 +530,10 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [spring-messaging]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-messaging
 [spring-rabbitmq]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-rabbitmq
 [spring-scheduling]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-scheduling
-[spring-web]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web
+[spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-5
 [spring-web-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-3
 [spring-webflux]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webflux
-[spring-webmvc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc
+[spring-webmvc-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-5
 [spring-webmvc-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-3
 [spring-websocket]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-websocket
 [spymemcached]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spymemcached

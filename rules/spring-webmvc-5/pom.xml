@@ -23,14 +23,14 @@
     <groupId>io.opentracing.contrib.specialagent.rules</groupId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>spring-webmvc</artifactId>
-  <name>SpecialAgent Rule for Spring Web MVC</name>
+  <artifactId>spring-webmvc-5</artifactId>
+  <name>SpecialAgent Rule for Spring Web MVC 5</name>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <spring.version>5.0.0.RELEASE</spring.version>
     <version.jetty>9.3.15.v20161220</version.jetty>
-    <sa.plugin.name>spring:webmvc:4</sa.plugin.name>
+    <sa.plugin.name>spring:webmvc:5</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
