@@ -20,13 +20,14 @@ import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
 import io.opentracing.contrib.redis.common.TracingConfiguration;
-import io.opentracing.contrib.redis.lettuce.TracingRedisAdvancedClusterAsyncCommands;
-import io.opentracing.contrib.redis.lettuce.TracingRedisAsyncCommands;
-import io.opentracing.contrib.redis.lettuce.TracingRedisPubSubAsyncCommands;
-import io.opentracing.contrib.redis.lettuce.TracingRedisPubSubListener;
+import io.opentracing.contrib.redis.lettuce52.TracingRedisAdvancedClusterAsyncCommands;
+import io.opentracing.contrib.redis.lettuce52.TracingRedisAsyncCommands;
+import io.opentracing.contrib.redis.lettuce52.TracingRedisPubSubAsyncCommands;
+import io.opentracing.contrib.redis.lettuce52.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
-public class LettuceAgentIntercept {
+public class Lettuce52AgentIntercept {
+
   @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
     if (returned instanceof TracingRedisAsyncCommands)

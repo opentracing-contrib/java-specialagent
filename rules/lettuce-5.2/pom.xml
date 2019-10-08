@@ -8,21 +8,34 @@
     <artifactId>rules</artifactId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>lettuce</artifactId>
-  <name>SpecialAgent Rule for Lettuce</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/lettuce</url>
+  <artifactId>lettuce-5.2</artifactId>
+  <name>SpecialAgent Rule for Lettuce 5.2</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/lettuce-5.2</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.opentracing-lettuce>0.1.12</version.opentracing-lettuce>
+    <version.opentracing-lettuce>0.1.13</version.opentracing-lettuce>
     <version.apache-logging>2.11.2</version.apache-logging>
-    <sa.plugin.name>lettuce:5.1</sa.plugin.name>
+    <sa.plugin.name>lettuce:5.2</sa.plugin.name>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>agentrule-maven-plugin</artifactId>
+        <configuration>
+          <presents>
+            <present>io.lettuce.core.XGroupCreateArgs</present>
+          </presents>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-redis-lettuce</artifactId>
+      <artifactId>opentracing-redis-lettuce-5.2</artifactId>
       <version>${version.opentracing-lettuce}</version>
       <exclusions>
         <exclusion>
@@ -34,7 +47,7 @@
     <dependency>
       <groupId>io.lettuce</groupId>
       <artifactId>lettuce-core</artifactId>
-      <version>5.1.0.RELEASE</version>
+      <version>5.2.0.RELEASE</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

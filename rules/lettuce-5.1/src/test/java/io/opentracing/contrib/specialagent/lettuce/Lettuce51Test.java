@@ -46,7 +46,7 @@ import io.opentracing.mock.MockTracer;
 import redis.embedded.RedisServer;
 
 @RunWith(AgentRunner.class)
-public class LettuceTest {
+public class Lettuce51Test {
   private static final String address = "redis://localhost";
   private static RedisServer server;
   private static RedisClient client;
