@@ -95,5 +95,7 @@ public class SpecialAgentUtilTest {
     assertEquals("spring:[^:]*:.*", SpecialAgentUtil.convertToRegex("spring:*:*"));
 
     assertEquals("lettuce:5\\..", SpecialAgentUtil.convertToRegex("lettuce:5.?"));
+    assertEquals("lettuce:5.*", SpecialAgentUtil.convertToRegex("lettuce:5"));
+    assertEquals("lettuce:.*", SpecialAgentUtil.convertToRegex("lettuce"));
   }
 }

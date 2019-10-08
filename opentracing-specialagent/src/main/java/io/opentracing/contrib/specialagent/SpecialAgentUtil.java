@@ -490,7 +490,21 @@ public final class SpecialAgentUtil {
       .replace("/", "\\/")
       .replace('?', '.');
 
-    return lastCh != '?' ? regex + ".*" : regex;
+    boolean hasDigit = false;
+    for (int i = regex.length() - 2; i >= 0; --i) {
+      if (regex.charAt(i) == ':') {
+        hasDigit = Character.isDigit(regex.charAt(i + 1));
+        break;
+      }
+    }
+
+    if (lastCh == '?')
+      return regex;
+
+    if (hasDigit || regex.length() == 0 || regex.endsWith(":"))
+      return regex + ".*";
+
+    return regex + ":.*";
   }
 
   private SpecialAgentUtil() {
