@@ -27,31 +27,27 @@ import io.opentracing.contrib.redis.lettuce50.TracingRedisPubSubListener;
 import io.opentracing.util.GlobalTracer;
 
 public class Lettuce50AgentIntercept {
-
-  @SuppressWarnings("unchecked")
   public static Object getAsyncCommands(final Object returned) {
     if (returned instanceof TracingRedisAsyncCommands)
       return returned;
 
     if (returned instanceof RedisPubSubAsyncCommands)
-      return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+      return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<?,?>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
 
-    return new TracingRedisAsyncCommands<>((RedisAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    return new TracingRedisAsyncCommands<>((RedisAsyncCommands<?,?>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 
-  @SuppressWarnings("unchecked")
   public static Object getAsyncClusterCommands(final Object returned) {
     if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
       return returned;
 
-    return new TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<Object,Object>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    return new TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<?,?>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 
-  @SuppressWarnings("unchecked")
   public static Object addPubSubListener(final Object arg) {
     if (arg instanceof TracingRedisPubSubListener)
       return arg;
 
-    return new TracingRedisPubSubListener<>((RedisPubSubListener<Object,Object>)arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
+    return new TracingRedisPubSubListener<>((RedisPubSubListener<?,?>)arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 }
