@@ -24,7 +24,6 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>redisson</artifactId>
   <name>SpecialAgent Rule for Redisson</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/redisson</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

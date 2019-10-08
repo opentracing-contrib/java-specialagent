@@ -25,7 +25,6 @@
   </parent>
   <artifactId>spring-scheduling</artifactId>
   <name>SpecialAgent Rule for Spring Scheduling</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-scheduling</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

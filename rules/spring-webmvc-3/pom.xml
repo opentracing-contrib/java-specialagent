@@ -25,7 +25,6 @@
   </parent>
   <artifactId>spring-webmvc-3</artifactId>
   <name>SpecialAgent Rule for Spring 3 Web MVC</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

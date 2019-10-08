@@ -24,7 +24,6 @@
     <version>1.4.2-SNAPSHOT</version>
   </parent>
   <name>SpecialAgent Rule for RabbitMQ Spring</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-rabbitmq</url>
   <artifactId>spring-rabbitmq</artifactId>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>

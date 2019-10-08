@@ -25,7 +25,6 @@
   </parent>
   <artifactId>asynchttpclient</artifactId>
   <name>SpecialAgent Rule for AsyncHttpClient</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/asynchttpclient</url>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
