@@ -17,17 +17,18 @@ package io.opentracing.contrib.specialagent.zuul;
 
 import static junit.framework.TestCase.*;
 
-import com.netflix.zuul.context.RequestContext;
-import io.opentracing.mock.MockTracer;
 import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import org.mockito.Mockito;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 public class ZuulTest {
@@ -49,7 +50,7 @@ public class ZuulTest {
   }
 
   @Test
-  public void verifyContextCleared(MockTracer tracer) {
+  public void verifyContextCleared(final MockTracer tracer) {
     final RequestContext context = RequestContext.getCurrentContext();
     final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
     context.setRequest(httpServletRequest);
