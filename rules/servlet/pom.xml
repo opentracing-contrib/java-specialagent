@@ -37,16 +37,6 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-web-servlet-filter</artifactId>
       <version>0.4.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.opentracing</groupId>
-          <artifactId>opentracing-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.opentracing</groupId>
-          <artifactId>opentracing-util</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency-->
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>

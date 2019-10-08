@@ -45,10 +45,6 @@
       <version>0.1.5</version>
       <exclusions>
         <exclusion>
-          <groupId>io.opentracing</groupId>
-          <artifactId>opentracing-api</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.datastax.oss</groupId>
           <artifactId>java-driver-core</artifactId>
         </exclusion>
