@@ -31,6 +31,19 @@
     <spring.version>5.0.0.RELEASE</spring.version>
     <sa.plugin.name>spring:web:5</sa.plugin.name>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>agentrule-maven-plugin</artifactId>
+        <configuration>
+          <presents>
+            <present>org.springframework.http.ContentDisposition</present>
+          </presents>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
