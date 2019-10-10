@@ -16,16 +16,9 @@ dist: trusty
 language: java
 stages:
   - install
-  - assemble
   - test
   - name: deploy
     # if: branch = master AND env(TRAVIS_JDK_VERSION) = oraclejdk8 AND env(TRAVIS_PULL_REQUEST) = false
-jdk:
-#  - oraclejdk7
-  - oraclejdk8
-  - oraclejdk9
-#  - oraclejdk10
-  - oraclejdk11
 install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
 cache:
   directories:
@@ -33,17 +26,16 @@ cache:
 jobs:
   include:
     - stage: install
-      script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
-                  [ "$TRAVIS_BRANCH" = "master" ] &&
-                  [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-                export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
-                mvn -B -P report install &&
-                mvn -B -DrepoToken=$REPO_TOKEN coveralls:report;
-              else
-                mvn -B install;
-              fi'
-    - stage: assemble
-      script: mvn -B -Dassemble package;
+      jdk: oraclejdk8
+      script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
+              mvn -B -P report install &&
+              mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+              mvn -B -Dassemble package;'
+    - stage: install
+      jdk: oraclejdk11
+      script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
+              mvn -B install &&
+              mvn -B -Dassemble package;'
     - stage: test
       env:
         - TEST=okhttp
