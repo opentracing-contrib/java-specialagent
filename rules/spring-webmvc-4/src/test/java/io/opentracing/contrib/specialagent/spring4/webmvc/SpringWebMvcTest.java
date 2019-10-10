@@ -15,8 +15,12 @@
 
 package io.opentracing.contrib.specialagent.spring4.webmvc;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
@@ -65,7 +69,18 @@ public class SpringWebMvcTest {
     final ResponseEntity<String> responseEntity = new RestTemplate().getForEntity(url, String.class);
     assertEquals("sync", responseEntity.getBody());
 
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+
     assertEquals(1, tracer.finishedSpans().size());
     assertFalse(tracer.finishedSpans().get(0).logEntries().isEmpty());
+  }
+
+  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
+    return new Callable<Integer>() {
+      @Override
+      public Integer call() throws Exception {
+        return tracer.finishedSpans().size();
+      }
+    };
   }
 }
