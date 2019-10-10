@@ -14,6 +14,12 @@
 
 dist: trusty
 language: java
+stages:
+  - install
+  - assemble
+  - test
+  - name: deploy
+    if: branch = master
 jdk:
 #  - oraclejdk7
   - oraclejdk8
@@ -24,12 +30,6 @@ install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/op
 cache:
   directories:
     - ~/.m2/repository
-stages:
-  - install
-  - assemble
-  - test
-  - name: deploy
-    if: branch = master AND env(TRAVIS_JDK_VERSION) = oraclejdk8 AND env(TRAVIS_PULL_REQUEST) = false
 jobs:
   include:
     - stage: install
