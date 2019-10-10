@@ -252,11 +252,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
 
       final List<File> rulePaths = findRulePaths(dependenciesUrl, true);
-      final Set<String> pluginClasses = TestUtil.getClassFiles(rulePaths);
+      final Set<String> pluginClasses = AgentUtil.getClassFiles(rulePaths);
 
       final List<File> testRulePaths = findRulePaths(dependenciesUrl, false);
       testRulePaths.add(0, new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
-      final Set<String> testClasses = TestUtil.getClassFiles(testRulePaths);
+      final Set<String> testClasses = AgentUtil.getClassFiles(testRulePaths);
 
       final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
