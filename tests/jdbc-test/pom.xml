@@ -19,34 +19,20 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent</groupId>
-    <artifactId>specialagent</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.tests</groupId>
+    <artifactId>tests</artifactId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>opentracing-specialagent-util</artifactId>
-  <name>Utilities for SpecialAgent</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-util</url>
+  <artifactId>jdbc-test</artifactId>
+  <name>SpecialAgent Test for Java JDBC API</name>
+  <properties>
+    <mainClass>jdbc.App</mainClass>
+  </properties>
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>${version.maven}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-mock</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-noop</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <artifactId>junit</artifactId>
-      <groupId>junit</groupId>
-      <scope>test</scope>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.199</version>
     </dependency>
   </dependencies>
 </project>

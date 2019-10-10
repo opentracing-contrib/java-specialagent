@@ -57,14 +57,6 @@
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
     <wavefront-opentracing-bundle-java>wavefront</wavefront-opentracing-bundle-java>
   </properties>
-  <modules>
-    <module>opentracing-specialagent-api</module>
-    <module>opentracing-specialagent-util</module>
-    <module>fingerprint</module>
-    <module>assemble-maven-plugin</module>
-    <module>opentracing-specialagent</module>
-    <module>agentrule-maven-plugin</module>
-  </modules>
   <profiles>
     <profile>
       <id>tools.jar</id>
@@ -239,6 +231,49 @@
       </build>
     </profile>
     <profile>
+      <id>!test</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <modules>
+        <module>opentracing-specialagent-api</module>
+        <module>opentracing-specialagent-util</module>
+        <module>fingerprint</module>
+        <module>assemble-maven-plugin</module>
+        <module>opentracing-specialagent</module>
+        <module>agentrule-maven-plugin</module>
+      </modules>
+      <dependencies>
+        <!-- Tracer Plugins -->
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-tracerresolver</artifactId>
+          <version>0.1.8</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>jaeger-client-bundle</artifactId>
+          <version>0.0.3</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.lightstep.tracer</groupId>
+          <artifactId>lightstep-tracer-jre-bundle</artifactId>
+          <version>0.17.0</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.wavefront</groupId>
+          <artifactId>wavefront-opentracing-bundle-java</artifactId>
+          <version>0.9.0</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <property>
@@ -247,6 +282,17 @@
       </activation>
       <modules>
         <module>rules</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>tests</id>
+      <activation>
+        <property>
+          <name>test</name>
+        </property>
+      </activation>
+      <modules>
+        <module>tests</module>
       </modules>
     </profile>
     <profile>
@@ -478,33 +524,6 @@
       </plugins>
     </pluginManagement>
   </build>
-  <dependencies>
-    <!-- Tracer Plugins -->
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-tracerresolver</artifactId>
-      <version>0.1.8</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>jaeger-client-bundle</artifactId>
-      <version>0.0.3</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.lightstep.tracer</groupId>
-      <artifactId>lightstep-tracer-jre-bundle</artifactId>
-      <version>0.17.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.wavefront</groupId>
-      <artifactId>wavefront-opentracing-bundle-java</artifactId>
-      <version>0.9.0</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
