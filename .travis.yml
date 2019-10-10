@@ -15,13 +15,12 @@
 dist: trusty
 language: java
 jdk:
-#- oraclejdk7
-- oraclejdk8
-- oraclejdk9
-#- oraclejdk10
-- oraclejdk11
-install:
-- cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
+#  - oraclejdk7
+  - oraclejdk8
+  - oraclejdk9
+#  - oraclejdk10
+  - oraclejdk11
+install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
 cache:
   directories:
     - ~/.m2/repository
