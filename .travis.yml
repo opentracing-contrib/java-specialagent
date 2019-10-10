@@ -39,8 +39,9 @@ jobs:
               mvn -B -Dassemble package;'
     - stage: test
       env:
-        - TEST=okhttp
-        - TEST=jdbc
+        matrix:
+          - TEST=okhttp
+          - TEST=jdbc
       script: 'mvn -B -Dtest -P $TEST install;'
     # - stage: deploy
     #   script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
