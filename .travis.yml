@@ -19,7 +19,7 @@ stages:
   - assemble
   - test
   - name: deploy
-    if: branch = master AND env(TRAVIS_JDK_VERSION) = oraclejdk8
+    if: branch = master AND env(TRAVIS_JDK_VERSION) = "oraclejdk8"
 jdk:
 #  - oraclejdk7
   - oraclejdk8
