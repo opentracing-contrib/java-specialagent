@@ -41,7 +41,7 @@ jobs:
               mvn -B install &&
               mvn -B -Dassemble package;'
     - stage: test
-      script: 'mvn -B -Dtest -P $TEST install;'
+      script: mvn -B -Dtest -P $TEST install;
     # - stage: deploy
     #   script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
     #               [ "$TRAVIS_BRANCH" = "master" ] &&
