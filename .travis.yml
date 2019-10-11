@@ -22,10 +22,6 @@ before_install:
 stages:
 - install
 - test
-matrix:
-  include:
-  - jdk: oraclejdk8
-  - jdk: oraclejdk11
 jobs:
   include:
   - stage: install
