@@ -14,39 +14,32 @@
 
 dist: trusty
 language: java
-matrix:
-  include:
-    - env: JDK='Oracle JDK 8'
-      jdk: oraclejdk8
-    - env: JDK='Oracle JDK 11'
-      jdk: oraclejdk11
 cache:
   directories:
   - ~/.m2/repository
-before_install:
-- cp settings.xml $HOME/.m2/settings.xml
+before_install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
 stages:
 - install
 - test
 jobs:
   include:
   - stage: install
-    install:
-    - rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
-    script:
-    - 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
-          [ "$TRAVIS_BRANCH" = "master" ] &&
-          [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
-        mvn -B -P report install &&
-        mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-        mvn -B -Dassemble install;
-      else
-        mvn -B install &&
-        mvn -B -Dassemble install;
-      fi'
+    jdk: oraclejdk8
+    script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
+            mvn -B -P report install &&
+            mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+            mvn -B -Dassemble package;'
+  - stage: install
+    jdk: oraclejdk11
+    script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
+            mvn -B install &&
+            mvn -B -Dassemble package;'
   - stage: test
-    script: mvn -B -Dtest -P $TEST install
+    jdk: oraclejdk8
+    script: mvn -B -Dtest -P $TEST install;
+  - stage: test
+    jdk: oraclejdk11
+    script: mvn -B -Dtest -P $TEST install;
   # - stage: deploy
   #   script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
   #               [ "$TRAVIS_BRANCH" = "master" ] &&
