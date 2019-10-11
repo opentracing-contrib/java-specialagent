@@ -32,9 +32,10 @@ script:
     mvn -B install &&
     mvn -B -Dtest -P $TEST install;
   fi'
-jdk:
-- oraclejdk8
-- oraclejdk11
+matrix:
+  include:
+    - jdk: oraclejdk8
+    - jdk: oraclejdk11
 env:
   matrix:
   - TEST=okhttp
