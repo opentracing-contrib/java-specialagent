@@ -26,11 +26,13 @@ env:
 - TEST=jdbc
 stages:
 - install
+- test
 jobs:
   include:
   - stage: install
     script:
-    - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
+    - 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
+          [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
         export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
@@ -42,3 +44,5 @@ jobs:
         mvn -B install &&
         mvn -B -Dtest -P $TEST install;
       fi'
+  - stage: test
+    script: mvn -B -Dtest -P $TEST install
