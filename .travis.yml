@@ -20,7 +20,8 @@ jdk:
 cache:
   directories:
   - ~/.m2/repository
-before_install: cp settings.xml $HOME/.m2/settings.xml
+before_install:
+- cp settings.xml $HOME/.m2/settings.xml
 stages:
 - install
 - test
@@ -28,14 +29,16 @@ jobs:
   include:
   - stage: install
     jdk: oraclejdk8
-    install: rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
+    install:
+    - rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
     script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
             mvn -B -P report install &&
             mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
             mvn -B -Dassemble install;'
   - stage: install
     jdk: oraclejdk11
-    install: rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
+    install:
+    - rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
     script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
             mvn -B install &&
             mvn -B -Dassemble install;'
