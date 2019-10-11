@@ -14,10 +14,6 @@
 
 dist: trusty
 language: java
-jdk:
-  matrix:
-  - oraclejdk8
-  - oraclejdk11
 cache:
   directories:
   - ~/.m2/repository
@@ -29,6 +25,10 @@ stages:
 jobs:
   include:
   - stage: install
+    jdk:
+      matrix:
+      - oraclejdk8
+      - oraclejdk11
     install:
     - rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
     script:
