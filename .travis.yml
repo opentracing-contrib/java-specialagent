@@ -21,12 +21,12 @@ before_install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repositor
 jdk:
 - oraclejdk8
 - oraclejdk11
+env:
+- TEST=okhttp
+- TEST=jdbc
 jobs:
   include:
   - stage: test
-    env:
-    - TEST=okhttp
-    - TEST=jdbc
     script: mvn -B -Dtest -P $TEST install;
   # - stage: deploy
   #   script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
