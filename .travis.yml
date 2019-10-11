@@ -29,6 +29,9 @@ matrix:
 jobs:
   include:
   - stage: install
+    jdk:
+    - oraclejdk8
+    - oraclejdk11
     install:
     - rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
     script:
