@@ -18,20 +18,25 @@ cache:
   directories:
   - ~/.m2/repository
 before_install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
-script:
-- 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
-      [ "$TRAVIS_BRANCH" = "master" ] &&
-      [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
-    export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
-    mvn -B -P report install &&
-    mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-    mvn -B -Dtest -P $TEST install &&
-    mvn -B -Dassemble -P deploy deploy;
-  else
-    mvn -B install &&
-    mvn -B -Dtest -P $TEST install;
-  fi'
+stages:
+- install
+jobs:
+  include:
+  - stage: install
+    script:
+    - 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
+          [ "$TRAVIS_BRANCH" = "master" ] &&
+          [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
+        export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
+        mvn -B -P report install &&
+        mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+        mvn -B -Dtest -P $TEST install &&
+        mvn -B -Dassemble -P deploy deploy;
+      else
+        mvn -B install &&
+        mvn -B -Dtest -P $TEST install;
+      fi'
 jdk:
 - oraclejdk8
 - oraclejdk11
