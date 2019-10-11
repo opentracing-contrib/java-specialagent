@@ -38,3 +38,5 @@ matrix:
     - jdk: oraclejdk11
     - env: TEST=okhttp
     - env: TEST=jdbc
+  exclude:
+    - jdk:
