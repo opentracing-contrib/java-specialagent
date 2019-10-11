@@ -30,15 +30,17 @@ jobs:
             mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
             mvn -B -Dassemble package;'
   - stage: install
-    jdk: oraclejdk11
     script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
             mvn -B install &&
             mvn -B -Dassemble package;'
   - stage: test
+    jdk:
+    - oraclejdk8
+    - oraclejdk11
+    env:
+    - TEST=okhttp
+    - TEST=jdbc
     jdk: oraclejdk8
-    script: mvn -B -Dtest -P $TEST install;
-  - stage: test
-    jdk: oraclejdk11
     script: mvn -B -Dtest -P $TEST install;
   # - stage: deploy
   #   script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
@@ -47,6 +49,3 @@ jobs:
   #             sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
   #             mvn -B -Dassemble -P deploy deploy;
   #           fi'
-env:
-- TEST=okhttp
-- TEST=jdbc
