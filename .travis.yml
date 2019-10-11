@@ -16,8 +16,10 @@ dist: trusty
 language: java
 matrix:
   include:
-    - jdk: oraclejdk8
-    - jdk: oraclejdk11
+    - env: JDK='Oracle JDK 8'
+      jdk: oraclejdk8
+    - env: JDK='Oracle JDK 11'
+      jdk: oraclejdk11
 cache:
   directories:
   - ~/.m2/repository
