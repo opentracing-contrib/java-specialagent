@@ -20,7 +20,7 @@ jdk:
 cache:
   directories:
   - ~/.m2/repository
-before_install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
+before_install: cp settings.xml $HOME/.m2/settings.xml
 stages:
 - install
 - test
@@ -28,21 +28,19 @@ jobs:
   include:
   - stage: install
     jdk: oraclejdk8
+    install: rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
     script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
             mvn -B -P report install &&
             mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-            mvn -B -Dassemble package;'
+            mvn -B -Dassemble install;'
   - stage: install
     jdk: oraclejdk11
+    install: rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
     script: 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
             mvn -B install &&
-            mvn -B -Dassemble package;'
+            mvn -B -Dassemble install;'
   - stage: test
-    env:
-      matrix:
-      - TEST=okhttp
-      - TEST=jdbc
-    script: mvn -B -Dtest -P $TEST install;
+    script: mvn -B -Dtest -P $TEST install
   # - stage: deploy
   #   script: 'if [ "$TRAVIS_JDK_VERSION" = "oraclejdk8" ] &&
   #               [ "$TRAVIS_BRANCH" = "master" ] &&
@@ -51,6 +49,9 @@ jobs:
   #             mvn -B -Dassemble -P deploy deploy;
   #           fi'
 env:
+  matrix:
+  - TEST=okhttp
+  - TEST=jdbc
   global:
   - secure: d1B5Y4hSxFBgXPKEkZkBTsCgccZAB72G9A8Rxx/cRH1lmSRqY3GSma37Np9hG9QmxXxvzfPkFvJO7chkvn4HpbQSHOVrqGDkzHmiG7lVfqKMO3vzlR/Gf/2eV8aIhwxA9cPiStBV4glhamcAc+wHUiZPG7ETDbeNEfZ6hLbSaLv1P6yZoOwL/OqMXvFCPZLpG1I1k0bHusGYY35QbKsjpv9ThmCucqn63g+e6OgCGDenxT4w/7lYq+ac2Rj+aJFWeGZk9Dr2jUMa9awhCG3iHEr3atEb6kiWiw9ZvvWErFYkayoSlgGVSvsELQLo3Psnso1UU8p1NwNoSkbFZ46Ojs8MnubE/Fh7AdDMGYxodvXILjqOOuHq7j+pJcwPFSl5xdrw97NTELwZdxmc5nazf8q3jr05jeoWBTCd6hGtRpFFkt5wpOBDXhm/6fNxCRwSnruqn/zn936HSHPUSd9VodYqKxPmEDG7gawo6WIN+vKlmM4kyEFY8J0xEdo5+ePusm8puqlp0mi6bR7X+BPII4zRpL7tj0O3Yw2RoJrZsrw6QjxU4m/bsVty7Eiq5fQV4/v8Wj5DD3OjsFwgwtWQsxTYd82iIMg+se/taO2AB/+SRgZilLUdEKPKOq9RGWGukxKG+12doXkbBPpc1zGteurTjpD9ZR6YSTcK14WfRKQ=
   - secure: aT1D+DKLXdDngnMlK+vWTZFiTu2NrtnGcI0nB0ub3aAu5iv2h6YRcO4FalsrhLILprno92oPwskGCxhIbCZDS3ri/E6ye5Gnf60F17cBu8Khq3eoB4fgOt3Tmfz2K35IEM5naskrDUE46XiMx5w7hd9N7SWAB6ChPs1b/vSEMUW17JxihLUqbAPYSECQCRUZJVJ9KempM2IkLkXKFWcFWnmss52ws0rwb8HayWIOgUjpILpwk5WOa6ahi+K+TPKPu2UB4l1B25qRAfzez4aF34CCisyBTjuT/hZND4Vd1gnDuM+eu4u0w5arDQwKxScZvBclMMEOSFeam+TbX45gTqrGInmQDrg3Ex600l5KMHdjOizLqKanzces5HIjFCHLaLMv/jAm65JQnCKrJdOmDlP4R9Rpycy4scfF+bhT0M9TqkkJb4d+fRaGzdmQ12+xERJYipcoBrIgfWejXzYcbTaVz69Zw9qw50QJ6KmtuZhrKxR4PQtIihub2S2kIlh0y8Pp/DRdqjPEyKNhLsglQz1YHv09F6dmCFCUM/VTRKMVZr5MONvHilwnl0QY0CeQoPZllOrzgEEue82K1AkMvVoRxgA1tlQ8uUoskrrOUSVtZf7GMj8DQH/ehhGFUs3QARoptdftjYENOS3IF/YMf9Z50lQCRoHFz7EjlL4wjug=
