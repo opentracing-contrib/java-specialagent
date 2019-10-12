@@ -23,12 +23,12 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-public class TracingListenableFutureCallback implements ListenableFutureCallback {
-  private final ListenableFutureCallback callback;
+public class TracingListenableFutureCallback implements ListenableFutureCallback<Object> {
+  private final ListenableFutureCallback<Object> callback;
   private final Span span;
   private final boolean finishSpan;
 
-  public TracingListenableFutureCallback(ListenableFutureCallback callback, Span span,
+  public TracingListenableFutureCallback(ListenableFutureCallback<Object> callback, Span span,
       boolean finishSpan) {
     this.callback = callback;
     this.span = span;
@@ -53,7 +53,7 @@ public class TracingListenableFutureCallback implements ListenableFutureCallback
   public void onSuccess(Object result) {
     if (finishSpan) {
       if (result instanceof ResponseEntity) {
-        ResponseEntity responseEntity = (ResponseEntity) result;
+        ResponseEntity<?> responseEntity = (ResponseEntity<?>) result;
         span.setTag(Tags.HTTP_STATUS, responseEntity.getStatusCode().value());
       }
       span.finish();

@@ -21,8 +21,8 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,23 +78,22 @@ public class SpringWebTest {
   }
 
   @Test
-  public void testAsyncCallback(MockTracer tracer) {
+  public void testAsyncCallback(final MockTracer tracer) {
     final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+    final AtomicBoolean foundSpan = new AtomicBoolean(false);
 
-    AtomicBoolean foundSpan = new AtomicBoolean(false);
     try {
-      restTemplate.getForEntity("http://localhost:12345", String.class)
-          .addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
-            @Override
-            public void onFailure(Throwable ex) {
-              foundSpan.set(tracer.activeSpan() != null);
-            }
+      restTemplate.getForEntity("http://localhost:12345", String.class).addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+        @Override
+        public void onFailure(final Throwable t) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
 
-            @Override
-            public void onSuccess(ResponseEntity<String> result) {
-              foundSpan.set(tracer.activeSpan() != null);
-            }
-          });
+        @Override
+        public void onSuccess(final ResponseEntity<String> result) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+      });
     }
     catch (final Exception ignore) {
     }
@@ -105,23 +104,22 @@ public class SpringWebTest {
   }
 
   @Test
-  public void testAsyncSuccessCallback(MockTracer tracer) {
+  public void testAsyncSuccessCallback(final MockTracer tracer) {
     final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+    final AtomicBoolean foundSpan = new AtomicBoolean(false);
 
-    AtomicBoolean foundSpan = new AtomicBoolean(false);
     try {
-      restTemplate.getForEntity("http://localhost:12345", String.class)
-          .addCallback(new SuccessCallback<ResponseEntity<String>>() {
-            @Override
-            public void onSuccess(ResponseEntity<String> result) {
-              foundSpan.set(tracer.activeSpan() != null);
-            }
-          }, new FailureCallback() {
-            @Override
-            public void onFailure(Throwable ex) {
-              foundSpan.set(tracer.activeSpan() != null);
-            }
-          });
+      restTemplate.getForEntity("http://localhost:12345", String.class).addCallback(new SuccessCallback<ResponseEntity<String>>() {
+        @Override
+        public void onSuccess(final ResponseEntity<String> result) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+      }, new FailureCallback() {
+        @Override
+        public void onFailure(final Throwable t) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+      });
     }
     catch (final Exception ignore) {
     }

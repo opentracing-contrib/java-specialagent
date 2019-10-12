@@ -15,25 +15,25 @@
 
 package io.opentracing.contrib.specialagent.spring4.web;
 
-import static io.opentracing.contrib.specialagent.spring4.web.copied.TracingListenableFutureCallback.captureException;
+import static io.opentracing.contrib.specialagent.spring4.web.copied.TracingListenableFutureCallback.*;
 
-import io.opentracing.contrib.specialagent.spring4.web.copied.TracingAsyncRequestCallback;
-import io.opentracing.contrib.specialagent.spring4.web.copied.TracingListenableFuture;
-import io.opentracing.contrib.specialagent.spring4.web.copied.TracingListenableFutureCallback;
-import io.opentracing.contrib.specialagent.spring4.web.copied.TracingRestTemplateInterceptor;
 import java.net.URI;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.client.AsyncRequestCallback;
+import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.spring4.web.copied.TracingAsyncRequestCallback;
+import io.opentracing.contrib.specialagent.spring4.web.copied.TracingListenableFuture;
+import io.opentracing.contrib.specialagent.spring4.web.copied.TracingListenableFutureCallback;
+import io.opentracing.contrib.specialagent.spring4.web.copied.TracingRestTemplateInterceptor;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.client.AsyncRequestCallback;
-import org.springframework.web.client.RestTemplate;
 
 public class SpringWebAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -52,20 +52,18 @@ public class SpringWebAgentIntercept {
     restTemplate.getInterceptors().add(new TracingRestTemplateInterceptor(GlobalTracer.get()));
   }
 
-  public static Object asyncStart(Object arg0, Object arg1, Object arg2) {
-    URI url = (URI) arg0;
-    HttpMethod method = (HttpMethod) arg1;
-    AsyncRequestCallback requestCallback = (AsyncRequestCallback) arg2;
-
+  public static Object asyncStart(final Object arg0, final Object arg1, final Object arg2) {
+    final URI url = (URI)arg0;
+    final HttpMethod method = (HttpMethod)arg1;
+    final AsyncRequestCallback requestCallback = (AsyncRequestCallback)arg2;
 
     final Tracer tracer = GlobalTracer.get();
-    final Span span = tracer
-        .buildSpan(method.name())
-        .withTag(Tags.COMPONENT.getKey(), "java-spring-rest-template")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.HTTP_URL, url.toString())
-        .withTag(Tags.HTTP_METHOD, method.name())
-        .start();
+    final Span span = tracer.buildSpan(method.name())
+      .withTag(Tags.COMPONENT.getKey(), "java-spring-rest-template")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.HTTP_URL, url.toString())
+      .withTag(Tags.HTTP_METHOD, method.name())
+      .start();
 
     final Scope scope = tracer.activateSpan(span);
     final Context context = new Context();
@@ -77,7 +75,7 @@ public class SpringWebAgentIntercept {
   }
 
   public static Object asyncEnd(Object response, final Throwable thrown) {
-    final ListenableFuture listenableFuture = (ListenableFuture) response;
+    final ListenableFuture<?> listenableFuture = (ListenableFuture<?>)response;
     final Context context = contextHolder.get();
     if (context == null)
       return response;
@@ -89,17 +87,14 @@ public class SpringWebAgentIntercept {
       contextHolder.remove();
       return response;
     }
-    else {
-      try {
-        listenableFuture.addCallback(new TracingListenableFutureCallback(null, context.span, true));
-      }
-      catch (final Exception ignore) {
-      }
+
+    try {
+      listenableFuture.addCallback(new TracingListenableFutureCallback(null, context.span, true));
+    }
+    catch (final Exception ignore) {
     }
 
     contextHolder.remove();
-
     return new TracingListenableFuture(listenableFuture, context.span);
   }
-
 }
