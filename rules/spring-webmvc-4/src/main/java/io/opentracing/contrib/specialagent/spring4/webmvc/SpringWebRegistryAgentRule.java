@@ -32,16 +32,16 @@ public class SpringWebRegistryAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-        .type(named("org.springframework.web.servlet.HandlerExecutionChain"))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
-          }}));
+      .type(named("org.springframework.web.servlet.HandlerExecutionChain"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
+        }}));
   }
 
   @Advice.OnMethodExit
-  public static void enter(final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
+  public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
     if (isEnabled(origin))
       returned = SpringWebMvcAgentIntercept.getInterceptors(returned);
   }

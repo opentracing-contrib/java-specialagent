@@ -15,12 +15,13 @@
 
 package io.opentracing.contrib.specialagent.spring4.webmvc;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
@@ -28,11 +29,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockTracer;
-import org.springframework.web.client.RestTemplate;
 
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
@@ -54,7 +55,7 @@ public class SpringWebMvcTest {
     jettyServer.start();
 
     // jetty starts on random port
-    final int serverPort = (jettyServer.getConnectors()[0]).getLocalPort();
+    final int serverPort = jettyServer.getConnectors()[0].getLocalPort();
     url = "http://localhost:" + serverPort + "/sync";
   }
 
