@@ -427,8 +427,11 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 | [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.1.RELEASE | LATEST |
 | [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | LATEST |
 | [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
+| | [`spring:web:4.0`][spring-web-4.0] | 4.0.0.RELEASE | 4.0.9.RELEASE |
+| | [`spring:web:4.x`][spring-web-4] | 4.1.0.RELEASE | 4.3.25.RELEASE |
 | | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | LATEST |
 | [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc:3`][spring-webmvc-3] | 3.0.2.RELEASE | 3.2.18.RELEASE |
+| | [`spring:webmvc:4`][spring-webmvc-4] | 4.0.0.RELEASE | 4.3.25.RELEASE |
 | | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | LATEST |
 | [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | LATEST |
 | [Spring WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 5.1.0.RELEASE | LATEST |
@@ -530,11 +533,14 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [spring-messaging]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-messaging
 [spring-rabbitmq]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-rabbitmq
 [spring-scheduling]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-scheduling
-[spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-5
 [spring-web-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-3
+[spring-web-4.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-4.0
+[spring-web-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-4
+[spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-5
 [spring-webflux]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webflux
-[spring-webmvc-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-5
 [spring-webmvc-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-3
+[spring-webmvc-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-4
+[spring-webmvc-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-5
 [spring-websocket]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-websocket
 [spymemcached]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spymemcached
 [thread]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/thread
