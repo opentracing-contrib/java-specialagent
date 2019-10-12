@@ -68,6 +68,7 @@
         <module>spring-web-4</module>
         <module>spring-web-5</module>
         <module>spring-webmvc-3</module>
+        <module>spring-webmvc-4</module>
         <module>spring-webmvc-5</module>
         <module>spring-webflux</module>
         <module>redisson</module>

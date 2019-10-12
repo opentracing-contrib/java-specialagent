@@ -41,6 +41,9 @@
           <presents>
             <present>org.springframework.beans.factory.access.BeanFactoryLocator</present>
           </presents>
+          <absents>
+            <absent>org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder</absent>
+          </absents>
         </configuration>
       </plugin>
     </plugins>
