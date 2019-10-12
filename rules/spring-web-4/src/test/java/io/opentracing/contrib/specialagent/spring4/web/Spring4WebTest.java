@@ -13,15 +13,14 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.spring.web;
+package io.opentracing.contrib.specialagent.spring4.web;
 
-import static org.awaitility.Awaitility.*;
-import static org.hamcrest.core.IsEqual.*;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +36,7 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@SuppressWarnings("deprecation")
-public class SpringWebTest {
+public class Spring4WebTest {
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();

@@ -13,23 +13,20 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.spring.web;
+package io.opentracing.contrib.specialagent.spring40.web;
 
-import static org.awaitility.Awaitility.*;
-import static org.hamcrest.core.IsEqual.*;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.concurrent.FailureCallback;
 import org.springframework.util.concurrent.ListenableFutureCallback;
-import org.springframework.util.concurrent.SuccessCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,8 +34,7 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@SuppressWarnings("deprecation")
-public class SpringWebTest {
+public class Spring40WebTest {
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();
@@ -92,33 +88,6 @@ public class SpringWebTest {
 
             @Override
             public void onSuccess(ResponseEntity<String> result) {
-              foundSpan.set(tracer.activeSpan() != null);
-            }
-          });
-    }
-    catch (final Exception ignore) {
-    }
-
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
-    assertEquals(1, tracer.finishedSpans().size());
-    assertTrue(foundSpan.get());
-  }
-
-  @Test
-  public void testAsyncSuccessCallback(MockTracer tracer) {
-    final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
-
-    AtomicBoolean foundSpan = new AtomicBoolean(false);
-    try {
-      restTemplate.getForEntity("http://localhost:12345", String.class)
-          .addCallback(new SuccessCallback<ResponseEntity<String>>() {
-            @Override
-            public void onSuccess(ResponseEntity<String> result) {
-              foundSpan.set(tracer.activeSpan() != null);
-            }
-          }, new FailureCallback() {
-            @Override
-            public void onFailure(Throwable ex) {
               foundSpan.set(tracer.activeSpan() != null);
             }
           });
