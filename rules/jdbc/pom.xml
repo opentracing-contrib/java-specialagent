@@ -24,7 +24,7 @@
     <version>1.4.2-SNAPSHOT</version>
   </parent>
   <artifactId>jdbc</artifactId>
-  <name>SpecialAgent Rule for JDBC</name>
+  <name>SpecialAgent Rule for Java JDBC API</name>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jdbc -->

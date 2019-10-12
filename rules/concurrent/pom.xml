@@ -24,5 +24,5 @@
     <version>1.4.2-SNAPSHOT</version>
   </parent>
   <artifactId>concurrent</artifactId>
-  <name>SpecialAgent Rule for Java Concurrent</name>
+  <name>SpecialAgent Rule for Java Concurrent API</name>
 </project>

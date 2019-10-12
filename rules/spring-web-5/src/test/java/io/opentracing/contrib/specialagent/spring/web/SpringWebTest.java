@@ -21,10 +21,15 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.concurrent.FailureCallback;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.springframework.util.concurrent.SuccessCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -70,6 +75,58 @@ public class SpringWebTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
+  }
+
+  @Test
+  public void testAsyncCallback(final MockTracer tracer) {
+    final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+    final AtomicBoolean foundSpan = new AtomicBoolean(false);
+
+    try {
+      restTemplate.getForEntity("http://localhost:12345", String.class).addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+        @Override
+        public void onFailure(final Throwable t) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+
+        @Override
+        public void onSuccess(final ResponseEntity<String> result) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+      });
+    }
+    catch (final Exception ignore) {
+    }
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    assertEquals(1, tracer.finishedSpans().size());
+    assertTrue(foundSpan.get());
+  }
+
+  @Test
+  public void testAsyncSuccessCallback(final MockTracer tracer) {
+    final AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+    final AtomicBoolean foundSpan = new AtomicBoolean(false);
+
+    try {
+      restTemplate.getForEntity("http://localhost:12345", String.class).addCallback(new SuccessCallback<ResponseEntity<String>>() {
+        @Override
+        public void onSuccess(final ResponseEntity<String> result) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+      }, new FailureCallback() {
+        @Override
+        public void onFailure(final Throwable t) {
+          foundSpan.set(tracer.activeSpan() != null);
+        }
+      });
+    }
+    catch (final Exception ignore) {
+    }
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    assertEquals(1, tracer.finishedSpans().size());
+    assertTrue(foundSpan.get());
   }
 
   static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
