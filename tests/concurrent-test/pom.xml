@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018 The OpenTracing Authors
+  Copyright 2019 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,10 +19,22 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-    <artifactId>rules</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.tests</groupId>
+    <artifactId>tests</artifactId>
     <version>1.4.2-SNAPSHOT</version>
   </parent>
-  <artifactId>concurrent</artifactId>
-  <name>SpecialAgent Rule for Java Concurrent API</name>
+  <artifactId>concurrent-test</artifactId>
+  <name>SpecialAgent Test for Java Concurrent API</name>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <mainClass>concurrent.App</mainClass>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.199</version>
+    </dependency>
+  </dependencies>
 </project>

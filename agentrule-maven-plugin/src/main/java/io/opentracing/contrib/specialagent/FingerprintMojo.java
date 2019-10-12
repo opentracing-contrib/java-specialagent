@@ -272,6 +272,11 @@ public final class FingerprintMojo extends TreeMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    if (isSkip()) {
+      getLog().info("Skipping plugin execution");
+      return;
+    }
+
     if ("pom".equalsIgnoreCase(getProject().getPackaging())) {
       getLog().info("Skipping for \"pom\" module.");
       return;

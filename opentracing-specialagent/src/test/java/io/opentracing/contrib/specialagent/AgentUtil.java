@@ -35,7 +35,7 @@ import java.util.jar.JarFile;
  *
  * @author Seva Safris
  */
-class TestUtil {
+class AgentUtil {
   private static final Predicate<String> predicate = new Predicate<String>() {
     @Override
     public boolean test(final String t) {
