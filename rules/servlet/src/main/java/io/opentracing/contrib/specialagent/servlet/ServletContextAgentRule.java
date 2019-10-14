@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -28,6 +28,8 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class ServletContextAgentRule extends AgentRule {
+  public static boolean filterAdded = false;
+
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
@@ -55,7 +57,7 @@ public class ServletContextAgentRule extends AgentRule {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled(origin))
-        JettyAgentIntercept.addFilter(thiz);
+        filterAdded = JettyAgentIntercept.addFilter(thiz);
     }
   }
 
@@ -63,7 +65,7 @@ public class ServletContextAgentRule extends AgentRule {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled(origin))
-        ServletContextAgentIntercept.addFilter(thiz);
+        filterAdded = ServletContextAgentIntercept.addFilter(thiz);
     }
   }
 }

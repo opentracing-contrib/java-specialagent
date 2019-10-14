@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -56,7 +56,7 @@ public abstract class ServletFilterAgentIntercept {
       final Method method = cls.getMethod(name, parameterTypes);
       return Modifier.isAbstract(method.getModifiers()) ? null : method;
     }
-    catch (final NoSuchMethodException e) {
+    catch (final NoClassDefFoundError | NoSuchMethodException e) {
       return null;
     }
   }

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import java.io.IOException;
 import java.util.Map;
@@ -71,8 +71,8 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
         }
       });
     }
-    catch (final Exception e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+    catch (final Throwable t) {
+      logger.log(Level.WARNING, t.getMessage(), t);
       return;
     }
 

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import java.util.EnumSet;
 
@@ -25,25 +25,28 @@ import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 
 public class ServletContextAgentIntercept extends ContextAgentIntercept {
-  public static void addFilter(final Object thiz) {
+  public static boolean addFilter(final Object thiz) {
     if (!(thiz instanceof ServletContext)) {
       if (logger.isLoggable(Level.FINER))
         logger.finer(">< ServletContextAgentIntercept#addFilter(" + AgentRuleUtil.getSimpleNameId(thiz) + "): !(thiz instanceof ServletContext)");
 
-      return;
+      return false;
     }
 
     final ServletContext context = (ServletContext)thiz;
     try {
       final FilterRegistration.Dynamic registration = (FilterRegistration.Dynamic)getAddFilterMethod(context);
-      if (registration != null) {
-        registration.setAsyncSupported(true);
-        registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
-      }
+      if (registration == null)
+        return false;
+
+      registration.setAsyncSupported(true);
+      registration.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, patterns);
+      return true;
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
       servletContextToFilter.remove(context);
+      return false;
     }
     finally {
       if (logger.isLoggable(Level.FINER))

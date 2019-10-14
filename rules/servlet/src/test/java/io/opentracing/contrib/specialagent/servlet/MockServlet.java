@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import java.io.IOException;
 

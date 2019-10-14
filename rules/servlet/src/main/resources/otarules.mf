@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.webservletfilter.ServletContextAgentRule
-io.opentracing.contrib.specialagent.webservletfilter.FilterAgentRule
+io.opentracing.contrib.specialagent.servlet.ServletContextAgentRule
+io.opentracing.contrib.specialagent.servlet.FilterAgentRule

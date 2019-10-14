@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -101,7 +101,7 @@ public class FilterAgentRule extends AgentRule {
   public static class DoFilterEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response, final @Advice.Argument(value = 2) Object chain) {
-      if (isEnabled(origin))
+      if (!ServletContextAgentRule.filterAdded && isEnabled(origin))
         FilterAgentIntercept.doFilter(thiz, request, response, chain);
     }
   }

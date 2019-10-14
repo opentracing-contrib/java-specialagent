@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.webservletfilter.FilterAgentIntercept;
+import io.opentracing.contrib.specialagent.servlet.FilterAgentIntercept;
 import io.opentracing.tag.Tags;
 
 /**

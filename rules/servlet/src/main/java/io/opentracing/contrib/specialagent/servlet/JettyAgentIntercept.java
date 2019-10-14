@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.webservletfilter;
+package io.opentracing.contrib.specialagent.servlet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,13 +28,13 @@ import io.opentracing.contrib.specialagent.Level;
 
 public class JettyAgentIntercept extends ContextAgentIntercept {
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public static void addFilter(final Object thiz) {
+  public static boolean addFilter(final Object thiz) {
     ServletContext context = null;
     try {
       context = (ServletContext)thiz.getClass().getMethod("getServletContext").invoke(thiz);
       final Object registration = getAddFilterMethod(context);
       if (registration == null)
-        return;
+        return false;
 
       final Class<?> registrationClass = registration.getClass();
       final Method addMappingForUrlPatternsMethod = registrationClass.getMethod("addMappingForUrlPatterns", EnumSet.class, boolean.class, String[].class);
@@ -55,11 +55,14 @@ public class JettyAgentIntercept extends ContextAgentIntercept {
         logger.finer(">> " + registrationClass.getSimpleName() + "#addMappingForUrlPatterns(" + registration + "," + dispatcherTypes + ",true," + Arrays.toString(patterns) + ")");
 
       addMappingForUrlPatternsMethod.invoke(registration, dispatcherTypes, true, patterns);
+      return true;
     }
     catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | ServletException e) {
       logger.log(Level.WARNING, e.getMessage(), e);
       if (context != null)
         servletContextToFilter.remove(context);
+
+      return false;
     }
     finally {
       if (logger.isLoggable(Level.FINER))
