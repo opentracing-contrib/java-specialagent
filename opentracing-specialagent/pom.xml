@@ -276,12 +276,6 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rules</groupId>
-          <artifactId>spring-webmvc-5</artifactId>
-          <version>${project.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rules</groupId>
           <artifactId>spring-webflux</artifactId>
           <version>${project.version}</version>
           <scope>provided</scope>
