@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,7 +43,7 @@ abstract class SpecialAgentBase {
     final String configProperty = System.getProperty(CONFIG_ARG);
     try (
       final InputStream defaultConfig = SpecialAgentBase.class.getResourceAsStream("/default.properties");
-      final FileReader userConfig = configProperty == null ? null : new FileReader(new File(configProperty));
+      final BufferedReader userConfig = configProperty == null ? null : new BufferedReader(new FileReader(new File(configProperty)));
     ) {
       final Properties properties = new Properties();
 
@@ -50,8 +51,15 @@ abstract class SpecialAgentBase {
       properties.load(defaultConfig);
 
       // Load user config properties
-      if (userConfig != null)
-        properties.load(userConfig);
+      if (userConfig != null) {
+        for (String line; (line = userConfig.readLine()) != null;) {
+          final int eq = line.indexOf('=');
+          if (eq == -1)
+            properties.put(line.trim(), "");
+          else
+            properties.put(line.substring(0, eq).trim(), line.substring(eq + 1).trim());
+        }
+      }
 
       // Set config properties as system properties
       for (final Map.Entry<Object,Object> entry : properties.entrySet())

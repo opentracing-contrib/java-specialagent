@@ -277,7 +277,7 @@ public class SpecialAgent extends SpecialAgentBase {
             if (pluginManifest.name.equals(entry.getKey()) || pluginManifest.name.matches(namePattern)) {
               enablePlugin = entry.getValue();
               if (logger.isLoggable(Level.FINER))
-                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + namePattern + " is " + (enablePlugin ? "en" : "dis") + "abled");
+                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginManifest.name + " is " + (enablePlugin ? "en" : "dis") + "abled");
 
               break;
             }
