@@ -71,7 +71,11 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) has 2 artifacts: main and test. 
 
 #### 2.1.1 In Application
 
-To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, first download the JAR:
+The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR file. This JAR file is the main artifact that is built by Maven, and contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented.
+
+To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, please download the [stable](#2111-stable) or [development](#2112-development) artifact.
+
+This JAR can then be specified with the `-javaagent:$SPECIAL_AGENT_JAR` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [Static Deferred Attach](#223-static-deferred-attach) to an application. This JAR can also be executed in standalone fashion, with an argument representing the PID of a target process to which it should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#usage) section for usage instructions.
 
 ##### 2.1.1.1 Stable
 
@@ -88,7 +92,10 @@ The latest development release is: <ins>1.4.2-SNAPSHOT</ins>.
 wget -O opentracing-specialagent-1.4.2-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
-This is the main artifact that contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented. This JAR can be specified as the `-javaagent` target for [<ins>Static Attach</ins>](#221-static-attach) to an application. This JAR can also be executed, standalone, with an argument representing the PID of a target process to which it should dynamically attach. Please refer to [Usage](#usage) section for usage instructions.
+**Note**: Sometimes the web service call to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command:
+```bash
+wget -O opentracing-specialagent-1.4.2-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+```
 
 #### 2.1.2 For Development
 
