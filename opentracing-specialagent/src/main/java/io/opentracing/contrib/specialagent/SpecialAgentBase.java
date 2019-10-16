@@ -16,12 +16,12 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 abstract class SpecialAgentBase {
   static final String CONFIG_ARG = "sa.config";
@@ -35,6 +35,26 @@ abstract class SpecialAgentBase {
 
   private static boolean propertiesLoaded = false;
 
+  private static void loadProperties(final Map<String,String> properties, final BufferedReader reader) throws IOException {
+    for (String line; (line = reader.readLine()) != null;) {
+      line = line.trim();
+      char ch;
+      if (line.length() == 0 || (ch = line.charAt(0)) == '#' || ch == '!')
+        continue;
+
+      final int eq = line.indexOf('=');
+      if (eq == -1) {
+        properties.put(line, "");
+      }
+      else if (eq > 0) {
+        final String key = line.substring(0, eq).trim();
+        final String value = line.substring(eq + 1).trim();
+        if (key.length() > 0)
+          properties.put(key, value);
+      }
+    }
+  }
+
   static void loadProperties() {
     if (propertiesLoaded)
       return;
@@ -43,28 +63,21 @@ abstract class SpecialAgentBase {
     final String configProperty = System.getProperty(CONFIG_ARG);
     try (
       final InputStream defaultConfig = SpecialAgentBase.class.getResourceAsStream("/default.properties");
-      final BufferedReader userConfig = configProperty == null ? null : new BufferedReader(new FileReader(new File(configProperty)));
+      final FileReader userConfig = configProperty == null ? null : new FileReader(configProperty);
     ) {
-      final Properties properties = new Properties();
+      final Map<String,String> properties = new HashMap<>();
 
       // Load default config properties
-      properties.load(defaultConfig);
+      loadProperties(properties, new BufferedReader(new InputStreamReader(defaultConfig)));
 
       // Load user config properties
-      if (userConfig != null) {
-        for (String line; (line = userConfig.readLine()) != null;) {
-          final int eq = line.indexOf('=');
-          if (eq == -1)
-            properties.put(line.trim(), "");
-          else
-            properties.put(line.substring(0, eq).trim(), line.substring(eq + 1).trim());
-        }
-      }
+      if (userConfig != null)
+        loadProperties(properties, new BufferedReader(userConfig));
 
       // Set config properties as system properties
-      for (final Map.Entry<Object,Object> entry : properties.entrySet())
-        if (System.getProperty((String)entry.getKey()) == null)
-          System.setProperty((String)entry.getKey(), (String)entry.getValue());
+      for (final Map.Entry<String,String> entry : properties.entrySet())
+        if (System.getProperty(entry.getKey()) == null)
+          System.setProperty(entry.getKey(), entry.getValue());
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
