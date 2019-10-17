@@ -19,10 +19,11 @@ cache:
   - ~/.m2
 before_install:
 - 'export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn &&
-   cp settings.xml $HOME/.m2/settings.xml'
+   cp settings.xml $HOME/.m2/settings.xml;'
 stages:
 - install
-- test
+- okhttp
+- jdbc
 - deploy
 jobs:
   include:
@@ -56,27 +57,15 @@ jobs:
         sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
-    before_cache: rm -rf ~/.m2/build
-  - stage: deploy
-    jdk: oraclejdk11
-    before_cache: rm -rf ~/.m2/build
-  - stage: test
-    env:
-    - TEST=okhttp
+  - stage: okhttp
     jdk: oraclejdk8
-    script: mvn -B -Dtest -P $TEST install
-  - stage: test
-    env:
-    - TEST=okhttp
+    script: mvn -B -Dtest -P okhttp install
+  - stage: okhttp
     jdk: oraclejdk11
-    script: mvn -B -Dtest -P $TEST install
-  - stage: test
-    env:
-    - TEST=jdbc
+    script: mvn -B -Dtest -P okhttp install
+  - stage: jdbc
     jdk: oraclejdk8
-    script: mvn -B -Dtest -P $TEST install
-  - stage: test
-    env:
-    - TEST=jdbc
+    script: mvn -B -Dtest -P jdbc install
+  - stage: jdbc
     jdk: oraclejdk11
-    script: mvn -B -Dtest -P $TEST install
+    script: mvn -B -Dtest -P jdbc install
