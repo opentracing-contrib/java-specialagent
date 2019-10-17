@@ -18,9 +18,6 @@ cache:
   directories:
   - ~/.m2/repository
 before_install: cp settings.xml $HOME/.m2/settings.xml && rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
-env:
-- TEST=okhttp
-- TEST=jdbc
 stages:
 - install
 - test
@@ -46,8 +43,22 @@ jobs:
     script:
     - 'mvn -B install & & mvn -B -Dtest -P $TEST install;'
   - stage: test
+    env:
+    - TEST=okhttp
     jdk: oraclejdk8
     script: mvn -B -Dtest -P $TEST install
   - stage: test
+    env:
+    - TEST=okhttp
+    jdk: oraclejdk11
+    script: mvn -B -Dtest -P $TEST install
+  - stage: test
+    env:
+    - TEST=jdbc
+    jdk: oraclejdk8
+    script: mvn -B -Dtest -P $TEST install
+  - stage: test
+    env:
+    - TEST=jdbc
     jdk: oraclejdk11
     script: mvn -B -Dtest -P $TEST install
