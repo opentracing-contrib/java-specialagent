@@ -75,7 +75,7 @@
                 <configuration>
                   <executable>java</executable>
                   <arguments>
-                    <argument>-javaagent:${localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
+                    <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
                     <argument>-Dsa.log.level=${sa.log.level}</argument>
                     <argument>-classpath</argument>
                     <classpath/>
