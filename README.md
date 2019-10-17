@@ -361,10 +361,10 @@ Examples:
 A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements the auto-instrumentation rules for [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) via the [`opentracing-specialagent-api`][api].
 
 Examples:
-* [`rules/specialagent-okhttp`][specialagent-okhttp]
-* [`rules/specialagent-jdbc`][specialagent-jdbc]
-* [`rules/specialagent-jms-1`][specialagent-jms-1]
-* [`rules/specialagent-jms-2`][specialagent-jms-2]
+* [`rules/specialagent-okhttp`][okhttp]
+* [`rules/specialagent-jdbc`][jdbc]
+* [`rules/specialagent-jms-1`][jms-1]
+* [`rules/specialagent-jms-2`][jms-2]
 
 <sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -559,13 +559,10 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jdbc]: https://github.com/opentracing-contrib/java-jdbc
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
-[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.1/opentracing-specialagent-1.4.1.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2-SNAPSHOT
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [pom]: https://maven.apache.org/pom.html
-[specialagent-jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jdbc
-[specialagent-jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-1
-[specialagent-jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-jms-2
-[specialagent-okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/specialagent-okhttp
+
+[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.1/opentracing-specialagent-1.4.1.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2-SNAPSHOT
 [test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.1/opentracing-specialagent-1.4.1-tests.jar
 [test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2-SNAPSHOT
