@@ -57,15 +57,15 @@ jobs:
         sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
-  - stage: okhttp
+  - stage: test
     jdk: oraclejdk8
     script: mvn -B -Dtest -P okhttp install
-  - stage: okhttp
+  - stage: test
     jdk: oraclejdk11
     script: mvn -B -Dtest -P okhttp install
-  - stage: jdbc
+  - stage: test
     jdk: oraclejdk8
     script: mvn -B -Dtest -P jdbc install
-  - stage: jdbc
+  - stage: test
     jdk: oraclejdk11
     script: mvn -B -Dtest -P jdbc install
