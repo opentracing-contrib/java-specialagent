@@ -291,6 +291,6 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 
 [bytebuddy]: http://bytebuddy.net/
 [mongodriver-pom]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/mongo-driver/pom.xml#L37-L44
-[okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-okhttp/pom.xml
+[okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/okhttp/pom.xml
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml
