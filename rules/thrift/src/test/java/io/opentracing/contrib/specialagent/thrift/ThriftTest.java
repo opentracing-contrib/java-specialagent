@@ -23,7 +23,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -72,8 +71,11 @@ public class ThriftTest {
   private TServer server;
   private static int port = 8883;
 
+  private MockTracer tracer;
+
   @Before
   public void before(final MockTracer tracer) {
+    this.tracer = spy(tracer);
     tracer.reset();
     ++port;
   }
@@ -96,7 +98,7 @@ public class ThriftTest {
     final CustomService.Client client = new CustomService.Client(protocol);
     assertEquals("Say Good bye World", client.say("Good bye", "World"));
 
-    await().atMost(5, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(5, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -106,8 +108,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void withoutArgs(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void withoutArgs() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -120,7 +121,7 @@ public class ThriftTest {
 
     assertEquals("no args", client.withoutArgs());
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -134,8 +135,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void withError(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void withError() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -153,7 +153,7 @@ public class ThriftTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -167,8 +167,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void withCollision(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void withCollision() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -181,7 +180,7 @@ public class ThriftTest {
 
     assertEquals("collision", client.withCollision("collision"));
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -193,8 +192,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void oneWayWithError(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void oneWayWithError() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -207,7 +205,7 @@ public class ThriftTest {
 
     client.oneWayWithError();
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -219,8 +217,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void oneWay(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void oneWay() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -233,7 +230,7 @@ public class ThriftTest {
 
     client.oneWay();
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -245,8 +242,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void async(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void async() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startAsyncServer();
@@ -270,7 +266,7 @@ public class ThriftTest {
       }
     });
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
     assertEquals(1, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -282,8 +278,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void asyncWithoutArgs(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void asyncWithoutArgs() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startAsyncServer();
@@ -308,7 +303,7 @@ public class ThriftTest {
       }
     });
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
     assertEquals(1, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -320,8 +315,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void asyncMany(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void asyncMany() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startAsyncServer();
@@ -347,7 +341,7 @@ public class ThriftTest {
       });
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(8));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(8));
     assertEquals(4, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -359,8 +353,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void oneWayAsync(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void oneWayAsync() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startAsyncServer();
@@ -383,7 +376,7 @@ public class ThriftTest {
       }
     });
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
     assertEquals(1, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -395,8 +388,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void withStruct(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void withStruct() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -415,7 +407,7 @@ public class ThriftTest {
     assertEquals(user, userWithAddress.user);
     assertEquals(address, userWithAddress.address);
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -427,8 +419,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void manyCallsParallel(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void manyCallsParallel() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -454,7 +445,8 @@ public class ThriftTest {
         }
       }).start();
     }
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(16));
+
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(16));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(16, spans.size());
@@ -464,8 +456,7 @@ public class ThriftTest {
   }
 
   @Test
-  public void withParent(MockTracer tracer) throws Exception {
-    tracer = spy(tracer);
+  public void withParent() throws Exception {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
 
     startNewThreadPoolServer();
@@ -486,7 +477,7 @@ public class ThriftTest {
 
     parent.close();
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(9));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(9));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(9, spans.size());
@@ -555,14 +546,5 @@ public class ThriftTest {
         server.serve();
       }
     }).start();
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 }

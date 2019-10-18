@@ -19,7 +19,6 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -72,7 +71,7 @@ public class Spring4WebTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
   }
 
@@ -97,7 +96,7 @@ public class Spring4WebTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
     assertTrue(foundSpan.get());
   }
@@ -110,7 +109,7 @@ public class Spring4WebTest {
     try {
       restTemplate.getForEntity("http://localhost:12345", String.class).addCallback(new SuccessCallback<ResponseEntity<String>>() {
         @Override
-        public void onSuccess(ResponseEntity<String> result) {
+        public void onSuccess(final ResponseEntity<String> result) {
           foundSpan.set(tracer.activeSpan() != null);
         }
       }, new FailureCallback() {
@@ -123,17 +122,8 @@ public class Spring4WebTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
     assertTrue(foundSpan.get());
-  }
-
-  static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 }

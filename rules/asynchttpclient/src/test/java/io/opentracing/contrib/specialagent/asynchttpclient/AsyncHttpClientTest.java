@@ -20,7 +20,6 @@ import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,7 +55,7 @@ public class AsyncHttpClientTest {
       }
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
     assertNull(tracer.activeSpan());
   }
@@ -86,18 +85,9 @@ public class AsyncHttpClientTest {
       }
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
     assertEquals(1, counter.get());
     assertNull(tracer.activeSpan());
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 }

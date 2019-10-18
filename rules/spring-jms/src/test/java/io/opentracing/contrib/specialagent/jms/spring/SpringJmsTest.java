@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -89,20 +88,11 @@ public class SpringJmsTest {
     final JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
     jmsTemplate.convertAndSend("mailbox", "message");
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
 
     assertEquals(1, counter.get());
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 
   @EnableJms

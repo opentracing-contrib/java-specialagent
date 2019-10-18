@@ -49,15 +49,6 @@ public abstract class JmsTest {
   Session session;
   Connection connection;
 
-  static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
-  }
-
   @Test
   public void sendAndReceive(final MockTracer tracer) throws Exception {
     final Destination destination = session.createQueue("TEST.FOO");
@@ -98,7 +89,7 @@ public abstract class JmsTest {
     final TextMessage message = session.createTextMessage("Hello world");
     producer.send(message);
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());

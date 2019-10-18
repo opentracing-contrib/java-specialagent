@@ -67,7 +67,7 @@ public class SpringKafkaTest {
     KafkaTemplate<Integer,String> kafkaTemplate = context.getBean(KafkaTemplate.class);
     kafkaTemplate.send("spring", "message");
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     assertEquals(1, counter.get());
     assertEquals(1, tracer.finishedSpans().size());
   }
@@ -105,9 +105,5 @@ public class SpringKafkaTest {
       assertEquals("message", message);
       counter.incrementAndGet();
     }
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return () -> tracer.finishedSpans().size();
   }
 }

@@ -21,7 +21,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -83,7 +82,7 @@ public class Lettuce51Test {
     final RedisCommands<String,String> commands2 = client.connect().sync();
     commands2.publish("channel", "msg");
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(4));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(4));
 
     client.shutdown();
 
@@ -126,9 +125,5 @@ public class Lettuce51Test {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return () -> tracer.finishedSpans().size();
   }
 }

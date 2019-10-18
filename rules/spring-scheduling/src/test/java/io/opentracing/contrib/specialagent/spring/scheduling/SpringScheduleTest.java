@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -43,7 +42,7 @@ public class SpringScheduleTest {
   @Test
   public void test(final MockTracer tracer) {
     final ApplicationContext context = new AnnotationConfigApplicationContext(SpringScheduleConfiguration.class);
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), greaterThanOrEqualTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), greaterThanOrEqualTo(1));
     List<MockSpan> spans = tracer.finishedSpans();
     assertTrue(spans.size() >= 1);
     for (MockSpan span : spans) {
@@ -58,9 +57,5 @@ public class SpringScheduleTest {
     public void scheduled() {
       System.out.println("scheduled");
     }
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return () -> tracer.finishedSpans().size();
   }
 }

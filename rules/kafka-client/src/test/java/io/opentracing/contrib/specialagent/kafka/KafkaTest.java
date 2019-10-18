@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -69,7 +68,7 @@ public class KafkaTest {
   }
 
   @Test
-  public void clients(MockTracer tracer) throws Exception {
+  public void clients(final MockTracer tracer) throws Exception {
     try (final Producer<Integer,String> producer = createProducer()) {
       // Send 1
       producer.send(new ProducerRecord<>("messages", 1, "test"));
@@ -87,7 +86,7 @@ public class KafkaTest {
   }
 
   @Test
-  public void streams(MockTracer tracer) {
+  public void streams(final MockTracer tracer) {
     try (final Producer<Integer,String> producer = createProducer()) {
       final ProducerRecord<Integer,String> record = new ProducerRecord<>("stream-test", 1, "test");
       producer.send(record);
@@ -116,7 +115,7 @@ public class KafkaTest {
     final KafkaStreams streams = new KafkaStreams(builder.build(), config);
     streams.start();
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(3));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(3));
     streams.close();
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
@@ -136,37 +135,25 @@ public class KafkaTest {
     final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
     consumerProps.put("auto.offset.reset", "earliest");
 
-    executorService.execute(new Runnable() {
-      @Override
-      public void run() {
-        try (final KafkaConsumer<Integer,String> consumer = new KafkaConsumer<>(consumerProps)) {
-          consumer.subscribe(Collections.singletonList("messages"));
-          while (latch.getCount() > 0) {
-            final ConsumerRecords<Integer,String> records = consumer.poll(100);
-            for (final ConsumerRecord<Integer,String> record : records) {
-              final SpanContext spanContext = TracingKafkaUtils.extractSpanContext(record.headers(), tracer);
-              assertNotNull(spanContext);
-              assertEquals("test", record.value());
-              if (key != null)
-                assertEquals(key, record.key());
+    executorService.execute(() -> {
+      try (final KafkaConsumer<Integer,String> consumer = new KafkaConsumer<>(consumerProps)) {
+        consumer.subscribe(Collections.singletonList("messages"));
+        while (latch.getCount() > 0) {
+          final ConsumerRecords<Integer,String> records = consumer.poll(100);
+          for (final ConsumerRecord<Integer,String> record : records) {
+            final SpanContext spanContext = TracingKafkaUtils.extractSpanContext(record.headers(), tracer);
+            assertNotNull(spanContext);
+            assertEquals("test", record.value());
+            if (key != null)
+              assertEquals(key, record.key());
 
-              consumer.commitSync();
-              latch.countDown();
-            }
+            consumer.commitSync();
+            latch.countDown();
           }
         }
       }
     });
 
     assertTrue(latch.await(30, TimeUnit.SECONDS));
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 }

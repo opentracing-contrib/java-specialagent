@@ -19,7 +19,6 @@ import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -75,20 +74,11 @@ public class SpringRabbitMQTest {
     template.convertAndSend(QUEUE_NAME, "message");
     template.convertAndSend(QUEUE_NAME2, "message-2");
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     assertEquals(2, counter.get());
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 
   @Configuration

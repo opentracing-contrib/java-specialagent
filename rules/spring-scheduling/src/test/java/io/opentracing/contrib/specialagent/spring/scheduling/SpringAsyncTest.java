@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +56,7 @@ public class SpringAsyncTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
     for (final MockSpan span : spans) {
@@ -77,9 +76,5 @@ public class SpringAsyncTest {
     public Future<String> asyncException() {
       throw new RuntimeException("error");
     }
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return () -> tracer.finishedSpans().size();
   }
 }

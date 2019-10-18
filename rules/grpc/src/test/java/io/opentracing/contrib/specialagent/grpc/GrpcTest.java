@@ -66,7 +66,12 @@ public class GrpcTest {
     final String message = greeterBlockingStub.sayHello(HelloRequest.newBuilder().setName("world").build()).getMessage();
 
     assertEquals("Hello world", message);
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(new Callable<Integer>() {
+      @Override
+      public Integer call() {
+        return tracer.finishedSpans().size();
+      }
+    }, equalTo(2));
     assertEquals(2, tracer.finishedSpans().size());
   }
 
@@ -81,14 +86,5 @@ public class GrpcTest {
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
     }
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 }

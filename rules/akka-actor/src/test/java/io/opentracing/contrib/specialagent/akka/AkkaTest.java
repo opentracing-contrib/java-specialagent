@@ -77,7 +77,7 @@ public class AkkaTest {
     final ActorSelection actorSelection = system.actorSelection(actorRef.path());
     actorSelection.tell("tell-selection", ActorRef.noSender());
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(4));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(4));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(4, spans.size());
@@ -94,7 +94,7 @@ public class AkkaTest {
     final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
@@ -111,7 +111,7 @@ public class AkkaTest {
     final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
-    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
@@ -146,14 +146,5 @@ public class AkkaTest {
           getSender().tell(span == null, getSelf());
       }).build();
     }
-  }
-
-  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
-    return new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return tracer.finishedSpans().size();
-      }
-    };
   }
 }
