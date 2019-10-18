@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rules</groupId>
     <artifactId>rules</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3-SNAPSHOT</version>
   </parent>
   <artifactId>cassandra-driver-4</artifactId>
   <name>SpecialAgent Rule for Cassandra 4 Driver</name>
