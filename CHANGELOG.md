@@ -1,8 +1,8 @@
 # Changes by Version
 
 ## v1.4.2 (2019-10-18)
-* Fix bug in config properties import process (#179).
-* Fix bug in `servlet` plugin resulting in duplicate requests (#178).
+* Fix bug in config properties import process ([#179](https://github.com/opentracing-contrib/java-specialagent/issues/179)).
+* Fix bug in `servlet` plugin resulting in duplicate requests ([#178](https://github.com/opentracing-contrib/java-specialagent/issues/178)).
 * Introduced "plugin groups", with new plugin naming convention.
 * Linked integration tests: OkHttp, JDBC.
 * Updated [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring 4 Web, Spring 4 Web MVC.
@@ -78,9 +78,9 @@
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring Messaging, Spring WebSocket STOMP, Spring `@JmsListener`, Spring RabbitMQ.
 * Update to Apache HttpClient Plugin: Added `hostname` and `port` tags to http client spans.
 * Upgrade to SpecialAgent API in lieu of Fingerprinting Algorithm rewrite.
-* Resolve issue #86: DynamoDB Calls regarding bad headers when using LightStep.
-* Resolve issue #87: Apache HttpClient Plugin regarding default HTTP port.
-* Resolve issue #88: Redis Plugin regarding PubSub.
+* Resolve issue [#86](https://github.com/opentracing-contrib/java-specialagent/issues/86): DynamoDB Calls regarding bad headers when using LightStep.
+* Resolve issue [#87](https://github.com/opentracing-contrib/java-specialagent/issues/87): Apache HttpClient Plugin regarding default HTTP port.
+* Resolve issue [#88](https://github.com/opentracing-contrib/java-specialagent/issues/88): Redis Plugin regarding PubSub.
 
 ## v1.2.0 (2019-05-31)
 * New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Feign, Zuul, Spring Kafka, Spring Scheduling.
