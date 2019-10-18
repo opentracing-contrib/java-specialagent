@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rules</groupId>
     <artifactId>rules</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.2</version>
   </parent>
   <artifactId>thrift</artifactId>
   <name>SpecialAgent Rule for Apache Thrift</name>

@@ -1,5 +1,13 @@
 # Changes by Version
 
+## v1.4.2 (2019-10-18)
+* Fix bug in config properties import process (#179).
+* Fix bug in `servlet` plugin resulting in duplicate requests (#178).
+* Introduced "plugin groups", with new plugin naming convention.
+* Linked integration tests: OkHttp, JDBC.
+* Updated [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Spring 4 Web, Spring 4 Web MVC.
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Lettuce 5.2.
+
 ## v1.4.1 (2019-10-03)
 * Fix class loader issues in JDBC Plugin.
 * Fix J9+ cross-module readability issues.
