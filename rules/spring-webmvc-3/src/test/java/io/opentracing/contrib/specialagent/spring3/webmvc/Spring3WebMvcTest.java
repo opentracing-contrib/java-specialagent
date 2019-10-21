@@ -19,6 +19,7 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.server.Server;
@@ -70,9 +71,18 @@ public class Spring3WebMvcTest {
     final ResponseEntity<String> responseEntity = new RestTemplate().getForEntity(url, String.class);
     assertEquals("test", responseEntity.getBody());
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(tracer), equalTo(1));
 
     assertEquals(1, tracer.finishedSpans().size());
     assertFalse(tracer.finishedSpans().get(0).logEntries().isEmpty());
+  }
+
+  private static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
+    return new Callable<Integer>() {
+      @Override
+      public Integer call() throws Exception {
+        return tracer.finishedSpans().size();
+      }
+    };
   }
 }
