@@ -24,10 +24,7 @@
     <version>1.4.3-SNAPSHOT</version>
   </parent>
   <artifactId>mongo-async-3.9.0-test</artifactId>
-  <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-  </properties>
+  <name>SpecialAgent Test for MongoDB Async Driver 3.9.0</name>
   <dependencies>
     <dependency>
       <groupId>org.mongodb</groupId>

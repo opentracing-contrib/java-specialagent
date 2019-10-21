@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.mongodb.Block;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
@@ -49,14 +50,25 @@ public class MongoAsyncITest {
 
     try (final MongoClient client = createAsyncClient(serverAddress)) {
       final MongoDatabase database = client.getDatabase("myMongoDb");
-      if (database.getCollection("customers") == null)
-        database.createCollection("customers", (result, t) -> System.out.println("created"));
+      if (database.getCollection("customers") == null) {
+        database.createCollection("customers", new SingleResultCallback<Void>() {
+          @Override
+          public void onResult(final Void result, final Throwable t) {
+            System.out.println("created");
+          }
+        });
+      }
 
       final MongoCollection<Document> collection = database.getCollection("customers");
       final Document document = new Document();
       document.put("name", "Name");
       document.put("company", "Company");
-      collection.insertOne(document, (result, t) -> System.out.println("result"));
+      collection.insertOne(document, new SingleResultCallback<Void>() {
+        @Override
+        public void onResult(final Void result, final Throwable t) {
+          System.out.println("result");
+        }
+      });
 
       TimeUnit.SECONDS.sleep(10);
     }

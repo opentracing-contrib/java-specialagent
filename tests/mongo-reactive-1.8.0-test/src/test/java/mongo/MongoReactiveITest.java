@@ -39,7 +39,7 @@ import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class MongoReactiveITest {
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) throws InterruptedException {
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
     final MongoClientSettings mongoSettings = MongoClientSettings.builder().applyToClusterSettings(new Block<Builder>() {
@@ -49,7 +49,7 @@ public class MongoReactiveITest {
       }
     }).build();
 
-    try (MongoClient mongoClient = MongoClients.create(mongoSettings)) {
+    try (final MongoClient mongoClient = MongoClients.create(mongoSettings)) {
       final CountDownLatch latch = new CountDownLatch(1);
       final MongoCollection<Document> collection = mongoClient.getDatabase("MyDB").getCollection("MyCollection");
       final Document myDocument = new Document("name", "MyDocument");

@@ -24,6 +24,7 @@
     <version>1.4.3-SNAPSHOT</version>
   </parent>
   <artifactId>mongo-3.9.0-test</artifactId>
+  <name>SpecialAgent Test for MongoDB Driver 3.9.0</name>
   <dependencies>
     <dependency>
       <groupId>org.mongodb</groupId>

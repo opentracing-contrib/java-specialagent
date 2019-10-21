@@ -24,6 +24,7 @@
     <version>1.4.3-SNAPSHOT</version>
   </parent>
   <artifactId>mongo-reactive-1.12.0-test</artifactId>
+  <name>SpecialAgent Test for MongoDB Reactive Streams 1.12.0</name>
   <build>
     <plugins>
       <plugin>
