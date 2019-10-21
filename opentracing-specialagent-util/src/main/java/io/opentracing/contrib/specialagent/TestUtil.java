@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Span;
 import io.opentracing.mock.MockSpan;
@@ -38,38 +37,25 @@ public final class TestUtil {
       throw new IllegalStateException(e);
     }
 
-    try {
-      MockTracer tracer;
-      if (obj instanceof MockTracer) {
-        tracer = (MockTracer)obj;
+    if (!(obj instanceof MockTracer))
+      return;
+
+    final MockTracer tracer = (MockTracer)obj;
+    boolean found = false;
+    System.out.println("Spans: " + tracer.finishedSpans());
+    for (final MockSpan span : tracer.finishedSpans()) {
+      printSpan(span);
+      if (component.equals(span.tags().get(Tags.COMPONENT.getKey()))) {
+        found = true;
+        System.out.println("Found " + component + " span");
       }
-      else {
-        TimeUnit.SECONDS.sleep(10);
-        return;
-      }
-
-      for (int i = 0; tracer.finishedSpans().size() < spanCount && i < 10; ++i)
-        TimeUnit.SECONDS.sleep(1L);
-
-      boolean found = false;
-      System.out.println("Spans: " + tracer.finishedSpans());
-      for (final MockSpan span : tracer.finishedSpans()) {
-        printSpan(span);
-        if (component.equals(span.tags().get(Tags.COMPONENT.getKey()))) {
-          found = true;
-          System.out.println("Found " + component + " span");
-        }
-      }
-
-      if (!found)
-        throw new AssertionError("ERROR: " + component + " span not found");
-
-      if (tracer.finishedSpans().size() != spanCount)
-        throw new AssertionError("ERROR: " + tracer.finishedSpans().size() + " spans instead of " + spanCount);
     }
-    catch (final InterruptedException e) {
-      throw new IllegalStateException(e);
-    }
+
+    if (!found)
+      throw new AssertionError("ERROR: " + component + " span not found");
+
+    if (tracer.finishedSpans().size() != spanCount)
+      throw new AssertionError("ERROR: " + tracer.finishedSpans().size() + " spans instead of " + spanCount);
   }
 
   private static void printSpan(final MockSpan span) {
