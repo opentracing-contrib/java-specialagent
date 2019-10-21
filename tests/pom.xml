@@ -54,6 +54,17 @@
       </modules>
     </profile>
     <profile>
+      <id>mongo</id>
+      <modules>
+        <module>mongo-3.9.0-test</module>
+        <module>mongo-3.11.0-test</module>
+        <module>mongo-async-3.11.0-test</module>
+        <module>mongo-async-3.9.0-test</module>
+        <module>mongo-reactive-1.12.0-test</module>
+        <module>mongo-reactive-1.8.0-test</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
@@ -80,7 +91,6 @@
               <execution>
                 <goals>
                   <goal>integration-test</goal>
-                  <goal>verify</goal>
                 </goals>
                 <phase>integration-test</phase>
                 <configuration>
