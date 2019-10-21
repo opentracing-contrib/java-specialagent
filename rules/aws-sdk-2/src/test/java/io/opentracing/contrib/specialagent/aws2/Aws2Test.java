@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -62,18 +61,18 @@ public class Aws2Test {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(60, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals("CreateTableRequest", spans.get(0).operationName());
   }
 
   @Test
-  public void testAsyncClient(final MockTracer tracer) throws Exception {
+  public void testAsyncClient(final MockTracer tracer) {
     final DynamoDbAsyncClient dbClient = buildAsyncClient();
     final CompletableFuture<CreateTableResponse> createTableResultFuture = createTableAsync(dbClient, "asyncRequest");
     try {
-      final CreateTableResponse result = createTableResultFuture.get(10, TimeUnit.SECONDS);
+      final CreateTableResponse result = createTableResultFuture.get(60, TimeUnit.SECONDS);
       // The following assertion is only relevant when a local instance of dynamodb is present.
       // If a local instance of dynamodb is NOT present, an exception is thrown.
       assertEquals("asyncRequest", result.tableDescription().tableName());
@@ -81,7 +80,7 @@ public class Aws2Test {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(60, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals("CreateTableRequest", spans.get(0).operationName());
