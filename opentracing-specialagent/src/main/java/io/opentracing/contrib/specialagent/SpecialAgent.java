@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -326,7 +327,7 @@ public class SpecialAgent extends SpecialAgentBase {
       }
     }
 
-    pluginManifests.sort(new Comparator<PluginManifest>() {
+    Collections.sort(pluginManifests, new Comparator<PluginManifest>() {
       @Override
       public int compare(final PluginManifest o1, final PluginManifest o2) {
         return Integer.compare(o1.getPriority(), o2.getPriority());
