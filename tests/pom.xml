@@ -63,24 +63,37 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.6.0</version>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
             <executions>
               <execution>
                 <goals>
-                  <goal>exec</goal>
+                  <goal>test-jar</goal>
                 </goals>
-                <phase>test</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <phase>integration-test</phase>
                 <configuration>
-                  <executable>java</executable>
-                  <arguments>
-                    <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
-                    <argument>-Dsa.log.level=${sa.log.level}</argument>
-                    <argument>-classpath</argument>
-                    <classpath/>
-                    <argument>${mainClass}</argument>
-                  </arguments>
+                  <failIfNoTests>true</failIfNoTests>
+                  <argLine>-Dsa.log.level=${sa.log.level} -javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argLine>
+                  <includes>
+                    <include>**/*ITest</include>
+                    <include>**/*IntegrationTest</include>
+                    <include>**/*IntegrationTestCase</include>
+                  </includes>
+                  <excludes>
+                    <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+                  </excludes>
                 </configuration>
               </execution>
             </executions>
@@ -88,6 +101,10 @@
         </plugins>
       </build>
       <dependencies>
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </dependency>
         <dependency>
           <groupId>io.opentracing</groupId>
           <artifactId>opentracing-util</artifactId>

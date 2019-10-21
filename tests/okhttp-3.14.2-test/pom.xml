@@ -25,9 +25,6 @@
   </parent>
   <artifactId>okhttp-3.14.2-test</artifactId>
   <name>SpecialAgent Test for OkHttp 3.14.2</name>
-  <properties>
-    <mainClass>okhttp.App</mainClass>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>

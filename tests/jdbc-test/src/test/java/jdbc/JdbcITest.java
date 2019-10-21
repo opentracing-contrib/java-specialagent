@@ -18,24 +18,31 @@ package jdbc;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.junit.Test;
 
 import io.opentracing.contrib.specialagent.TestUtil;
 
-public class App {
-  public static void main(String[] args) throws Exception {
+public class JdbcITest {
+  public static void main(final String[] args) throws SQLException, ClassNotFoundException {
+    new JdbcITest().test();
+  }
+
+  @Test
+  public void test() throws SQLException, ClassNotFoundException {
     Class.forName("org.h2.Driver");
 
-    Connection conn = DriverManager.getConnection("jdbc:h2:mem:jdbc");
-    Statement stmt = conn.createStatement();
-    ResultSet rs = stmt.executeQuery("show databases;");
-
-    while (rs.next()) {
-      System.out.println(rs.getString(1));
+    try (
+      final Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc");
+      final Statement statement = connection.createStatement();
+      final ResultSet resultSet = statement.executeQuery("show databases;");
+    ) {
+      while (resultSet.next()) {
+        System.out.println(resultSet.getString(1));
+      }
     }
-    rs.close();
-    stmt.close();
-    conn.close();
 
     TestUtil.checkSpan("java-jdbc", 2);
   }

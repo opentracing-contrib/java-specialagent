@@ -15,9 +15,12 @@
 
 package concurrent;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
+
+import org.junit.Test;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -25,8 +28,13 @@ import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
-public class App {
-  public static void main(final String[] args) throws Exception {
+public class ConcurrentITest {
+  public static void main(final String[] args) throws ExecutionException, InterruptedException {
+    new ConcurrentITest().test();
+  }
+
+  @Test
+  public void test() throws ExecutionException, InterruptedException {
     final Span parent = GlobalTracer.get().buildSpan("parent")
       .withTag(Tags.COMPONENT, "parent").start();
 
@@ -38,7 +46,7 @@ public class App {
     TestUtil.checkSpan("parent", 1);
   }
 
-  private static void testExecutor(Span parent) throws Exception {
+  private static void testExecutor(final Span parent) throws ExecutionException, InterruptedException {
     final ExecutorService service = Executors.newFixedThreadPool(10);
     try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
       service.submit(new Runnable() {

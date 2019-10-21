@@ -25,9 +25,17 @@
   </parent>
   <artifactId>okhttp-4.0.0-test</artifactId>
   <name>SpecialAgent Test for OkHttp 4.0.0</name>
-  <properties>
-    <mainClass>okhttp.App</mainClass>
-  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>io.opentracing.contrib.specialagent.tests:okhttp-3.14.2-test</dependenciesToScan>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
@@ -38,6 +46,7 @@
       <groupId>io.opentracing.contrib.specialagent.tests</groupId>
       <artifactId>okhttp-3.14.2-test</artifactId>
       <version>${project.version}</version>
+      <type>test-jar</type>
     </dependency>
   </dependencies>
 </project>

@@ -27,37 +27,49 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public final class TestUtil {
-  public static void checkSpan(final String component, final int spanCount) throws Exception {
-    final Field field = GlobalTracer.get().getClass().getDeclaredField("tracer");
-    field.setAccessible(true);
-    final Object obj = field.get(GlobalTracer.get());
-    MockTracer tracer;
-    if (obj instanceof MockTracer) {
-      tracer = (MockTracer)obj;
+  public static void checkSpan(final String component, final int spanCount) {
+    Object obj;
+    try {
+      final Field field = GlobalTracer.get().getClass().getDeclaredField("tracer");
+      field.setAccessible(true);
+      obj = field.get(GlobalTracer.get());
     }
-    else {
-      TimeUnit.SECONDS.sleep(10);
-      return;
+    catch (final IllegalAccessException | NoSuchFieldException e) {
+      throw new IllegalStateException(e);
     }
 
-    for (int i = 0; tracer.finishedSpans().size() < spanCount && i < 10; ++i)
-      TimeUnit.SECONDS.sleep(1L);
-
-    boolean found = false;
-    System.out.println("Spans: " + tracer.finishedSpans());
-    for (final MockSpan span : tracer.finishedSpans()) {
-      printSpan(span);
-      if (component.equals(span.tags().get(Tags.COMPONENT.getKey()))) {
-        found = true;
-        System.out.println("Found " + component + " span");
+    try {
+      MockTracer tracer;
+      if (obj instanceof MockTracer) {
+        tracer = (MockTracer)obj;
       }
+      else {
+        TimeUnit.SECONDS.sleep(10);
+        return;
+      }
+
+      for (int i = 0; tracer.finishedSpans().size() < spanCount && i < 10; ++i)
+        TimeUnit.SECONDS.sleep(1L);
+
+      boolean found = false;
+      System.out.println("Spans: " + tracer.finishedSpans());
+      for (final MockSpan span : tracer.finishedSpans()) {
+        printSpan(span);
+        if (component.equals(span.tags().get(Tags.COMPONENT.getKey()))) {
+          found = true;
+          System.out.println("Found " + component + " span");
+        }
+      }
+
+      if (!found)
+        throw new AssertionError("ERROR: " + component + " span not found");
+
+      if (tracer.finishedSpans().size() != spanCount)
+        throw new AssertionError("ERROR: " + tracer.finishedSpans().size() + " spans instead of " + spanCount);
     }
-
-    if (!found)
-      throw new AssertionError("ERROR: " + component + " span not found");
-
-    if (tracer.finishedSpans().size() != spanCount)
-      throw new AssertionError("ERROR: " + tracer.finishedSpans().size() + " spans instead of " + spanCount);
+    catch (final InterruptedException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private static void printSpan(final MockSpan span) {
