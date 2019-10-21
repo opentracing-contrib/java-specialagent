@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Span;
@@ -73,6 +74,15 @@ public final class TestUtil {
     System.out.println("Active span: " + span);
     if (span == null)
       throw new AssertionError("Error: no active span");
+  }
+
+  public static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
+    return new Callable<Integer>() {
+      @Override
+      public Integer call() throws Exception {
+        return tracer.finishedSpans().size();
+      }
+    };
   }
 
   private TestUtil() {
