@@ -38,7 +38,7 @@
       <modules>
         <module>okhttp-3.14.2-test</module>
         <module>okhttp-3.5.0-test</module>
-        <module>okhttp-4.0.0-test</module>
+        <!--module>okhttp-4.0.0-test</module--> <!-- Not supported! -->
       </modules>
     </profile>
     <profile>
