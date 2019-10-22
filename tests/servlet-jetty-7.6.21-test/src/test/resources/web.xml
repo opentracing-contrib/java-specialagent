@@ -1,0 +1,12 @@
+<web-app>
+  <display-name>Servlet Application</display-name>
+  <servlet>
+    <servlet-name>hello-servlet</servlet-name>
+    <servlet-class>servlet.HelloSyncServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>hello-servlet</servlet-name>
+    <url-pattern>/sync</url-pattern>
+  </servlet-mapping>
+</web-app>

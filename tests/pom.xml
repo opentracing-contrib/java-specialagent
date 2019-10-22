@@ -65,6 +65,22 @@
       </modules>
     </profile>
     <profile>
+      <id>jetty</id>
+      <modules>
+        <module>servlet-jetty-7.6.21-test</module>
+        <module>servlet-jetty-8.2.0-test</module>
+        <module>servlet-jetty-9.2.15-test</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>tomcat</id>
+      <modules>
+        <module>servlet-tomcat-7.0.65-test</module>
+        <module>servlet-tomcat-8.0.53-test</module>
+        <module>servlet-tomcat-8.5.47-test</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
@@ -96,14 +112,6 @@
                 <configuration>
                   <failIfNoTests>true</failIfNoTests>
                   <argLine>-Dsa.log.level=${sa.log.level} -javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argLine>
-                  <includes>
-                    <include>**/*ITest</include>
-                    <include>**/*IntegrationTest</include>
-                    <include>**/*IntegrationTestCase</include>
-                  </includes>
-                  <excludes>
-                    <exclude></exclude> <!-- This is necessary for inner classes to be run -->
-                  </excludes>
                 </configuration>
               </execution>
             </executions>
