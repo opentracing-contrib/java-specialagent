@@ -55,6 +55,8 @@ public class ConcurrentITest {
           System.out.println("Active span: " + GlobalTracer.get().activeSpan());
           if (GlobalTracer.get().activeSpan() == null)
             throw new AssertionError("ERROR: no active span");
+
+          service.shutdown();
         }
       }).get();
     }

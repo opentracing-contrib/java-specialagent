@@ -19,7 +19,6 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 import org.bson.Document;
-import org.junit.Test;
 
 import com.mongodb.Block;
 import com.mongodb.MongoClientSettings;
@@ -36,11 +35,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class MongoITest {
   public static void main(final String[] args) throws Exception {
-    new MongoITest().main();
-  }
-
-  @Test
-  public void main() throws Exception {
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
 

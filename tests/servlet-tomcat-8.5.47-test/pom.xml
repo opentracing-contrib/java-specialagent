@@ -31,10 +31,10 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>itest-maven-plugin</artifactId>
         <configuration>
-          <dependenciesToScan>io.opentracing.contrib.specialagent.tests:servlet-tomcat-7.0.65-test</dependenciesToScan>
+          <mainClass>tomcat.TomcatSyncITest</mainClass>
         </configuration>
       </plugin>
     </plugins>

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
-import org.junit.Test;
 
 import com.mongodb.Block;
 import com.mongodb.MongoClientSettings;
@@ -40,11 +39,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 @SuppressWarnings("deprecation")
 public class MongoAsyncITest {
   public static void main(final String[] args) throws Exception {
-    new MongoAsyncITest().test();
-  }
-
-  @Test
-  public void test() throws Exception {
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
 
