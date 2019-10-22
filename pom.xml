@@ -467,7 +467,6 @@
                 <noLog>true</noLog>
                 <properties>
                   <maven.itest.skip>${maven.itest.skip}</maven.itest.skip>
-                  <maven.rtest.skip>${maven.rtest.skip}</maven.rtest.skip>
                   <skipTests>${skipTests}</skipTests>
                 </properties>
                 <goals>
@@ -491,6 +490,17 @@
             <systemPropertyVariables>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
+            <runOrder>alphabetical</runOrder>
+            <includes>
+              <include>**/*Test</include>
+              <include>**/*TestCase</include>
+            </includes>
+            <excludes>
+              <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+              <exclude>**/*ITest</exclude>
+              <exclude>**/*IntegrationTest</exclude>
+              <exclude>**/*IntegrationTestCase</exclude>
+            </excludes>
           </configuration>
         </plugin>
         <plugin>
@@ -501,6 +511,14 @@
             <systemPropertyVariables>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
+            <includes>
+              <include>**/*ITest</include>
+              <include>**/*IntegrationTest</include>
+              <include>**/*IntegrationTestCase</include>
+            </includes>
+            <excludes>
+              <exclude></exclude> <!-- This is necessary for inner classes to be run -->
+            </excludes>
           </configuration>
         </plugin>
         <plugin>
