@@ -81,6 +81,18 @@
       </modules>
     </profile>
     <profile>
+      <id>aws-1</id>
+      <modules>
+        <module>aws-1.11.570-test</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>aws-2</id>
+      <modules>
+        <module>aws-2.7.15-test</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
