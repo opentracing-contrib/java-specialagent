@@ -25,20 +25,12 @@ import java.nio.file.StandardCopyOption;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.junit.Test;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JettySyncITest {
   public static void main(final String[] args) throws Exception {
-    final JettySyncITest test = new JettySyncITest();
-    test.test();
-    TestUtil.checkSpan("java-web-servlet", 1);
-  }
-
-  @Test
-  public void test() throws Exception {
     final Server server = initServer();
     try {
       server.start();
@@ -53,6 +45,8 @@ public class JettySyncITest {
       server.stop();
       server.join();
     }
+
+    TestUtil.checkSpan("java-web-servlet", 1);
   }
 
   static File installWebApp() throws IOException {

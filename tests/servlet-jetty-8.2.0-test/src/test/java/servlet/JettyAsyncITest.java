@@ -20,21 +20,12 @@ import java.net.URL;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
-import org.junit.Test;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JettyAsyncITest extends JettySyncITest {
   public static void main(final String[] args) throws Exception {
-    final JettyAsyncITest test = new JettyAsyncITest();
-    test.test();
-    TestUtil.checkSpan("java-web-servlet", 1);
-  }
-
-  @Test
-  @Override
-  public void test() throws Exception {
     final Server server = initServer();
     try {
       final ServletHandler servletHandler = new ServletHandler();
@@ -64,5 +55,7 @@ public class JettyAsyncITest extends JettySyncITest {
       server.stop();
       server.join();
     }
+
+    TestUtil.checkSpan("java-web-servlet", 1);
   }
 }

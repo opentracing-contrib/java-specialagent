@@ -21,17 +21,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.junit.Test;
-
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JdbcITest {
   public static void main(final String[] args) throws SQLException, ClassNotFoundException {
-    new JdbcITest().test();
-  }
-
-  @Test
-  public void test() throws SQLException, ClassNotFoundException {
     Class.forName("org.h2.Driver");
 
     try (
