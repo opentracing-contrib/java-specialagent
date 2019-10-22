@@ -28,6 +28,17 @@
   <properties>
     <tomcat.version>7.0.65</tomcat.version>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>itest-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>tomcat.TomcatSyncITest</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>

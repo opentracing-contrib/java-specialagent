@@ -25,9 +25,17 @@
   </parent>
   <artifactId>jdbc-test</artifactId>
   <name>SpecialAgent Test for Java JDBC API</name>
-  <properties>
-    <mainClass>jdbc.App</mainClass>
-  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>itest-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>jdbc.JdbcITest</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>com.h2database</groupId>

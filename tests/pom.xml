@@ -101,20 +101,25 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
+            <groupId>io.opentracing.contrib.specialagent</groupId>
+            <artifactId>itest-maven-plugin</artifactId>
+            <version>${project.version}</version>
             <executions>
               <execution>
                 <goals>
-                  <goal>integration-test</goal>
+                  <goal>itest</goal>
                 </goals>
-                <phase>integration-test</phase>
-                <configuration>
-                  <failIfNoTests>true</failIfNoTests>
-                  <argLine>-Dsa.log.level=${sa.log.level} -javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argLine>
-                </configuration>
+                <phase>test</phase>
               </execution>
             </executions>
+            <configuration>
+              <arguments>
+                <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
+                <argument>-Dsa.log.level=${sa.log.level}</argument>
+                <argument>-classpath</argument>
+                <classpath/>
+              </arguments>
+            </configuration>
           </plugin>
         </plugins>
       </build>
