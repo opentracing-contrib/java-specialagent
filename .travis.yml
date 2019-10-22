@@ -30,8 +30,8 @@ jobs:
     jdk: oraclejdk8
     install: rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
     script:
-    - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
-          [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    - 'if &&
+          [  [ "$TRAVIS_BRANCH" = "master" ]"$TRAVIS_PULL_REQUEST" = "false" ]; then
         mvn -B -P report install &&
         mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
         mvn -B -Dassemble install;
@@ -51,40 +51,48 @@ jobs:
     jdk: oraclejdk8
     install: rsync -r ~/.m2/build/ .
     script:
-    - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
-          [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    - 'if &&
+          [  [ "$TRAVIS_BRANCH" = "master" ]"$TRAVIS_PULL_REQUEST" = "false" ]; then
         sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
-  - stage: test
+  - name: "OkHttp [oraclejdk8]"
+    stage: test
     jdk: oraclejdk8
     install: true
     script: mvn -B -Dtest -P okhttp install
-  - stage: test
+  - name: "OkHttp [oraclejdk11]"
+    stage: test
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P okhttp install
-  - stage: test
+  - name: "Java JDBC API [oraclejdk8]"
+    stage: test
     jdk: oraclejdk8
     install: true
     script: mvn -B -Dtest -P jdbc install
-  - stage: test
+  - name: "Java JDBC API [oraclejdk11]"
+    stage: test
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P jdbc install
-  - stage: test
+  - name: "Java Concurrent API [oraclejdk8]"
+    stage: test
     jdk: oraclejdk8
     install: true
     script: mvn -B -Dtest -P concurrent install
-  - stage: test
+  - name: "Java Concurrent API [oraclejdk11]"
+    stage: test
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P concurrent install
-  - stage: test
+  - name: "MongoDB Driver [oraclejdk8]"
+    stage: test
     jdk: oraclejdk8
     install: true
     script: mvn -B -Dtest -P mongo install
-  - stage: test
+  - name: "MongoDB Driver [oraclejdk11]"
+    stage: test
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P mongo install
