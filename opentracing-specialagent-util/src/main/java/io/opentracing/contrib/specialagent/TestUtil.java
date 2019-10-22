@@ -19,31 +19,38 @@ import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockSpan.LogEntry;
 import io.opentracing.mock.MockTracer;
+import io.opentracing.noop.NoopTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public final class TestUtil {
-  public static void checkSpan(final String component, final int spanCount) {
-    Object obj;
+  private static Tracer getTracer() {
     try {
       final Field field = GlobalTracer.get().getClass().getDeclaredField("tracer");
       field.setAccessible(true);
-      obj = field.get(GlobalTracer.get());
+      return (Tracer)field.get(GlobalTracer.get());
     }
     catch (final IllegalAccessException | NoSuchFieldException e) {
       throw new IllegalStateException(e);
     }
+  }
 
-    if (!(obj instanceof MockTracer))
+  public static void checkSpan(final String component, final int spanCount) {
+    final Tracer tracer = getTracer();
+    if (tracer instanceof NoopTracer)
+      throw new AssertionError("No tracer is registered");
+
+    if (!(tracer instanceof MockTracer))
       return;
 
-    final MockTracer tracer = (MockTracer)obj;
+    final MockTracer mockTracer = (MockTracer)tracer;
     boolean found = false;
-    System.out.println("Spans: " + tracer.finishedSpans());
-    for (final MockSpan span : tracer.finishedSpans()) {
+    System.out.println("Spans: " + mockTracer.finishedSpans());
+    for (final MockSpan span : mockTracer.finishedSpans()) {
       printSpan(span);
       if (component.equals(span.tags().get(Tags.COMPONENT.getKey()))) {
         found = true;
@@ -54,8 +61,10 @@ public final class TestUtil {
     if (!found)
       throw new AssertionError("ERROR: " + component + " span not found");
 
-    if (tracer.finishedSpans().size() != spanCount)
-      throw new AssertionError("ERROR: " + tracer.finishedSpans().size() + " spans instead of " + spanCount);
+    if (mockTracer.finishedSpans().size() != spanCount)
+      throw new AssertionError("ERROR: " + mockTracer.finishedSpans().size() + " spans instead of " + spanCount);
+
+    mockTracer.reset();
   }
 
   private static void printSpan(final MockSpan span) {
