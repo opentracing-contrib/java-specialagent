@@ -47,6 +47,11 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (context == null)
         context = filterOrServletToServletContext.get(servlet);
 
+      if (context == null) {
+        logger.log(Level.WARNING, "Could not get context for: " + servlet);
+        return;
+      }
+
       final TracingFilter tracingFilter = getFilter(context, true);
 
       // If the tracingFilter instance is not a TracingProxyFilter, then it was
