@@ -31,7 +31,13 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JettySyncITest {
   public static void main(final String[] args) throws Exception {
-    final Server server = initServer();
+    final Server server = new Server(8080);
+    final WebAppContext context = new WebAppContext();
+    context.setServer(server);
+    context.setContextPath("/");
+    context.setWar(installWebApp().getPath());
+    server.setHandler(context);
+
     try {
       server.start();
       final URL url = new URL("http://localhost:8080/sync");
@@ -55,15 +61,5 @@ public class JettySyncITest {
     webapp.getParentFile().mkdirs();
     Files.copy(in, webapp.toPath(), StandardCopyOption.REPLACE_EXISTING);
     return webapp.getParentFile().getParentFile();
-  }
-
-  static Server initServer() throws Exception {
-    final Server server = new Server(8080);
-    final WebAppContext context = new WebAppContext();
-    context.setServer(server);
-    context.setContextPath("/");
-    context.setWar(installWebApp().getPath());
-    server.setHandler(context);
-    return server;
   }
 }
