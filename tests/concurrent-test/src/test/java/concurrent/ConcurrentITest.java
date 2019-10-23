@@ -40,7 +40,7 @@ public class ConcurrentITest {
 
     testExecutor(parent);
     testThread(parent);
-    //testParallelStream(parent);
+    testParallelStream(parent);
 
     parent.finish();
     TestUtil.checkSpan("parent", 1);
@@ -80,16 +80,13 @@ public class ConcurrentITest {
   }
 
   private static void testParallelStream(final Span parent) {
-    try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
+    try (Scope scope = GlobalTracer.get().activateSpan(parent)) {
       final int sum = IntStream.range(1, 10)
-        .parallel()
-        .map(operand -> {
-          // TODO: here should be active span
-          System.out.println("Thread: " + Thread.currentThread().getName() +
-              " Active span: " + GlobalTracer.get().activeSpan());
-          return operand * 2;
-        }).sum();
-
+          .parallel()
+          .map(operand -> {
+            TestUtil.checkActiveSpan();
+            return operand * 2;
+          }).sum();
       System.out.println("Sum: " + sum);
     }
   }
