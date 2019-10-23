@@ -20,17 +20,17 @@ import java.net.URL;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
-import org.eclipse.jetty.servlet.ServletHolder;
 
-public class JettyAsyncITest extends JettySyncITest {
+public class JettyAsyncITest {
   public static void main(final String[] args) throws Exception {
-    Server server = new Server(8080);
-    ServletContextHandler context = new ServletContextHandler();
+    final Server server = new Server(8080);
+    final ServletContextHandler context = new ServletContextHandler();
     context.setContextPath("/");
-    ServletHolder asyncHolder = context.addServlet(HelloAsyncServlet.class,"/async");
+    final ServletHolder asyncHolder = context.addServlet(HelloAsyncServlet.class, "/async");
     asyncHolder.setAsyncSupported(true);
     server.setHandler(context);
 
