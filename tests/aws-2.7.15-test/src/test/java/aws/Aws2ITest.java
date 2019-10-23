@@ -36,7 +36,7 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
 public class Aws2ITest {
   public static void main(final String[] args) throws Exception {
-    System.getProperties().setProperty("sqlite4java.library.path", "src/main/resources/libs");
+    System.getProperties().setProperty("sqlite4java.library.path", "src/test/resources/libs");
 
     final DynamoDBProxyServer server = ServerRunner.createServerFromCommandLineArgs(new String[] {"-inMemory", "-port", "8000"});
     server.start();
@@ -51,6 +51,7 @@ public class Aws2ITest {
 
     server.stop();
     TestUtil.checkSpan("java-aws-sdk", 1);
+    System.exit(0);
   }
 
   private static DynamoDbClient buildClient() {
