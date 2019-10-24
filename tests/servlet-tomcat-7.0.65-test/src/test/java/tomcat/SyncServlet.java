@@ -15,8 +15,21 @@
 
 package tomcat;
 
-public class TomcatSyncITest extends TomcatTest {
-  public static void main(final String[] args) throws Exception {
-    run(new SyncServlet(), false);
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import io.opentracing.util.GlobalTracer;
+
+public class SyncServlet extends HttpServlet {
+  private static final long serialVersionUID = 6184640156851545023L;
+
+  @Override
+  public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+    if (GlobalTracer.get().activeSpan() == null)
+      throw new AssertionError("ERROR: no active span");
   }
 }

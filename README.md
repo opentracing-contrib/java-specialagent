@@ -414,7 +414,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 | | [`jms:2`][jms-2] | 2.0 | 2.0a |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | [`servlet`][servlet] | 2.3 | 3.1 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | **7.0.65** |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
 | Java Thread [`java.lang.Thread`] | [`thread`][thread] | 1.0 | 11 |
 | [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | [`jax-rs`][jaxrs] | 2.0 | 2.1 |
 | [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | [`jedis`][jedis] | 2.7.0 | 3.1.0 |
