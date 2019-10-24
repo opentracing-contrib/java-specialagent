@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#io.opentracing.contrib.specialagent.spring.messaging.TypeExcludeFilterAgentRule
 io.opentracing.contrib.specialagent.spring.messaging.SpringMessagingAgentRule
