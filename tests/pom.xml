@@ -78,6 +78,7 @@
         <module>servlet-tomcat-7.0.65-test</module>
         <module>servlet-tomcat-8.0.53-test</module>
         <module>servlet-tomcat-8.5.47-test</module>
+        <module>servlet-tomcat-9.0.27-test</module>
       </modules>
     </profile>
     <profile>
