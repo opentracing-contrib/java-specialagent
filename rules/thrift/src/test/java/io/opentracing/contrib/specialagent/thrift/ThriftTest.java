@@ -65,6 +65,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.opentracing.util.GlobalTracerTestUtil;
 
+@SuppressWarnings("unchecked")
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader = false)
 public class ThriftTest {
@@ -467,15 +468,14 @@ public class ThriftTest {
     final TProtocol protocol = new TBinaryProtocol(transport);
     CustomService.Client client = new CustomService.Client(protocol);
 
-    final Scope parent = tracer.buildSpan("parent").startActive(true);
-    MockSpan parentSpan = (MockSpan) tracer.activeSpan();
-
-    assertEquals("Say one two", client.say("one", "two"));
-    assertEquals("Say three four", client.say("three", "four"));
-    client.oneWay();
-    assertEquals("no args", client.withoutArgs());
-
-    parent.close();
+    final MockSpan parentSpan;
+    try (final Scope parent = tracer.buildSpan("parent").startActive(true)) {
+      parentSpan = (MockSpan)tracer.activeSpan();
+      assertEquals("Say one two", client.say("one", "two"));
+      assertEquals("Say three four", client.say("three", "four"));
+      client.oneWay();
+      assertEquals("no args", client.withoutArgs());
+    }
 
     await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(9));
 
@@ -523,7 +523,6 @@ public class ThriftTest {
       .maxWorkerThreads(10);
 
     server = new TThreadPoolServer(args);
-
     new Thread(new Runnable() {
       @Override
       public void run() {

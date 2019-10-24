@@ -44,7 +44,6 @@ public class ThreadAgentIntercept {
     final Span span = GlobalTracer.get().activeSpan();
     if (span != null)
       cache.put(((Thread)thiz).getId(), span);
-
   }
 
   public static void runEnter(final Object thiz) {
@@ -56,8 +55,9 @@ public class ThreadAgentIntercept {
     }
   }
 
+  @SuppressWarnings("resource")
   public static void runExit(final Object thiz) {
-    final Span span = cache.remove(((Thread)thiz).getId());
+    cache.remove(((Thread)thiz).getId());
     final Scope scope = scopeHandler.get();
     if (scope != null)
       scope.close();

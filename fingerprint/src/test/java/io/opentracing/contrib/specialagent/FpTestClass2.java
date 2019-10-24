@@ -17,6 +17,7 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.RunnerScheduler;
 import org.objectweb.asm.ClassVisitor;
 
+@SuppressWarnings("all")
 @Ignore("class annotation dep")
 public class FpTestClass2 extends org.junit.Assert implements RunnerScheduler {
   static class Inner<T extends ParentRunner<? super javax.el.ELContextListener>> extends RunListener implements javax.el.ELContextListener {
