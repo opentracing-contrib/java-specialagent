@@ -98,9 +98,10 @@ public class ConcurrentITest {
     try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
       final int sum = IntStream.range(1, 10)
         .parallel()
-        .map(operand -> {
-            // TODO: here should be active span
-            System.out.println("Thread: " + Thread.currentThread().getName() + " Active span: " + GlobalTracer.get().activeSpan());
+          .map(operand -> {
+            System.out.println("Active span: " + GlobalTracer.get().activeSpan());
+            if (GlobalTracer.get().activeSpan() == null)
+              throw new AssertionError("ERROR: no active span");
             return operand * 2;
           }).sum();
 
