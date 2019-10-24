@@ -26,7 +26,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 
@@ -54,13 +53,14 @@ public class SpringKafkaMessagingTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final ApplicationContext context = new AnnotationConfigApplicationContext(KafkaConfiguration.class);
-    final Sender sender = context.getBean(Sender.class);
-    final Receiver receiver = context.getBean(Receiver.class);
+    try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(KafkaConfiguration.class)) {
+      final Sender sender = context.getBean(Sender.class);
+      final Receiver receiver = context.getBean(Receiver.class);
 
-    sender.send("Ping");
+      sender.send("Ping");
 
-    await().atMost(5, SECONDS).until(receiver::getReceivedMessages, hasSize(1));
+      await().atMost(5, SECONDS).until(receiver::getReceivedMessages, hasSize(1));
+    }
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertThat(finishedSpans).hasSize(2);
