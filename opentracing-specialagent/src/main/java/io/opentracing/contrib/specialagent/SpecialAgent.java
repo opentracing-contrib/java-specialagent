@@ -266,7 +266,7 @@ public class SpecialAgent extends SpecialAgentBase {
           enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
           final Map<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
           for (final String pluginName : verbosePluginNames) {
-            final String namePattern = SpecialAgentUtil.convertToRegex(pluginName);
+            final String namePattern = SpecialAgentUtil.convertToNameRegex(pluginName);
             if (pluginManifest.name.equals(pluginName) || pluginManifest.name.matches(namePattern)) {
               System.setProperty("sa." + (isInstruPlugin ? "instrumentation" : "tracer") + ".plugin." + pluginManifest.name + ".verbose", "true");
               break;
@@ -274,7 +274,7 @@ public class SpecialAgent extends SpecialAgentBase {
           }
 
           for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
-            final String namePattern = SpecialAgentUtil.convertToRegex(entry.getKey());
+            final String namePattern = SpecialAgentUtil.convertToNameRegex(entry.getKey());
             if (pluginManifest.name.equals(entry.getKey()) || pluginManifest.name.matches(namePattern)) {
               enablePlugin = entry.getValue();
               if (logger.isLoggable(Level.FINER))

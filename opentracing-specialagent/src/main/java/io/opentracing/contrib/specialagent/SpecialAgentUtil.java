@@ -473,7 +473,7 @@ public final class SpecialAgentUtil {
     return events;
   }
 
-  static String convertToRegex(String pattern) {
+  public static String convertToNameRegex(String pattern) {
     if (pattern.length() == 0)
       throw new IllegalArgumentException("Empty pattern");
 
@@ -481,15 +481,7 @@ public final class SpecialAgentUtil {
     if (lastCh == '*')
       pattern = pattern.substring(0, pattern.length() - 1);
 
-    final String regex = pattern
-      .replace("\\", "\\\\")
-      .replace(".", "\\.")
-      .replace("^", "\\^")
-      .replace("$", "\\$")
-      .replace("*", "[^:]*")
-      .replace("/", "\\/")
-      .replace('?', '.');
-
+    final String regex = AssembleUtil.convertToRegex(pattern).replace(".*", "[^:]*");
     boolean hasDigit = false;
     for (int i = regex.length() - 2; i >= 0; --i) {
       if (regex.charAt(i) == ':') {

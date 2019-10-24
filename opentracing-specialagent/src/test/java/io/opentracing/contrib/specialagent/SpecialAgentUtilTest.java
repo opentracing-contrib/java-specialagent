@@ -75,27 +75,27 @@ public class SpecialAgentUtilTest {
   }
 
   @Test
-  public void testConvertToRegex() {
+  public void testConvertToNameRegex() {
     try {
-      SpecialAgentUtil.convertToRegex(null);
+      SpecialAgentUtil.convertToNameRegex(null);
       fail("Expected NullPointerException");
     }
     catch (final NullPointerException e) {
     }
 
     try {
-      SpecialAgentUtil.convertToRegex("");
+      SpecialAgentUtil.convertToNameRegex("");
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {
     }
 
-    assertEquals(".*", SpecialAgentUtil.convertToRegex("*"));
-    assertEquals("spring:.*", SpecialAgentUtil.convertToRegex("spring:*"));
-    assertEquals("spring:[^:]*:.*", SpecialAgentUtil.convertToRegex("spring:*:*"));
+    assertEquals(".*", SpecialAgentUtil.convertToNameRegex("*"));
+    assertEquals("spring:.*", SpecialAgentUtil.convertToNameRegex("spring:*"));
+    assertEquals("spring:[^:]*:.*", SpecialAgentUtil.convertToNameRegex("spring:*:*"));
 
-    assertEquals("lettuce:5\\..", SpecialAgentUtil.convertToRegex("lettuce:5.?"));
-    assertEquals("lettuce:5.*", SpecialAgentUtil.convertToRegex("lettuce:5"));
-    assertEquals("lettuce:.*", SpecialAgentUtil.convertToRegex("lettuce"));
+    assertEquals("lettuce:5\\..", SpecialAgentUtil.convertToNameRegex("lettuce:5.?"));
+    assertEquals("lettuce:5.*", SpecialAgentUtil.convertToNameRegex("lettuce:5"));
+    assertEquals("lettuce:.*", SpecialAgentUtil.convertToNameRegex("lettuce"));
   }
 }

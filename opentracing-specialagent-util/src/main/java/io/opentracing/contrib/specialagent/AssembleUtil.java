@@ -850,6 +850,17 @@ public final class AssembleUtil {
     }
   }
 
+  public static String convertToRegex(String pattern) {
+    return pattern
+      .replace("\\", "\\\\")
+      .replace(".", "\\.")
+      .replace("^", "\\^")
+      .replace("$", "\\$")
+      .replace("*", ".*")
+      .replace("/", "\\/")
+      .replace('?', '.');
+  }
+
   private AssembleUtil() {
   }
 }
