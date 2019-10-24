@@ -28,32 +28,6 @@
   <properties>
     <tomcat.version>8.0.53</tomcat.version>
   </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default</id>
-            <configuration>
-              <mainClass>tomcat.TomcatSyncITest</mainClass>
-            </configuration>
-          </execution>
-          <execution>
-            <id>async</id>
-            <goals>
-              <goal>itest</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <mainClass>tomcat.TomcatAsyncITest</mainClass>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>

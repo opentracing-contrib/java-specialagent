@@ -25,17 +25,6 @@
   </parent>
   <artifactId>okhttp-3.5.0-test</artifactId>
   <name>SpecialAgent Test for OkHttp 3.5.0</name>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>okhttp.OkHttpITest</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>

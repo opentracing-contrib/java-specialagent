@@ -25,17 +25,6 @@
   </parent>
   <artifactId>aws-1.11.570-test</artifactId>
   <name>SpecialAgent Test for AWS SDK 1.11.570</name>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>aws.Aws1ITest</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>com.amazonaws</groupId>

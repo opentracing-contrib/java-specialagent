@@ -28,17 +28,6 @@
   <properties>
     <version.jetty>7.6.21.v20160908</version.jetty>
   </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>servlet.JettySyncITest</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>

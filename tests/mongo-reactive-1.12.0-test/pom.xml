@@ -25,17 +25,6 @@
   </parent>
   <artifactId>mongo-reactive-1.12.0-test</artifactId>
   <name>SpecialAgent Test for MongoDB Reactive Streams 1.12.0</name>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>mongo.MongoReactiveITest</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.mongodb</groupId>

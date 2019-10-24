@@ -25,17 +25,6 @@
   </parent>
   <artifactId>mongo-async-3.11.0-test</artifactId>
   <name>SpecialAgent Test for MongoDB Async Driver 3.11.0</name>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>mongo.MongoAsyncITest</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.mongodb</groupId>
