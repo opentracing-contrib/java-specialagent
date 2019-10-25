@@ -24,7 +24,8 @@ In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-sup
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.1.1 [Stable](#2111-stable)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.1.2 [Development](#2112-development)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2 [For Development](#212-for-development)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1 [Building](#2121-building)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1 [<ins>Instrumentation Plugins</ins>](#2121-instrumentation-plugins)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.2 [<ins>Tracer Plugins</ins>](#2122-tracer-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2 [Usage](#22-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.1 [<ins>Static Attach</ins>](#221-static-attach)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.2 [<ins>Dynamic Attach</ins>](#222-dynamic-attach)<br>
@@ -67,7 +68,7 @@ Any exception that occurs during the execution of the bootstrap process will not
 
 ### 2.1 Installation
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Building](#2121-building) instructions, or downloading directly from Maven's Central Repository.
+The [<ins>SpecialAgent</ins>](#41-specialagent) has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from Maven's Central Repository.
 
 #### 2.1.1 In Application
 
@@ -99,28 +100,6 @@ wget -O opentracing-specialagent-1.4.3-SNAPSHOT.jar $(curl -s https://oss.sonaty
 
 #### 2.1.2 For Development
 
-For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin), import the `opentracing-specialagent-api` and `test-jar` of the `opentracing-specialagent`.
-
-```xml
-<dependency>
-  <groupId>io.opentracing.contrib.specialagent</groupId>
-  <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.4.2</version> <!--version>1.4.3-SNAPSHOT<version-->
-  <scope>provided</scope>
-</dependency>
-<dependency>
-  <groupId>io.opentracing.contrib.specialagent</groupId>
-  <artifactId>opentracing-specialagent</artifactId>
-  <version>1.4.2</version> <!--version>1.4.3-SNAPSHOT<version-->
-  <type>test-jar</type>
-  <scope>test</scope>
-</dependency>
-```
-
-This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
-
-##### 2.1.2.1 Building
-
 _**Prerequisite**: The [<ins>SpecialAgent</ins>](#41-specialagent) requires [Oracle Java](https://www.oracle.com/technetwork/java/javase/downloads/) to build. Thought the [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenJDK for general application use, it only supports Oracle Java for building and testing._
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utilize different profiles:
@@ -148,6 +127,55 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utiliz
     ```bash
     mvn clean install && mvn -Dassemble package
     ```
+
+##### 2.1.2.1 [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
+
+For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin), import the `opentracing-specialagent-api` and `test-jar` of the `opentracing-specialagent`.
+
+```xml
+<dependency>
+  <groupId>io.opentracing.contrib.specialagent</groupId>
+  <artifactId>opentracing-specialagent-api</artifactId>
+  <version>1.4.2</version> <!--version>1.4.3-SNAPSHOT<version-->
+  <scope>provided</scope>
+</dependency>
+<dependency>
+  <groupId>io.opentracing.contrib.specialagent</groupId>
+  <artifactId>opentracing-specialagent</artifactId>
+  <version>1.4.2</version> <!--version>1.4.3-SNAPSHOT<version-->
+  <type>test-jar</type>
+  <scope>test</scope>
+</dependency>
+```
+
+This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
+
+##### 2.1.2.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
+
+[<ins>Tracer Plugins</ins>](#43-tracer-plugin) integrate with the [<ins>SpecialAgent</ins>](#41-specialagent) via the [OpenTracing TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver), in order to connect the [<ins>SpecialAgent</ins>](#41-specialagent) to a [<ins>Tracer</ins>](#42-tracer). [<ins>Tracer Plugins</ins>](#43-tracer-plugin) are not coupled to the [<ins>SpecialAgent</ins>](#41-specialagent), and therefore only need to integrate with the SPI mechanism defined in the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver).
+
+[<ins>Tracer Plugins</ins>](#43-tracer-plugin) must be provided as JARs that contain the full set of all classes necessary for operation.
+
+[<ins>Tracer Plugins</ins>](#43-tracer-plugin) are integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) by specifying a "provided" dependency in the `!itest` profile id in the [root POM][specialagent-pom]. For instance, the dependency for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is:
+
+```
+<dependency>
+  <groupId>io.opentracing.contrib</groupId>
+  <artifactId>jaeger-client-bundle</artifactId>
+  <version>0.0.3</version>
+  <scope>provided</scope>
+</dependency>
+```
+
+Each [<ins>Tracer Plugin</ins>](#43-tracer-plugin) integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) must define a "short name", which is a string that is used to reference the plugin with the `-Dsa.plugin=<SHORT_NAME>` system property. To provide a "short name" for the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), you must define a Maven property in the [root POM][specialagent-pom] with the name matching the `artifactId` of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin) module. For instance, the "short name" for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is defined as:
+
+```
+<properties>
+...
+  <jaeger-client-bundle>jaeger</jaeger-client-bundle>
+...
+</properties>
+```
 
 ### 2.2 Usage
 
@@ -390,7 +418,10 @@ Examples:
 
 ### 6.1 [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
 
-The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
+Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support for the instrumentation of the following 3rd-party libraries. Each row refers to an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin), the [<ins>Instrumentation Rule</ins>](#45-instrumentation-rule), and the minimum and maximum version tested by the build.
+
+The  following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
+Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) is available in the [`opentracing-specialagent-api`][api] module.
 
 | OpenTracing Plugin | SpecialAgent Rule | Min Version | Max Version |
 |:-|:-|:-:|:-:|
@@ -448,8 +479,7 @@ The following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentatio
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
-The following OpenTracing tracer service providers have [<ins>Tracer Plugins</ins>](#43-tracer-plugin) implemented.
-Here is a [demo](https://github.com/opentracing-contrib/java-specialagent-demo).
+Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support for the following [<ins>Tracer Plugins</ins>](#43-tracer-plugin). A demo can be referenced [here](https://github.com/opentracing-contrib/java-specialagent-demo).
 
 1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) ([Configuration reference](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment))
 1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
@@ -561,6 +591,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [pom]: https://maven.apache.org/pom.html
+[specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2/opentracing-specialagent-1.4.2.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.3-SNAPSHOT
