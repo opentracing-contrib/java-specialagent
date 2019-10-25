@@ -18,9 +18,9 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AddressStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AddressTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable String line; // required
-  public @org.apache.thrift.annotation.Nullable String city; // required
-  public @org.apache.thrift.annotation.Nullable String zipCode; // required
+  public String line; // required
+  public String city; // required
+  public String zipCode; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -147,7 +147,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
     return this.line;
   }
 
-  public Address setLine(@org.apache.thrift.annotation.Nullable String line) {
+  public Address setLine(String line) {
     this.line = line;
     return this;
   }
@@ -172,7 +172,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
     return this.city;
   }
 
-  public Address setCity(@org.apache.thrift.annotation.Nullable String city) {
+  public Address setCity(String city) {
     this.city = city;
     return this;
   }
@@ -197,7 +197,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
     return this.zipCode;
   }
 
-  public Address setZipCode(@org.apache.thrift.annotation.Nullable String zipCode) {
+  public Address setZipCode(String zipCode) {
     this.zipCode = zipCode;
     return this;
   }
@@ -217,7 +217,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
     }
   }
 
-  public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+  public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LINE:
       if (value == null) {

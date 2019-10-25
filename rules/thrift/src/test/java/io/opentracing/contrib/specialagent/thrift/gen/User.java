@@ -17,7 +17,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new UserStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UserTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable String name; // required
+  public String name; // required
   public int age; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -137,7 +137,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     return this.name;
   }
 
-  public User setName(@org.apache.thrift.annotation.Nullable String name) {
+  public User setName(String name) {
     this.name = name;
     return this;
   }
@@ -180,7 +180,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AGE_ISSET_ID, value);
   }
 
-  public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+  public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
       if (value == null) {

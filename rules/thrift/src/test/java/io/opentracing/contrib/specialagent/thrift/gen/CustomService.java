@@ -539,7 +539,6 @@ public class CustomService {
         return false;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -564,7 +563,6 @@ public class CustomService {
         return false;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -589,7 +587,6 @@ public class CustomService {
         return false;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -614,7 +611,6 @@ public class CustomService {
         return false;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -639,7 +635,6 @@ public class CustomService {
         return false;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -664,7 +659,6 @@ public class CustomService {
         return true;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -688,7 +682,6 @@ public class CustomService {
         return true;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -712,7 +705,6 @@ public class CustomService {
         return false;
       }
 
-      @Override
       protected boolean rethrowUnhandledExceptions() {
         return false;
       }
@@ -1193,8 +1185,8 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new say_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new say_argsTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String text; // required
-    public @org.apache.thrift.annotation.Nullable String text2; // required
+    public String text; // required
+    public String text2; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -1310,7 +1302,7 @@ public class CustomService {
       return this.text;
     }
 
-    public say_args setText(@org.apache.thrift.annotation.Nullable String text) {
+    public say_args setText(String text) {
       this.text = text;
       return this;
     }
@@ -1335,7 +1327,7 @@ public class CustomService {
       return this.text2;
     }
 
-    public say_args setText2(@org.apache.thrift.annotation.Nullable String text2) {
+    public say_args setText2(String text2) {
       this.text2 = text2;
       return this;
     }
@@ -1355,7 +1347,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case TEXT:
         if (value == null) {
@@ -1664,7 +1656,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new say_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new say_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String success; // required
+    public String success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -1769,7 +1761,7 @@ public class CustomService {
       return this.success;
     }
 
-    public say_result setSuccess(@org.apache.thrift.annotation.Nullable String success) {
+    public say_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -1789,7 +1781,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
         if (value == null) {
@@ -2157,7 +2149,7 @@ public class CustomService {
       __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DELAY_ISSET_ID, value);
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case DELAY:
         if (value == null) {
@@ -2393,7 +2385,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new withDelay_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new withDelay_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String success; // required
+    public String success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -2498,7 +2490,7 @@ public class CustomService {
       return this.success;
     }
 
-    public withDelay_result setSuccess(@org.apache.thrift.annotation.Nullable String success) {
+    public withDelay_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -2518,7 +2510,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
         if (value == null) {
@@ -2841,7 +2833,7 @@ public class CustomService {
     public void clear() {
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
     }
@@ -3014,7 +3006,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new withoutArgs_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new withoutArgs_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String success; // required
+    public String success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -3119,7 +3111,7 @@ public class CustomService {
       return this.success;
     }
 
-    public withoutArgs_result setSuccess(@org.apache.thrift.annotation.Nullable String success) {
+    public withoutArgs_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -3139,7 +3131,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
         if (value == null) {
@@ -3462,7 +3454,7 @@ public class CustomService {
     public void clear() {
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
     }
@@ -3635,7 +3627,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new withError_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new withError_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String success; // required
+    public String success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -3740,7 +3732,7 @@ public class CustomService {
       return this.success;
     }
 
-    public withError_result setSuccess(@org.apache.thrift.annotation.Nullable String success) {
+    public withError_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -3760,7 +3752,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
         if (value == null) {
@@ -4002,7 +3994,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new withCollision_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new withCollision_argsTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String input; // required
+    public String input; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -4107,7 +4099,7 @@ public class CustomService {
       return this.input;
     }
 
-    public withCollision_args setInput(@org.apache.thrift.annotation.Nullable String input) {
+    public withCollision_args setInput(String input) {
       this.input = input;
       return this;
     }
@@ -4127,7 +4119,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case INPUT:
         if (value == null) {
@@ -4369,7 +4361,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new withCollision_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new withCollision_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable String success; // required
+    public String success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -4474,7 +4466,7 @@ public class CustomService {
       return this.success;
     }
 
-    public withCollision_result setSuccess(@org.apache.thrift.annotation.Nullable String success) {
+    public withCollision_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -4494,7 +4486,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
         if (value == null) {
@@ -4817,7 +4809,7 @@ public class CustomService {
     public void clear() {
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
     }
@@ -5071,7 +5063,7 @@ public class CustomService {
     public void clear() {
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
     }
@@ -5245,8 +5237,8 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new save_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new save_argsTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable User user; // required
-    public @org.apache.thrift.annotation.Nullable Address address; // required
+    public User user; // required
+    public Address address; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -5362,7 +5354,7 @@ public class CustomService {
       return this.user;
     }
 
-    public save_args setUser(@org.apache.thrift.annotation.Nullable User user) {
+    public save_args setUser(User user) {
       this.user = user;
       return this;
     }
@@ -5387,7 +5379,7 @@ public class CustomService {
       return this.address;
     }
 
-    public save_args setAddress(@org.apache.thrift.annotation.Nullable Address address) {
+    public save_args setAddress(Address address) {
       this.address = address;
       return this;
     }
@@ -5407,7 +5399,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case USER:
         if (value == null) {
@@ -5832,7 +5824,7 @@ public class CustomService {
       return this.success;
     }
 
-    public save_result setSuccess(@org.apache.thrift.annotation.Nullable UserWithAddress success) {
+    public save_result setSuccess(UserWithAddress success) {
       this.success = success;
       return this;
     }
@@ -5852,7 +5844,7 @@ public class CustomService {
       }
     }
 
-    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+    public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
         if (value == null) {

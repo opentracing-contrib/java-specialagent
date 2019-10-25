@@ -17,8 +17,8 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new UserWithAddressStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UserWithAddressTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable User user; // required
-  public @org.apache.thrift.annotation.Nullable Address address; // required
+  public User user; // required
+  public Address address; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -134,7 +134,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     return this.user;
   }
 
-  public UserWithAddress setUser(@org.apache.thrift.annotation.Nullable User user) {
+  public UserWithAddress setUser(User user) {
     this.user = user;
     return this;
   }
@@ -159,7 +159,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     return this.address;
   }
 
-  public UserWithAddress setAddress(@org.apache.thrift.annotation.Nullable Address address) {
+  public UserWithAddress setAddress(Address address) {
     this.address = address;
     return this;
   }
@@ -179,7 +179,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     }
   }
 
-  public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable Object value) {
+  public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case USER:
       if (value == null) {
