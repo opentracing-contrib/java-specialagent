@@ -17,9 +17,7 @@ package io.opentracing.contrib.specialagent.jdbc;
 
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -28,7 +26,7 @@ import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 
 public class JdbcAgentIntercept {
-  public static AtomicReference<TracingDriver> tracingDriver = new AtomicReference<>();
+  public static final AtomicReference<Driver> tracingDriver = new AtomicReference<>();
 
   public static void isDriverAllowed(final Class<?> caller) {
     // FIXME: LS-11527
@@ -43,32 +41,12 @@ public class JdbcAgentIntercept {
     if (tracingDriver.get() == null) {
       synchronized (tracingDriver) {
         if (tracingDriver.get() == null) {
-          // Load & register the `TracingDriver`
-          try {
-            Class.forName(TracingDriver.class.getName());
-          }
-          catch (final ClassNotFoundException e) {
-            throw new IllegalStateException("TracingDriver initialization failed", e);
-          }
-
-          final Enumeration<Driver> drivers = DriverManager.getDrivers();
-          TracingDriver tracingDriver = null;
-          while (drivers.hasMoreElements()) {
-            final Driver driver = drivers.nextElement();
-            if (driver instanceof TracingDriver) {
-              tracingDriver = (TracingDriver)driver;
-              break;
-            }
-          }
-
-          if (tracingDriver == null)
-            throw new IllegalStateException(TracingDriver.class.getSimpleName() + " initialization failed");
-
-          JdbcAgentIntercept.tracingDriver.set(tracingDriver);
+          TracingDriver.setInterceptorMode(true);
+          tracingDriver.set(TracingDriver.load());
         }
       }
     }
 
-    return tracingDriver.get().connect(!url.startsWith("jdbc:tracing:") ? "jdbc:tracing:" + url.substring(5) : url, info);
+    return tracingDriver.get().connect(url, info);
   }
 }
