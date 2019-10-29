@@ -34,14 +34,8 @@
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-aws-sdk -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-aws-sdk</artifactId>
-      <version>0.1.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>aws-java-sdk</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>opentracing-aws-sdk-1</artifactId>
+      <version>0.1.3</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
