@@ -1,0 +1,12 @@
+<web-app>
+  <display-name>Servlet Application</display-name>
+  <servlet>
+    <servlet-name>SyncServlet</servlet-name>
+    <servlet-class>io.opentracing.contrib.specialagent.test.servlet.jetty.SyncServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SyncServlet</servlet-name>
+    <url-pattern>/sync</url-pattern>
+  </servlet-mapping>
+</web-app>
