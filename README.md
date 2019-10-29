@@ -88,14 +88,14 @@ wget -O opentracing-specialagent-1.4.2.jar "http://central.maven.org/maven2/io/o
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.4.3-SNAPSHOT</ins>.
+The latest development release is: <ins>1.5.0-SNAPSHOT</ins>.
 ```bash
-wget -O opentracing-specialagent-1.4.3-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.5.0-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 **Note**: Sometimes the web service call to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command:
 ```bash
-wget -O opentracing-specialagent-1.4.3-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.3-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+wget -O opentracing-specialagent-1.5.0-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
 
 #### 2.1.2 For Development
@@ -136,13 +136,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.4.2</version> <!--version>1.4.3-SNAPSHOT<version-->
+  <version>1.4.2</version> <!--version>1.5.0-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.4.2</version> <!--version>1.4.3-SNAPSHOT<version-->
+  <version>1.4.2</version> <!--version>1.5.0-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -594,6 +594,6 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2/opentracing-specialagent-1.4.2.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.3-SNAPSHOT
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0-SNAPSHOT
 [test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2/opentracing-specialagent-1.4.2-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.3-SNAPSHOT
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0-SNAPSHOT

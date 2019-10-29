@@ -1,0 +1,95 @@
+<!--
+  Copyright 2018 The OpenTracing Authors
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+    <artifactId>rule</artifactId>
+    <version>1.5.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>mongo-driver</artifactId>
+  <name>SpecialAgent Rule for MongoDB Driver</name>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <version.org.mongodb.mongo-java-driver>3.9.0</version.org.mongodb.mongo-java-driver>
+    <sa.plugin.name>mongo:driver</sa.plugin.name>
+  </properties>
+  <dependencies>
+    <dependency>
+      <!-- https://github.com/opentracing-contrib/java-mongo-driver -->
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-mongo-common</artifactId>
+      <version>0.1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mongodb</groupId>
+          <artifactId>mongo-java-driver</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-core</artifactId>
+      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!--
+        This dependency is not necessary, but simply resolves a lot of errors thrown by ByteBuddy when it tries to instrument Log4J classes.
+        The version must align with the version of netty that's used by mongo-java-driver: https://github.com/netty/netty/blob/4.1/pom.xml
+      -->
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <scope>test</scope>
+      <version>2.6.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-async</artifactId>
+      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>de.bwaldvogel</groupId>
+      <artifactId>mongo-java-server</artifactId>
+      <version>1.14.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-reactivestreams</artifactId>
+      <version>1.11.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mongodb</groupId>
+          <artifactId>mongodb-driver-async</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

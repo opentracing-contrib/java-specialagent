@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>1.4.3-SNAPSHOT</version>
+  <version>1.5.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Java SpecialAgent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
@@ -282,18 +282,18 @@
         </property>
       </activation>
       <modules>
-        <module>rules</module>
+        <module>rule</module>
       </modules>
     </profile>
     <profile>
-      <id>tests</id>
+      <id>test</id>
       <activation>
         <property>
           <name>test</name>
         </property>
       </activation>
       <modules>
-        <module>tests</module>
+        <module>test</module>
       </modules>
     </profile>
     <profile>
