@@ -42,13 +42,7 @@
       <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cassandra-driver-4</artifactId>
-      <version>0.1.5</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.datastax.oss</groupId>
-          <artifactId>java-driver-core</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>0.1.6</version>
     </dependency>
     <dependency>
       <groupId>org.cassandraunit</groupId>

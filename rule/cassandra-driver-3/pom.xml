@@ -34,14 +34,8 @@
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-cassandra-driver -->
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-cassandra-driver</artifactId>
-      <version>0.1.4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.datastax.cassandra</groupId>
-          <artifactId>cassandra-driver-core</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>opentracing-cassandra-driver-3</artifactId>
+      <version>0.1.6</version>
     </dependency>
     <dependency>
       <groupId>com.datastax.cassandra</groupId>

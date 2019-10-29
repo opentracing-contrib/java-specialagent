@@ -51,14 +51,8 @@
       <!-- https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-common -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-common</artifactId>
-      <version>0.1.4</version>
+      <version>0.1.7</version>
       <scope>provided</scope> <!-- FIXME: It's a hack because we already have it from jms-1/jms-2 -->
-      <exclusions>
-        <exclusion>
-          <groupId>javax.jms</groupId>
-          <artifactId>jms-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>

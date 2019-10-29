@@ -36,13 +36,7 @@
       <!-- https://github.com/opentracing-contrib/java-jms -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-1</artifactId>
-      <version>0.1.4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.jms</groupId>
-          <artifactId>jms-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>0.1.7</version>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>

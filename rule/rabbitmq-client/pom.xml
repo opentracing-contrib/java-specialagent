@@ -35,13 +35,7 @@
       <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
-      <version>0.1.4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.rabbitmq</groupId>
-          <artifactId>amqp-client</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>0.1.6</version>
     </dependency>
     <dependency>
       <groupId>com.rabbitmq</groupId>
