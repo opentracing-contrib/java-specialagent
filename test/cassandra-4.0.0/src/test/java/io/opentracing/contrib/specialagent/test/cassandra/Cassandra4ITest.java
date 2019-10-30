@@ -16,23 +16,24 @@
 package io.opentracing.contrib.specialagent.test.cassandra;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
 
 import io.opentracing.contrib.specialagent.TestUtil;
 
-public class Cassandra3ITest {
+public class Cassandra4ITest {
   public static void main(final String[] args) throws Exception {
     if (!System.getProperty("java.version").startsWith("1.8.")) {
       System.err.println("Cassandra only works with jdk1.8.");
       System.exit(0);
     }
 
-    System.getProperties().setProperty("java.library.path", new File("src/main/resources/libs").getAbsolutePath());
+    System.getProperties().setProperty("java.library.path", new File("src/test/resources/libs").getAbsolutePath());
 
     final File triggers = new File("target/triggers");
     triggers.mkdirs();
@@ -41,13 +42,10 @@ public class Cassandra3ITest {
     EmbeddedCassandraServerHelper.startEmbeddedCassandra(60_000); // 1 minute
     // EmbeddedCassandraServerHelper.getSession();
 
-    try (
-      final Cluster cluster = Cluster.builder()
-        .addContactPoints("127.0.0.1")
-        .withPort(9142)
-        .build();
-      final Session session = cluster.connect();
-    ) {
+    try (final CqlSession session = CqlSession.builder()
+      .addContactEndPoint(new DefaultEndPoint(new InetSocketAddress("127.0.0.1", 9142)))
+      .withLocalDatacenter("datacenter1")
+      .build()) {
       final ResultSet resultSet = session.execute("SELECT * FROM system.compaction_history");
       System.out.println("Rows: " + resultSet.all().size());
     }
