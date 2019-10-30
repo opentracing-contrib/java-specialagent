@@ -27,6 +27,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.log.level>INFO</sa.log.level>
   </properties>
   <dependencies>
     <dependency>
