@@ -140,7 +140,7 @@ jobs:
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P cassandra install -Dsa.log.level=INFO
+    script: mvn -B -Dtest -P cassandra install
   - name: "Cassandra [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
