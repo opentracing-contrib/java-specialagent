@@ -33,13 +33,7 @@
       <!-- https://github.com/opentracing-contrib/java-rxjava -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rxjava-2</artifactId>
-      <version>0.1.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.reactivex.rxjava2</groupId>
-          <artifactId>rxjava</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>0.1.2</version>
     </dependency>
     <dependency>
       <groupId>io.reactivex.rxjava2</groupId>

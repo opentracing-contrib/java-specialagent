@@ -18,9 +18,10 @@ package io.opentracing.contrib.specialagent.rule.aws.sdk1;
 import com.amazonaws.client.builder.AwsClientBuilder;
 
 import io.opentracing.contrib.aws.TracingRequestHandler;
+import io.opentracing.util.GlobalTracer;
 
 public class AwsAgentIntercept {
   public static void enter(final Object thiz) {
-    ((AwsClientBuilder<?,?>)thiz).withRequestHandlers(new TracingRequestHandler());
+    ((AwsClientBuilder<?,?>)thiz).withRequestHandlers(new TracingRequestHandler(GlobalTracer.get()));
   }
 }
