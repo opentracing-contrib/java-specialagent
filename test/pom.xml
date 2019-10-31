@@ -148,6 +148,28 @@
       </modules>
     </profile>
     <profile>
+      <id>jms-1</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jms-1</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jms-2</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jms-2</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
