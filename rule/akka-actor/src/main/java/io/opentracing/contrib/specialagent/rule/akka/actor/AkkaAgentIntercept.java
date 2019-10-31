@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.akkaactor;
+package io.opentracing.contrib.specialagent.rule.akka.actor;
 
 import java.util.HashMap;
 import java.util.Map;

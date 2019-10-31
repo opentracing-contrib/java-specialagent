@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.akkaactor;
+package io.opentracing.contrib.specialagent.rule.akka.actor;
 
 import static akka.pattern.Patterns.*;
 import static org.awaitility.Awaitility.*;
@@ -21,7 +21,6 @@ import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -39,7 +38,6 @@ import akka.util.Timeout;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.contrib.specialagent.rule.akkaactor.AkkaAgentIntercept;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
