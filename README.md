@@ -389,10 +389,10 @@ Examples:
 A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements the auto-instrumentation rules for [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) via the [`opentracing-specialagent-api`][api].
 
 Examples:
-* [`rules/specialagent-okhttp`][okhttp]
-* [`rules/specialagent-jdbc`][jdbc]
-* [`rules/specialagent-jms-1`][jms-1]
-* [`rules/specialagent-jms-2`][jms-2]
+* [`rule/specialagent-okhttp`][okhttp]
+* [`rule/specialagent-jdbc`][jdbc]
+* [`rule/specialagent-jms-1`][jms-1]
+* [`rule/specialagent-jms-2`][jms-2]
 
 <sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -425,7 +425,8 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 
 | OpenTracing Plugin | SpecialAgent Rule | Min Version | Max Version |
 |:-|:-|:-:|:-:|
-| [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka] | 2.5.0 | 2.5.25 |
+| [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka-actor] | 2.5.0 | 2.5.25 |
+| Akka Http Client | [`akka:http`][akka-http] | 10.1.0 | **10.1.0** |
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
 | [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | 4.5.9 |
 | [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | 2.10.1 |
@@ -533,56 +534,57 @@ Please make sure to update tests as appropriate.
 
 This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
-[akka]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/akka
-[camel]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/camel
-[apache-httpclient]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/apache-httpclient
-[asynchttpclient]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/asynchttpclient
-[aws-sdk-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/aws-sdk-1
-[aws-sdk-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/aws-sdk-2
-[cassandra-driver-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/cassandra-driver-3
-[cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/cassandra-driver-4
-[elasticsearch-7-rest-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-rest-client
-[elasticsearch-7-transport-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/elasticsearch-7-transport-client
-[feign]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/feign
-[grizzly-ahc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/grizzly-ahc
-[grizzly-http-server]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/grizzly-http-server
-[grpc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/grpc
-[hazelcast]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/hazelcast
-[concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/concurrent
-[jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/jdbc
-[jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/jms-1
-[jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/jms-2
-[servlet]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/servlet
-[jaxrs]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/jaxrs
-[jedis]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/jedis
-[kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/kafka-client
-[lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/lettuce-5.0
-[lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/lettuce-5.1
-[lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/lettuce-5.2
-[mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/mongo-driver
-[okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/okhttp
-[rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/rabbitmq-client
-[reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/reactor
-[redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/redisson
-[rxjava-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/rxjava-2
-[spring-jms]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-jms
-[spring-kafka]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-kafka
-[spring-messaging]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-messaging
-[spring-rabbitmq]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-rabbitmq
-[spring-scheduling]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-scheduling
-[spring-web-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-3
-[spring-web-4.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-4.0
-[spring-web-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-4
-[spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-web-5
-[spring-webflux]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webflux
-[spring-webmvc-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-3
-[spring-webmvc-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-4
-[spring-webmvc-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-webmvc-5
-[spring-websocket]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spring-websocket
-[spymemcached]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/spymemcached
-[thread]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/thread
-[thrift]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/thrift
-[zuul]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/zuul
+[akka-actor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/akka-actor
+[akka-http]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/akka-http
+[camel]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/camel
+[apache-httpclient]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient
+[asynchttpclient]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/asynchttpclient
+[aws-sdk-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-1
+[aws-sdk-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-2
+[cassandra-driver-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-3
+[cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-4
+[elasticsearch-7-rest-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-rest-client
+[elasticsearch-7-transport-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-transport-client
+[feign]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/feign
+[grizzly-ahc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/grizzly-ahc
+[grizzly-http-server]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/grizzly-http-server
+[grpc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/grpc
+[hazelcast]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/hazelcast
+[concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent
+[jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jdbc
+[jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-1
+[jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-2
+[servlet]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet
+[jaxrs]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jaxrs
+[jedis]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jedis
+[kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-client
+[lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.0
+[lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
+[lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
+[mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
+[okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
+[rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
+[reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
+[redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson
+[rxjava-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rxjava-2
+[spring-jms]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-jms
+[spring-kafka]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-kafka
+[spring-messaging]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-messaging
+[spring-rabbitmq]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-rabbitmq
+[spring-scheduling]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-scheduling
+[spring-web-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-3
+[spring-web-4.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-4.0
+[spring-web-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-4
+[spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-5
+[spring-webflux]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webflux
+[spring-webmvc-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc-3
+[spring-webmvc-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc-4
+[spring-webmvc-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc-5
+[spring-websocket]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-websocket
+[spymemcached]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spymemcached
+[thread]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thread
+[thrift]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thrift
+[zuul]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/zuul
 
 [agentrunner-config]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api#51-configuring-agentrunner
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api
