@@ -103,15 +103,23 @@ public class AkkaAgentIntercept {
     if (sender instanceof ActorRef && ((ActorRef)sender).isTerminated())
       return message;
 
+    String path;
+    if(arg0 instanceof ActorRef) {
+      path = ((ActorRef) arg0).path().toString();
+    } else if(arg0 instanceof ActorSelection) {
+      path = ((ActorSelection)arg0).toSerializationFormat();
+    } else {
+      return message;
+    }
+
+    if(path.contains("/system/"))
+      return message;
+
     final Span span = GlobalTracer.get()
       .buildSpan(method)
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER).start();
-
-    if (arg0 instanceof ActorRef)
-      span.setTag(Tags.MESSAGE_BUS_DESTINATION, ((ActorRef)arg0).path().toString());
-    else if (arg0 instanceof ActorSelection)
-      span.setTag(Tags.MESSAGE_BUS_DESTINATION, ((ActorSelection)arg0).toSerializationFormat());
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER)
+      .withTag(Tags.MESSAGE_BUS_DESTINATION, path).start();
 
     return new TracedMessage<>(message, span, GlobalTracer.get().activateSpan(span));
   }
