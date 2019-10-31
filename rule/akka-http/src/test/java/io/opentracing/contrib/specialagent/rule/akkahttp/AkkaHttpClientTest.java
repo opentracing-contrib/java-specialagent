@@ -30,6 +30,7 @@ import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -68,8 +69,16 @@ public class AkkaHttpClientTest {
   public void test(final MockTracer tracer) throws Exception {
     final Materializer materializer = ActorMaterializer.create(system);
 
-    final CompletionStage<HttpResponse> stage = Http.get(system)
-        .singleRequest(HttpRequest.GET("http://localhost:12345"));
+    Http http = null;
+    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java class with the same method 'Http.get(system)' and difference in return type only
+    for (Method method : Http.class.getMethods()) {
+      if (method.getName().equals("get") && method.getReturnType().equals(Http.class)) {
+        http = (Http) method.invoke(null, system);
+        break;
+      }
+    }
+
+    final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://localhost:12345"));
 
     try {
       stage
