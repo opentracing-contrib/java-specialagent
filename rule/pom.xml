@@ -87,6 +87,7 @@
         <module>jaxrs</module>
         <module>thread</module>
         <module>akka-actor</module>
+        <module>akka-http</module>
       </modules>
       <build>
         <resources>
