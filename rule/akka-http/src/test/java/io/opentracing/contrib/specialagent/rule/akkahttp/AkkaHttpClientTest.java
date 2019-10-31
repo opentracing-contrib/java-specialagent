@@ -70,7 +70,7 @@ public class AkkaHttpClientTest {
     final Materializer materializer = ActorMaterializer.create(system);
 
     Http http = null;
-    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java class with the same method 'Http.get(system)' and difference in return type only
+    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java class with 2 similar methods 'Http.get(system)' with difference in return type only
     for (Method method : Http.class.getMethods()) {
       if (method.getName().equals("get") && method.getReturnType().equals(Http.class)) {
         http = (Http) method.invoke(null, system);
