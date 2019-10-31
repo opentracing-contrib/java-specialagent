@@ -170,6 +170,18 @@
       </modules>
     </profile>
     <profile>
+      <id>elasticsearch</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>elasticsearch-6.4.0</module>
+        <module>elasticsearch-7.3.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
