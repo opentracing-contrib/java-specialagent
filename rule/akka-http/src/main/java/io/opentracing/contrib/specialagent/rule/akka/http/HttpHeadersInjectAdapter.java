@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.akkahttp;
+package io.opentracing.contrib.specialagent.rule.akka.http;
+
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import akka.http.javadsl.model.HttpHeader;
 import akka.http.javadsl.model.HttpRequest;
 import io.opentracing.propagation.TextMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 public class HttpHeadersInjectAdapter implements TextMap {
   private HttpRequest httpRequest;

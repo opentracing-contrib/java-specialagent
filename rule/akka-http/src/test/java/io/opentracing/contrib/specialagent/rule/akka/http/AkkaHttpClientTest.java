@@ -13,11 +13,24 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.akkahttp;
+package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import akka.actor.ActorSystem;
 import akka.http.javadsl.Http;
@@ -30,19 +43,8 @@ import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
-import scala.concurrent.duration.FiniteDuration;
 
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
@@ -57,7 +59,7 @@ public class AkkaHttpClientTest {
   @AfterClass
   public static void afterClass() throws Exception {
     if (system != null)
-      Await.result(system.terminate(), getDefaultDuration());
+      Await.result(system.terminate(), Duration.create(15, "seconds"));
   }
 
   @Before
@@ -70,26 +72,25 @@ public class AkkaHttpClientTest {
     final Materializer materializer = ActorMaterializer.create(system);
 
     Http http = null;
-    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java class with 2 similar methods 'Http.get(system)' with difference in return type only
-    for (Method method : Http.class.getMethods()) {
-      if (method.getName().equals("get") && method.getReturnType().equals(Http.class)) {
-        http = (Http) method.invoke(null, system);
+    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java
+    // class with 2 similar methods 'Http.get(system)' with difference in return type only
+    for (final Method method : Http.class.getMethods()) {
+      if (Modifier.isStatic(method.getModifiers()) && "get".equals(method.getName()) && Http.class.equals(method.getReturnType())) {
+        http = (Http)method.invoke(null, system);
         break;
       }
     }
 
     final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://localhost:12345"));
-
     try {
-      stage
-          .whenComplete(new BiConsumer<HttpResponse, Throwable>() {
-            @Override
-            public void accept(HttpResponse httpResponse, Throwable throwable) {
-              System.out.println(httpResponse.status());
-            }
-          }).toCompletableFuture().get().entity().getDataBytes().runForeach(param -> {
-      }, materializer);
-    } catch (Exception ignore) {
+      stage.whenComplete(new BiConsumer<HttpResponse,Throwable>() {
+        @Override
+        public void accept(final HttpResponse httpResponse, final Throwable throwable) {
+          System.out.println(httpResponse.status());
+        }
+      }).toCompletableFuture().get().entity().getDataBytes().runForeach(param -> {}, materializer);
+    }
+    catch (final Exception ignore) {
     }
 
     await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
@@ -97,9 +98,5 @@ public class AkkaHttpClientTest {
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals(AkkaAgentIntercept.COMPONENT_NAME, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
-  }
-
-  private static FiniteDuration getDefaultDuration() {
-    return Duration.create(15, "seconds");
   }
 }

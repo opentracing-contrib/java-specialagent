@@ -13,25 +13,24 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.akkahttp;
+package io.opentracing.contrib.specialagent.rule.akka.http;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletionStage;
 
 import akka.http.javadsl.model.HttpRequest;
 import akka.http.javadsl.model.HttpResponse;
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.propagation.Format;
+import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletionStage;
 
 public class AkkaAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "akka-http-client";
-
-
 
   private static class Context {
     private Span span;
@@ -45,31 +44,30 @@ public class AkkaAgentIntercept {
       return arg0;
     }
 
-    HttpRequest request = (HttpRequest) arg0;
-    final Span span = GlobalTracer.get().buildSpan(request.method().value())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.HTTP_METHOD, request.method().value())
-        .withTag(Tags.HTTP_URL, request.getUri().toString())
-        .withTag(Tags.PEER_HOSTNAME, request.getUri().host().address())
-        .withTag(Tags.PEER_PORT, request.getUri().port())
-        .start();
+    final HttpRequest request = (HttpRequest)arg0;
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = tracer.buildSpan(request.method().value())
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.HTTP_METHOD, request.method().value())
+      .withTag(Tags.HTTP_URL, request.getUri().toString())
+      .withTag(Tags.PEER_HOSTNAME, request.getUri().host().address())
+      .withTag(Tags.PEER_PORT, request.getUri().port())
+      .start();
 
     final HttpHeadersInjectAdapter injectAdapter = new HttpHeadersInjectAdapter(request);
-
-    GlobalTracer.get().inject(span.context(), Builtin.HTTP_HEADERS, injectAdapter);
-
-    final Scope scope = GlobalTracer.get().activateSpan(span);
+    tracer.inject(span.context(), Builtin.HTTP_HEADERS, injectAdapter);
 
     final Context context = new Context();
     contextHolder.set(context);
     context.span = span;
-    context.scope = scope;
+    context.scope = tracer.activateSpan(span);
 
     return injectAdapter.getHttpRequest();
   }
 
-  public static Object requestEnd(Object returned, Throwable thrown) {
+  @SuppressWarnings("unchecked")
+  public static Object requestEnd(final Object returned, final Throwable thrown) {
     final Context context = contextHolder.get();
     if (context == null)
       return returned;
@@ -87,7 +85,7 @@ public class AkkaAgentIntercept {
       return returned;
     }
 
-    final CompletionStage<HttpResponse> stage = (CompletionStage<HttpResponse>) returned;
+    final CompletionStage<HttpResponse> stage = (CompletionStage<HttpResponse>)returned;
     return stage.thenApply(httpResponse -> {
       span.setTag(Tags.HTTP_STATUS, httpResponse.status().intValue());
       span.finish();

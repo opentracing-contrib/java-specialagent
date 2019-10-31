@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.akkahttp;
+package io.opentracing.contrib.specialagent.rule.akka.http;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -37,21 +37,18 @@ public class AkkaHttpClientAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(AkkaHttpClientAgentRule.class).on(named("singleRequest").and(takesArgument(0, named("akka.http.javadsl.model.HttpRequest")))));
-        }})
-    );
+        }}));
   }
 
-    @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request) {
-      if (isEnabled(origin))
-       request = AkkaAgentIntercept.requestStart(request);
-    }
+  @Advice.OnMethodEnter
+  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request) {
+    if (isEnabled(origin))
+     request = AkkaAgentIntercept.requestStart(request);
+  }
 
-    @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = AkkaAgentIntercept.requestEnd(returned, thrown);
-    }
-
-
+  @Advice.OnMethodExit(onThrowable = Throwable.class)
+  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
+    if (isEnabled(origin))
+      returned = AkkaAgentIntercept.requestEnd(returned, thrown);
+  }
 }
