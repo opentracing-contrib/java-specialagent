@@ -194,6 +194,18 @@
       </modules>
     </profile>
     <profile>
+      <id>rxjava</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>rxjava-2.1.0</module>
+        <module>rxjava-2.2.12</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
