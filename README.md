@@ -36,7 +36,7 @@ In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-sup
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.3 [Selecting the <ins>Tracer Plugin</ins>](#33-selecting-the-tracer-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4 [Disabling <ins>Instrumentation Plugins</ins>](#34-disabling-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.1 [Disabling All Instrumentation Plugins](#341-disabling-all-instrumentation-plugins)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.2 [Disabling One Instrumentation Plugin](#342-disabling-one-instrumentation-plugin)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.2 [Disabling (or enabling) One Instrumentation Plugin](#342-disabling-or-enabling-one-instrumentation-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.3 [Disabling `AgentRule`s of an Instrumentation Plugin](#343-disabling-agentrules-of-an-instrumentation-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.5 [Disabling <ins>Tracer Plugins</ins>](#35-disabling-tracer-plugins)<br>
 <samp>&nbsp;&nbsp;</samp>4 [Definitions](#4-definitions)<br>
@@ -80,22 +80,22 @@ This JAR can then be specified with the `-javaagent:$SPECIAL_AGENT_JAR` vm argum
 
 ##### 2.1.1.1 Stable
 
-The latest stable release is: [1.4.2][main-release].
+The latest stable release is: [1.5.0][main-release].
 
 ```bash
-wget -O opentracing-specialagent-1.4.2.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2/opentracing-specialagent-1.4.2.jar"
+wget -O opentracing-specialagent-1.5.0.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0/opentracing-specialagent-1.5.0.jar"
 ```
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.5.0-SNAPSHOT</ins>.
+The latest development release is: <ins>1.5.1-SNAPSHOT</ins>.
 ```bash
-wget -O opentracing-specialagent-1.5.0-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.5.1-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 **Note**: Sometimes the web service call to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command:
 ```bash
-wget -O opentracing-specialagent-1.5.0-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+wget -O opentracing-specialagent-1.5.1-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
 
 #### 2.1.2 For Development
@@ -104,16 +104,16 @@ _**Prerequisite**: The [<ins>SpecialAgent</ins>](#41-specialagent) requires [Ora
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utilize different profiles:
 
-1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.4.2.jar`][main-release]
+1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.0.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.4.2.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.4.2.jar`][main-release] will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.0.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.0.jar`][main-release] will contain the built rules inside it.
 
-    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.4.2.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.0.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
 
     _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
@@ -136,13 +136,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.4.2</version> <!--version>1.5.0-SNAPSHOT<version-->
+  <version>1.5.0</version> <!--version>1.5.1-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.4.2</version> <!--version>1.5.0-SNAPSHOT<version-->
+  <version>1.5.0</version> <!--version>1.5.1-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -186,7 +186,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) uses [Java’s Instrumentation m
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.4.2.jar -jar MyApp.jar
+java -javaagent:opentracing-specialagent-1.5.0.jar -jar MyApp.jar
 ```
 
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
@@ -202,12 +202,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 1. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.4.2.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.0.jar <PID>
     ```
 
 1. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-1.4.2.jar <PID>
+    java -jar opentracing-specialagent-1.5.0.jar <PID>
     ```
 
 **Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
@@ -223,7 +223,7 @@ With <ins>Static Deferred Attach</ins>, the application is executed with the `-j
 The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.4.2.jar -Dsa.spring -jar MySpringApp.jar
+java -javaagent:opentracing-specialagent-1.5.0.jar -Dsa.spring -jar MySpringApp.jar
 ```
 
 ## 3 Configuration
@@ -288,21 +288,32 @@ _**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) enabled by default, and allows them to be disabled.
 
+Multiple properties to <ins>disable</ins> or to <ins>enable</ins> all or individual plugins can be declared either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`. The processing order of the properties is equal to the order of their declaration.
+
 #### 3.4.1 Disabling All Instrumentation Plugins
 
-To disable _all **instrumentation** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To <ins>disable</ins> _all **instrumentation** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
 sa.instrumentation.plugin.*.disable
 ```
+<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
-#### 3.4.2 Disabling One Instrumentation Plugin
+#### 3.4.2 Disabling (or enabling) One Instrumentation Plugin
 
-To disable _an individual **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To <ins>disable</ins> _an individual **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
 sa.instrumentation.plugin.${RULE_NAME_PATTERN}.disable
 ```
+<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
+
+Conversely, to <ins>enable</ins> _an individual **instrumentation** plugin_.
+
+```
+sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable
+```
+<sup>The suffix `.enable` is interchangeable with `.disable=false`.</sup>
 
 The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
@@ -324,6 +335,7 @@ To disable _an individual `AgentRule` of an **instrumentation** plugin_, specify
 ```
 sa.instrumentation.plugin.${PLUGIN_NAME}#${AGENT_RULE_SIMPLE_CLASS_NAME}.disable
 ```
+<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
 The value of `${AGENT_RULE_SIMPLE_CLASS_NAME}` is the simple class name of the `AgentRule` subclass that is to be disabled.
 
@@ -336,12 +348,14 @@ To disable _all **tracer** plugins_, specify a system property, either on the co
 ```
 sa.tracer.plugins.disable
 ```
+<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
 To disable _an individual **tracer** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
 
 ```
 sa.tracer.plugin.${SHORT_NAME}.disable
 ```
+<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
 The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
 
@@ -595,7 +609,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [pom]: https://maven.apache.org/pom.html
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 
-[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2/opentracing-specialagent-1.4.2.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0-SNAPSHOT
-[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.4.2/opentracing-specialagent-1.4.2-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0-SNAPSHOT
+[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0/opentracing-specialagent-1.5.0.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1-SNAPSHOT
+[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0/opentracing-specialagent-1.5.0-tests.jar
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1-SNAPSHOT
