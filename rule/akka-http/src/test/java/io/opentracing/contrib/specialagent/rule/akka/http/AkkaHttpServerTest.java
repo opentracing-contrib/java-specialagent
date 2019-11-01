@@ -33,8 +33,6 @@ import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
@@ -78,7 +76,7 @@ public class AkkaHttpServerTest {
   @Test
   public void testSync(final MockTracer tracer) throws Exception {
     final CompletionStage<ServerBinding> binding = http.bindAndHandleSync(request -> HttpResponse.create().withEntity(ByteString.fromString("OK")),
-        ConnectHttp.toHost("localhost", 8080), materializer);
+        ConnectHttp.toHost("localhost", 8081), materializer);
 
     final ServerBinding serverBinding = binding.toCompletableFuture().get();
     test(tracer, serverBinding);
@@ -88,14 +86,14 @@ public class AkkaHttpServerTest {
   public void testAsync(final MockTracer tracer) throws Exception {
     final CompletionStage<ServerBinding> binding = http.bindAndHandleAsync(request ->
             CompletableFuture.supplyAsync(() -> HttpResponse.create().withEntity(ByteString.fromString("OK"))),
-        ConnectHttp.toHost("localhost", 8080), materializer);
+        ConnectHttp.toHost("localhost", 8082), materializer);
 
     final ServerBinding serverBinding = binding.toCompletableFuture().get();
     test(tracer, serverBinding);
   }
 
   private void test(MockTracer tracer, ServerBinding serverBinding) throws Exception {
-    URL obj = new URL("http://localhost:8080/");
+    URL obj = new URL("http://localhost:" + serverBinding.localAddress().getPort());
     HttpURLConnection con = (HttpURLConnection) obj.openConnection();
     con.setRequestMethod("GET");
     assertEquals(200, con.getResponseCode());
