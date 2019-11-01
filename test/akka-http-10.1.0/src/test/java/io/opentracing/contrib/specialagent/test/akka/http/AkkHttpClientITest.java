@@ -13,7 +13,12 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.test.akkahttp;
+package io.opentracing.contrib.specialagent.test.akka.http;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.concurrent.CompletionStage;
+import java.util.function.BiConsumer;
 
 import akka.actor.ActorSystem;
 import akka.http.javadsl.Http;
@@ -22,13 +27,10 @@ import akka.http.javadsl.model.HttpResponse;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import io.opentracing.contrib.specialagent.TestUtil;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
 
 public class AkkHttpClientITest {
   public static void main(final String[] args) throws Exception {
+    TestUtil.initTerminalExceptionHandler();
     final ActorSystem system = ActorSystem.create();
     final Materializer materializer = ActorMaterializer.create(system);
 
@@ -43,19 +45,15 @@ public class AkkHttpClientITest {
     }
 
     final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://www.google.com"));
-
     stage.whenComplete(new BiConsumer<HttpResponse, Throwable>() {
       @Override
-      public void accept(HttpResponse httpResponse, Throwable throwable) {
+      public void accept(final HttpResponse httpResponse, final Throwable throwable) {
         TestUtil.checkActiveSpan();
         System.out.println(httpResponse.status());
       }
     }).toCompletableFuture().get().entity().getDataBytes().runForeach(param -> {}, materializer);
 
-    stage.thenRun(() -> {
-      system.terminate();
-    });
-
+    stage.thenRun(() -> system.terminate());
     TestUtil.checkSpan("akka-http-client", 1);
   }
 }
