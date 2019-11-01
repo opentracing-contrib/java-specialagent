@@ -182,6 +182,18 @@
       </modules>
     </profile>
     <profile>
+      <id>akka-http</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>akka-http-10.1.0</module>
+        <module>akka-http-10.1.10</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
