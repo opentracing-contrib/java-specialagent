@@ -40,6 +40,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class MongoReactiveITest {
   public static void main(final String[] args) throws InterruptedException {
+    TestUtil.initTerminalExceptionHandler();
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
     final MongoClientSettings mongoSettings = MongoClientSettings.builder().applyToClusterSettings(new Block<Builder>() {

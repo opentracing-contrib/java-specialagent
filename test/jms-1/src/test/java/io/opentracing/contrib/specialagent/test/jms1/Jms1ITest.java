@@ -37,6 +37,7 @@ public class Jms1ITest {
   private static final CountDownLatch latch = new CountDownLatch(threadCount);
 
   public static void main(final String[] args) throws Exception {
+    TestUtil.initTerminalExceptionHandler();
     final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
     final Connection connection = connectionFactory.createConnection();
     connection.start();

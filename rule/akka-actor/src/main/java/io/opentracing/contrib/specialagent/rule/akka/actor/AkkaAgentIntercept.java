@@ -47,7 +47,6 @@ public class AkkaAgentIntercept {
     }
 
     final AbstractActor actor = (AbstractActor)thiz;
-
     final SpanBuilder spanBuilder = GlobalTracer.get()
       .buildSpan("receive")
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
@@ -104,15 +103,17 @@ public class AkkaAgentIntercept {
       return message;
 
     String path;
-    if(arg0 instanceof ActorRef) {
-      path = ((ActorRef) arg0).path().toString();
-    } else if(arg0 instanceof ActorSelection) {
+    if (arg0 instanceof ActorRef) {
+      path = ((ActorRef)arg0).path().toString();
+    }
+    else if (arg0 instanceof ActorSelection) {
       path = ((ActorSelection)arg0).toSerializationFormat();
-    } else {
+    }
+    else {
       return message;
     }
 
-    if(path.contains("/system/"))
+    if (path.contains("/system/"))
       return message;
 
     final Span span = GlobalTracer.get()
@@ -124,11 +125,8 @@ public class AkkaAgentIntercept {
     return new TracedMessage<>(message, span, GlobalTracer.get().activateSpan(span));
   }
 
-  public static void askEnd(Object arg0, Object message, Throwable thrown, Object sender) {
-    if (sender instanceof PromiseActorRef || arg0 instanceof PromiseActorRef)
-      return;
-
-    if (!(message instanceof TracedMessage))
+  public static void askEnd(final Object arg0, final Object message, final Throwable thrown, final Object sender) {
+    if (sender instanceof PromiseActorRef || arg0 instanceof PromiseActorRef || !(message instanceof TracedMessage))
       return;
 
     final TracedMessage<?> tracedMessage = (TracedMessage<?>)message;

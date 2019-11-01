@@ -28,6 +28,7 @@ import io.opentracing.util.GlobalTracer;
 
 public class ConcurrentITest {
   public static void main(final String[] args) throws ExecutionException, InterruptedException {
+    TestUtil.initTerminalExceptionHandler();
     final Span parent = GlobalTracer.get()
       .buildSpan("parent")
       .withTag(Tags.COMPONENT, "parent")

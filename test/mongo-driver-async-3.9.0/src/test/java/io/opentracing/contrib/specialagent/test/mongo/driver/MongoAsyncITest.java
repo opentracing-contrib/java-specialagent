@@ -39,6 +39,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 @SuppressWarnings("deprecation")
 public class MongoAsyncITest {
   public static void main(final String[] args) throws Exception {
+    TestUtil.initTerminalExceptionHandler();
     final MongoServer server = new MongoServer(new MemoryBackend());
     final InetSocketAddress serverAddress = server.bind();
 
