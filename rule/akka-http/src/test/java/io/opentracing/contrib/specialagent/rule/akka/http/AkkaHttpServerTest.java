@@ -99,7 +99,7 @@ public class AkkaHttpServerTest {
     HttpURLConnection con = (HttpURLConnection) obj.openConnection();
     con.setRequestMethod("GET");
     assertEquals(200, con.getResponseCode());
-    serverBinding.unbind();
+    serverBinding.unbind().toCompletableFuture().get();
 
     await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
 
