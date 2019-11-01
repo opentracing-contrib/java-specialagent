@@ -32,6 +32,7 @@ public class Cassandra3ITest {
       System.exit(0);
     }
 
+    TestUtil.initTerminalExceptionHandler();
     System.getProperties().setProperty("java.library.path", new File("src/test/resources/libs").getAbsolutePath());
 
     final File triggers = new File("target/triggers");

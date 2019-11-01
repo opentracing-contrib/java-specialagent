@@ -25,6 +25,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JdbcITest {
   public static void main(final String[] args) throws SQLException, ClassNotFoundException {
+    TestUtil.initTerminalExceptionHandler();
     Class.forName("org.h2.Driver");
 
     try (
