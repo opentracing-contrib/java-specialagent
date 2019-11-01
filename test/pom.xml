@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.0-SNAPSHOT</version>
+    <version>1.5.1-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -191,6 +191,18 @@
       <modules>
         <module>akka-http-10.1.0</module>
         <module>akka-http-10.1.10</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>rxjava</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>rxjava-2.1.0</module>
+        <module>rxjava-2.2.12</module>
       </modules>
     </profile>
     <profile>
