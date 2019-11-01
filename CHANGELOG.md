@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.5.0 (2019-11-01)
+* Migrate integration tests for: OkHttp, JDBC API, Concurrent API, MongoDB Driver, Servlet API (Jetty and Tomcat), AWS SDK 1 and 2, Cassandra Driver, JMS 1 and 2, ElasticSearch 6 and 7, RxJava 2, Akka Http.
+* Expanded ranges of versions tested in integration-test phase.
+* Updated [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins) to most recent versions.
+* Updated package and class names for all [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins) to conform to naming convention.
+* New [Instrumentation Plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Akka Http Client.
+
 ## v1.4.2 (2019-10-18)
 * Fix bug in config properties import process ([#179](https://github.com/opentracing-contrib/java-specialagent/issues/179)).
 * Fix bug in `servlet` plugin resulting in duplicate requests ([#178](https://github.com/opentracing-contrib/java-specialagent/issues/178)).
