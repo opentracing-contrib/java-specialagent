@@ -25,6 +25,7 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
@@ -214,7 +215,7 @@ public class ByteBuddyManager extends Manager {
         try {
           final JavaModule unnamedModule = JavaModule.of(ClassLoader.class.getMethod("getUnnamedModule").invoke(classLoader));
           if (!module.canRead(unnamedModule)) {
-            module.addReads(inst, unnamedModule);
+            module.modify(inst, Collections.singleton(unnamedModule), Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_SET, Collections.EMPTY_MAP);
             if (logger.isLoggable(Level.FINEST))
               logger.finest("Added module reads: " + module + " -> " + unnamedModule);
           }

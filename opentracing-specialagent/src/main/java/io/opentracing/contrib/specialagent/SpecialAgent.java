@@ -196,21 +196,32 @@ public class SpecialAgent extends SpecialAgentBase {
 
     // Process the system properties to determine which Instrumentation and Tracer Plugins to enable
     final ArrayList<String> verbosePluginNames = new ArrayList<>();
+    File[] includedPlugins = null;
     final HashMap<String,Boolean> instruPluginNameToEnable = new HashMap<>();
     final HashMap<String,Boolean> tracerPluginNameToEnable = new HashMap<>();
     for (final Map.Entry<String,String> property : properties.entrySet()) {
       final String key = property.getKey();
       final String value = property.getValue();
-      if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".verbose"))
-        verbosePluginNames.add(key.substring(26, key.length() - 8));
-      else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".enable"))
-        instruPluginNameToEnable.put(key.substring(26, key.length() - 7), Boolean.parseBoolean(value));
-      else if (key.startsWith("sa.instrumentation.plugin.") && key.endsWith(".disable"))
-        instruPluginNameToEnable.put(key.substring(26, key.length() - 8), "false".equals(value));
-      else if (key.startsWith("sa.tracer.plugin.") && key.endsWith(".enable"))
-        tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), Boolean.parseBoolean(value));
-      else if (key.startsWith("sa.tracer.plugin.") && key.endsWith(".disable"))
-        tracerPluginNameToEnable.put(key.substring(17, key.length() - 8), "false".equals(value));
+      if (key.startsWith("sa.instrumentation.plugin.")) {
+        if (key.endsWith(".verbose"))
+          verbosePluginNames.add(key.substring(26, key.length() - 8));
+        else if (key.endsWith(".enable"))
+          instruPluginNameToEnable.put(key.substring(26, key.length() - 7), Boolean.parseBoolean(value));
+        else if (key.endsWith(".disable"))
+          instruPluginNameToEnable.put(key.substring(26, key.length() - 8), "false".equals(value));
+        else if (key.length() == 33 && key.endsWith(".include")) {
+          final String[] includedPluginPaths = value.split(File.pathSeparator);
+          includedPlugins = new File[includedPluginPaths.length];
+          for (int i = 0; i < includedPluginPaths.length; ++i)
+            includedPlugins[i] = new File(includedPluginPaths[i]);
+        }
+      }
+      else if (key.startsWith("sa.tracer.plugin.")) {
+        if (key.endsWith(".enable"))
+          tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), Boolean.parseBoolean(value));
+        else if (key.endsWith(".disable"))
+          tracerPluginNameToEnable.put(key.substring(17, key.length() - 8), "false".equals(value));
+      }
     }
 
     final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey("*") || instruPluginNameToEnable.remove("*");
@@ -254,7 +265,7 @@ public class SpecialAgent extends SpecialAgentBase {
     isoClassLoader = new IsoClassLoader(isoUrls.toArray(new URL[isoUrls.size()]));
 
     // Process the plugin JARs from AssembleUtil#META_INF_PLUGIN_PATH
-    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, new Predicate<File>() {
+    final Predicate<File> loadPluginPredicate = new Predicate<File>() {
       @Override
       public boolean test(final File t) {
         // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
@@ -291,7 +302,15 @@ public class SpecialAgent extends SpecialAgentBase {
         fileToPluginManifest.put(t, pluginManifest);
         return true;
       }
-    });
+    };
+
+    // First load all plugins explicitly included with the `-Dsa.instrumentation.plugin.include=...` system property.
+    if (includedPlugins != null)
+      for (final File includedPlugin : includedPlugins)
+        loadPluginPredicate.test(includedPlugin);
+
+    // Then, load the plugins inside the SpecialAgent JAR.
+    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, loadPluginPredicate);
 
     if (fileToPluginManifest.size() == 0 && logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH);

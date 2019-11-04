@@ -50,8 +50,8 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <version.maven-dependency-plugin>3.1.1</version.maven-dependency-plugin>
-    <version.maven>3.6.1</version.maven>
-    <version.bytebuddy>1.9.16</version.bytebuddy>
+    <version.maven>3.6.2</version.maven>
+    <version.bytebuddy>1.10.2</version.bytebuddy>
     <version.opentracing>0.32.0</version.opentracing>
     <jaeger-client-bundle>jaeger</jaeger-client-bundle>
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
@@ -257,7 +257,7 @@
         <dependency>
           <groupId>io.opentracing.contrib</groupId>
           <artifactId>jaeger-client-bundle</artifactId>
-          <version>0.0.3</version>
+          <version>1.0.0</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
@@ -271,6 +271,12 @@
           <artifactId>wavefront-opentracing-bundle-java</artifactId>
           <version>0.9.0</version>
           <scope>provided</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>io.opentracing</groupId>
+              <artifactId>opentracing-util</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
       </dependencies>
     </profile>
@@ -638,7 +644,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
