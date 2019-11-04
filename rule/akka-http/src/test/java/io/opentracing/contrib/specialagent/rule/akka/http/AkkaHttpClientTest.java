@@ -71,15 +71,7 @@ public class AkkaHttpClientTest {
   public void test(final MockTracer tracer) throws Exception {
     final Materializer materializer = ActorMaterializer.create(system);
 
-    Http http = null;
-    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java
-    // class with 2 similar methods 'Http.get(system)' with difference in return type only
-    for (final Method method : Http.class.getMethods()) {
-      if (Modifier.isStatic(method.getModifiers()) && "get".equals(method.getName()) && Http.class.equals(method.getReturnType())) {
-        http = (Http)method.invoke(null, system);
-        break;
-      }
-    }
+    Http http = getHttp(system);
 
     final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://localhost:12345"));
     try {
@@ -97,6 +89,18 @@ public class AkkaHttpClientTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
-    assertEquals(AkkaAgentIntercept.COMPONENT_NAME, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
+    assertEquals(AkkaAgentIntercept.COMPONENT_NAME_CLIENT, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
+  }
+
+  static Http getHttp(ActorSystem system) throws Exception {
+    // Use Reflection to call Http.get(system) because Scala Http class decompiles to java
+    // class with 2 similar methods 'Http.get(system)' with difference in return type only
+    for (final Method method : Http.class.getMethods()) {
+      if (Modifier.isStatic(method.getModifiers()) && "get".equals(method.getName()) && Http.class
+          .equals(method.getReturnType())) {
+        return (Http) method.invoke(null, system);
+      }
+    }
+    return null;
   }
 }
