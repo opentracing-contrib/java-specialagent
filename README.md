@@ -453,7 +453,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | [`grizzly:ahc`][grizzly-ahc] | 1.15 | **1.15** |
 | [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | [`grizzly:http-server`][grizzly-http-server] | 2.3.35 | **2.3.35** |
 | [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.6.0 | 1.23.0 |
-| [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.7 | 3.12.2 |
+| [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.4 |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [Java JDBC API \[`java.sql`\]][java-jdbc] | [`jdbc`][jdbc] | 3.1 | 4.3 |
 | [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1 | 1.1 |
@@ -472,7 +472,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | 3.14.2 |
 | [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | 5.7.3 |
 | [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | **3.2.3.RELEASE** |
-| [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.6.0 | 3.11.3 |
+| [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.11.0 | 3.11.5 |
 | [RxJava 2](https://github.com/opentracing-contrib/java-rxjava) | [`rxjava:2`][rxjava-2] | 2.1.0 | 2.2.12 |
 | [Spring Boot JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | [`spring:jms`][spring-jms] | 1.5.22.RELEASE | 2.1.8.RELEASE |
 | [Spring Boot Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | [`spring:kafka`][spring-kafka] | 2.1.0.RELEASE | 2.1.8.RELEASE |

@@ -28,20 +28,14 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <hazelcast.version>3.7</hazelcast.version>
+    <hazelcast.version>3.12</hazelcast.version>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-hazelcast -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-hazelcast</artifactId>
-      <version>0.1.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.hazelcast</groupId>
-          <artifactId>hazelcast</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>0.1.5</version>
     </dependency>
     <dependency>
       <groupId>com.hazelcast</groupId>
