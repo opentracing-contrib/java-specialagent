@@ -15,10 +15,26 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaHttpClientTest.getHttp;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaHttpClientTest.*;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import akka.actor.ActorSystem;
 import akka.http.javadsl.ConnectHttp;
@@ -33,17 +49,6 @@ import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
@@ -55,7 +60,7 @@ public class AkkaHttpServerTest {
   private static Http http;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() throws IllegalAccessException, InvocationTargetException {
     system = ActorSystem.create();
     materializer = ActorMaterializer.create(system);
     http = getHttp(system);
@@ -63,9 +68,8 @@ public class AkkaHttpServerTest {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    if (system != null) {
+    if (system != null)
       Await.result(system.terminate(), Duration.create(15, "seconds"));
-    }
   }
 
   @Before
@@ -74,37 +78,30 @@ public class AkkaHttpServerTest {
   }
 
   @Test
-  public void testSync(final MockTracer tracer) throws Exception {
-    final CompletionStage<ServerBinding> binding = http.bindAndHandleSync(request -> HttpResponse.create().withEntity(ByteString.fromString("OK")),
-        ConnectHttp.toHost("localhost", 8081), materializer);
-
+  public void testSync(final MockTracer tracer) throws ExecutionException, InterruptedException, IOException {
+    final CompletionStage<ServerBinding> binding = http.bindAndHandleSync(request -> HttpResponse.create().withEntity(ByteString.fromString("OK")), ConnectHttp.toHost("localhost", 8081), materializer);
     final ServerBinding serverBinding = binding.toCompletableFuture().get();
     test(tracer, serverBinding);
   }
 
   @Test
-  public void testAsync(final MockTracer tracer) throws Exception {
-    final CompletionStage<ServerBinding> binding = http.bindAndHandleAsync(request ->
-            CompletableFuture.supplyAsync(() -> HttpResponse.create().withEntity(ByteString.fromString("OK"))),
-        ConnectHttp.toHost("localhost", 8082), materializer);
-
+  public void testAsync(final MockTracer tracer) throws ExecutionException, InterruptedException, IOException {
+    final CompletionStage<ServerBinding> binding = http.bindAndHandleAsync(request -> CompletableFuture.supplyAsync(() -> HttpResponse.create().withEntity(ByteString.fromString("OK"))), ConnectHttp.toHost("localhost", 8082), materializer);
     final ServerBinding serverBinding = binding.toCompletableFuture().get();
     test(tracer, serverBinding);
   }
 
-  private void test(MockTracer tracer, ServerBinding serverBinding) throws Exception {
-    URL obj = new URL("http://localhost:" + serverBinding.localAddress().getPort());
-    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-    con.setRequestMethod("GET");
-    assertEquals(200, con.getResponseCode());
+  private static void test(final MockTracer tracer, final ServerBinding serverBinding) throws ExecutionException, InterruptedException, IOException {
+    final URL url = new URL("http://localhost:" + serverBinding.localAddress().getPort());
+    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+    connection.setRequestMethod("GET");
+    assertEquals(200, connection.getResponseCode());
     serverBinding.unbind().toCompletableFuture().get();
 
     await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
-    assertEquals(AkkaAgentIntercept.COMPONENT_NAME_SERVER,
-        spans.get(0).tags().get(Tags.COMPONENT.getKey()));
+    assertEquals(AkkaAgentIntercept.COMPONENT_NAME_SERVER, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
   }
-
 }

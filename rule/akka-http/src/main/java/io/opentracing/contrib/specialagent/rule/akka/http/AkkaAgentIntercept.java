@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import akka.japi.Function;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +22,7 @@ import java.util.concurrent.CompletionStage;
 
 import akka.http.javadsl.model.HttpRequest;
 import akka.http.javadsl.model.HttpResponse;
+import akka.japi.Function;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -88,8 +88,7 @@ public class AkkaAgentIntercept {
       return returned;
     }
 
-    final CompletionStage<HttpResponse> stage = (CompletionStage<HttpResponse>)returned;
-    return stage.thenApply(httpResponse -> {
+    return ((CompletionStage<HttpResponse>)returned).thenApply(httpResponse -> {
       span.setTag(Tags.HTTP_STATUS, httpResponse.status().intValue());
       span.finish();
       return httpResponse;
@@ -101,15 +100,13 @@ public class AkkaAgentIntercept {
   }
 
   @SuppressWarnings("unchecked")
-  public static Object bindAndHandleSync(Object arg0) {
-    Function<HttpRequest, HttpResponse> handler = (Function<HttpRequest, HttpResponse>) arg0;
-    return new AkkaHttpSyncHandler(handler);
+  public static Object bindAndHandleSync(final Object handler) {
+    return new AkkaHttpSyncHandler((Function<HttpRequest,HttpResponse>)handler);
   }
 
   @SuppressWarnings("unchecked")
-  public static Object bindAndHandleAsync(Object arg0) {
-    Function<HttpRequest, CompletableFuture<HttpResponse>> handler = (Function<HttpRequest, CompletableFuture<HttpResponse>>) arg0;
-    return new AkkaHttpAsyncHandler(handler);
+  public static Object bindAndHandleAsync(final Object handler) {
+    return new AkkaHttpAsyncHandler((Function<HttpRequest,CompletableFuture<HttpResponse>>)handler);
   }
 
   static void onError(final Throwable t, final Span span) {

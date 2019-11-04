@@ -19,6 +19,7 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -68,10 +69,10 @@ public class AkkaHttpClientTest {
   }
 
   @Test
-  public void test(final MockTracer tracer) throws Exception {
+  public void test(final MockTracer tracer) throws IllegalAccessException, InvocationTargetException {
     final Materializer materializer = ActorMaterializer.create(system);
 
-    Http http = getHttp(system);
+    final Http http = getHttp(system);
 
     final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://localhost:12345"));
     try {
@@ -92,15 +93,13 @@ public class AkkaHttpClientTest {
     assertEquals(AkkaAgentIntercept.COMPONENT_NAME_CLIENT, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
   }
 
-  static Http getHttp(ActorSystem system) throws Exception {
+  static Http getHttp(final ActorSystem system) throws IllegalAccessException, InvocationTargetException {
     // Use Reflection to call Http.get(system) because Scala Http class decompiles to java
     // class with 2 similar methods 'Http.get(system)' with difference in return type only
-    for (final Method method : Http.class.getMethods()) {
-      if (Modifier.isStatic(method.getModifiers()) && "get".equals(method.getName()) && Http.class
-          .equals(method.getReturnType())) {
-        return (Http) method.invoke(null, system);
-      }
-    }
+    for (final Method method : Http.class.getMethods())
+      if (Modifier.isStatic(method.getModifiers()) && "get".equals(method.getName()) && Http.class.equals(method.getReturnType()))
+        return (Http)method.invoke(null, system);
+
     return null;
   }
 }

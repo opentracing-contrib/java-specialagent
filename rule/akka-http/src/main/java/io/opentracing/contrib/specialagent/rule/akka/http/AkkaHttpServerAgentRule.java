@@ -15,12 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -48,8 +47,7 @@ public class AkkaHttpServerAgentRule extends AgentRule {
 
   public static class SyncHandler {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin,
-        @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
+    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
       if (isEnabled(origin))
         arg0 = AkkaAgentIntercept.bindAndHandleSync(arg0);
     }

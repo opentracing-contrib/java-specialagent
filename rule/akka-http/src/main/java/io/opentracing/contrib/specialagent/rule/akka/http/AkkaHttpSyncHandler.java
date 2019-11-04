@@ -14,7 +14,7 @@
  */
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaAgentIntercept.COMPONENT_NAME_SERVER;
+import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaAgentIntercept.*;
 
 import akka.http.javadsl.model.HttpRequest;
 import akka.http.javadsl.model.HttpResponse;
@@ -28,40 +28,39 @@ import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
-public class AkkaHttpSyncHandler implements Function<HttpRequest, HttpResponse> {
-  private final Function<HttpRequest, HttpResponse> handler;
+public class AkkaHttpSyncHandler implements Function<HttpRequest,HttpResponse> {
+  private final Function<HttpRequest,HttpResponse> handler;
 
-  public AkkaHttpSyncHandler(Function<HttpRequest, HttpResponse> handler) {
+  public AkkaHttpSyncHandler(final Function<HttpRequest,HttpResponse> handler) {
     this.handler = handler;
   }
 
   @Override
-  public HttpResponse apply(HttpRequest request) throws Exception {
+  public HttpResponse apply(final HttpRequest request) throws Exception {
     final Span span = buildSpan(request);
-
-    try (Scope scope = GlobalTracer.get().activateSpan(span)) {
+    try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
       final HttpResponse response = handler.apply(request);
       span.setTag(Tags.HTTP_STATUS, response.status().intValue());
       return response;
-    } catch (Exception e) {
+    }
+    catch (final Exception e) {
       AkkaAgentIntercept.onError(e, span);
       throw e;
-    } finally {
+    }
+    finally {
       span.finish();
     }
   }
 
-  static Span buildSpan(HttpRequest request) {
+  static Span buildSpan(final HttpRequest request) {
     final SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(request.method().value())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME_SERVER)
-        .withTag(Tags.HTTP_URL, request.getUri().toString())
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
+      .withTag(Tags.COMPONENT, COMPONENT_NAME_SERVER)
+      .withTag(Tags.HTTP_URL, request.getUri().toString())
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
 
-    final SpanContext context = GlobalTracer.get()
-        .extract(Builtin.HTTP_HEADERS, new HttpHeadersExtractAdapter(request));
-    if(context != null) {
+    final SpanContext context = GlobalTracer.get().extract(Builtin.HTTP_HEADERS, new HttpHeadersExtractAdapter(request));
+    if (context != null)
       spanBuilder.addReference(References.FOLLOWS_FROM, context);
-    }
 
     return spanBuilder.start();
   }

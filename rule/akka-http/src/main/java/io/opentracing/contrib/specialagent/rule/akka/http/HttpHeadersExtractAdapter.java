@@ -15,31 +15,30 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import akka.http.javadsl.model.HttpHeader;
-import akka.http.javadsl.model.HttpRequest;
-import io.opentracing.propagation.TextMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class HttpHeadersExtractAdapter implements TextMap {
+import akka.http.javadsl.model.HttpHeader;
+import akka.http.javadsl.model.HttpRequest;
+import io.opentracing.propagation.TextMap;
 
-  private final Map<String, String> map = new HashMap<>();
+public class HttpHeadersExtractAdapter implements TextMap {
+  private final Map<String,String> map = new HashMap<>();
 
   HttpHeadersExtractAdapter(final HttpRequest httpRequest) {
-    for (HttpHeader header : httpRequest.getHeaders()) {
+    for (final HttpHeader header : httpRequest.getHeaders()) {
       map.put(header.name(), header.value());
     }
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
+  public Iterator<Map.Entry<String,String>> iterator() {
     return map.entrySet().iterator();
   }
 
   @Override
-  public void put(String key, String value) {
+  public void put(final String key, final String value) {
     throw new UnsupportedOperationException("This class should be used only with Tracer.inject()!");
   }
 }
-

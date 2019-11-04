@@ -14,8 +14,10 @@
  */
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaAgentIntercept.onError;
-import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaHttpSyncHandler.buildSpan;
+import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaAgentIntercept.*;
+import static io.opentracing.contrib.specialagent.rule.akka.http.AkkaHttpSyncHandler.*;
+
+import java.util.concurrent.CompletableFuture;
 
 import akka.http.javadsl.model.HttpRequest;
 import akka.http.javadsl.model.HttpResponse;
@@ -24,20 +26,18 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.concurrent.CompletableFuture;
 
-public class AkkaHttpAsyncHandler implements Function<HttpRequest, CompletableFuture<HttpResponse>> {
-  private final Function<HttpRequest, CompletableFuture<HttpResponse>> handler;
+public class AkkaHttpAsyncHandler implements Function<HttpRequest,CompletableFuture<HttpResponse>> {
+  private final Function<HttpRequest,CompletableFuture<HttpResponse>> handler;
 
-  public AkkaHttpAsyncHandler(Function<HttpRequest, CompletableFuture<HttpResponse>> handler) {
+  public AkkaHttpAsyncHandler(final Function<HttpRequest,CompletableFuture<HttpResponse>> handler) {
     this.handler = handler;
   }
 
   @Override
-  public CompletableFuture<HttpResponse> apply(HttpRequest request) throws Exception {
+  public CompletableFuture<HttpResponse> apply(final HttpRequest request) throws Exception {
     final Span span = buildSpan(request);
-
-    try(Scope scope = GlobalTracer.get().activateSpan(span)) {
+    try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
       return handler.apply(request).thenApply(httpResponse -> {
         span.setTag(Tags.HTTP_STATUS, httpResponse.status().intValue());
         span.finish();
