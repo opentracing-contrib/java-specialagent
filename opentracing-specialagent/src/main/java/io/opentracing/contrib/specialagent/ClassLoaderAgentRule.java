@@ -98,10 +98,10 @@ public class ClassLoaderAgentRule extends AgentRule {
     log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, LocalLevel.FINE);
     return builders;
   }
-  
+
   public static boolean isExcluded(final ClassLoader thiz) {
     final String className = thiz.getClass().getName();
-    return className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader");
+    return className.startsWith("io.opentracing.contrib.specialagent.RuleClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader");
   }
 
   public static class DefineClass {
@@ -126,16 +126,16 @@ public class ClassLoaderAgentRule extends AgentRule {
       if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
-      final Class<?> bootstrapClass = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
-      if (bootstrapClass != null) {
-        log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, LocalLevel.FINEST);
-
-        returned = bootstrapClass;
-        thrown = null;
-        return;
-      }
-
       try {
+        final Class<?> bootstrapClass = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
+        if (bootstrapClass != null) {
+          log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, LocalLevel.FINEST);
+
+          returned = bootstrapClass;
+          thrown = null;
+          return;
+        }
+
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
           return;
