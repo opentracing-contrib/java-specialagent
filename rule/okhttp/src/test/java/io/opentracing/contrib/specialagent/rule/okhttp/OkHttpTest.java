@@ -15,11 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.okhttp;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
 
+import java.util.concurrent.TimeUnit;
+import okhttp3.Call;
+import okhttp3.Callback;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,12 +50,16 @@ public class OkHttpTest {
   public void testBuilder(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient.Builder().build();
     test(client, tracer);
+    tracer.reset();
+    testAsync(client, tracer);
   }
 
   @Test
   public void testConstructor(final MockTracer tracer) throws IOException {
     final OkHttpClient client = new OkHttpClient();
     test(client, tracer);
+    tracer.reset();
+    testAsync(client, tracer);
   }
 
   private static void test(final OkHttpClient client, final MockTracer tracer) throws IOException {
@@ -65,12 +74,33 @@ public class OkHttpTest {
       assertEquals(200, response.code());
 
       final List<MockSpan> finishedSpans = tracer.finishedSpans();
-      assertEquals(2, finishedSpans.size());
+      assertEquals(1, finishedSpans.size());
       assertEquals("GET", finishedSpans.get(0).operationName());
-      assertEquals("GET", finishedSpans.get(1).operationName());
+    }
+  }
 
-      assertEquals(1, client.interceptors().size());
-      assertEquals(1, client.networkInterceptors().size());
+  private static void testAsync(final OkHttpClient client, final MockTracer tracer) throws IOException {
+    try (final MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setBody("hello, world!").setResponseCode(200));
+
+      final HttpUrl httpUrl = server.url("/hello");
+
+      final Request request = new Request.Builder().url(httpUrl).build();
+      final Call call = client.newCall(request);
+
+      call.enqueue(new Callback() {
+        public void onResponse(Call call, Response response) {
+        }
+
+        public void onFailure(Call call, IOException e) {
+        }
+      });
+
+      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+
+      final List<MockSpan> finishedSpans = tracer.finishedSpans();
+      assertEquals(1, finishedSpans.size());
+      assertEquals("GET", finishedSpans.get(0).operationName());
     }
   }
 }

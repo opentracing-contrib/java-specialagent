@@ -43,7 +43,8 @@
       <modules>
         <module>okhttp-3.14.2</module>
         <module>okhttp-3.5.0</module>
-        <!--module>okhttp-4.0.0-test</module--> <!-- Not supported! -->
+        <module>okhttp-4.0.0</module>
+        <module>okhttp-4.2.2</module>
       </modules>
     </profile>
     <profile>
