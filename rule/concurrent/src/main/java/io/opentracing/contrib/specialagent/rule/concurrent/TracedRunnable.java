@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.concurrent;
 
 import io.opentracing.References;
@@ -26,7 +27,7 @@ public class TracedRunnable implements Runnable {
   private final Span parent;
   private final boolean verbose;
 
-  public TracedRunnable(Runnable delegate, Span parent, boolean verbose) {
+  public TracedRunnable(final Runnable delegate, final Span parent, final boolean verbose) {
     this.delegate = delegate;
     this.parent = parent;
     this.verbose = verbose;
@@ -39,7 +40,8 @@ public class TracedRunnable implements Runnable {
       final Span span = tracer
         .buildSpan("runnable")
         .withTag(Tags.COMPONENT, "java-concurrent")
-        .addReference(References.FOLLOWS_FROM, parent.context()).start();
+        .addReference(References.FOLLOWS_FROM, parent.context())
+        .start();
       try (final Scope scope = tracer.activateSpan(span)) {
         delegate.run();
       }

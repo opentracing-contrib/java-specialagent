@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.concurrent;
 
 import java.util.concurrent.Callable;
@@ -38,7 +39,11 @@ public class TracedCallable<V> implements Callable<V> {
   public V call() throws Exception {
     final Tracer tracer = GlobalTracer.get();
     if (verbose) {
-      final Span span = tracer.buildSpan("callable").withTag(Tags.COMPONENT, "java-concurrent").addReference(References.FOLLOWS_FROM, parent.context()).start();
+      final Span span = tracer
+        .buildSpan("callable")
+        .withTag(Tags.COMPONENT, "java-concurrent")
+        .addReference(References.FOLLOWS_FROM, parent.context())
+        .start();
       try (final Scope scope = tracer.activateSpan(span)) {
         return delegate.call();
       }

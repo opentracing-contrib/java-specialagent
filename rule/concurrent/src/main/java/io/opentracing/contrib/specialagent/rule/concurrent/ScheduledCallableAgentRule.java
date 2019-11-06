@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -51,13 +52,17 @@ public class ScheduledCallableAgentRule extends AgentRule {
     if (!isEnabled(origin))
       return;
 
+    final Tracer tracer = GlobalTracer.get();
     if (isVerbose(ScheduledCallableAgentRule.class)) {
-      final Span span = GlobalTracer.get().buildSpan("schedule").withTag(Tags.COMPONENT, "java-concurrent").start();
+      final Span span = tracer
+        .buildSpan("schedule")
+        .withTag(Tags.COMPONENT, "java-concurrent")
+        .start();
       arg = new TracedCallable<>(arg, span, true);
       span.finish();
     }
-    else if (GlobalTracer.get().activeSpan() != null) {
-      arg = new TracedCallable<>(arg, GlobalTracer.get().activeSpan(), false);
+    else if (tracer.activeSpan() != null) {
+      arg = new TracedCallable<>(arg, tracer.activeSpan(), false);
     }
   }
 }

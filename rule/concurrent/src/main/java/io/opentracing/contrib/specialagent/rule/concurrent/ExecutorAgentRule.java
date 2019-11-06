@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.concurrent.Executor;
 
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -49,13 +50,17 @@ public class ExecutorAgentRule extends AgentRule {
     if (!isEnabled(origin))
       return;
 
+    final Tracer tracer = GlobalTracer.get();
     if (isVerbose(ExecutorAgentRule.class)) {
-      final Span span = GlobalTracer.get().buildSpan("execute").withTag(Tags.COMPONENT, "java-concurrent").start();
+      final Span span = tracer
+        .buildSpan("execute")
+        .withTag(Tags.COMPONENT, "java-concurrent")
+        .start();
       arg = new TracedRunnable(arg, span, true);
       span.finish();
     }
-    else if (GlobalTracer.get().activeSpan() != null) {
-      arg = new TracedRunnable(arg, GlobalTracer.get().activeSpan(), false);
+    else if (tracer.activeSpan() != null) {
+      arg = new TracedRunnable(arg, tracer.activeSpan(), false);
     }
   }
 }
