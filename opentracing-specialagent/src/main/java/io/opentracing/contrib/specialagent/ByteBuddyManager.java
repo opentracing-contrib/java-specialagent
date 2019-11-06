@@ -31,12 +31,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.utility.JavaModule;
 
 /**
@@ -77,7 +79,7 @@ public class ByteBuddyManager extends Manager {
 
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new AgentBuilder.Default()
+    AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
       .disableClassFormatChanges()
       .ignore(none());
 
