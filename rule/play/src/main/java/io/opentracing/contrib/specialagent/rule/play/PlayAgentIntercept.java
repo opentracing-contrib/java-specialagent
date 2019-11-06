@@ -15,18 +15,17 @@
 
 package io.opentracing.contrib.specialagent.rule.play;
 
-import io.opentracing.References;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.propagation.Format;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
 import play.api.mvc.Action;
 import play.api.mvc.Request;
 import play.api.mvc.Result;
@@ -42,36 +41,28 @@ public class PlayAgentIntercept {
     private int counter = 1;
   }
 
-
-  public static Object applyStart(Object arg0) {
+  public static Object applyStart(final Object arg0) {
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
       return arg0;
     }
 
-    Request request = (Request) arg0;
-
+    final Request<?> request = (Request<?>)arg0;
     final Tracer tracer = GlobalTracer.get();
-
-
     final SpanBuilder spanBuilder = tracer.buildSpan(request.method())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER)
-        .withTag(Tags.HTTP_METHOD, request.method())
-        .withTag(Tags.HTTP_URL,
-            (request.secure() ? "https://" : "http://") + request.host() + request.uri());
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER)
+      .withTag(Tags.HTTP_METHOD, request.method())
+      .withTag(Tags.HTTP_URL, (request.secure() ? "https://" : "http://") + request.host() + request.uri());
 
-    final SpanContext parent = tracer
-        .extract(Builtin.HTTP_HEADERS, new HttpHeadersExtractAdapter(request.headers()));
-
-    if(parent != null) {
+    final SpanContext parent = tracer.extract(Builtin.HTTP_HEADERS, new HttpHeadersExtractAdapter(request.headers()));
+    if (parent != null)
       spanBuilder.asChildOf(parent);
-    }
-
-    final Span span = spanBuilder.start();
 
     final Context context = new Context();
     contextHolder.set(context);
+
+    final Span span = spanBuilder.start();
     context.span = span;
     context.scope = tracer.activateSpan(span);
 
@@ -97,21 +88,17 @@ public class PlayAgentIntercept {
       return;
     }
 
-    play.api.mvc.Action thisAction = (Action) thiz;
+    ((Future<Result>)returned).onComplete(res -> {
+      if (res.isFailure()) {
+        onError(res.failed().get(), span);
+      }
+      else {
+        span.setTag(Tags.HTTP_STATUS, res.get().header().status());
+      }
 
-    Future<Result> future = (Future<Result>) returned;
-    future.onComplete(
-        res -> {
-          if(res.isFailure()) {
-            onError(res.failed().get(), span);
-          } else {
-            span.setTag(Tags.HTTP_STATUS, res.get().header().status());
-          }
-          span.finish();
-          return null;
-        },
-        ((Action) thisAction).executionContext());
-
+      span.finish();
+      return null;
+    }, ((Action<?>)thiz).executionContext());
   }
 
   static void onError(final Throwable t, final Span span) {

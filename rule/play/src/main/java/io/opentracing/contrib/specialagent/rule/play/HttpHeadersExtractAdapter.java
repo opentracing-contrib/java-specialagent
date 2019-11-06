@@ -15,21 +15,23 @@
 
 package io.opentracing.contrib.specialagent.rule.play;
 
-import io.opentracing.propagation.TextMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import io.opentracing.propagation.TextMap;
+import play.api.mvc.Headers;
 import scala.Option;
 
 public class HttpHeadersExtractAdapter implements TextMap {
   private final Map<String,String> map = new HashMap<>();
 
-  HttpHeadersExtractAdapter(final play.api.mvc.Headers headers) {
+  HttpHeadersExtractAdapter(final Headers headers) {
     final scala.collection.Iterator<String> iterator = headers.keys().iterator();
     while (iterator.hasNext()) {
       final String key = iterator.next();
       final Option<String> value = headers.get(key);
-      if(value.isDefined()) {
+      if (value.isDefined()) {
         map.put(key, value.get());
       }
     }
@@ -42,6 +44,6 @@ public class HttpHeadersExtractAdapter implements TextMap {
 
   @Override
   public void put(final String key, final String value) {
-    throw new UnsupportedOperationException("This class should be used only with Tracer.inject()!");
+    throw new UnsupportedOperationException("This class can be used only with Tracer.inject()");
   }
 }

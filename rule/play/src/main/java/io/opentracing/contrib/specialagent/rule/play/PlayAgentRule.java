@@ -37,21 +37,18 @@ public class PlayAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(PlayAgentRule.class).on(named("apply").and(takesArgument(0, named("play.api.mvc.Request")))));
-        }})
-      );
+        }}));
   }
 
-    @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
-      if (isEnabled(origin))
-        arg0 = PlayAgentIntercept.applyStart(arg0);
-    }
+  @Advice.OnMethodEnter
+  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
+    if (isEnabled(origin))
+      arg0 = PlayAgentIntercept.applyStart(arg0);
+  }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, @Advice.This(typing = Typing.DYNAMIC) Object thiz, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
     if (isEnabled(origin))
       PlayAgentIntercept.applyEnd(thiz, returned, thrown);
   }
-
-
 }
