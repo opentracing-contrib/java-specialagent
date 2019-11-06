@@ -469,7 +469,8 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.M1 | 5.1.8.RELEASE |
 | | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | **5.2.0.RELEASE** |
 | [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | 3.11.0 |
-| [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | 3.14.2 |
+| [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | 4.2.2 |
+| Play Framework | [`play`][play] | 2.6.0 | **2.6.0** |
 | [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | 5.7.3 |
 | [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | **3.2.3.RELEASE** |
 | [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.11.0 | 3.11.5 |
@@ -577,6 +578,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
 [okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
+[play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
 [reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
 [redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson
