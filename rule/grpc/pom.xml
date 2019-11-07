@@ -26,8 +26,8 @@
   <artifactId>grpc</artifactId>
   <name>SpecialAgent Rule for GRPC</name>
   <properties>
-    <grpc.version>1.6.0</grpc.version>
-    <protobuf.version>3.7.0</protobuf.version>
+    <version.grpc>1.6.0</version.grpc>
+    <version.protobuf>3.7.0</version.protobuf>
   </properties>
   <build>
     <extensions>
@@ -61,9 +61,9 @@
                   <goal>test-compile-custom</goal>
                 </goals>
                 <configuration>
-                  <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                  <protocArtifact>com.google.protobuf:protoc:${version.protobuf}:exe:${os.detected.classifier}</protocArtifact>
                   <pluginId>grpc-java</pluginId>
-                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:${os.detected.classifier}</pluginArtifact>
                   <clearOutputDirectory>false</clearOutputDirectory>
                 </configuration>
               </execution>
@@ -77,7 +77,7 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-core</artifactId>
-      <version>${grpc.version}</version>
+      <version>${version.grpc}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -96,25 +96,25 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
-      <version>${grpc.version}</version>
+      <version>${version.grpc}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
-      <version>${grpc.version}</version>
+      <version>${version.grpc}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty</artifactId>
-      <version>${grpc.version}</version>
+      <version>${version.grpc}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-testing</artifactId>
-      <version>${grpc.version}</version>
+      <version>${version.grpc}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

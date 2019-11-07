@@ -27,14 +27,14 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <opentracing.redis.version>0.1.14</opentracing.redis.version>
+    <version.opentracing.redis>0.1.14</version.opentracing.redis>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-redis-redisson</artifactId>
-      <version>${opentracing.redis.version}</version>
+      <version>${version.opentracing.redis}</version>
     </dependency>
     <dependency>
       <groupId>org.redisson</groupId>

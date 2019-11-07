@@ -28,34 +28,34 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <spring.boot.version>2.1.0.RELEASE</spring.boot.version>
-    <spring.version>5.1.0.RELEASE</spring.version>
+    <version.spring.boot>2.1.0.RELEASE</version.spring.boot>
+    <version.spring>5.1.0.RELEASE</version.spring>
     <sa.plugin.name>spring:webflux</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webflux</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jetty</artifactId>
-      <version>${spring.boot.version}</version>
+      <version>${version.spring.boot}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webflux</artifactId>
-      <version>${spring.boot.version}</version>
+      <version>${version.spring.boot}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-test</artifactId>
-      <version>${spring.boot.version}</version>
+      <version>${version.spring.boot}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

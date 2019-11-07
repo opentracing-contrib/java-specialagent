@@ -26,18 +26,18 @@
   <artifactId>servlet-tomcat-7.0.65</artifactId>
   <name>SpecialAgent Test for Tomcat 7.0.65</name>
   <properties>
-    <tomcat.version>7.0.65</tomcat.version>
+    <version.tomcat>7.0.65</version.tomcat>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-juli</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
   </dependencies>
 </project>

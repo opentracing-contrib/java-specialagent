@@ -28,14 +28,14 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <spring.version>5.0.0.RELEASE</spring.version>
+    <version.spring>5.0.0.RELEASE</version.spring>
     <sa.plugin.name>spring:scheduling</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

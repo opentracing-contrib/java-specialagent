@@ -28,7 +28,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <spring.version>5.0.0.RELEASE</spring.version>
+    <version.spring>5.0.0.RELEASE</version.spring>
     <version.jetty>9.3.15.v20161220</version.jetty>
     <sa.plugin.name>spring:webmvc:5</sa.plugin.name>
   </properties>
@@ -49,7 +49,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

@@ -26,18 +26,18 @@
   <artifactId>servlet-tomcat-9.0.27</artifactId>
   <name>SpecialAgent Test for Tomcat 9.0.27</name>
   <properties>
-    <tomcat.version>9.0.27</tomcat.version>
+    <version.tomcat>9.0.27</version.tomcat>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-juli</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent.test</groupId>

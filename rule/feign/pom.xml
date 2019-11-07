@@ -28,7 +28,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <feign.version>9.0.0</feign.version>
+    <version.feign>9.0.0</version.feign>
   </properties>
   <dependencies>
     <dependency>
@@ -46,14 +46,14 @@
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-core</artifactId>
-      <version>${feign.version}</version>
+      <version>${version.feign}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-okhttp</artifactId>
-      <version>${feign.version}</version>
+      <version>${version.feign}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

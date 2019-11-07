@@ -28,7 +28,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <spring.version>4.0.0.RELEASE</spring.version>
+    <version.spring>4.0.0.RELEASE</version.spring>
     <version.jetty>8.2.0.v20160908</version.jetty>
     <sa.plugin.name>spring:webmvc:4</sa.plugin.name>
   </properties>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

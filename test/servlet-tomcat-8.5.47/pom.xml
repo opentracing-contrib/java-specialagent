@@ -26,28 +26,28 @@
   <artifactId>servlet-tomcat-8.5.47</artifactId>
   <name>SpecialAgent Test for Tomcat 8.5.47</name>
   <properties>
-    <tomcat.version>8.5.47</tomcat.version>
+    <version.tomcat>8.5.47</version.tomcat>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-juli</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-util</artifactId>
-      <version>${tomcat.version}</version>
+      <version>${version.tomcat}</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent.test</groupId>

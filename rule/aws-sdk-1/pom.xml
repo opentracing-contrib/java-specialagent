@@ -27,7 +27,7 @@
   <name>SpecialAgent Rule for AWS SDK 1</name>
   <properties>
     <sa.plugin.name>aws-sdk</sa.plugin.name>
-    <aws.version>1.11.79</aws.version>
+    <version.aws>1.11.79</version.aws>
     <sa.plugin.name>aws:sdk:1</sa.plugin.name>
   </properties>
   <dependencies>
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>${aws.version}</version>
+      <version>${version.aws}</version>
       <optional>true</optional>
       <scope>provided</scope>
       <exclusions>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
-      <version>${aws.version}</version>
+      <version>${version.aws}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

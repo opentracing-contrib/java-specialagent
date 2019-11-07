@@ -28,32 +28,32 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <play.version>2.6.0</play.version>
+    <version.play>2.6.0</version.play>
   </properties>
   <dependencies>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play_2.12</artifactId>
-      <version>${play.version}</version>
+      <version>${version.play}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-server_2.12</artifactId>
-      <version>${play.version}</version>
+      <version>${version.play}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-java_2.12</artifactId>
-      <version>${play.version}</version>
+      <version>${version.play}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-akka-http-server_2.12</artifactId>
-      <version>${play.version}</version>
+      <version>${version.play}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
