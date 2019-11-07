@@ -89,8 +89,10 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final Instrumenter instrumenter = Instrumenter.BYTEBUDDY;
 
   private static Instrumentation inst;
+  private static final long startTime;
 
   static {
+    startTime = System.currentTimeMillis();
     SpecialAgentUtil.assertJavaAgentJarName();
   }
 
@@ -159,6 +161,9 @@ public class SpecialAgent extends SpecialAgentBase {
     }
 
     AgentRule.initialized = true;
+    final long startupTime = (System.currentTimeMillis() - startTime) / 10;
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("Started SpecialAgent in " + (startupTime / 100d) + "s\n");
   }
 
   /**
