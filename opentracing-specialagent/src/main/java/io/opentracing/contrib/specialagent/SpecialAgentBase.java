@@ -78,6 +78,8 @@ abstract class SpecialAgentBase {
       for (final Map.Entry<String,String> entry : properties.entrySet())
         if (System.getProperty(entry.getKey()) == null)
           System.setProperty(entry.getKey(), entry.getValue());
+
+      System.setProperty(Logger.LOG_REFRESH_PROPERTY, "true");
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
