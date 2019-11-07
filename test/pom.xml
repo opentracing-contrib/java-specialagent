@@ -207,6 +207,18 @@
       </modules>
     </profile>
     <profile>
+      <id>play</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>play-2.6.0</module>
+        <module>play-2.7.3</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
