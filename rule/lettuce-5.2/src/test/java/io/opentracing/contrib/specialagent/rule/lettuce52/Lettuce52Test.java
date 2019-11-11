@@ -47,13 +47,12 @@ import redis.embedded.RedisServer;
 @RunWith(AgentRunner.class)
 public class Lettuce52Test {
   private static final String address = "redis://localhost";
-  private static RedisServer server;
+  private static RedisServer redisServer;
   private static RedisClient client;
 
   @BeforeClass
   public static void beforeClass() throws IOException {
-    server = new RedisServer();
-    server.start();
+    startRedisServer();
     client = RedisClient.create(address);
   }
 
@@ -62,8 +61,8 @@ public class Lettuce52Test {
     if (client != null)
       client.shutdown();
 
-    if (server != null)
-      server.stop();
+    if (redisServer != null)
+      redisServer.stop();
   }
 
   @Before
@@ -125,5 +124,20 @@ public class Lettuce52Test {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
+  }
+
+  private static void startRedisServer() throws IOException {
+    redisServer = new RedisServer();
+    final int maxAttempts = 10;
+    for (int i = 1; i <= maxAttempts; i++) {
+      try {
+        redisServer.start();
+        break;
+      } catch (Exception e) {
+        if(i == maxAttempts) {
+          throw e;
+        }
+      }
+    }
   }
 }

@@ -20,8 +20,9 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.Redisson;
@@ -36,18 +37,20 @@ import redis.embedded.RedisServer;
 
 @RunWith(AgentRunner.class)
 public class RedissonTest {
-  private RedisServer redisServer;
+  private static RedisServer redisServer;
 
-  @Before
-  public void before(final MockTracer tracer) throws IOException {
-    tracer.reset();
-
-    redisServer = new RedisServer();
-    redisServer.start();
+  @BeforeClass
+  public static void beforeClass() throws IOException {
+    startRedisServer();
   }
 
-  @After
-  public void after() {
+  @Before
+  public void before(final MockTracer tracer) {
+    tracer.reset();
+  }
+
+  @AfterClass
+  public static void after() {
     if (redisServer != null)
       redisServer.stop();
   }
@@ -67,5 +70,20 @@ public class RedissonTest {
     assertEquals(2, spans.size());
 
     redissonClient.shutdown();
+  }
+
+  private static void startRedisServer() throws IOException {
+    redisServer = new RedisServer();
+    final int maxAttempts = 10;
+    for (int i = 1; i <= maxAttempts; i++) {
+      try {
+        redisServer.start();
+        break;
+      } catch (Exception e) {
+        if(i == maxAttempts) {
+          throw e;
+        }
+      }
+    }
   }
 }
