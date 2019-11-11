@@ -135,7 +135,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
         final String spring = System.getProperty("sa.spring");
         if (spring != null && !"false".equals(spring)) {
-          SpringAgent.premain(inst, new Thread() {
+          SpringAgent.premain(inst, new Runnable() {
             @Override
             public void run() {
               try {

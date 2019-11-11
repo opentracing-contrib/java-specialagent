@@ -30,11 +30,11 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringAgent {
-  private static final Logger logger = Logger.getLogger(SpringAgent.class);
+  public static final Logger logger = Logger.getLogger(SpringAgent.class);
 
-  public static Thread thread;
+  public static Runnable runnable;
 
-  public static void premain(final Instrumentation inst, final Thread thread) {
+  public static void premain(final Instrumentation inst, final Runnable runnable) {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<<<<< Installing SpringAgent >>>>>>>>>>>>>>>>>>>>\n");
 
@@ -44,7 +44,7 @@ public class SpringAgent {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
-      .type(named("org.springframework.context.event.ContextRefreshedEvent"))
+      .type(hasSuperType(named("org.springframework.boot.StartupInfoLogger")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -52,19 +52,24 @@ public class SpringAgent {
         }})
       .installOn(inst);
 
-    SpringAgent.thread = thread;
+    SpringAgent.runnable = runnable;
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Installed SpringAgent <<<<<<<<<<<<<<<<<<<<\n");
   }
 
   @Advice.OnMethodExit
   public static void exit() {
-    try {
-      thread.start();
-      thread.join();
-    }
-    catch (final InterruptedException e) {
-      throw new ExceptionInInitializerError(e);
-    }
+    if (runnable == null)
+      return;
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Invoking SpringAgent >>>>>>>>>>>>>>>>>>>>\n");
+
+    final Runnable runnable = SpringAgent.runnable;
+    SpringAgent.runnable = null;
+    runnable.run();
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Invoked SpringAgent >>>>>>>>>>>>>>>>>>>>>\n");
   }
 }
