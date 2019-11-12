@@ -231,6 +231,18 @@
       </modules>
     </profile>
     <profile>
+      <id>asynchttpclient</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>asynchttpclient-2.7.0</module>
+        <module>asynchttpclient-2.10.4</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
