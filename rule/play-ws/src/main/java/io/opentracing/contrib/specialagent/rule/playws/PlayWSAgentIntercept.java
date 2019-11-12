@@ -26,22 +26,19 @@ import play.shaded.ahc.org.asynchttpclient.Request;
 public class PlayWSAgentIntercept {
   static final String COMPONENT_NAME = "play-ws";
 
-  public static Object executeStart(Object arg0, Object arg1) {
-    Request request = (Request) arg0;
-    AsyncHandler asyncHandler = (AsyncHandler) arg1;
+  public static Object executeStart(final Object arg0, final Object arg1) {
+    final Request request = (Request)arg0;
+    final AsyncHandler<?> asyncHandler = (AsyncHandler<?>)arg1;
 
     final Tracer tracer = GlobalTracer.get();
-
     final Span span = tracer.buildSpan(request.getMethod())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.HTTP_METHOD, request.getMethod())
-        .withTag(Tags.HTTP_URL, request.getUrl())
-        .start();
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.HTTP_METHOD, request.getMethod())
+      .withTag(Tags.HTTP_URL, request.getUrl())
+      .start();
 
-    tracer.inject(span.context(), Builtin.HTTP_HEADERS,
-        new HttpHeadersInjectAdapter(request.getHeaders()));
-
+    tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request.getHeaders()));
     return new TracingAsyncHandler(asyncHandler, span);
   }
 }

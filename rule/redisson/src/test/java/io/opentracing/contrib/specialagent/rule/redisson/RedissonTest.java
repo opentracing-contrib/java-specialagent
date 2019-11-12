@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.redisson;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -31,6 +30,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import redis.embedded.RedisServer;
@@ -40,8 +40,9 @@ public class RedissonTest {
   private static RedisServer redisServer;
 
   @BeforeClass
-  public static void beforeClass() throws IOException {
-    startRedisServer();
+  public static void beforeClass() throws Exception {
+    redisServer = new RedisServer();
+    TestUtil.retry(() -> redisServer.start(), 10);
   }
 
   @Before
@@ -70,20 +71,5 @@ public class RedissonTest {
     assertEquals(2, spans.size());
 
     redissonClient.shutdown();
-  }
-
-  private static void startRedisServer() throws IOException {
-    redisServer = new RedisServer();
-    final int maxAttempts = 10;
-    for (int i = 1; i <= maxAttempts; i++) {
-      try {
-        redisServer.start();
-        break;
-      } catch (Exception e) {
-        if(i == maxAttempts) {
-          throw e;
-        }
-      }
-    }
   }
 }

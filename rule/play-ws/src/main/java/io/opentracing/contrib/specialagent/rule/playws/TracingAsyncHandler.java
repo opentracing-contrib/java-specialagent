@@ -14,14 +14,15 @@
  */
 package io.opentracing.contrib.specialagent.rule.playws;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 import play.shaded.ahc.io.netty.channel.Channel;
 import play.shaded.ahc.io.netty.handler.codec.http.HttpHeaders;
 import play.shaded.ahc.org.asynchttpclient.AsyncHandler;
@@ -30,46 +31,47 @@ import play.shaded.ahc.org.asynchttpclient.HttpResponseStatus;
 import play.shaded.ahc.org.asynchttpclient.Response;
 import play.shaded.ahc.org.asynchttpclient.netty.request.NettyRequest;
 
-public class TracingAsyncHandler implements AsyncHandler {
-  private final AsyncHandler asyncHandler;
+public class TracingAsyncHandler implements AsyncHandler<Object> {
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
+  private final AsyncHandler<?> asyncHandler;
   private final Span span;
 
-  public TracingAsyncHandler(AsyncHandler asyncHandler, Span span) {
+  public TracingAsyncHandler(final AsyncHandler<?> asyncHandler, final Span span) {
     this.asyncHandler = asyncHandler;
     this.span = span;
   }
 
   @Override
-  public State onStatusReceived(HttpResponseStatus httpResponseStatus) throws Exception {
+  public State onStatusReceived(final HttpResponseStatus httpResponseStatus) throws Exception {
     builder.reset();
     builder.accumulate(httpResponseStatus);
     return asyncHandler.onStatusReceived(httpResponseStatus);
   }
 
   @Override
-  public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
+  public State onHeadersReceived(final HttpHeaders httpHeaders) throws Exception {
     builder.accumulate(httpHeaders);
     return asyncHandler.onHeadersReceived(httpHeaders);
   }
 
   @Override
-  public State onBodyPartReceived(HttpResponseBodyPart httpResponseBodyPart) throws Exception {
+  public State onBodyPartReceived(final HttpResponseBodyPart httpResponseBodyPart) throws Exception {
     builder.accumulate(httpResponseBodyPart);
     return asyncHandler.onBodyPartReceived(httpResponseBodyPart);
   }
 
   @Override
-  public State onTrailingHeadersReceived(HttpHeaders headers) throws Exception {
+  public State onTrailingHeadersReceived(final HttpHeaders headers) throws Exception {
     return asyncHandler.onTrailingHeadersReceived(headers);
   }
 
   @Override
-  public void onThrowable(Throwable throwable) {
+  public void onThrowable(final Throwable throwable) {
     onError(throwable, span);
     try {
       asyncHandler.onThrowable(throwable);
-    } finally {
+    }
+    finally {
       span.finish();
     }
   }
@@ -77,43 +79,44 @@ public class TracingAsyncHandler implements AsyncHandler {
   @Override
   public Object onCompleted() throws Exception {
     final Response response = builder.build();
-    if(response != null) {
+    if (response != null)
       span.setTag(Tags.HTTP_STATUS, response.getStatusCode());
-    }
-    try(Scope scope = GlobalTracer.get().activateSpan(span)) {
+
+    try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
       return asyncHandler.onCompleted();
-    } finally {
+    }
+    finally {
       span.finish();
     }
   }
 
   @Override
-  public void onHostnameResolutionAttempt(String name) {
+  public void onHostnameResolutionAttempt(final String name) {
     asyncHandler.onHostnameResolutionAttempt(name);
   }
 
   @Override
-  public void onHostnameResolutionSuccess(String name, List list) {
+  public void onHostnameResolutionSuccess(final String name, final List<InetSocketAddress> list) {
     asyncHandler.onHostnameResolutionSuccess(name, list);
   }
 
   @Override
-  public void onHostnameResolutionFailure(String name, Throwable cause) {
+  public void onHostnameResolutionFailure(final String name, final Throwable cause) {
     asyncHandler.onHostnameResolutionFailure(name, cause);
   }
 
   @Override
-  public void onTcpConnectAttempt(InetSocketAddress remoteAddress) {
+  public void onTcpConnectAttempt(final InetSocketAddress remoteAddress) {
     asyncHandler.onTcpConnectAttempt(remoteAddress);
   }
 
   @Override
-  public void onTcpConnectSuccess(InetSocketAddress remoteAddress, Channel connection) {
+  public void onTcpConnectSuccess(final InetSocketAddress remoteAddress, final Channel connection) {
     asyncHandler.onTcpConnectSuccess(remoteAddress, connection);
   }
 
   @Override
-  public void onTcpConnectFailure(InetSocketAddress remoteAddress, Throwable cause) {
+  public void onTcpConnectFailure(final InetSocketAddress remoteAddress, final Throwable cause) {
     asyncHandler.onTcpConnectFailure(remoteAddress, cause);
   }
 
@@ -159,13 +162,12 @@ public class TracingAsyncHandler implements AsyncHandler {
 
   private static void onError(final Throwable t, final Span span) {
     Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null) {
+    if (t != null)
       span.log(errorLogs(t));
-    }
   }
 
-  private static Map<String, Object> errorLogs(final Throwable t) {
-    final Map<String, Object> errorLogs = new HashMap<>(2);
+  private static Map<String,Object> errorLogs(final Throwable t) {
+    final Map<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", t);
     return errorLogs;

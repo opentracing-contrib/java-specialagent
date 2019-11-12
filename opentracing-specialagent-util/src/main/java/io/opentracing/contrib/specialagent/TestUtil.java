@@ -105,6 +105,33 @@ public final class TestUtil {
     };
   }
 
+  public static void retry(final Runnable runnable, final int maxRetries) throws Exception {
+    for (int i = 1; i <= maxRetries; ++i) {
+      try {
+        runnable.run();
+        return;
+      }
+      catch (final Throwable t) {
+        if (i == maxRetries)
+          throw t;
+      }
+    }
+  }
+
+  public static <T>T retry(final Callable<T> callable, final int maxRetries) throws Exception {
+    for (int i = 1; i <= maxRetries; ++i) {
+      try {
+        return callable.call();
+      }
+      catch (final Throwable t) {
+        if (i == maxRetries)
+          throw t;
+      }
+    }
+
+    return null;
+  }
+
   private TestUtil() {
   }
 }

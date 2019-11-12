@@ -19,7 +19,6 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +39,7 @@ import io.lettuce.core.pubsub.RedisPubSubAdapter;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import redis.embedded.RedisServer;
@@ -51,8 +51,9 @@ public class Lettuce50Test {
   private static RedisClient client;
 
   @BeforeClass
-  public static void beforeClass() throws IOException {
-    startRedisServer();
+  public static void beforeClass() throws Exception {
+    redisServer = new RedisServer();
+    TestUtil.retry(() -> redisServer.start(), 10);
     client = RedisClient.create(address);
   }
 
@@ -124,20 +125,5 @@ public class Lettuce50Test {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
-  }
-
-  private static void startRedisServer() throws IOException {
-    redisServer = new RedisServer();
-    final int maxAttempts = 10;
-    for (int i = 1; i <= maxAttempts; i++) {
-      try {
-        redisServer.start();
-        break;
-      } catch (Exception e) {
-        if(i == maxAttempts) {
-          throw e;
-        }
-      }
-    }
   }
 }

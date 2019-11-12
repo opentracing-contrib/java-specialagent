@@ -35,8 +35,7 @@ public class AkkaHttpClientITest {
     final ActorSystem system = ActorSystem.create();
     final Materializer materializer = ActorMaterializer.create(system);
 
-    Http http = getHttp(system);
-
+    final Http http = getHttp(system);
     final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://www.google.com"));
     stage.whenComplete(new BiConsumer<HttpResponse, Throwable>() {
       @Override

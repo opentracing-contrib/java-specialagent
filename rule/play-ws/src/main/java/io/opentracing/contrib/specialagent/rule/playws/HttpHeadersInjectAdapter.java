@@ -15,10 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.playws;
 
-import play.shaded.ahc.io.netty.handler.codec.http.HttpHeaders;
-import io.opentracing.propagation.TextMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import io.opentracing.propagation.TextMap;
+import play.shaded.ahc.io.netty.handler.codec.http.HttpHeaders;
 
 public class HttpHeadersInjectAdapter implements TextMap {
   private final HttpHeaders httpHeaders;

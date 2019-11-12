@@ -15,9 +15,18 @@
 
 package io.opentracing.contrib.specialagent.rule.playws;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
@@ -27,13 +36,6 @@ import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import play.libs.ws.ahc.StandaloneAhcWSClient;
 import play.shaded.ahc.org.asynchttpclient.AsyncHttpClient;
 import play.shaded.ahc.org.asynchttpclient.AsyncHttpClientConfig;
@@ -66,31 +68,23 @@ public class PlayWSTest {
   @Test
   public void test(final MockTracer tracer) throws Exception {
     final Materializer materializer = ActorMaterializer.create(system);
+    final AsyncHttpClientConfig asyncHttpClientConfig = new DefaultAsyncHttpClientConfig.Builder()
+      .setMaxRequestRetry(0)
+      .setShutdownQuietPeriod(0)
+      .setShutdownTimeout(0)
+      .build();
 
-    AsyncHttpClientConfig asyncHttpClientConfig =
-        new DefaultAsyncHttpClientConfig.Builder()
-            .setMaxRequestRetry(0)
-            .setShutdownQuietPeriod(0)
-            .setShutdownTimeout(0)
-            .build();
-
-    AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(asyncHttpClientConfig);
-
-    final StandaloneAhcWSClient wsClient = new StandaloneAhcWSClient(asyncHttpClient, materializer);
-
-    try {
+    final AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(asyncHttpClientConfig);
+    try (final StandaloneAhcWSClient wsClient = new StandaloneAhcWSClient(asyncHttpClient, materializer)) {
       wsClient.url("http://localhost:1234").get().toCompletableFuture().get(15, TimeUnit.SECONDS);
-    } catch (Exception ignore) {
     }
-
-    wsClient.close();
+    catch (final Exception ignore) {
+    }
 
     await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals(PlayWSAgentIntercept.COMPONENT_NAME, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
-
-
   }
 }

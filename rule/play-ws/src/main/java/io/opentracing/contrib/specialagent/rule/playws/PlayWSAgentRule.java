@@ -32,7 +32,7 @@ public class PlayWSAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("play.shaded.ahc.org.asynchttpclient.AsyncHttpClient")).and(not(named("play.api.libs.ws.ahc.cache.CachingAsyncHttpClient"))))
+      .type(not(isInterface()).and(hasSuperType(named("play.shaded.ahc.org.asynchttpclient.AsyncHttpClient")).and(not(named("play.api.libs.ws.ahc.cache.CachingAsyncHttpClient")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -41,9 +41,8 @@ public class PlayWSAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object arg0, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object arg1) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object arg1) {
     if (isEnabled(origin))
       arg1 = PlayWSAgentIntercept.executeStart(arg0, arg1);
   }
-
 }
