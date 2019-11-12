@@ -42,8 +42,7 @@ public class JedisTest {
 
   @BeforeClass
   public static void beforeClass() throws IOException {
-    redisServer = new RedisServer();
-    redisServer.start();
+    startRedisServer();
   }
 
   @AfterClass
@@ -107,6 +106,21 @@ public class JedisTest {
       assertEquals("java-redis", span.tags().get(Tags.COMPONENT.getKey()));
       assertEquals("redis", span.tags().get(Tags.DB_TYPE.getKey()));
       assertEquals(Tags.SPAN_KIND_CLIENT, span.tags().get(Tags.SPAN_KIND.getKey()));
+    }
+  }
+
+  private static void startRedisServer() throws IOException {
+    redisServer = new RedisServer();
+    final int maxAttempts = 10;
+    for (int i = 1; i <= maxAttempts; i++) {
+      try {
+        redisServer.start();
+        break;
+      } catch (Exception e) {
+        if(i == maxAttempts) {
+          throw e;
+        }
+      }
     }
   }
 }
