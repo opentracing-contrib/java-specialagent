@@ -243,6 +243,30 @@
       </modules>
     </profile>
     <profile>
+      <id>feign</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>feign-9.0.0</module>
+        <module>feign-10.6.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>grizzly-http-client</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>grizzly-http-client-1.15</module>
+        <module>grizzly-http-client-1.16</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
