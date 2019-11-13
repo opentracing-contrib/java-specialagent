@@ -56,66 +56,26 @@ jobs:
         sh -c "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
-  - name: "OkHttp [oraclejdk8]"
+  - name: "Akka Http [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P okhttp install
-  - name: "OkHttp [oraclejdk11]"
+    script: mvn -B -Dtest -P akka-http install
+  - name: "Akka Http [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
     install: true
-    script: mvn -B -Dtest -P okhttp install
-  - name: "Java JDBC API [oraclejdk8]"
+    script: mvn -B -Dtest -P akka-http install
+  - name: "AsyncHttpClient [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P jdbc install
-  - name: "Java JDBC API [oraclejdk11]"
+    script: mvn -B -Dtest -P asynchttpclient install
+  - name: "AsyncHttpClient [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
     install: true
-    script: mvn -B -Dtest -P jdbc install
-  - name: "Java Concurrent API [oraclejdk8]"
-    stage: test
-    jdk: oraclejdk8
-    install: true
-    script: mvn -B -Dtest -P concurrent install
-  - name: "Java Concurrent API [oraclejdk11]"
-    stage: test
-    jdk: oraclejdk11
-    install: true
-    script: mvn -B -Dtest -P concurrent install
-  - name: "MongoDB Driver [oraclejdk8]"
-    stage: test
-    jdk: oraclejdk8
-    install: true
-    script: mvn -B -Dtest -P mongo-driver install
-  - name: "MongoDB Driver [oraclejdk11]"
-    stage: test
-    jdk: oraclejdk11
-    install: true
-    script: mvn -B -Dtest -P mongo-driver install
-  - name: "Java Servlet API: Jetty [oraclejdk8]"
-    stage: test
-    jdk: oraclejdk8
-    install: true
-    script: mvn -B -Dtest -P servlet-jetty install
-  - name: "Java Servlet API: Jetty [oraclejdk11]"
-    stage: test
-    jdk: oraclejdk11
-    install: true
-    script: mvn -B -Dtest -P servlet-jetty install
-  - name: "Java Servlet API: Tomcat [oraclejdk8]"
-    stage: test
-    jdk: oraclejdk8
-    install: true
-    script: mvn -B -Dtest -P servlet-tomcat install
-  - name: "Java Servlet API: Tomcat [oraclejdk11]"
-    stage: test
-    jdk: oraclejdk11
-    install: true
-    script: mvn -B -Dtest -P servlet-tomcat install
+    script: mvn -B -Dtest -P asynchttpclient install
   - name: "AWS SDK 1 [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
@@ -146,6 +106,56 @@ jobs:
 #    jdk: oraclejdk11
 #    install: true
 #    script: mvn -B -Dtest -P cassandra install
+  - name: "ElasticSearch [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P elasticsearch install
+  - name: "ElasticSearch [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P elasticsearch install
+  - name: "Java Concurrent API [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P concurrent install
+  - name: "Java Concurrent API [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P concurrent install
+  - name: "Java JDBC API [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P jdbc install
+  - name: "Java JDBC API [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P jdbc install
+  - name: "Java Servlet API: Jetty [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P servlet-jetty install
+  - name: "Java Servlet API: Jetty [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P servlet-jetty install
+  - name: "Java Servlet API: Tomcat [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P servlet-tomcat install
+  - name: "Java Servlet API: Tomcat [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P servlet-tomcat install
   - name: "JMS 1 [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
@@ -166,36 +176,26 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P jms-2 install
-  - name: "ElasticSearch [oraclejdk8]"
+  - name: "MongoDB Driver [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P elasticsearch install
-  - name: "ElasticSearch [oraclejdk11]"
+    script: mvn -B -Dtest -P mongo-driver install
+  - name: "MongoDB Driver [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
     install: true
-    script: mvn -B -Dtest -P elasticsearch install
-  - name: "RxJava [oraclejdk8]"
+    script: mvn -B -Dtest -P mongo-driver install
+  - name: "OkHttp [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P rxjava install
-  - name: "RxJava [oraclejdk11]"
+    script: mvn -B -Dtest -P okhttp install
+  - name: "OkHttp [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
     install: true
-    script: mvn -B -Dtest -P rxjava install
-  - name: "Akka Http [oraclejdk8]"
-    stage: test
-    jdk: oraclejdk8
-    install: true
-    script: mvn -B -Dtest -P akka-http install
-  - name: "Akka Http [oraclejdk11]"
-    stage: test
-    jdk: oraclejdk11
-    install: true
-    script: mvn -B -Dtest -P akka-http install
+    script: mvn -B -Dtest -P okhttp install
   - name: "Play [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
@@ -216,16 +216,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P play-ws install
-  - name: "AsyncHttpClient [oraclejdk8]"
+  - name: "RxJava [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P asynchttpclient install
-  - name: "AsyncHttpClient [oraclejdk11]"
+    script: mvn -B -Dtest -P rxjava install
+  - name: "RxJava [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
     install: true
-    script: mvn -B -Dtest -P asynchttpclient install
+    script: mvn -B -Dtest -P rxjava install
 env:
   global:
   - secure: d1B5Y4hSxFBgXPKEkZkBTsCgccZAB72G9A8Rxx/cRH1lmSRqY3GSma37Np9hG9QmxXxvzfPkFvJO7chkvn4HpbQSHOVrqGDkzHmiG7lVfqKMO3vzlR/Gf/2eV8aIhwxA9cPiStBV4glhamcAc+wHUiZPG7ETDbeNEfZ6hLbSaLv1P6yZoOwL/OqMXvFCPZLpG1I1k0bHusGYY35QbKsjpv9ThmCucqn63g+e6OgCGDenxT4w/7lYq+ac2Rj+aJFWeGZk9Dr2jUMa9awhCG3iHEr3atEb6kiWiw9ZvvWErFYkayoSlgGVSvsELQLo3Psnso1UU8p1NwNoSkbFZ46Ojs8MnubE/Fh7AdDMGYxodvXILjqOOuHq7j+pJcwPFSl5xdrw97NTELwZdxmc5nazf8q3jr05jeoWBTCd6hGtRpFFkt5wpOBDXhm/6fNxCRwSnruqn/zn936HSHPUSd9VodYqKxPmEDG7gawo6WIN+vKlmM4kyEFY8J0xEdo5+ePusm8puqlp0mi6bR7X+BPII4zRpL7tj0O3Yw2RoJrZsrw6QjxU4m/bsVty7Eiq5fQV4/v8Wj5DD3OjsFwgwtWQsxTYd82iIMg+se/taO2AB/+SRgZilLUdEKPKOq9RGWGukxKG+12doXkbBPpc1zGteurTjpD9ZR6YSTcK14WfRKQ=
