@@ -19,13 +19,18 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
+import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
+import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,7 +51,23 @@ import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
 @RunWith(AgentRunner.class)
+@Config(isolateClassLoader = false)
 public class Aws2Test {
+  private static DynamoDBProxyServer server;
+
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    System.getProperties().setProperty("sqlite4java.library.path", "src/test/resources/libs");
+    server = ServerRunner.createServerFromCommandLineArgs(new String[] {"-inMemory", "-port", "8000"});
+    server.start();
+  }
+
+  @AfterClass
+  public static void afterClass() throws Exception {
+    if(server != null)
+      server.stop();
+  }
+
   @Before
   public void before(final MockTracer tracer) {
     tracer.reset();

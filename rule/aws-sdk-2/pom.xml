@@ -51,5 +51,18 @@
       <version>${version.aws2}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>DynamoDBLocal</artifactId>
+      <version>1.11.475</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+  <repositories>
+    <repository>
+      <id>dynamodblocal</id>
+      <name>AWS DynamoDB Local Release Repository</name>
+      <url>https://s3-us-west-2.amazonaws.com/dynamodb-local/release</url>
+    </repository>
+  </repositories>
 </project>
