@@ -443,7 +443,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | Akka Http Client | [`akka:http`][akka-http] | 10.1.0 | **10.1.0** |
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
 | [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | 4.5.9 |
-| [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | 2.10.1 |
+| [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | 2.10.4 |
 | [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | 1.11.570 |
 | | [`aws:sdk:2`][aws-sdk-2] | 2.1.4 | 2.7.15 |
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
