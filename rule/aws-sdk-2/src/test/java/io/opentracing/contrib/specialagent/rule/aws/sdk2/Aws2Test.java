@@ -19,9 +19,6 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
-import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -34,7 +31,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
+import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
+
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
@@ -57,7 +58,7 @@ public class Aws2Test {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    System.getProperties().setProperty("sqlite4java.library.path", "src/test/resources/libs");
+    System.setProperty("sqlite4java.library.path", "src/test/resources/libs");
     server = ServerRunner.createServerFromCommandLineArgs(new String[] {"-inMemory", "-port", "8000"});
     server.start();
   }

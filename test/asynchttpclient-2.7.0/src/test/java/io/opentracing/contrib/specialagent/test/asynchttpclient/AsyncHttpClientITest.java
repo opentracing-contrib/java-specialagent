@@ -15,8 +15,8 @@
 
 package io.opentracing.contrib.specialagent.test.asynchttpclient;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.concurrent.TimeUnit;
+
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
@@ -25,31 +25,25 @@ import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.util.HttpConstants;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 public class AsyncHttpClientITest {
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-    AsyncHttpClient client = new DefaultAsyncHttpClient();
-
-    Request request = new RequestBuilder(HttpConstants.Methods.GET)
-        .setUrl("http://www.google.com")
-        .build();
-
-    final int statusCode = client.executeRequest(request,
-        new AsyncCompletionHandler<Response>() {
-          @Override
-          public Response onCompleted(Response response) {
-            TestUtil.checkActiveSpan();
-            return response;
-          }
+    try (final AsyncHttpClient client = new DefaultAsyncHttpClient()) {
+      final Request request = new RequestBuilder(HttpConstants.Methods.GET).setUrl("http://www.google.com").build();
+      final int statusCode = client.executeRequest(request, new AsyncCompletionHandler<Response>() {
+        @Override
+        public Response onCompleted(final Response response) {
+          TestUtil.checkActiveSpan();
+          return response;
         }
-    ).get(10, TimeUnit.SECONDS).getStatusCode();
+      }).get(10, TimeUnit.SECONDS).getStatusCode();
 
-    client.close();
+      if (200 != statusCode)
+        throw new AssertionError("ERROR: response: " + statusCode);
 
-    if (200 != statusCode)
-      throw new AssertionError("ERROR: response: " + statusCode);
-
-    TestUtil.checkSpan("java-asynchttpclient", 1);
+      TestUtil.checkSpan("java-asynchttpclient", 1);
+    }
   }
-
 }
