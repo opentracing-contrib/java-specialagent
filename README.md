@@ -179,9 +179,19 @@ Each [<ins>Tracer Plugin</ins>](#43-tracer-plugin) integrated with the [<ins>Spe
 
 ### 2.2 Usage
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) uses [Java’s Instrumentation mechanism](https://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html) to transform the behavior of a target application. The entrypoint into the target application is performed via Java’s Agent convention. [<ins>SpecialAgent</ins>](#41-specialagent) supports both [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Dynamic Attach</ins>](#222-dynamic-attach).
+The [<ins>SpecialAgent</ins>](#41-specialagent) is used by attaching to a target application. Once attached, the [<ins>SpecialAgent</ins>](#41-specialagent) relies on [Java’s Instrumentation mechanism](https://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html) to transform the behavior of the application.
+
+[<ins>SpecialAgent</ins>](#41-specialagent) supports the following attach modes:
+
+| Attach Mode | Number of Required<br>Commands to Attach | SpecialAgent<br>Initialization Timeline |
+|:-|:-:|:-:|
+| [<ins>Static Attach</ins>](#221-static-attach) | 1 (sync) | Before app start |
+| [<ins>Dynamic Attach</ins>](#222-dynamic-attach) | 2 (async) | After app start |
+| [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach) | 1 (sync) | After app start |
 
 #### 2.2.1 <ins>Static Attach</ins>
+
+With [<ins>Static Attach</ins>](#221-static-attach), the application is executed with the `-javaagent` argument, and the agent initialization occurs before the application is started. This mode requires 1 command from the command line.
 
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
@@ -192,6 +202,8 @@ java -javaagent:opentracing-specialagent-1.5.0.jar -jar MyApp.jar
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
 
 #### 2.2.2 <ins>Dynamic Attach</ins>
+
+With [<ins>Dynamic Attach</ins>](#222-dynamic-attach), the application is allowed to start first, afterwhich an agent VM is dynamically attached to the application's PID. This mode requires 2 commands from the command line: the first for the application, and the second for the agent VM.
 
 Dynamically attaching to a Java application involves the use of a running application’s PID, after the application’s startup. The following commands can be used as an example:
 
@@ -214,21 +226,25 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 #### 2.2.3 <ins>Static Deferred Attach</ins>
 
-With [<ins>Static Attach</ins>](#221-static-attach), the application is executed with the `-javaagent` argument, and the agent initialization occurs before the application is started. This mode requires 1 command from the command line.
+With <ins>Static Deferred Attach</ins>, the application is executed with the `-javaagent` argument, but the agent initialization is deferred until the application is started. This mode requires 1 command from the command line, and is designed specifically for runtimes that have complex initialization lifecycles that may result in extraneously lengthy startup times when attached with [<ins>Static Attach</ins>](#221-static-attach).
 
-With [<ins>Dynamic Attach</ins>](#222-dynamic-attach), the application is allowed to start first, afterwhich an agent VM is dynamically attached to the application's PID. This mode requires 2 commands from the command line: the first for the application, and the second for the agent VM.
-
-With <ins>Static Deferred Attach</ins>, the application is executed with the `-javaagent` argument, but the agent initialization is deferred until the application is started. This mode requires 1 command from the command line, and is designed specifically for runtimes that have complex initialization lifecycles.
-
-<ins>Static Deferred Attach</ins> is currently supported for:
+##### <ins>Static Deferred Attach</ins> is currently supported for:
 
 1. Spring Boot (1.0.0.RELEASE to LATEST).
+
+To activate <ins>Static Deferred Attach</ins>, specify the following system property on the command line:
+
+```bash
+-Dsa.init.defer
+```
 
 The following command can be used as an example:
 
 ```bash
 java -javaagent:opentracing-specialagent-1.5.0.jar -Dsa.init.defer -jar MySpringBootApp.jar
 ```
+
+**Note:** If the `-Dsa.init.defer` system property is specified for applications other than what is [supported](#static-deferred-attach-is-currently-supported-for), the initialization hook for [<ins>SpecialAgent</ins>](#41-specialagent) will _not be_ triggered, and the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) will _not be_ installed.
 
 ## 3 Configuration
 
@@ -246,7 +262,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) exposes a simple pattern for con
 
 ### 3.2 Properties
 
-The following properties are supported by all instrumentation plugins:
+The following properties are supported by all [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin):
 
 1. Logging:
 
