@@ -30,13 +30,8 @@ import java.io.IOException;
 public class GrpcITest {
   public static void main(final String[] args) throws IOException {
     TestUtil.initTerminalExceptionHandler();
-    final Server server = ServerBuilder.forPort(8086)
-        .addService(new GreeterImpl()).build().start();
-
-    final ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8086)
-        .usePlaintext(true)
-        .build();
-
+    final Server server = ServerBuilder.forPort(8086).addService(new GreeterImpl()).build().start();
+    final ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8086).usePlaintext(true).build();
     final GreeterBlockingStub greeterBlockingStub = GreeterGrpc.newBlockingStub(channel);
 
     greeterBlockingStub.sayHello(HelloRequest.newBuilder().setName("world").build()).getMessage();
