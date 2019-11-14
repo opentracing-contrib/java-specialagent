@@ -267,6 +267,18 @@
       </modules>
     </profile>
     <profile>
+      <id>grizzly-http-server</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>grizzly-http-server-2.3.35</module>
+        <module>grizzly-http-server-2.4.4</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
