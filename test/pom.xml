@@ -279,6 +279,18 @@
       </modules>
     </profile>
     <profile>
+      <id>grpc</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>grpc-1.6.0</module>
+        <module>grpc-1.25.0</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
