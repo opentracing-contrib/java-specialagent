@@ -273,9 +273,9 @@ public class SpecialAgent extends SpecialAgentBase {
     // Process the plugin JARs from AssembleUtil#META_INF_PLUGIN_PATH
     final Predicate<File> loadPluginPredicate = new Predicate<File>() {
       @Override
-      public boolean test(final File t) {
+      public boolean test(final File file) {
         // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-        final PluginManifest pluginManifest = PluginManifest.getPluginManifest(t);
+        final PluginManifest pluginManifest = PluginManifest.getPluginManifest(file);
         boolean enablePlugin = true;
         if (pluginManifest != null) {
           final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
@@ -305,7 +305,7 @@ public class SpecialAgent extends SpecialAgentBase {
         if (!enablePlugin)
           return false;
 
-        fileToPluginManifest.put(t, pluginManifest);
+        fileToPluginManifest.put(file.getAbsoluteFile(), pluginManifest);
         return true;
       }
     };
@@ -444,7 +444,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
         final PluginManifest pluginManifest = fileToPluginManifest.get(jarFile);
         if (pluginManifest == null)
-          throw new IllegalStateException("Expected to find PluginManifest for file: " + jarFile + " in: " + fileToPluginManifest.keySet());
+          throw new IllegalStateException("Expected to find " + PluginManifest.class.getSimpleName() + " for file: " + jarFile + " in: " + fileToPluginManifest.keySet());
 
         final String exists = nameToVersion.get(pluginManifest.name);
         if (exists != null && !exists.equals(version))
