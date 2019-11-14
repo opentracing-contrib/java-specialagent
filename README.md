@@ -222,7 +222,7 @@ With <ins>Static Deferred Attach</ins>, the application is executed with the `-j
 
 <ins>Static Deferred Attach</ins> is currently supported for:
 
-1. Spring Boot (all versions).
+1. Spring Boot (1.0.0.RELEASE to LATEST).
 
 The following command can be used as an example:
 
