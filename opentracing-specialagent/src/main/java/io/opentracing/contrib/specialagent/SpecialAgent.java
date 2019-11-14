@@ -133,8 +133,8 @@ public class SpecialAgent extends SpecialAgentBase {
         BootLoaderAgent.premain(inst);
         SpecialAgent.inst = inst;
 
-        final String spring = System.getProperty("sa.spring");
-        if (spring != null && !"false".equals(spring)) {
+        final String initDefer = System.getProperty("sa.init.defer");
+        if (initDefer != null && !"false".equals(initDefer)) {
           SpringAgent.premain(inst, new Runnable() {
             @Override
             public void run() {
@@ -155,15 +155,16 @@ public class SpecialAgent extends SpecialAgentBase {
         if (loggingConfigClass != null)
           System.setProperty(loggingConfigClassProperty, loggingConfigClass);
       }
+
+      final long startupTime = (System.currentTimeMillis() - startTime) / 10;
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("Started SpecialAgent in " + (startupTime / 100d) + "s\n");
     }
     catch (final Throwable t) {
       logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
     }
 
     AgentRule.initialized = true;
-    final long startupTime = (System.currentTimeMillis() - startTime) / 10;
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("Started SpecialAgent in " + (startupTime / 100d) + "s\n");
   }
 
   /**
