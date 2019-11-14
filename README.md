@@ -218,12 +218,16 @@ With [<ins>Static Attach</ins>](#221-static-attach), the application is executed
 
 With [<ins>Dynamic Attach</ins>](#222-dynamic-attach), the application is allowed to start first, afterwhich an agent VM is dynamically attached to the application's PID. This mode requires 2 commands from the command line: the first for the application, and the second for the agent VM.
 
-With <ins>Static Deferred Attach</ins>, the application is executed with the `-javaagent` argument, but the agent initialization is deferred until the application is started. This mode requires 1 command from the command line, and is designed specifically for Spring runtimes that have complex initialization lifecycles. The [<ins>SpecialAgent</ins>](#41-specialagent) relies on the `ContextRefreshedEvent` to signify that the application is ready, and thus to cue agent initialization. This approach works for all versions of Spring and Spring Boot.
+With <ins>Static Deferred Attach</ins>, the application is executed with the `-javaagent` argument, but the agent initialization is deferred until the application is started. This mode requires 1 command from the command line, and is designed specifically for runtimes that have complex initialization lifecycles.
+
+<ins>Static Deferred Attach</ins> is currently supported for:
+
+1. Spring Boot (all versions).
 
 The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.5.0.jar -Dsa.spring -jar MySpringApp.jar
+java -javaagent:opentracing-specialagent-1.5.0.jar -Dsa.init.defer -jar MySpringBootApp.jar
 ```
 
 ## 3 Configuration
