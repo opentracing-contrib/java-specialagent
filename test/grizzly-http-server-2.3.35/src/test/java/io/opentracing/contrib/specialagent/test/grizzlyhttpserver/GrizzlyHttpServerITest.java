@@ -15,24 +15,26 @@
 
 package io.opentracing.contrib.specialagent.test.grizzlyhttpserver;
 
-import static org.glassfish.grizzly.http.server.NetworkListener.DEFAULT_NETWORK_HOST;
+import static org.glassfish.grizzly.http.server.NetworkListener.*;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 public class GrizzlyHttpServerITest {
   public static void main(final String[] args) throws IOException {
     TestUtil.initTerminalExceptionHandler();
 
     final HttpServer server = new HttpServer();
-    NetworkListener listener = new NetworkListener("grizzly", DEFAULT_NETWORK_HOST, 18906);
+    final NetworkListener listener = new NetworkListener("grizzly", DEFAULT_NETWORK_HOST, 18906);
     server.addListener(listener);
     server.start();
 
@@ -44,10 +46,11 @@ public class GrizzlyHttpServerITest {
       }
     });
 
-    final URL obj = new URL("http://localhost:18906/");
-    final HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-    con.setRequestMethod("GET");
-    final int responseCode = con.getResponseCode();
+    final URL url = new URL("http://localhost:18906/");
+    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+    connection.setRequestMethod("GET");
+    final int responseCode = connection.getResponseCode();
+    connection.disconnect();
 
     server.shutdownNow();
 
