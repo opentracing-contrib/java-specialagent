@@ -15,35 +15,32 @@
 
 package io.opentracing.contrib.specialagent.test.grizzlyhttpclient;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 import com.ning.http.client.SimpleAsyncHttpClient;
+
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class GrizzlyHttpClientITest {
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) throws InterruptedException, IOException, ExecutionException {
     TestUtil.initTerminalExceptionHandler();
+    try (final AsyncHttpClient client = new AsyncHttpClient()) {
+      final Response response = client.prepareGet("http://www.google.com").execute().get();
+      final int statusCode = response.getStatusCode();
+      if (200 != statusCode)
+        throw new AssertionError("ERROR: response: " + statusCode);
+    }
 
-    final AsyncHttpClient client = new AsyncHttpClient();
-    final Response response = client.prepareGet("http://www.google.com").execute().get();
-    int statusCode = response.getStatusCode();
-    client.close();
-    if (200 != statusCode)
-      throw new AssertionError("ERROR: response: " + statusCode);
-
-    SimpleAsyncHttpClient simpleAsyncHttpClient = new SimpleAsyncHttpClient.Builder()
-        .setUrl("http://www.google.com")
-        .build();
-
-    final Response response2 = simpleAsyncHttpClient.get().get();
-    int statusCode2 = response2.getStatusCode();
-    simpleAsyncHttpClient.close();
-    if (200 != statusCode2)
-      throw new AssertionError("ERROR: response: " + statusCode2);
+    try (final SimpleAsyncHttpClient simpleAsyncHttpClient = new SimpleAsyncHttpClient.Builder().setUrl("http://www.google.com").build()) {
+      final Response response = simpleAsyncHttpClient.get().get();
+      final int statusCode = response.getStatusCode();
+      if (200 != statusCode)
+        throw new AssertionError("ERROR: response: " + statusCode);
+    }
 
     TestUtil.checkSpan("java-grizzly-ahc", 2);
   }
-
-
 }

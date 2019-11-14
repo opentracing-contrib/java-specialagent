@@ -15,28 +15,21 @@
 
 package io.opentracing.contrib.specialagent.test.feign;
 
+import java.util.concurrent.TimeUnit;
+
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
 import feign.Retryer;
 import feign.Target;
 import io.opentracing.contrib.specialagent.TestUtil;
-import java.util.concurrent.TimeUnit;
 
 public class FeignITest {
   public static void main(final String[] args) {
     TestUtil.initTerminalExceptionHandler();
-    Feign feign = getClient();
-
+    final Feign feign = Feign.builder().retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2)).build();
     feign.newInstance(new Target.HardCodedTarget<>(StringEntityRequest.class, "http://www.google.com")).get();
-
     TestUtil.checkSpan("feign", 1);
-  }
-
-  private static Feign getClient() {
-    return Feign.builder()
-        .retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2))
-        .build();
   }
 
   private interface StringEntityRequest {
@@ -44,5 +37,4 @@ public class FeignITest {
     @Headers("Content-Type: application/json")
     String get();
   }
-
 }
