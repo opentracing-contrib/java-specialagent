@@ -146,6 +146,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P grizzly-http-server install
+  - name: "gRPC Http Server [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P grpc install
+  - name: "gRPC [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P grpc install
   - name: "Java Concurrent API [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
