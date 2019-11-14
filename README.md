@@ -39,6 +39,7 @@ In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-sup
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.2 [Disabling (or enabling) One Instrumentation Plugin](#342-disabling-or-enabling-one-instrumentation-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.3 [Disabling `AgentRule`s of an Instrumentation Plugin](#343-disabling-agentrules-of-an-instrumentation-plugin)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.5 [Disabling <ins>Tracer Plugins</ins>](#35-disabling-tracer-plugins)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.6 [Including custom <ins>Instrumentation Plugins</ins>](#36-including-custom-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;</samp>4 [Definitions](#4-definitions)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.1 [<ins>SpecialAgent</ins>](#41-specialagent)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>4.2 [<ins>Tracer</ins>](#42-tracer)<br>
@@ -378,6 +379,16 @@ sa.tracer.plugin.${SHORT_NAME}.disable
 <sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
 The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
+
+### 3.6 Including Custom Instrumentation Plugins
+
+Custom plugins and `AgentRule`s can be implemented by following the [SpecialAgent Rule API](https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api). JARs containing custom plugins and `AgentRule`s can be loaded by [<ins>SpecialAgent</ins>](#41-specialagent) with:
+
+```bash
+-Dsa.instrumentation.plugin.include=<JARs>
+```
+
+Here, `<JARs>` refers to a pathSeparator-delimited (`:` for \*NIX, `;` for Windows) string of JARs containing the custom rules.
 
 ## 4 Definitions
 
