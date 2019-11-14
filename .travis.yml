@@ -136,6 +136,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P grizzly-http-client install
+  - name: "Grizzly Http Server [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P grizzly-http-server install
+  - name: "Grizzly Http Server [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P grizzly-http-server install
   - name: "Java Concurrent API [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
