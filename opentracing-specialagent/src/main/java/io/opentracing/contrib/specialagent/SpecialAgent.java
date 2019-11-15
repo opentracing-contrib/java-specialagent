@@ -133,22 +133,32 @@ public class SpecialAgent extends SpecialAgentBase {
         BootLoaderAgent.premain(inst);
         SpecialAgent.inst = inst;
 
-        final String initDefer = System.getProperty("sa.init.defer");
-        if (initDefer != null && !"false".equals(initDefer)) {
-          SpringAgent.premain(inst, new Runnable() {
-            @Override
-            public void run() {
-              try {
-                instrumenter.manager.premain(null, inst);
-              }
-              catch (final Exception e) {
-                throw new ExceptionInInitializerError(e);
-              }
+        final Runnable init = new Runnable() {
+          @Override
+          public void run() {
+            try {
+              instrumenter.manager.premain(null, inst);
             }
-          });
+            catch (final Throwable t) {
+              logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
+            }
+          }
+        };
+
+        final String initDefer = System.getProperty(INIT_DEFER);
+        if ((initDefer == null || !"false".equals(initDefer)) && SpringAgent.premain(inst, init)) {
+          logger.info(".==============================================================.");
+          logger.info("|                                                              |");
+          logger.info("|               Spring Boot application detected.              |");
+          logger.info("|                 Using Static Deferred Attach.                |");
+          logger.info("|                                                              |");
+          logger.info("|               To disable Static Deferred Attach,             |");
+          logger.info("|                 specify -Dsa.init.defer=false                |");
+          logger.info("|                                                              |");
+          logger.info("'=============================================================='");
         }
         else {
-          instrumenter.manager.premain(null, inst);
+          init.run();
         }
       }
       finally {
@@ -252,7 +262,7 @@ public class SpecialAgent extends SpecialAgentBase {
       }
     };
 
-    final List<URL> isoUrls = new ArrayList<>();
+    final ArrayList<URL> isoUrls = new ArrayList<>();
 
     // Process the ext JARs from AssembleUtil#META_INF_EXT_PATH
     SpecialAgentUtil.findJarResources(UtilConstants.META_INF_ISO_PATH, destDir, new Predicate<File>() {
@@ -342,7 +352,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
     // Identify all non-null PluginManifest(s), put them into a list,
     // sort it based on priority, and re-add to fileToPluginManifest
-    final List<PluginManifest> pluginManifests = new ArrayList<>();
+    final ArrayList<PluginManifest> pluginManifests = new ArrayList<>();
     final Iterator<Map.Entry<File,PluginManifest>> iterator = fileToPluginManifest.entrySet().iterator();
     while (iterator.hasNext()) {
       final Map.Entry<File,PluginManifest> entry = iterator.next();
@@ -504,7 +514,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static void loadRules(final Manager manager) {
     try {
       if (logger.isLoggable(Level.FINE))
-        logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>>\n");
+        logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>\n");
 
       if (pluginsClassLoader == null) {
         logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
@@ -525,7 +535,7 @@ public class SpecialAgent extends SpecialAgentBase {
     }
     finally {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<<\n");
+      logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<\n");
     }
   }
 

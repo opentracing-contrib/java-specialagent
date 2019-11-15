@@ -34,7 +34,14 @@ public class SpringAgent {
 
   public static Runnable runnable;
 
-  public static void premain(final Instrumentation inst, final Runnable runnable) {
+  public static boolean premain(final Instrumentation inst, final Runnable runnable) {
+    try {
+      Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
+    }
+    catch (final ClassNotFoundException e) {
+      return false;
+    }
+
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<<<<< Installing SpringAgent >>>>>>>>>>>>>>>>>>>>\n");
 
@@ -55,6 +62,8 @@ public class SpringAgent {
     SpringAgent.runnable = runnable;
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Installed SpringAgent <<<<<<<<<<<<<<<<<<<<\n");
+
+    return true;
   }
 
   @Advice.OnMethodExit

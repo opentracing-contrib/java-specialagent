@@ -127,7 +127,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final File CWD = new File("").getAbsoluteFile();
 
   static {
-    System.setProperty(SpecialAgent.AGENT_RUNNER_ARG, "");
+    System.setProperty(SpecialAgentBase.AGENT_RUNNER_ARG, "");
+    System.setProperty(SpecialAgentBase.INIT_DEFER, "false");
     final String sunJavaCommand = System.getProperty("sun.java.command");
     if (sunJavaCommand != null)
       AssembleUtil.absorbProperties(sunJavaCommand);
