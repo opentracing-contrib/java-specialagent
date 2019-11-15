@@ -29,7 +29,7 @@ In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-sup
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2 [Usage](#22-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.1 [<ins>Static Attach</ins>](#221-static-attach)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.2 [<ins>Dynamic Attach</ins>](#222-dynamic-attach)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.3 [Static Deferred Attach](#223-static-deferred-attach)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.3 [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach)<br>
 <samp>&nbsp;&nbsp;</samp>3 [Configuration](#3-configuration)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.1 [Overview](#31-overview)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2 [Properties](#32-properties)<br>
@@ -77,26 +77,26 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR fil
 
 To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, please download the [stable](#2111-stable) or [development](#2112-development) artifact.
 
-This JAR can then be specified with the `-javaagent:$SPECIAL_AGENT_JAR` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [Static Deferred Attach](#223-static-deferred-attach) to an application. This JAR can also be executed in standalone fashion, with an argument representing the PID of a target process to which it should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#usage) section for usage instructions.
+This JAR can then be specified with the `-javaagent:$SPECIAL_AGENT_JAR` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach) to an application. This JAR can also be executed in standalone fashion, with an argument representing the PID of a target process to which it should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#usage) section for usage instructions.
 
 ##### 2.1.1.1 Stable
 
-The latest stable release is: [1.5.0][main-release].
+The latest stable release is: [1.5.1][main-release].
 
 ```bash
-wget -O opentracing-specialagent-1.5.0.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0/opentracing-specialagent-1.5.0.jar"
+wget -O opentracing-specialagent-1.5.1.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1/opentracing-specialagent-1.5.1.jar"
 ```
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.5.1-SNAPSHOT</ins>.
+The latest development release is: <ins>1.5.2-SNAPSHOT</ins>.
 ```bash
-wget -O opentracing-specialagent-1.5.1-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.5.2-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 **Note**: Sometimes the web service call to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command:
 ```bash
-wget -O opentracing-specialagent-1.5.1-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+wget -O opentracing-specialagent-1.5.2-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.2-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
 
 #### 2.1.2 For Development
@@ -105,16 +105,16 @@ _**Prerequisite**: The [<ins>SpecialAgent</ins>](#41-specialagent) requires [Ora
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utilize different profiles:
 
-1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.0.jar`][main-release]
+1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.1.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.0.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.0.jar`][main-release] will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.1.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.1.jar`][main-release] will contain the built rules inside it.
 
-    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.0.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.1.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
 
     _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
@@ -137,13 +137,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.5.0</version> <!--version>1.5.1-SNAPSHOT<version-->
+  <version>1.5.1</version> <!--version>1.5.2-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.5.0</version> <!--version>1.5.1-SNAPSHOT<version-->
+  <version>1.5.1</version> <!--version>1.5.2-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -197,7 +197,7 @@ With [<ins>Static Attach</ins>](#221-static-attach), the application is executed
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.5.0.jar -jar MyApp.jar
+java -javaagent:opentracing-specialagent-1.5.1.jar -jar MyApp.jar
 ```
 
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
@@ -215,12 +215,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 
 1. For jdk1.8
     ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.0.jar <PID>
+    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.1.jar <PID>
     ```
 
 1. For jdk9+
     ```bash
-    java -jar opentracing-specialagent-1.5.0.jar <PID>
+    java -jar opentracing-specialagent-1.5.1.jar <PID>
     ```
 
 **Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
@@ -233,19 +233,19 @@ With <ins>Static Deferred Attach</ins>, the application is executed with the `-j
 
 1. Spring Boot (1.0.0.RELEASE to LATEST).
 
-To activate <ins>Static Deferred Attach</ins>, specify the following system property on the command line:
+If the above supported application environment is detected, <ins>Static Deferred Attach</ins> is automatically activated.
+
+**To deactivate** <ins>Static Deferred Attach</ins>, specify the following system property on the command line:
 
 ```bash
--Dsa.init.defer
+-Dsa.init.defer=false
 ```
 
 The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.5.0.jar -Dsa.init.defer -jar MySpringBootApp.jar
+java -javaagent:opentracing-specialagent-1.5.1.jar -Dsa.init.defer=false -jar MySpringBootApp.jar
 ```
-
-**Note:** If the `-Dsa.init.defer` system property is specified for applications other than what is [supported](#static-deferred-attach-is-currently-supported-for), the initialization hook for [<ins>SpecialAgent</ins>](#41-specialagent) will _not be_ triggered, and the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) will _not be_ installed.
 
 ## 3 Configuration
 
@@ -475,7 +475,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
 | [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | 4.5.9 |
 | [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | 2.10.4 |
-| [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | 1.11.570 |
+| [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | 1.11.5.1 |
 | | [`aws:sdk:2`][aws-sdk-2] | 2.1.4 | 2.7.15 |
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | 4.2.0 |
@@ -643,7 +643,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [pom]: https://maven.apache.org/pom.html
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 
-[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0/opentracing-specialagent-1.5.0.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1-SNAPSHOT
-[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.0/opentracing-specialagent-1.5.0-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1-SNAPSHOT
+[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1/opentracing-specialagent-1.5.1.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.2-SNAPSHOT
+[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.1/opentracing-specialagent-1.5.1-tests.jar
+[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.2-SNAPSHOT

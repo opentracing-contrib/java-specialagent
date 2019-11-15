@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.5.1 (2019-11-15)
+* New [instrumentation plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Akka Http Server, OkHttp 4, Play Framework (server and client).
+* Include external instrumentation plugins (those which are not included in the SpecialAgent, such as proprietary plugins).
+* Fix to `ClassLoaderAgentRule` bug leading to `NoClassDefFoundException`.
+* Static Deferred Attach for Spring Boot versions 1.0.0.RELEASE to LATEST.
+* Automatic activation of Static Deferred Attach for Spring Boot applications.
+
 ## v1.5.0 (2019-11-01)
 * Migrate integration tests for: OkHttp, JDBC API, Concurrent API, MongoDB Driver, Servlet API (Jetty and Tomcat), AWS SDK 1 and 2, Cassandra Driver, JMS 1 and 2, ElasticSearch 6 and 7, RxJava 2, Akka Http.
 * Expanded ranges of versions tested in integration-test phase.
