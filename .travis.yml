@@ -156,6 +156,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P grpc install
+  - name: "Hazelcast [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P hazelcast install
+  - name: "Hazelcast [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P hazelcast install
   - name: "Java Concurrent API [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
