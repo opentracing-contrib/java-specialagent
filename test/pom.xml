@@ -291,6 +291,18 @@
       </modules>
     </profile>
     <profile>
+      <id>hazelcast</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>hazelcast-3.12</module>
+        <module>hazelcast-3.12.4</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
