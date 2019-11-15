@@ -15,6 +15,8 @@
 
 package io.opentracing.contrib.specialagent.test.grpc;
 
+import java.io.IOException;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
@@ -25,7 +27,6 @@ import io.opentracing.contrib.grpc.gen.GreeterGrpc.GreeterBlockingStub;
 import io.opentracing.contrib.grpc.gen.HelloReply;
 import io.opentracing.contrib.grpc.gen.HelloRequest;
 import io.opentracing.contrib.specialagent.TestUtil;
-import java.io.IOException;
 
 public class GrpcITest {
   public static void main(final String[] args) throws IOException {
@@ -35,21 +36,18 @@ public class GrpcITest {
     final GreeterBlockingStub greeterBlockingStub = GreeterGrpc.newBlockingStub(channel);
 
     greeterBlockingStub.sayHello(HelloRequest.newBuilder().setName("world").build()).getMessage();
-
     server.shutdownNow();
 
     TestUtil.checkSpan("java-grpc", 2);
   }
 
   private static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
-
     @Override
-    public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
+    public void sayHello(final HelloRequest req, final StreamObserver<HelloReply> responseObserver) {
       TestUtil.checkActiveSpan();
-      HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
+      final HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
     }
   }
-
 }
