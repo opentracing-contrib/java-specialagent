@@ -434,10 +434,10 @@ Examples:
 A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements the auto-instrumentation rules for [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) via the [`opentracing-specialagent-api`][api].
 
 Examples:
-* [`rule/specialagent-okhttp`][okhttp]
-* [`rule/specialagent-jdbc`][jdbc]
-* [`rule/specialagent-jms-1`][jms-1]
-* [`rule/specialagent-jms-2`][jms-2]
+* [`rule/okhttp`][okhttp]
+* [`rule/jdbc`][jdbc]
+* [`rule/jms-1`][jms-1]
+* [`rule/jms-2`][jms-2]
 
 <sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
