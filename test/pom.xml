@@ -303,6 +303,18 @@
       </modules>
     </profile>
     <profile>
+      <id>apache-httpclient</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>apache-httpclient-4.4</module>
+        <module>apache-httpclient-4.5.10</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
