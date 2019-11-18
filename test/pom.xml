@@ -304,14 +304,16 @@
     </profile>
     <profile>
       <id>apache-httpclient</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
       <modules>
         <module>apache-httpclient-4.4</module>
         <module>apache-httpclient-4.5.10</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jax-rs</id>
+      <modules>
+        <module>jax-rs-2.0</module>
+        <module>jax-rs-2.1</module>
       </modules>
     </profile>
     <profile>
