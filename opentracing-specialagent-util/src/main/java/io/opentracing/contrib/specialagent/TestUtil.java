@@ -61,6 +61,18 @@ public final class TestUtil {
       return;
 
     final MockTracer mockTracer = (MockTracer)tracer;
+
+    // wait up to 10 seconds for expected span count
+    for (int i = 0; i < 10; i++) {
+      if (mockTracer.finishedSpans().size() >= spanCount)
+        break;
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException ignore) {
+        break;
+      }
+    }
+
     boolean found = false;
     System.out.println("Spans: " + mockTracer.finishedSpans());
     for (final MockSpan span : mockTracer.finishedSpans()) {
