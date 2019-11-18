@@ -303,6 +303,18 @@
       </modules>
     </profile>
     <profile>
+      <id>jax-rs</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jax-rs-2.0</module>
+        <module>jax-rs-2.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
