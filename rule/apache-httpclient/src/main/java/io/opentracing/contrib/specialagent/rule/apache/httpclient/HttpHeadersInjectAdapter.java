@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.httpclient;
+package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
 import java.util.Iterator;
 import java.util.Map.Entry;

@@ -19,13 +19,14 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class HazelcastITest {
   public static void main(final String[] args) {
     TestUtil.initTerminalExceptionHandler();
-    HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config());
-    final IMap<String, String> map = instance.getMap("map");
+    final HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config());
+    final IMap<String,String> map = instance.getMap("map");
     map.put("key", "value");
     if (!"value".equals(map.get("key")))
       throw new AssertionError("ERROR: wrong value");
@@ -34,5 +35,4 @@ public class HazelcastITest {
 
     TestUtil.checkSpan("java-hazelcast", 2);
   }
-
 }

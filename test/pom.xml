@@ -310,10 +310,10 @@
       </modules>
     </profile>
     <profile>
-      <id>jax-rs</id>
+      <id>jaxrs</id>
       <modules>
-        <module>jax-rs-2.0</module>
-        <module>jax-rs-2.1</module>
+        <module>jaxrs-2.0</module>
+        <module>jaxrs-2.1</module>
       </modules>
     </profile>
     <profile>

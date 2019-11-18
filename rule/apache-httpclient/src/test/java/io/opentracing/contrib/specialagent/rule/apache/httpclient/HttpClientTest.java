@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.httpclient;
+package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
 import static org.junit.Assert.*;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.rule.httpclient.HttpClientAgentIntercept;
+import io.opentracing.contrib.specialagent.rule.apache.httpclient.HttpClientAgentIntercept;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;

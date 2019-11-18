@@ -220,12 +220,12 @@ jobs:
     stage: test
     jdk: oraclejdk8
     install: true
-    script: mvn -B -Dtest -P jax-rs install
+    script: mvn -B -Dtest -P jaxrs install
   - name: "JAX-RS Client [oraclejdk11]"
     stage: test
     jdk: oraclejdk11
     install: true
-    script: mvn -B -Dtest -P jax-rs install
+    script: mvn -B -Dtest -P jaxrs install
   - name: "JMS 1 [oraclejdk8]"
     stage: test
     jdk: oraclejdk8

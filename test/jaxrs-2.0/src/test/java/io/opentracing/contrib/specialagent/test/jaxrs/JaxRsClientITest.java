@@ -13,24 +13,25 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.test.apachehttpclient;
+package io.opentracing.contrib.specialagent.test.jaxrs;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import io.opentracing.contrib.specialagent.TestUtil;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
 
-public class ApacheHttpClientITest {
+public class JaxRsClientITest {
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-    final HttpClient client = HttpClientBuilder.create().build();
-    final HttpResponse response = client.execute(new HttpGet("http://www.google.com"));
-    final int statusCode = response.getStatusLine().getStatusCode();
+    final Client client = ClientBuilder.newClient();
+    final Response response = client.target("http://www.google.com").request(MediaType.TEXT_PLAIN).get();
+    final int statusCode = response.getStatus();
 
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
-    TestUtil.checkSpan("java-httpclient", 1);
+    TestUtil.checkSpan("jaxrs", 1);
   }
 }
