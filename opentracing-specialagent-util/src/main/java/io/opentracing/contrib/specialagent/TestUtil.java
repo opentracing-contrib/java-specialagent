@@ -15,10 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Field;
-import java.util.concurrent.Callable;
-
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
@@ -27,6 +23,11 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.noop.NoopTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.Field;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public final class TestUtil {
   private static class TerminalExceptionHandler implements UncaughtExceptionHandler {
@@ -62,15 +63,13 @@ public final class TestUtil {
 
     final MockTracer mockTracer = (MockTracer)tracer;
 
-    // wait up to 10 seconds for expected span count
-    for (int i = 0; i < 10; i++) {
-      if (mockTracer.finishedSpans().size() >= spanCount)
-        break;
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException ignore) {
-        break;
-      }
+    try {
+      final Field field = mockTracer.getClass().getDeclaredField("latch");
+      field.setAccessible(true);
+      final CountDownLatch latch = (CountDownLatch) field.get(mockTracer);
+      if (latch != null)
+        latch.await(15, TimeUnit.SECONDS);
+    } catch (Exception ignore) {
     }
 
     boolean found = false;
@@ -142,6 +141,21 @@ public final class TestUtil {
     }
 
     return null;
+  }
+
+  public static  void setExpectedSpans(int expectedSpans) {
+    final Tracer tracer = getTracer();
+    if (!(tracer instanceof MockTracer))
+      return;
+
+    MockTracer mockTracer = (MockTracer) tracer;
+
+    try {
+      final Field field = mockTracer.getClass().getDeclaredField("latch");
+      field.setAccessible(true);
+      field.set(mockTracer, new CountDownLatch(expectedSpans));
+    } catch (Exception ignore) {
+    }
   }
 
   private TestUtil() {

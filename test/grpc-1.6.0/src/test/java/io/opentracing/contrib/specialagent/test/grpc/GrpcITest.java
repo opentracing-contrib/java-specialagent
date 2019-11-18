@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.grpc;
 
-import java.io.IOException;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
@@ -29,8 +27,9 @@ import io.opentracing.contrib.grpc.gen.HelloRequest;
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class GrpcITest {
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
+    TestUtil.setExpectedSpans(2);
     final Server server = ServerBuilder.forPort(8086).addService(new GreeterImpl()).build().start();
     final ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8086).usePlaintext(true).build();
     final GreeterBlockingStub greeterBlockingStub = GreeterGrpc.newBlockingStub(channel);

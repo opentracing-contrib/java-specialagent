@@ -40,6 +40,7 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tag;
 import io.opentracing.util.ThreadLocalScopeManager;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * MockTracer makes it easy to test the semantics of OpenTracing instrumentation.
@@ -54,6 +55,7 @@ public class MockTracer implements Tracer {
     final Propagator propagator;
     private final ScopeManager scopeManager;
     private boolean isClosed;
+    private volatile CountDownLatch latch;
 
     public MockTracer() {
         this(new ThreadLocalScopeManager(), Propagator.TEXT_MAP);
@@ -99,6 +101,8 @@ public class MockTracer implements Tracer {
      * Noop method called on {@link Span#finish()}.
      */
     protected void onSpanFinished(MockSpan mockSpan) {
+        if(latch != null)
+            latch.countDown();
     }
 
     /**
