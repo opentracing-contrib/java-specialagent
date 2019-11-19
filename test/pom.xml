@@ -317,6 +317,13 @@
       </modules>
     </profile>
     <profile>
+      <id>kafka-client</id>
+      <modules>
+        <module>kafka-client-1.1.0</module>
+        <module>kafka-client-2.3.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
