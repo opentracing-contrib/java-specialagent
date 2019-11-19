@@ -18,18 +18,18 @@ package io.opentracing.contrib.specialagent.rule.grpc;
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
 import io.grpc.ServerServiceDefinition;
-import io.opentracing.contrib.grpc.ClientTracingInterceptor;
-import io.opentracing.contrib.grpc.ServerTracingInterceptor;
+import io.opentracing.contrib.grpc.TracingClientInterceptor;
+import io.opentracing.contrib.grpc.TracingServerInterceptor;
 
 public class GrpcAgentIntercept {
   public static Object addService(final Object service) {
     if (service instanceof ServerServiceDefinition)
-      return new ServerTracingInterceptor().intercept((ServerServiceDefinition)service);
+      return TracingServerInterceptor.newBuilder().build().intercept((ServerServiceDefinition)service);
 
     return service;
   }
 
   public static Object build(final Object channel) {
-    return ClientInterceptors.intercept((Channel)channel, new ClientTracingInterceptor());
+    return ClientInterceptors.intercept((Channel)channel, TracingClientInterceptor.newBuilder().build());
   }
 }
