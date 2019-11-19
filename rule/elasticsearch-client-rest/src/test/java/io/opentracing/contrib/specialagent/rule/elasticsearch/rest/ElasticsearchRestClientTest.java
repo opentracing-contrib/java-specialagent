@@ -26,14 +26,17 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
@@ -129,6 +132,41 @@ public class ElasticsearchRestClientTest {
           return tracer.finishedSpans().size();
         }
       }, equalTo(2));
+    }
+
+    final List<MockSpan> finishedSpans = tracer.finishedSpans();
+    assertEquals(2, finishedSpans.size());
+  }
+
+  @Test
+  public void restClientWithCallback(final MockTracer tracer) throws IOException {
+    AtomicInteger counter = new AtomicInteger();
+    try (final RestClient client = RestClient.builder(new HttpHost("localhost", HTTP_PORT, "http"))
+        .setHttpClientConfigCallback(new HttpClientConfigCallback() {
+          @Override
+          public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+            counter.incrementAndGet();
+            return httpClientBuilder;
+          }
+        }).build()) {
+      final HttpEntity entity = new NStringEntity(
+          "{\n" +
+              "    \"user\" : \"kimchy\",\n" +
+              "    \"post_date\" : \"2009-11-15T14:12:12\",\n" +
+              "    \"message\" : \"trying out Elasticsearch\"\n" +
+              "}", ContentType.APPLICATION_JSON);
+
+      test1(client, entity);
+      test2(client, entity);
+
+      await().atMost(15, TimeUnit.SECONDS).until(new Callable<Integer>() {
+        @Override
+        public Integer call() {
+          return tracer.finishedSpans().size();
+        }
+      }, equalTo(2));
+
+      assertEquals(1, counter.get());
     }
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
