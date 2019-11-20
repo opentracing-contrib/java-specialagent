@@ -15,16 +15,14 @@
 
 package io.opentracing.contrib.specialagent.test.kafka.client;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -34,8 +32,10 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 public class KafkaClientITest {
-  private static final Integer MESSAGE_COUNT = 5;
+  private static final int MESSAGE_COUNT = 5;
   private static final String TOPIC_NAME = "demo";
 
   public static void main(final String[] args) throws InterruptedException {
@@ -43,52 +43,46 @@ public class KafkaClientITest {
     final EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(1, true, 1, "messages");
     embeddedKafkaRule.before();
 
-    final Producer<Long, String> producer = createProducer(embeddedKafkaRule);
+    try (final Producer<Long,String> producer = createProducer(embeddedKafkaRule)) {
+      for (int i = 0; i < MESSAGE_COUNT; ++i) {
+        final ProducerRecord<Long,String> record = new ProducerRecord<>(TOPIC_NAME, "This is record " + i);
+        producer.send(record, new Callback() {
+          @Override
+          public void onCompletion(final RecordMetadata metadata, final Exception exception) {
+            TestUtil.checkActiveSpan();
+          }
+        });
+      }
 
-    for (int index = 0; index < MESSAGE_COUNT; index++) {
-      ProducerRecord<Long, String> record = new ProducerRecord<>(TOPIC_NAME, "This is record " + index);
-      producer.send(record, new Callback() {
-        @Override
-        public void onCompletion(RecordMetadata metadata, Exception exception) {
-          TestUtil.checkActiveSpan();
-        }
-      });
+      final CountDownLatch latch = new CountDownLatch(1);
+      createConsumer(embeddedKafkaRule, latch);
+      latch.await(15, TimeUnit.SECONDS);
     }
 
-    CountDownLatch latch = new CountDownLatch(1);
-    createConsumer(embeddedKafkaRule, latch);
-    producer.close();
-    latch.await(15, TimeUnit.SECONDS);
     embeddedKafkaRule.after();
-
     TestUtil.checkSpan("java-kafka", 10);
   }
 
-  private static Producer<Long, String> createProducer(
-      EmbeddedKafkaRule embeddedKafkaRule) {
-    final Map<String, Object> senderProps = KafkaTestUtils
-        .producerProps(embeddedKafkaRule.getEmbeddedKafka());
+  private static Producer<Long,String> createProducer(final EmbeddedKafkaRule embeddedKafkaRule) {
+    final Map<String,Object> senderProps = KafkaTestUtils.producerProps(embeddedKafkaRule.getEmbeddedKafka());
     return new KafkaProducer<>(senderProps);
   }
 
-  private static void createConsumer(EmbeddedKafkaRule embeddedKafkaRule, CountDownLatch latch) {
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
+  private static void createConsumer(final EmbeddedKafkaRule embeddedKafkaRule, final CountDownLatch latch) {
+    final ExecutorService executorService = Executors.newSingleThreadExecutor();
     executorService.execute(() -> {
-      final Map<String, Object> consumerProps = KafkaTestUtils
-          .consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
+      final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
       consumerProps.put("auto.offset.reset", "earliest");
-      Consumer<Long, String> consumer = new KafkaConsumer<>(consumerProps);
-      consumer.subscribe(Collections.singletonList(TOPIC_NAME));
-
-      int count = 0;
-      while (count < MESSAGE_COUNT) {
-        ConsumerRecords<Long, String> records = consumer.poll(100);
-        for (ConsumerRecord<Long, String> record : records) {
-          consumer.commitSync();
-          count++;
+      try (final Consumer<Long,String> consumer = new KafkaConsumer<>(consumerProps)) {
+        consumer.subscribe(Collections.singletonList(TOPIC_NAME));
+        for (int i = 0; i < MESSAGE_COUNT;) {
+          final int count = consumer.poll(100).count();
+          for (int j = 0; j < count; ++j, ++i) {
+            consumer.commitSync();
+          }
         }
       }
-      consumer.close();
+
       latch.countDown();
     });
   }
