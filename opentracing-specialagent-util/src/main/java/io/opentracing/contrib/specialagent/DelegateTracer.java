@@ -39,10 +39,11 @@ public class DelegateTracer implements Tracer {
   protected volatile Tracer target;
 
   /**
-   * Creates a new {@link DelegateTracer} with the specified {@link Tracer}.
+   * Creates a new {@link DelegateTracer} with the specified target
+   * {@link Tracer}.
    *
-   * @param target The target {@link Tracer} object.
-   * @throws NullPointerException If the target {@link Tracer} object is null.
+   * @param target The target {@link Tracer}.
+   * @throws NullPointerException If the target {@link Tracer} is null.
    */
   public DelegateTracer(final Tracer target) {
     this.target = Objects.requireNonNull(target);
