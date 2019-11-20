@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.lang.reflect.Field;
-
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.ProxyMockTracer;
@@ -57,25 +55,18 @@ public class AgentRunnerUtil {
       final Tracer deferredTracer = SpecialAgent.getDeferredTracer();
       final MockTracer tracer;
       if (GlobalTracer.isRegistered()) {
-        try {
-          final Field field = GlobalTracer.class.getDeclaredField("tracer");
-          field.setAccessible(true);
-          final Tracer registered = (Tracer)field.get(null);
-          if (deferredTracer == null) {
-            tracer = registered instanceof MockTracer ? (MockTracer)registered : new ProxyMockTracer(registered);
-          }
-          else if (registered instanceof MockTracer) {
-            tracer = new ProxyMockTracer((MockTracer)registered, deferredTracer);
-          }
-          else {
-            throw new IllegalStateException("There is already a registered global Tracer.");
-          }
+        final Tracer registered = TestUtil.getGlobalTracer();
+        if (deferredTracer == null) {
+          tracer = registered instanceof MockTracer ? (MockTracer)registered : new ProxyMockTracer(registered);
+        }
+        else if (registered instanceof MockTracer) {
+          tracer = new ProxyMockTracer((MockTracer)registered, deferredTracer);
+        }
+        else {
+          throw new IllegalStateException("There is already a registered global Tracer.");
+        }
 
-          field.set(null, tracer);
-        }
-        catch (final IllegalAccessException | NoSuchFieldException e) {
-          throw new IllegalStateException(e);
-        }
+        TestUtil.setGlobalTracer(tracer);
       }
       else {
         tracer = deferredTracer != null ? new ProxyMockTracer(deferredTracer) : new MockTracer();

@@ -18,6 +18,8 @@ package io.opentracing.contrib.specialagent;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -41,19 +43,32 @@ public final class TestUtil {
     Thread.currentThread().setUncaughtExceptionHandler(new TerminalExceptionHandler());
   }
 
-  private static Tracer getTracer() {
-    try {
-      final Field field = GlobalTracer.get().getClass().getDeclaredField("tracer");
-      field.setAccessible(true);
-      return (Tracer)field.get(GlobalTracer.get());
-    }
-    catch (final IllegalAccessException | NoSuchFieldException e) {
-      throw new IllegalStateException(e);
-    }
+  public static CountDownLatch initExpectedSpanLatch(final int expectedSpans) {
+    if (!(TestUtil.getGlobalTracer() instanceof MockTracer))
+      return null;
+
+    final CountDownLatch latch = new CountDownLatch(expectedSpans);
+    TestUtil.setGlobalTracer(new MockTracer() {
+      @Override
+      protected void onSpanFinished(final MockSpan mockSpan) {
+        super.onSpanFinished(mockSpan);
+        latch.countDown();
+      }
+    });
+
+    return latch;
   }
 
   public static void checkSpan(final String component, final int spanCount) {
-    final Tracer tracer = getTracer();
+    try {
+      checkSpan(component, spanCount, null);
+    }
+    catch (final InterruptedException e) {
+    }
+  }
+
+  public static void checkSpan(final String component, final int spanCount, final CountDownLatch latch) throws InterruptedException {
+    final Tracer tracer = getGlobalTracer();
     if (tracer instanceof NoopTracer)
       throw new AssertionError("No tracer is registered");
 
@@ -61,6 +76,9 @@ public final class TestUtil {
       return;
 
     final MockTracer mockTracer = (MockTracer)tracer;
+    if (latch != null)
+      latch.await(15, TimeUnit.SECONDS);
+
     boolean found = false;
     System.out.println("Spans: " + mockTracer.finishedSpans());
     for (final MockSpan span : mockTracer.finishedSpans()) {
@@ -130,6 +148,36 @@ public final class TestUtil {
     }
 
     return null;
+  }
+
+  public static Tracer getGlobalTracer() {
+    try {
+      final Field field = GlobalTracer.class.getDeclaredField("tracer");
+      field.setAccessible(true);
+      final Tracer tracer = (Tracer)field.get(null);
+      field.setAccessible(false);
+      return tracer;
+    }
+    catch (final IllegalAccessException | NoSuchFieldException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static void setGlobalTracer(final Tracer tracer) {
+    try {
+      final Field tracerField = GlobalTracer.class.getDeclaredField("tracer");
+      tracerField.setAccessible(true);
+      tracerField.set(null, tracer);
+      tracerField.setAccessible(false);
+
+      final Field isRegisteredField = GlobalTracer.class.getDeclaredField("isRegistered");
+      isRegisteredField.setAccessible(true);
+      isRegisteredField.set(null, true);
+      isRegisteredField.setAccessible(false);
+    }
+    catch (final IllegalAccessException | NoSuchFieldException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private TestUtil() {
