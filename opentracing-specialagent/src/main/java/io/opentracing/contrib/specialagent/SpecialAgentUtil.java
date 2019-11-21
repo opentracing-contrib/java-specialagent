@@ -268,7 +268,7 @@ public final class SpecialAgentUtil {
     final String[] paths = classpath.split(File.pathSeparator);
     final File[] files = new File[paths.length];
     for (int i = 0; i < paths.length; ++i)
-      files[i] = new File(paths[i]);
+      files[i] = new File(paths[i]).getAbsoluteFile();
 
     return files;
   }

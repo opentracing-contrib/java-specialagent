@@ -315,7 +315,7 @@ public class SpecialAgent extends SpecialAgentBase {
         if (!enablePlugin)
           return false;
 
-        fileToPluginManifest.put(file.getAbsoluteFile(), pluginManifest);
+        fileToPluginManifest.put(file, pluginManifest);
         if (logger.isLoggable(Level.FINEST))
           logger.finest("%%% 1: " + file.getAbsoluteFile());
 
@@ -380,7 +380,7 @@ public class SpecialAgent extends SpecialAgentBase {
     for (final PluginManifest pluginManifest : pluginManifests) {
       fileToPluginManifest.put(pluginManifest.file, pluginManifest);
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("%%% 3: " + pluginManifest.file + " " + pluginManifest.file.getAbsoluteFile());
+        logger.finest("%%% 4: " + pluginManifest.file + " " + pluginManifest.file.getAbsoluteFile());
     }
 
     if (logger.isLoggable(Level.FINER))
@@ -465,7 +465,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
         final PluginManifest pluginManifest = fileToPluginManifest.get(jarFile);
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("%%% 4: " + jarFile + " " + jarFile.getAbsoluteFile());
+          logger.finest("%%% 5: " + jarFile + " " + jarFile.getAbsoluteFile());
         if (pluginManifest == null)
           throw new IllegalStateException("Expected to find " + PluginManifest.class.getSimpleName() + " for file: " + jarFile + " in: " + fileToPluginManifest.keySet());
 
@@ -676,7 +676,7 @@ public class SpecialAgent extends SpecialAgentBase {
         final File pluginFile = pluginsClassLoader.getFiles()[index];
         final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("%%% 5: " + pluginFile + " " + pluginFile.getAbsoluteFile());
+          logger.finest("%%% 6: " + pluginFile + " " + pluginFile.getAbsoluteFile());
         logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
       }
 
@@ -687,7 +687,7 @@ public class SpecialAgent extends SpecialAgentBase {
     final File pluginFile = pluginsClassLoader.getFiles()[index];
     final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
     if (logger.isLoggable(Level.FINEST))
-      logger.finest("%%% 6: " + pluginFile + " " + pluginFile.getAbsoluteFile());
+      logger.finest("%%% 7: " + pluginFile + " " + pluginFile.getAbsoluteFile());
 
     if (logger.isLoggable(Level.FINER))
       logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + ", RulePath: " + pluginFile);
