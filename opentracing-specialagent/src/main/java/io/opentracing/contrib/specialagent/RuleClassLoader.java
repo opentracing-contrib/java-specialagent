@@ -54,7 +54,7 @@ class RuleClassLoader extends URLClassLoader {
   private static final BiConsumer<String,ClassLoader> loadClass = new BiConsumer<String,ClassLoader>() {
     @Override
     public void accept(final String path, final ClassLoader classLoader) {
-      final String className = path.substring(0, path.length() - 6).replace('/', '.');
+      final String className = AssembleUtil.resourceToClassName(path);
       if (logger.isLoggable(Level.FINEST))
         logger.finest("Class#forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
 

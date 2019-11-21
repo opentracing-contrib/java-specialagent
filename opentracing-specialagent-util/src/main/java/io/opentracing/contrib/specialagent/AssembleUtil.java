@@ -218,7 +218,7 @@ public final class AssembleUtil {
     final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     final Set<String> locations = new LinkedHashSet<>();
     for (final Class<?> cls : classes) {
-      final String resourceName = cls.getName().replace('.', '/').concat(".class");
+      final String resourceName = classNameToResource(cls);
       final Enumeration<URL> resources = classLoader.getResources(resourceName);
       while (resources.hasMoreElements()) {
         final String resource = resources.nextElement().getFile();
@@ -859,6 +859,18 @@ public final class AssembleUtil {
       .replace("*", ".*")
       .replace("/", "\\/")
       .replace('?', '.');
+  }
+
+  public static String classNameToResource(final String className) {
+    return className.replace('.', '/').concat(".class");
+  }
+
+  public static String classNameToResource(final Class<?> cls) {
+    return classNameToResource(cls.getName());
+  }
+
+  public static String resourceToClassName(final String resource) {
+    return resource.substring(0, resource.length() - 6).replace('/', '.');
   }
 
   private AssembleUtil() {

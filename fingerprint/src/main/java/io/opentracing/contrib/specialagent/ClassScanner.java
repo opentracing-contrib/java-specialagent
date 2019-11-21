@@ -62,7 +62,7 @@ class ClassScanner extends ClassVisitor {
   private static void scanInterfaces(final List<String> interfaces, final ClassLoader classLoader, final Collection<MethodFingerprint> methods, final List<FieldFingerprint> fields, final Set<String> innerClassExcludes) throws IOException {
     for (final String cls : interfaces) {
       if (!FingerprintUtil.isExcluded(cls)) {
-        final ClassScanner scanner = ClassScanner.scan(classLoader, cls.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
+        final ClassScanner scanner = ClassScanner.scan(classLoader, AssembleUtil.classNameToResource(cls), methods, fields, innerClassExcludes);
         if (scanner != null && scanner.interfaces != null)
           scanInterfaces(scanner.interfaces, classLoader, methods, fields, innerClassExcludes);
       }
@@ -90,7 +90,7 @@ class ClassScanner extends ClassVisitor {
   private void scanSupers() throws IOException {
     String superClass = this.superClass;
     while (superClass != null) {
-      final ClassScanner next = ClassScanner.scan(classLoader, superClass.replace('.', '/').concat(".class"), methods, fields, innerClassExcludes);
+      final ClassScanner next = ClassScanner.scan(classLoader, AssembleUtil.classNameToResource(superClass), methods, fields, innerClassExcludes);
       superClass = next == null ? null : next.superClass;
     }
 

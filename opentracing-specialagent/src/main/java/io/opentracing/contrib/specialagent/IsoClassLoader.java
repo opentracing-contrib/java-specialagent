@@ -64,7 +64,7 @@ class IsoClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-      final boolean isNameIso = getNames().contains(name.replace('.', '/').concat(".class"));
+      final boolean isNameIso = getNames().contains(AssembleUtil.classNameToResource(name));
       final Class<?> cls = isNameIso ? null : super.loadClass(name, resolve);
       if (logger.isLoggable(Level.FINEST))
         logger.finest("~~~~~~~~ IsoParentClassLoader.loadClass(\"" + name + "\", " + resolve + ") [" + isNameIso + "]: " + cls);

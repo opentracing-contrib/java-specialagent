@@ -822,7 +822,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,byte[],RuntimeException> findClass = new QuadFunction<ClassLoader,String,List<RuleClassLoader>,ClassLoader,byte[],RuntimeException>() {
     @Override
     public byte[] apply(final ClassLoader classLoader, final String name, final List<RuleClassLoader> ruleClassLoaders, final ClassLoader linkedLoader) {
-      final String resourceName = name.replace('.', '/').concat(".class");
+      final String resourceName = AssembleUtil.classNameToResource(name);
       for (int i = 0; i < ruleClassLoaders.size(); ++i) {
         final RuleClassLoader ruleClassLoader = ruleClassLoaders.get(i);
         if (ruleClassLoader.isClosed(linkedLoader))

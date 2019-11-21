@@ -104,13 +104,14 @@ public final class ITestMojo extends ExecMojo {
         final URLClassLoader classLoader = new URLClassLoader(classpath);
         AssembleUtil.<Void>forEachClass(classpath, null, new BiConsumer<String,Void>() {
           @Override
+          @SuppressWarnings("unchecked")
           public void accept(final String name, final Void arg) {
             try {
               for (final Object main : mains) {
                 if (main instanceof List) {
                   final List<String> list = (List<String>)main;
                   final String regex = list.get(0);
-                  final String className = name.substring(0, name.length() - 6).replace('/', '.');
+                  final String className = AssembleUtil.resourceToClassName(name);
                   if (className.matches(regex)) {
                     final Class<?> cls = Class.forName(className, false, classLoader);
                     for (final Method method : cls.getMethods()) {

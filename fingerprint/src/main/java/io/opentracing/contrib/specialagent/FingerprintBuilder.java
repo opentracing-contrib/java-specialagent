@@ -39,7 +39,7 @@ class FingerprintBuilder {
     final LogSet logs = new LogSet(logger);
     final Fingerprinter fingerprinter = new Fingerprinter(classLoader, logs, debugVisitor);
     for (final Class<?> cls : classes)
-      fingerprinter.fingerprint(cls.getName().replace('.', '/').concat(".class"));
+      fingerprinter.fingerprint(AssembleUtil.classNameToResource(cls));
 
     debug("Before compass...", logs);
     fingerprinter.compass(depth);
@@ -56,7 +56,7 @@ class FingerprintBuilder {
       public void accept(final String name, final Void arg) {
         try {
           fingerprinter.fingerprint(name);
-          excludeClassNames.add(name.substring(0, name.length() - 6).replace('/', '.'));
+          excludeClassNames.add(AssembleUtil.resourceToClassName(name));
         }
         catch (final IOException e) {
           throw new IllegalStateException(e);

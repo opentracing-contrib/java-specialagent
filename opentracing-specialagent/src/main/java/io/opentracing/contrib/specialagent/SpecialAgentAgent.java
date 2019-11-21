@@ -99,7 +99,7 @@ public class SpecialAgentAgent {
           classpath += "/";
 
         try (final RuleClassLoader ruleClassLoader = new RuleClassLoader(null, null, null, new File(classpath))) {
-          final URL resource = ruleClassLoader.findResource(arg.replace('.', '/').concat(".class"));
+          final URL resource = ruleClassLoader.findResource(AssembleUtil.classNameToResource(arg));
           if (resource != null)
             returned = AssembleUtil.readBytes(resource);
         }

@@ -77,9 +77,9 @@ public class AgentRunnerUtil {
       if (logger.isLoggable(Level.FINER)) {
         logger.finer("Registering tracer for AgentRunner: " + tracer);
         logger.finer("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
-        logger.finer("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+        logger.finer("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(AssembleUtil.classNameToResource(tracer.getClass())));
         logger.finer("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
-        logger.finer("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
+        logger.finer("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(AssembleUtil.classNameToResource(GlobalTracer.class)));
       }
 
       return AgentRunnerUtil.tracer = tracer;

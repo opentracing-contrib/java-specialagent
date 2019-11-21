@@ -55,7 +55,7 @@ public class ProxyTest {
         if (loaded.contains(name))
           return super.findClass(name);
 
-        final byte[] bytes = AssembleUtil.readBytes(ClassLoader.getSystemClassLoader().getResource(name.replace('.', '/').concat(".class")));
+        final byte[] bytes = AssembleUtil.readBytes(ClassLoader.getSystemClassLoader().getResource(AssembleUtil.classNameToResource(name)));
         try {
           return defineClass(name, bytes, 0, bytes.length);
         }

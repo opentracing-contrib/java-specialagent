@@ -144,7 +144,7 @@ public class LibraryFingerprint extends Fingerprint {
     final List<FingerprintError> errors = new ArrayList<>();
     if (presents != null) {
       for (final String present : presents) {
-        final String resourcePath = present.replace('.', '/').concat(".class");
+        final String resourcePath = AssembleUtil.classNameToResource(present);
         if (classLoader.getResource(resourcePath) == null)
           errors.add(new FingerprintError(FingerprintError.Reason.MUST_BE_PRESENT, new ClassNameFingerprint(present), null));
       }
@@ -152,7 +152,7 @@ public class LibraryFingerprint extends Fingerprint {
 
     if (absents != null) {
       for (final String absent : absents) {
-        final String resourcePath = absent.replace('.', '/').concat(".class");
+        final String resourcePath = AssembleUtil.classNameToResource(absent);
         if (classLoader.getResource(resourcePath) != null)
           errors.add(new FingerprintError(FingerprintError.Reason.MUST_BE_ABSENT, new ClassNameFingerprint(absent), null));
       }
@@ -161,9 +161,9 @@ public class LibraryFingerprint extends Fingerprint {
     final FingerprintVerifier verifier = new FingerprintVerifier();
     for (int i = 0; i < classes.length; ++i) {
       try {
-        final ClassFingerprint fingerprint = verifier.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
+        final ClassFingerprint fingerprint = verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(classes[i].getName()));
         if (fingerprint == null) {
-          verifier.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
+          verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(classes[i].getName()));
           errors.add(new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null));
         }
         else if (!fingerprint.compatible(classes[i])) {

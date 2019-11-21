@@ -85,7 +85,7 @@ class LogSet {
             continue;
 
           checked.add(className);
-          if (!fingerprinter.fingerprint(className.replace('.', '/').concat(".class"))) {
+          if (!fingerprinter.fingerprint(AssembleUtil.classNameToResource(className))) {
             // Check if the fingerprinter was able to find the referenced class.
             // If not, it means it's been deliberately or conditionally excluded by
             // the agent rule or plugin dependency spec.
