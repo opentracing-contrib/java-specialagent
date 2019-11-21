@@ -324,6 +324,14 @@
       </modules>
     </profile>
     <profile>
+      <id>lettuce</id>
+      <modules>
+        <module>lettuce-5.0.0</module>
+        <module>lettuce-5.1.8</module>
+        <module>lettuce-5.2.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
