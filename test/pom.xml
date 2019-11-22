@@ -304,6 +304,11 @@
     </profile>
     <profile>
       <id>apache-httpclient</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
       <modules>
         <module>apache-httpclient-4.4</module>
         <module>apache-httpclient-4.5.10</module>
@@ -311,6 +316,11 @@
     </profile>
     <profile>
       <id>jaxrs</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
       <modules>
         <module>jaxrs-2.0</module>
         <module>jaxrs-2.1</module>
@@ -318,6 +328,11 @@
     </profile>
     <profile>
       <id>kafka-client</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
       <modules>
         <module>kafka-client-1.1.0</module>
         <module>kafka-client-2.3.1</module>
@@ -325,6 +340,11 @@
     </profile>
     <profile>
       <id>lettuce</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
       <modules>
         <module>lettuce-5.0.0</module>
         <module>lettuce-5.1.8</module>
