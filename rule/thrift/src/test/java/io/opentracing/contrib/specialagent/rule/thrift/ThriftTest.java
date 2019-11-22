@@ -52,18 +52,18 @@ import org.junit.runner.RunWith;
 import io.opentracing.Scope;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.rule.thrift.gen.Address;
 import io.opentracing.contrib.specialagent.rule.thrift.gen.CustomHandler;
 import io.opentracing.contrib.specialagent.rule.thrift.gen.CustomService;
+import io.opentracing.contrib.specialagent.rule.thrift.gen.CustomService.AsyncClient;
 import io.opentracing.contrib.specialagent.rule.thrift.gen.User;
 import io.opentracing.contrib.specialagent.rule.thrift.gen.UserWithAddress;
-import io.opentracing.contrib.specialagent.rule.thrift.gen.CustomService.AsyncClient;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import io.opentracing.util.GlobalTracerTestUtil;
 
 @SuppressWarnings("unchecked")
 @RunWith(AgentRunner.class)
@@ -110,7 +110,7 @@ public class ThriftTest {
 
   @Test
   public void withoutArgs() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -137,7 +137,7 @@ public class ThriftTest {
 
   @Test
   public void withError() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -169,7 +169,7 @@ public class ThriftTest {
 
   @Test
   public void withCollision() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -194,7 +194,7 @@ public class ThriftTest {
 
   @Test
   public void oneWayWithError() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -219,7 +219,7 @@ public class ThriftTest {
 
   @Test
   public void oneWay() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -244,7 +244,7 @@ public class ThriftTest {
 
   @Test
   public void async() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startAsyncServer();
 
@@ -280,7 +280,7 @@ public class ThriftTest {
 
   @Test
   public void asyncWithoutArgs() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startAsyncServer();
 
@@ -317,7 +317,7 @@ public class ThriftTest {
 
   @Test
   public void asyncMany() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startAsyncServer();
 
@@ -355,7 +355,7 @@ public class ThriftTest {
 
   @Test
   public void oneWayAsync() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startAsyncServer();
 
@@ -390,7 +390,7 @@ public class ThriftTest {
 
   @Test
   public void withStruct() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -421,7 +421,7 @@ public class ThriftTest {
 
   @Test
   public void manyCallsParallel() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
@@ -458,7 +458,7 @@ public class ThriftTest {
 
   @Test
   public void withParent() throws Exception {
-    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    TestUtil.setGlobalTracer(tracer);
 
     startNewThreadPoolServer();
 
