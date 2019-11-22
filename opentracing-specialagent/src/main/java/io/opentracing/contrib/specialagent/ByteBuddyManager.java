@@ -107,7 +107,7 @@ public class ByteBuddyManager extends Manager {
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final Map<File,PluginManifest> fileToPluginManifest) throws IOException {
+  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
     AgentRule agentRule = null;
     try {
       // Load ClassLoader Agent
@@ -126,47 +126,47 @@ public class ByteBuddyManager extends Manager {
           logger.finest("Dereferencing index for " + ruleJar);
 
         final int index = ruleJarToIndex.get(ruleJar);
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()))) {
+          for (String line; (line = reader.readLine()) != null;) {
+            line = line.trim();
+            if (line.length() == 0 || line.charAt(0) == '#')
+              continue;
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()));
-        for (String line; (line = reader.readLine()) != null;) {
-          line = line.trim();
-          if (line.length() == 0 || line.charAt(0) == '#')
-            continue;
+            if (loadedRules.contains(line)) {
+              if (logger.isLoggable(Level.FINE))
+                logger.fine("Skipping loaded rule: " + line);
 
-          if (loadedRules.contains(line)) {
+              continue;
+            }
+
+            final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
+            if (!AgentRule.class.isAssignableFrom(agentClass)) {
+              logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
+              continue;
+            }
+
+            final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
+            if (logger.isLoggable(Level.FINEST))
+              logger.finest("%%% 7: " + ruleJar + " " + ruleJar.getAbsoluteFile());
+
+            final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
+            final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
+            if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
+              if (logger.isLoggable(Level.FINE))
+                logger.fine("Skipping disabled rule: " + line);
+
+              continue;
+            }
+
             if (logger.isLoggable(Level.FINE))
-              logger.fine("Skipping loaded rule: " + line);
+              logger.fine("Installing new rule: " + line);
 
-            continue;
+            AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
+
+            agentRule = (AgentRule)agentClass.getConstructor().newInstance();
+            loadAgentRule(agentRule, newBuilder(), index, events);
+            loadedRules.add(line);
           }
-
-          final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
-          if (!AgentRule.class.isAssignableFrom(agentClass)) {
-            logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
-            continue;
-          }
-
-          final PluginManifest pluginManifest = fileToPluginManifest.get(ruleJar);
-          if (logger.isLoggable(Level.FINEST))
-            logger.finest("%%% 7: " + ruleJar + " " + ruleJar.getAbsoluteFile());
-
-          final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
-          final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
-          if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
-            if (logger.isLoggable(Level.FINE))
-              logger.fine("Skipping disabled rule: " + line);
-
-            continue;
-          }
-
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Installing new rule: " + line);
-
-          AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
-
-          agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-          loadAgentRule(agentRule, newBuilder(), index, events);
-          loadedRules.add(line);
         }
       }
     }

@@ -77,9 +77,9 @@ public abstract class Manager {
    * @param ruleJarToIndex A {@code Map} of rule JAR path to its index in the
    *          {@code allRulesClassLoader} classpath.
    * @param events Manager events to log.
-   * @param fileToPluginManifest Map between a JAR file and the associated
+   * @param pluginManifestDirectory Map between a JAR file and the associated
    *          {@link PluginManifest}.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, Map<File,PluginManifest> fileToPluginManifest) throws IOException;
+  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, PluginManifest.Directory pluginManifestDirectory) throws IOException;
 }

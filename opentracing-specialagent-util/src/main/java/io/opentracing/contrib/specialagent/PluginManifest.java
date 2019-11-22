@@ -24,14 +24,89 @@ import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class PluginManifest {
-  static enum Type {
+  private static final Logger logger = Logger.getLogger(PluginManifest.class);
+
+  public static class Directory {
+    private static final Comparator<PluginManifest> comparator = new Comparator<PluginManifest>() {
+      @Override
+      public int compare(final PluginManifest o1, final PluginManifest o2) {
+        return Integer.compare(o1.getPriority(), o2.getPriority());
+      }
+    };
+
+    private final LinkedHashMap<File,PluginManifest> fileToPluginManifest = new LinkedHashMap<>();
+
+    public void put(final File file, final PluginManifest pluginManifest) {
+      fileToPluginManifest.put(pluginManifest != null ? pluginManifest.file : file, pluginManifest);
+      if (logger.isLoggable(Level.FINEST)) {
+        if (pluginManifest == null)
+          logger.finest("%%% add (null): " + file + " " + file.getAbsoluteFile());
+        else
+          logger.finest("%%% add: " + pluginManifest.file + " " + pluginManifest.file.getAbsoluteFile());
+      }
+    }
+
+    public boolean containsKey(final File file) {
+      final boolean result = fileToPluginManifest.containsKey(file.getAbsoluteFile());
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("%%% contains: " + result + " " + file + " " + file.getAbsoluteFile());
+
+      return result;
+    }
+
+    public Set<File> keySet() {
+      return fileToPluginManifest.keySet();
+    }
+
+    public PluginManifest get(final File file) {
+      final PluginManifest pluginManifest = fileToPluginManifest.get(file.getAbsoluteFile());
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("%%% get: " + " " + pluginManifest + " " + file + " " + file.getAbsoluteFile());
+
+      return pluginManifest;
+    }
+
+    public int size() {
+      return fileToPluginManifest.size();
+    }
+
+    /**
+     * Filters all non-null {@link PluginManifest}s, and sorts them based on
+     * priority.
+     */
+    public void sort() {
+      final ArrayList<PluginManifest> pluginManifests = new ArrayList<>();
+      final Iterator<Map.Entry<File,PluginManifest>> iterator = fileToPluginManifest.entrySet().iterator();
+      while (iterator.hasNext()) {
+        final Map.Entry<File,PluginManifest> entry = iterator.next();
+        if (entry.getValue() != null) {
+          pluginManifests.add(entry.getValue());
+          iterator.remove();
+        }
+      }
+
+      Collections.sort(pluginManifests, comparator);
+      for (final PluginManifest pluginManifest : pluginManifests) {
+        fileToPluginManifest.put(pluginManifest.file, pluginManifest);
+      }
+    }
+  }
+
+  enum Type {
     INSTRUMENTATION,
     TRACER
   }
@@ -92,7 +167,7 @@ public class PluginManifest {
   private int priority = -1;
 
   private PluginManifest(final File file, final Type type, final String name) {
-    this.file = file;
+    this.file = file.getAbsoluteFile();
     this.type = type;
     this.name = name;
   }

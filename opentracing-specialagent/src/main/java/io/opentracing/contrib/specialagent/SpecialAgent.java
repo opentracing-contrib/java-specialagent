@@ -25,14 +25,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +74,7 @@ public class SpecialAgent extends SpecialAgentBase {
   }
 
   private static final String DEFINE_CLASS = ClassLoader.class.getName() + ".defineClass";
-  private static final Map<File,PluginManifest> fileToPluginManifest = new LinkedHashMap<>();
+  private static final PluginManifest.Directory pluginManifestDirectory = new PluginManifest.Directory();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
   private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
@@ -315,10 +311,7 @@ public class SpecialAgent extends SpecialAgentBase {
         if (!enablePlugin)
           return false;
 
-        fileToPluginManifest.put(file, pluginManifest);
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("%%% 1: " + file.getAbsoluteFile());
-
+        pluginManifestDirectory.put(file, pluginManifest);
         return true;
       }
     };
@@ -331,7 +324,7 @@ public class SpecialAgent extends SpecialAgentBase {
     // Then, load the plugins inside the SpecialAgent JAR.
     SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, loadPluginPredicate);
 
-    if (fileToPluginManifest.size() == 0 && logger.isLoggable(Level.FINER))
+    if (pluginManifestDirectory.size() == 0 && logger.isLoggable(Level.FINER))
       logger.finer("Must be running from a test, because no JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH);
 
     try {
@@ -339,9 +332,8 @@ public class SpecialAgent extends SpecialAgentBase {
       final Enumeration<URL> instrumentationRules = manager.getResources();
       while (instrumentationRules.hasMoreElements()) {
         final File pluginFile = SpecialAgentUtil.getSourceLocation(instrumentationRules.nextElement(), manager.file);
-        fileToPluginManifest.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("%%% 2: " + pluginFile + " " + pluginFile.getAbsoluteFile());
+        final PluginManifest pluginManifest = PluginManifest.getPluginManifest(pluginFile);
+        pluginManifestDirectory.put(pluginManifest.file, pluginManifest);
       }
     }
     catch (final IOException e) {
@@ -352,41 +344,14 @@ public class SpecialAgent extends SpecialAgentBase {
     final File[] pluginFiles = SpecialAgentUtil.classPathToFiles(System.getProperty(RULE_PATH_ARG));
     if (pluginFiles != null)
       for (final File pluginFile : pluginFiles)
-        if (!fileToPluginManifest.containsKey(pluginFile)) {
-          fileToPluginManifest.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
-          if (logger.isLoggable(Level.FINEST))
-            logger.finest("%%% 3: " + pluginFile + " " + pluginFile.getAbsoluteFile());
-        }
+        if (!pluginManifestDirectory.containsKey(pluginFile))
+          pluginManifestDirectory.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
 
-    // Identify all non-null PluginManifest(s), put them into a list,
-    // sort it based on priority, and re-add to fileToPluginManifest
-    final ArrayList<PluginManifest> pluginManifests = new ArrayList<>();
-    final Iterator<Map.Entry<File,PluginManifest>> iterator = fileToPluginManifest.entrySet().iterator();
-    while (iterator.hasNext()) {
-      final Map.Entry<File,PluginManifest> entry = iterator.next();
-      if (entry.getValue() != null) {
-        pluginManifests.add(entry.getValue());
-        iterator.remove();
-      }
-    }
-
-    Collections.sort(pluginManifests, new Comparator<PluginManifest>() {
-      @Override
-      public int compare(final PluginManifest o1, final PluginManifest o2) {
-        return Integer.compare(o1.getPriority(), o2.getPriority());
-      }
-    });
-
-    for (final PluginManifest pluginManifest : pluginManifests) {
-      fileToPluginManifest.put(pluginManifest.file, pluginManifest);
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("%%% 4: " + pluginManifest.file + " " + pluginManifest.file.getAbsoluteFile());
-    }
-
+    pluginManifestDirectory.sort();
     if (logger.isLoggable(Level.FINER))
-      logger.finer("Loading " + fileToPluginManifest.size() + " rule paths:\n" + AssembleUtil.toIndentedString(fileToPluginManifest.keySet()));
+      logger.finer("Loading " + pluginManifestDirectory.size() + " rule paths:\n" + AssembleUtil.toIndentedString(pluginManifestDirectory.keySet()));
 
-    pluginsClassLoader = new PluginsClassLoader(fileToPluginManifest.keySet());
+    pluginsClassLoader = new PluginsClassLoader(pluginManifestDirectory.keySet());
 
     final Map<String,String> nameToVersion = new HashMap<>();
     final int count = loadDependencies(pluginsClassLoader, nameToVersion) + loadDependencies(ClassLoader.getSystemClassLoader(), nameToVersion);
@@ -463,11 +428,9 @@ public class SpecialAgent extends SpecialAgentBase {
         final String firstLine = dependenciesTgf.substring(0, dependenciesTgf.indexOf('\n'));
         final String version = firstLine.substring(firstLine.lastIndexOf(':') + 1);
 
-        final PluginManifest pluginManifest = fileToPluginManifest.get(jarFile);
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("%%% 5: " + jarFile + " " + jarFile.getAbsoluteFile());
+        final PluginManifest pluginManifest = pluginManifestDirectory.get(jarFile);
         if (pluginManifest == null)
-          throw new IllegalStateException("Expected to find " + PluginManifest.class.getSimpleName() + " for file: " + jarFile + " in: " + fileToPluginManifest.keySet());
+          throw new IllegalStateException("Expected to find " + PluginManifest.class.getSimpleName() + " for file: " + jarFile + " in: " + pluginManifestDirectory.keySet());
 
         final String exists = nameToVersion.get(pluginManifest.name);
         if (exists != null && !exists.equals(version))
@@ -540,7 +503,7 @@ public class SpecialAgent extends SpecialAgentBase {
         for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
           ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
-        manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY)), fileToPluginManifest);
+        manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY)), pluginManifestDirectory);
       }
       catch (final IOException e) {
         logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
@@ -674,9 +637,7 @@ public class SpecialAgent extends SpecialAgentBase {
     if (compatible != null && compatible) {
       if (logger.isLoggable(Level.FINER)) {
         final File pluginFile = pluginsClassLoader.getFiles()[index];
-        final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("%%% 6: " + pluginFile + " " + pluginFile.getAbsoluteFile());
+        final PluginManifest pluginManifest = pluginManifestDirectory.get(pluginFile);
         logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
       }
 
@@ -685,10 +646,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
     // Find the Plugin File (identified by index passed to this method)
     final File pluginFile = pluginsClassLoader.getFiles()[index];
-    final PluginManifest pluginManifest = fileToPluginManifest.get(pluginFile);
-    if (logger.isLoggable(Level.FINEST))
-      logger.finest("%%% 7: " + pluginFile + " " + pluginFile.getAbsoluteFile());
-
+    final PluginManifest pluginManifest = pluginManifestDirectory.get(pluginFile);
     if (logger.isLoggable(Level.FINER))
       logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + ", RulePath: " + pluginFile);
 
