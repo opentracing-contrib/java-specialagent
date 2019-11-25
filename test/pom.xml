@@ -352,6 +352,18 @@
       </modules>
     </profile>
     <profile>
+      <id>reactor</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>reactor-3.2.3</module>
+        <module>reactor-3.3.0</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
