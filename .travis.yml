@@ -226,6 +226,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P jaxrs install
+  - name: "Jedis [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P jedis install
+  - name: "Jedis [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P jedis install
   - name: "JMS 1 [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
