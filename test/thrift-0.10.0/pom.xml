@@ -31,5 +31,11 @@
       <artifactId>libthrift</artifactId>
       <version>0.10.0</version>
     </dependency>
+    <dependency>
+      <!-- in Java 9+  javax.annotation.Generated is missing -->
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
+    </dependency>
   </dependencies>
 </project>
