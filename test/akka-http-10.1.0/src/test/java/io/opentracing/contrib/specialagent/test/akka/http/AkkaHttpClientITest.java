@@ -45,7 +45,7 @@ public class AkkaHttpClientITest {
       }
     }).toCompletableFuture().get().entity().getDataBytes().runForeach(param -> {}, materializer);
 
-    stage.thenRun(() -> system.terminate()).toCompletableFuture().get();
+    stage.thenRun(system::terminate).toCompletableFuture().get();
     TestUtil.checkSpan("akka-http-client", 1);
   }
 

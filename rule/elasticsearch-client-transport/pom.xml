@@ -36,7 +36,7 @@
       <!-- https://github.com/opentracing-contrib/java-elasticsearch-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-elasticsearch-client-common</artifactId>
-      <version>0.1.5</version>
+      <version>0.1.6</version>
     </dependency>
     <dependency>
       <groupId>org.elasticsearch.client</groupId>

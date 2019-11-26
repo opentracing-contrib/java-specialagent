@@ -42,7 +42,7 @@ public class RedissonTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     redisServer = new RedisServer();
-    TestUtil.retry(() -> redisServer.start(), 10);
+    TestUtil.retry(redisServer::start, 10);
   }
 
   @Before
