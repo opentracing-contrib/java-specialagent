@@ -50,5 +50,4 @@
       <version>${version.qpid}</version>
     </dependency>
   </dependencies>
-
 </project>

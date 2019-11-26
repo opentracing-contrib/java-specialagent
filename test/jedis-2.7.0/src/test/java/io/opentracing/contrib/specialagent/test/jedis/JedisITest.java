@@ -30,16 +30,17 @@ public class JedisITest {
       }
     }, 10);
 
-    Jedis jedis = new Jedis();
-    if (!"OK".equals(jedis.set("key", "value")))
-      throw new AssertionError("ERROR: failed to set key/value");
+    try (final Jedis jedis = new Jedis()) {
+      if (!"OK".equals(jedis.set("key", "value")))
+        throw new AssertionError("ERROR: failed to set key/value");
 
-    if (!"value".equals(jedis.get("key")))
-      throw new AssertionError("ERROR: failed to get key value");
+      if (!"value".equals(jedis.get("key")))
+        throw new AssertionError("ERROR: failed to get key value");
 
-    TestUtil.checkSpan("java-redis", 2);
+      TestUtil.checkSpan("java-redis", 2);
+      jedis.shutdown();
+    }
 
-    jedis.shutdown();
     redisServer.stop();
     // RedisServer process doesn't exit on 'stop' therefore call System.exit
     System.exit(0);

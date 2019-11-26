@@ -15,12 +15,13 @@
 
 package io.opentracing.contrib.specialagent.test.reactor;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.concurrent.atomic.AtomicReference;
 import reactor.core.publisher.Mono;
 
 public class ReactorITest {
@@ -30,7 +31,8 @@ public class ReactorITest {
     final AtomicReference<String> spanInSubscriberContext = new AtomicReference<>();
     try (final Scope scope = GlobalTracer.get().scopeManager().activate(initSpan)) {
       Mono.subscriberContext().map(context -> (context.get(Span.class)).context().toSpanId()).doOnNext(spanInSubscriberContext::set).block();
-    } finally {
+    }
+    finally {
       initSpan.finish();
     }
 
@@ -39,5 +41,4 @@ public class ReactorITest {
 
     TestUtil.checkSpan("parent-reactor", 1);
   }
-
 }

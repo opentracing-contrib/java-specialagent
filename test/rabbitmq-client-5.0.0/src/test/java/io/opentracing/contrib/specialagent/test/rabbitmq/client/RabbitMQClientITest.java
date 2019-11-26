@@ -15,55 +15,51 @@
 
 package io.opentracing.contrib.specialagent.test.rabbitmq.client;
 
+import java.util.concurrent.CountDownLatch;
+
 import com.rabbitmq.client.CancelCallback;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
+
 import io.opentracing.contrib.specialagent.TestUtil;
-import java.util.concurrent.CountDownLatch;
 
 public class RabbitMQClientITest {
-  private final static String QUEUE_NAME = "queue";
+  private static final String QUEUE_NAME = "queue";
+  private static final String message = "Hello World!";
 
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
 
     final EmbeddedAMQPBroker broker = new EmbeddedAMQPBroker();
-
-    ConnectionFactory factory = new ConnectionFactory();
+    final ConnectionFactory factory = new ConnectionFactory();
     factory.setUsername("guest");
     factory.setPassword("guest");
     factory.setHost("localhost");
     factory.setPort(broker.getBrokerPort());
-    Connection connection = factory.newConnection();
-    Channel channel = connection.createChannel();
+    try (final Channel channel = factory.newConnection().createChannel()) {
+      channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+      channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+      System.out.println(" [x] Sent '" + message + "'");
 
-    channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-    String message = "Hello World!";
-    channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
-    System.out.println(" [x] Sent '" + message + "'");
+      final DeliverCallback deliverCallback = new DeliverCallback() {
+        @Override
+        public void handle(final String s, final Delivery delivery) {
+          TestUtil.checkActiveSpan();
+        }
+      };
 
-    DeliverCallback deliverCallback = new DeliverCallback() {
-      @Override
-      public void handle(String s, Delivery delivery) {
-        TestUtil.checkActiveSpan();
-      }
-    };
+      channel.basicConsume(QUEUE_NAME, true, deliverCallback, new CancelCallback() {
+        @Override
+        public void handle(final String s) {
+        }
+      });
 
-    channel.basicConsume(QUEUE_NAME, true, deliverCallback, new CancelCallback() {
-      @Override
-      public void handle(String s) {
-      }
-    });
+      TestUtil.checkSpan("java-rabbitmq", 2, latch);
+    }
 
-    TestUtil.checkSpan("java-rabbitmq", 2, latch);
-
-    channel.close();
-    connection.close();
     broker.shutdown();
   }
-
 }
