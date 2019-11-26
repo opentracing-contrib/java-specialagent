@@ -37,7 +37,7 @@ public class AkkaHttpClientITest {
 
     final Http http = getHttp(system);
     final CompletionStage<HttpResponse> stage = http.singleRequest(HttpRequest.GET("http://www.google.com"));
-    stage.whenComplete(new BiConsumer<HttpResponse, Throwable>() {
+    stage.whenComplete(new BiConsumer<HttpResponse,Throwable>() {
       @Override
       public void accept(final HttpResponse httpResponse, final Throwable throwable) {
         TestUtil.checkActiveSpan();

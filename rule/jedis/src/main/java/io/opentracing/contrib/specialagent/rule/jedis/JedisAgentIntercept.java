@@ -29,7 +29,7 @@ import io.opentracing.util.GlobalTracer;
 import redis.clients.jedis.Protocol.Command;
 
 public class JedisAgentIntercept {
-  private final static ThreadLocal<Queue<Span>> spanHolder = ThreadLocal.withInitial(LinkedList::new);
+  private static final ThreadLocal<Queue<Span>> spanHolder = ThreadLocal.withInitial(LinkedList::new);
 
   public static void sendCommand(final Object command, final byte[][] args) {
     final Command cmd = (Command)command;
