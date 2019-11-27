@@ -25,7 +25,7 @@ package io.opentracing.contrib.specialagent;
  *
  * @see Function
  */
-public interface BiFunction<T, U, R> {
+public interface BiFunction<T,U,R> {
   /**
    * Applies this function to the given arguments.
    *
