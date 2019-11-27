@@ -18,6 +18,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.qpid.server.SystemLauncher;
 import org.apache.qpid.server.SystemLauncherListener;
 import org.apache.qpid.server.model.Port;
@@ -60,7 +61,7 @@ class EmbeddedAMQPBroker {
   });
 
   EmbeddedAMQPBroker() throws Exception {
-    final Map<String, Object> context = new HashMap<>();
+    final Map<String,Object> context = new HashMap<>();
     context.put("qpid.amqp_port", 0);
     context.put("qpid.work_dir", Files.createTempDirectory("qpid").toFile().getAbsolutePath());
 
