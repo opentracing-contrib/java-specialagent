@@ -26,8 +26,8 @@
   <artifactId>zuul-1.0.0</artifactId>
   <name>SpecialAgent Test for Netflix Zuul 2.1.0</name>
   <properties>
-    <version.spring.boot>1.3.8.RELEASE</version.spring.boot>
-    <version.spring.cloud>Angel.SR6</version.spring.cloud>
+    <version.spring.boot>1.4.7.RELEASE</version.spring.boot>
+    <version.spring.cloud>Brixton.SR7</version.spring.cloud>
   </properties>
   <dependencies>
     <dependency>
@@ -44,11 +44,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>com.netflix.zuul</groupId>
-        <artifactId>zuul-core</artifactId>
-        <version>1.0.0</version>
-      </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-dependencies</artifactId>
