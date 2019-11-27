@@ -388,6 +388,17 @@
       </modules>
     </profile>
     <profile>
+      <id>zuul</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>zuul-1.0.0</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
