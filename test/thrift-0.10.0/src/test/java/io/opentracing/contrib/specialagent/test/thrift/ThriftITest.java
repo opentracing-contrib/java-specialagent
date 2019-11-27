@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.test.thrift;
 
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.test.thrift.generated.CustomService;
+import java.util.concurrent.CountDownLatch;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -34,6 +35,7 @@ public class ThriftITest {
 
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
+    final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
     TServerTransport serverTransport = new TServerSocket(port);
     TServer server = startNewThreadPoolServer(serverTransport);
 
@@ -47,10 +49,10 @@ public class ThriftITest {
     if(!"Say one two".equals(res))
       throw new AssertionError("ERROR: wrong result");
 
+    TestUtil.checkSpan("java-thrift", 2, latch);
+
     server.stop();
     transport.close();
-
-    TestUtil.checkSpan("java-thrift", 2);
   }
 
   private static TServer startNewThreadPoolServer(TServerTransport transport) {
