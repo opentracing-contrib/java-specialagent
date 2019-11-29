@@ -388,6 +388,18 @@
       </modules>
     </profile>
     <profile>
+      <id>redisson</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>redisson-3.11.0</module>
+        <module>redisson-3.11.5</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
