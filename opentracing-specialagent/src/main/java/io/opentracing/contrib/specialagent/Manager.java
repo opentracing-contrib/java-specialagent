@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,26 +62,50 @@ public abstract class Manager {
     return ClassLoader.getSystemClassLoader().getResources(file);
   }
 
+  Instrumentation inst;
+
   /**
    * Execute the {@code premain} instructions.
    *
    * @param agentArgs The agent arguments.
-   * @param instrumentation The {@link Instrumentation}.
+   * @param inst The {@link Instrumentation}.
    */
-  abstract void premain(String agentArgs, Instrumentation instrumentation);
+  final void premain(final String agentArgs, final Instrumentation inst) {
+    this.inst = inst;
+    SpecialAgent.initialize(this);
+  }
+
+  /**
+   * Initializes the rules of this {@code Manager} and calls
+   * {@link DeferredAttach#isDeferrable(Instrumentation,Runnable)} on all
+   * implementers of the {@link DeferredAttach} interface to attempt to activate
+   * Static Deferred Attach.
+   *
+   * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
+   *          entries to be filled with rules to be later loaded in
+   *          {@link #loadRules(Map,Event[])}.
+   * @param allRulesClassLoader The {@code ClassLoader} having a classpath with
+   *          all rule JARs.
+   * @param ruleJarToIndex A {@code Map} of rule JAR path to its index in the
+   *          {@code allRulesClassLoader} classpath.
+   * @param pluginManifestDirectory Map between a JAR file and the associated
+   *          {@link PluginManifest}.
+   * @param init The {@link Runnable} callback that executes
+   *          {@link #loadRules(Map,Event[])}.
+   * @return A {@link List} of {@link DeferredAttach} instances that have been
+   *         activated to execute {@link #loadRules(Map,Event[])} via the
+   *         {@code init} parameter in a deferred fashion.
+   * @throws IOException If an I/O error has occurred.
+   */
+  abstract List<DeferredAttach> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in
    * the specified arguments.
    *
-   * @param allRulesClassLoader The {@code ClassLoader} having a classpath with
-   *          all rule JARs.
-   * @param ruleJarToIndex A {@code Map} of rule JAR path to its index in the
-   *          {@code allRulesClassLoader} classpath.
+   * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
+   *          entries filled with rules to be loaded.
    * @param events Manager events to log.
-   * @param pluginManifestDirectory Map between a JAR file and the associated
-   *          {@link PluginManifest}.
-   * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, PluginManifest.Directory pluginManifestDirectory) throws IOException;
+  abstract void loadRules(final Map<AgentRule,Integer> agentRules, final Event[] events);
 }

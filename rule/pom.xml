@@ -37,6 +37,7 @@
         </property>
       </activation>
       <modules>
+        <module>spring-boot</module>
         <module>okhttp</module>
         <module>jdbc</module>
         <module>concurrent</module>
