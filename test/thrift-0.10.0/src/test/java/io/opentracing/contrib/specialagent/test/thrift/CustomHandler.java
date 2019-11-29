@@ -20,7 +20,7 @@ import io.opentracing.contrib.specialagent.test.thrift.generated.User;
 import io.opentracing.contrib.specialagent.test.thrift.generated.UserWithAddress;
 
 public class CustomHandler implements CustomService.Iface {
-
+  // FIXME: This is generated code, and is duplicated in rule/thrift
   @Override
   public String say(String text, String text2) {
     return "Say " + text + " " + text2;

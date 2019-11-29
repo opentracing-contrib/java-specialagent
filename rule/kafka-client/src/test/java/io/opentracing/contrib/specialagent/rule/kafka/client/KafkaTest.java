@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -130,12 +129,10 @@ public class KafkaTest {
   }
 
   private static void createConsumer(final CountDownLatch latch, final Integer key, final MockTracer tracer) throws Exception {
-    final ExecutorService executorService = Executors.newSingleThreadExecutor();
-
     final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
     consumerProps.put("auto.offset.reset", "earliest");
 
-    executorService.execute(() -> {
+    Executors.newSingleThreadExecutor().execute(() -> {
       try (final KafkaConsumer<Integer,String> consumer = new KafkaConsumer<>(consumerProps)) {
         consumer.subscribe(Collections.singletonList("messages"));
         while (latch.getCount() > 0) {
