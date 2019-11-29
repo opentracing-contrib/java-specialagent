@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,34 +129,7 @@ public class SpecialAgent extends SpecialAgentBase {
       try {
         BootLoaderAgent.premain(inst);
         SpecialAgent.inst = inst;
-
-        final Runnable init = new Runnable() {
-          @Override
-          public void run() {
-            try {
-              instrumenter.manager.premain(null, inst);
-            }
-            catch (final Throwable t) {
-              logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
-            }
-          }
-        };
-
-        final String initDefer = System.getProperty(INIT_DEFER);
-        if ((initDefer == null || !"false".equals(initDefer)) && SpringAgent.premain(inst, init)) {
-          logger.info(".==============================================================.");
-          logger.info("|                                                              |");
-          logger.info("|               Spring Boot application detected.              |");
-          logger.info("|                 Using Static Deferred Attach.                |");
-          logger.info("|                                                              |");
-          logger.info("|               To disable Static Deferred Attach,             |");
-          logger.info("|                 specify -Dsa.init.defer=false                |");
-          logger.info("|                                                              |");
-          logger.info("'=============================================================='");
-        }
-        else {
-          init.run();
-        }
+        instrumenter.manager.premain(null, inst);
       }
       finally {
         if (loggingConfigClass != null)
@@ -169,8 +143,6 @@ public class SpecialAgent extends SpecialAgentBase {
     catch (final Throwable t) {
       logger.log(Level.SEVERE, "Terminating SpecialAgent due to:", t);
     }
-
-    AgentRule.initialized = true;
   }
 
   /**
@@ -488,14 +460,13 @@ public class SpecialAgent extends SpecialAgentBase {
    * instrumentation {@link Manager} in the runtime.
    */
   private static void loadRules(final Manager manager) {
+    boolean isStaticDeferredAttach = false;
     try {
       if (logger.isLoggable(Level.FINE))
         logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>\n");
 
-      if (pluginsClassLoader == null) {
-        logger.severe("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
-        return;
-      }
+      if (pluginsClassLoader == null)
+        throw new IllegalStateException("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
 
       try {
         // Create map from rule jar URL to its index in allPluginsClassLoader.getURLs()
@@ -503,15 +474,65 @@ public class SpecialAgent extends SpecialAgentBase {
         for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
           ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
-        manager.loadRules(pluginsClassLoader, ruleJarToIndex, SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY)), pluginManifestDirectory);
+        final LinkedHashMap<AgentRule,Integer> agentRules = new LinkedHashMap<>();
+        final Manager.Event[] events = SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY));
+        AgentRule.init = new Runnable() {
+          @Override
+          public void run() {
+            if (AgentRule.initialized)
+              return;
+
+            AgentRule.initialized = true;
+            manager.loadRules(agentRules, events);
+          }
+        };
+
+        final List<DeferredAttach> deferrers = manager.initRules(agentRules, pluginsClassLoader, ruleJarToIndex, pluginManifestDirectory);
+
+        final String initDeferProperty = System.getProperty(INIT_DEFER);
+        isStaticDeferredAttach = initDeferProperty == null || !"false".equals(initDeferProperty);
+
+        final String displayString = isStaticDeferredAttach ? "Enabled: true (default)   " : "    Enabled: false        ";
+        logger.info(".==============================================================.");
+        logger.info("|                    Static Deferred Attach                    |");
+        logger.info("|                    " + displayString + "                |");
+        logger.info("|==============================================================|");
+        if (isStaticDeferredAttach) {
+          logger.info("|               To disable Static Deferred Attach,             |");
+          logger.info("|                 specify -Dsa.init.defer=false                |");
+          logger.info("|=============================================================='");
+        }
+
+        if (deferrers == null) {
+          if (isStaticDeferredAttach)
+            logger.info("' 0 deferrers were detected, overriding to: -Dsa.init.defer=false");
+          else
+            logger.info("' 0 deferrers were detected");
+        }
+        else {
+          logger.info("' " + deferrers.size() + " deferrers were detected:");
+          for (final DeferredAttach deferrer : deferrers)
+            logger.info("  " + deferrer.getClass().getName());
+
+          if (isStaticDeferredAttach)
+            return;
+        }
+
+        AgentRule.initialize();
       }
       catch (final IOException e) {
         logger.log(Level.SEVERE, "Failed to load OpenTracing agent rules", e);
       }
+
+      return;
     }
     finally {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<\n");
+      if (logger.isLoggable(Level.FINE)) {
+        if (isStaticDeferredAttach)
+          logger.fine("\n>>>>>>>>>>>>> Loading of AgentRule(s) is Deferred <<<<<<<<<<<<<\n");
+        else
+          logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<\n");
+      }
     }
   }
 

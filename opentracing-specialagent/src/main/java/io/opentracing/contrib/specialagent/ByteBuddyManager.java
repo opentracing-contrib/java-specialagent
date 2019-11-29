@@ -21,13 +21,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -92,31 +94,17 @@ public class ByteBuddyManager extends Manager {
       .with(TypeStrategy.Default.REDEFINE);
   }
 
-  private Instrumentation inst;
-
   ByteBuddyManager() {
     super(RULES_FILE);
-  }
-
-  @Override
-  void premain(final String agentArgs, final Instrumentation inst) {
-    this.inst = inst;
-    SpecialAgent.initialize(this);
   }
 
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  void loadRules(final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Event[] events, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
+  List<DeferredAttach> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
+    List<DeferredAttach> deferrers = null;
     AgentRule agentRule = null;
     try {
-      // Load ClassLoader Agent
-      agentRule = new ClassLoaderAgentRule();
-      loadAgentRule(agentRule, newBuilder(), -1, events);
-
-      // Load the Mutex Agent
-      MutexAgent.premain(inst);
-
       // Prepare the agent rules
       final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
       while (enumeration.hasMoreElements()) {
@@ -139,33 +127,46 @@ public class ByteBuddyManager extends Manager {
               continue;
             }
 
+            boolean ruleIsValid = false;
             final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
-            if (!AgentRule.class.isAssignableFrom(agentClass)) {
-              logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
-              continue;
-            }
+            if (AgentRule.class.isAssignableFrom(agentClass)) {
+              ruleIsValid = true;
+              final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
+              if (logger.isLoggable(Level.FINEST))
+                logger.finest("%%% 7: " + ruleJar + " " + ruleJar.getAbsoluteFile());
 
-            final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
-            if (logger.isLoggable(Level.FINEST))
-              logger.finest("%%% 7: " + ruleJar + " " + ruleJar.getAbsoluteFile());
+              final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
+              final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
+              if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
+                if (logger.isLoggable(Level.FINE))
+                  logger.fine("Skipping disabled rule: " + line);
 
-            final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
-            final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
-            if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
+                continue;
+              }
+
               if (logger.isLoggable(Level.FINE))
-                logger.fine("Skipping disabled rule: " + line);
+                logger.fine("Installing new rule: " + line);
 
-              continue;
+              AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
+
+              agentRule = (AgentRule)agentClass.getConstructor().newInstance();
+              agentRules.put(agentRule, index);
             }
 
-            if (logger.isLoggable(Level.FINE))
-              logger.fine("Installing new rule: " + line);
+            if (DeferredAttach.class.isAssignableFrom(agentClass)) {
+              ruleIsValid = true;
+              final DeferredAttach deferrer = (DeferredAttach)agentClass.getConstructor().newInstance();
+              if (deferrer.isDeferrable(inst)) {
+                if (deferrers == null)
+                  deferrers = new ArrayList<>(1);
 
-            AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
+                deferrers.add(deferrer);
+              }
+            }
 
-            agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-            loadAgentRule(agentRule, newBuilder(), index, events);
-            loadedRules.add(line);
+            if (!ruleIsValid) {
+              logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class + " nor " + DeferredAttach.class.getName());
+            }
           }
         }
       }
@@ -176,8 +177,29 @@ public class ByteBuddyManager extends Manager {
     catch (final InstantiationException e) {
       logger.log(Level.SEVERE, "Unable to instantiate: " + agentRule, e);
     }
-    catch (final ClassNotFoundException | IllegalAccessException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | NoSuchMethodException e) {
       throw new IllegalStateException(e);
+    }
+
+    return deferrers;
+  }
+
+  @Override
+  void loadRules(final Map<AgentRule,Integer> agentRules, final Event[] events) {
+    AgentRule agentRule = null;
+    try {
+      // Load ClassLoader Agent
+      agentRule = new ClassLoaderAgentRule();
+      loadAgentRule(agentRule, newBuilder(), -1, events);
+
+      // Load the Mutex Agent
+      MutexAgent.premain(inst);
+
+      for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
+        agentRule = entry.getKey();
+        loadAgentRule(agentRule, newBuilder(), entry.getValue(), events);
+        loadedRules.add(agentRule.getClass().getName());
+      }
     }
     catch (final Exception e) {
       logger.log(Level.SEVERE, "Error invoking " + agentRule + "#buildAgent(AgentBuilder) was not found", e);

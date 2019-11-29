@@ -29,7 +29,25 @@ public abstract class AgentRule {
   private static final Logger logger = Logger.getLogger(AgentRule.class);
 
   static final Map<String,String> classNameToName = new HashMap<>();
-  static boolean initialized = false;
+  static volatile boolean initialized = false;
+
+  static Runnable init;
+
+  /**
+   * Initialize all {@link AgentRule}s. This method is called in either Static
+   * Attach mode by SpecialAgent, or in Static Deferred Attach mode by
+   * implementers of the {@link DeferredAttach} interface.
+   *
+   * @return Whether initialization was run.
+   */
+  public static boolean initialize() {
+    if (init == null)
+      return false;
+
+    init.run();
+    init = null;
+    return true;
+  }
 
   public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
     @Override

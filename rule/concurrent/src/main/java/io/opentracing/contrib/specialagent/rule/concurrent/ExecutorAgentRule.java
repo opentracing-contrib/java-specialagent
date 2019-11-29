@@ -34,15 +34,17 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class ExecutorAgentRule extends AgentRule {
+  public static final Transformer transformer = new Transformer() {
+    @Override
+    public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+      return builder.visit(Advice.to(ExecutorAgentRule.class).on(named("execute").and(takesArguments(Runnable.class))));
+    }};
+
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
       .type(not(isInterface()).and(isSubTypeOf(Executor.class)))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ExecutorAgentRule.class).on(named("execute").and(takesArguments(Runnable.class))));
-        }}));
+      .transform(transformer));
   }
 
   @Advice.OnMethodEnter

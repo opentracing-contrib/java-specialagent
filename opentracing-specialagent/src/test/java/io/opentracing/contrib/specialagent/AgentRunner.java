@@ -128,7 +128,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
   static {
     System.setProperty(SpecialAgentBase.AGENT_RUNNER_ARG, "");
-    System.setProperty(SpecialAgentBase.INIT_DEFER, "false");
     final String sunJavaCommand = System.getProperty("sun.java.command");
     if (sunJavaCommand != null)
       AssembleUtil.absorbProperties(sunJavaCommand);
@@ -158,31 +157,52 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Config {
     /**
-     * @return Logging level.
-     *         <p>
-     *         Default: {@link Level#WARNING}.
+     * The logging {@link Level}.
+     * <p>
+     * Default: {@link Level#WARNING}.
+     *
+     * @return The logging {@link Level}.
      */
     Level log() default Level.WARNING;
 
     /**
-     * @return Output re/transformer events.
-     *         <p>
-     *         Default: <code>{Event.ERROR}</code>.
+     * The events to be outputted during re/transformation.
+     * <p>
+     * Default: <code>{Event.ERROR}</code>.
+     *
+     * @return The events to be outputted during re/transformation.
      */
     Event[] events() default {Event.ERROR};
 
     /**
+     * If {@code true}, Static Deferred Attach is enabled.
+     * <p>
+     * If {@code false}, Static Deferred Attach is disabled.
+     * <p>
+     * Default: <code>false</code>.
+     *
+     * @return If {@code true}, Static Deferred Attach is enabled. If
+     *         {@code false}, Static Deferred Attach is disabled.
+     */
+    boolean defer() default false;
+
+    /**
+     * Names of plugins (either instrumentation or tracer) to disable in the
+     * test runtime.
+     * <p>
+     * Default: <code>{}</code>.
+     *
      * @return Names of plugins (either instrumentation or tracer) to disable in
      *         the test runtime.
-     *         <p>
-     *         Default: <code>{}</code>.
      */
     String[] disable() default {};
 
     /**
+     * Whether the plugin should run in verbose mode.
+     * <p>
+     * Default: <code>false</code>.
+     *
      * @return Whether the plugin should run in verbose mode.
-     *         <p>
-     *         Default: <code>false</code>.
      */
     boolean verbose() default false;
 
@@ -369,14 +389,17 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     this.config = testClass.getAnnotation(Config.class);
     this.pluginManifest = PluginManifest.getPluginManifest(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
     final Event[] events;
+    final boolean isStaticDeferredAttach;
     if (config == null) {
       events = new Event[] {Event.ERROR};
+      isStaticDeferredAttach = false;
     }
     else {
       setDisable(config.disable());
       if (config.verbose())
         setVerbose(true);
 
+      isStaticDeferredAttach = config.defer();
       events = config.events();
       if (config.log() != Level.WARNING) {
         final String logLevelProperty = System.getProperty(Logger.LOG_LEVEL_PROPERTY);
@@ -393,6 +416,8 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (!config.isolateClassLoader())
         logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
+
+    System.setProperty(SpecialAgentBase.INIT_DEFER, String.valueOf(isStaticDeferredAttach));
 
     if (events != null && events.length > 0) {
       final String eventsProperty = System.getProperty(SpecialAgent.LOG_EVENTS_PROPERTY);
