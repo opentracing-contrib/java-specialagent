@@ -517,7 +517,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
 | | [`spring:web:4.0`][spring-web-4.0] | 4.0.0.RELEASE | 4.0.9.RELEASE |
 | | [`spring:web:4.x`][spring-web-4] | 4.1.0.RELEASE | 4.3.25.RELEASE |
-| | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | 5.1.9.RELEASE |
+| | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | 5.2.1.RELEASE |
 | [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc:3`][spring-webmvc-3] | 3.0.2.RELEASE | 3.2.18.RELEASE |
 | | [`spring:webmvc:4`][spring-webmvc-4] | 4.0.0.RELEASE | 4.3.25.RELEASE |
 | | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | 5.1.9.RELEASE |
