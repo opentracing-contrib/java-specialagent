@@ -15,13 +15,15 @@
 
 package io.opentracing.contrib.specialagent.test.spring.web;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 public class SpringWebITest {
   public static void main(final String[] args) throws Exception {
@@ -29,7 +31,7 @@ public class SpringWebITest {
 
     makeAsyncCall();
 
-    RestTemplate restTemplate = new RestTemplate();
+    final RestTemplate restTemplate = new RestTemplate();
     restTemplate.getForObject("http://www.google.com", String.class);
 
     TestUtil.checkSpan("java-spring-rest-template", 3);
@@ -44,23 +46,21 @@ public class SpringWebITest {
 
     final CountDownLatch latch = new CountDownLatch(1);
 
-    asyncRestTemplate.getForEntity("http://www.google.com", String.class)
-        .addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
-          @Override
-          public void onSuccess(ResponseEntity<String> result) {
-            TestUtil.checkActiveSpan();
-            latch.countDown();
-          }
+    asyncRestTemplate.getForEntity("http://www.google.com", String.class).addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
+      @Override
+      public void onSuccess(final ResponseEntity<String> result) {
+        TestUtil.checkActiveSpan();
+        latch.countDown();
+      }
 
-          @Override
-          public void onFailure(Throwable t) {
-            TestUtil.checkActiveSpan();
-            latch.countDown();
-          }
-        });
+      @Override
+      public void onFailure(final Throwable t) {
+        TestUtil.checkActiveSpan();
+        latch.countDown();
+      }
+    });
 
     latch.await(15, TimeUnit.SECONDS);
     return true;
   }
-
 }

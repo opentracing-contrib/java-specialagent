@@ -15,17 +15,17 @@
 
 package io.opentracing.contrib.specialagent.test.spring.web;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.web.client.RestTemplate;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 public class SpringWebITest {
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
 
-    RestTemplate restTemplate = new RestTemplate();
+    final RestTemplate restTemplate = new RestTemplate();
     restTemplate.getForObject("http://www.google.com", String.class);
 
     TestUtil.checkSpan("java-spring-rest-template", 1);
   }
-
 }
