@@ -24,6 +24,7 @@
     <version>1.5.2-SNAPSHOT</version>
   </parent>
   <artifactId>rxjava-2.1.0</artifactId>
+  <name>SpecialAgent Test for RxJava 2.1.0</name>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

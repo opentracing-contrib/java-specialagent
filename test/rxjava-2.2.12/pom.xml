@@ -24,6 +24,7 @@
     <version>1.5.2-SNAPSHOT</version>
   </parent>
   <artifactId>rxjava-2.2.12</artifactId>
+  <name>SpecialAgent Test for RxJava 2.2.12</name>
   <dependencies>
     <dependency>
       <!-- https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava -->
