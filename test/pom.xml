@@ -388,6 +388,30 @@
       </modules>
     </profile>
     <profile>
+      <id>redisson</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>redisson-3.11.0</module>
+        <module>redisson-3.11.5</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>thrift</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>thrift-0.10.0</module>
+        <module>thrift-0.12.0</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>

@@ -76,6 +76,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P apache-httpclient install
+  - name: "Apache Thrift [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P thrift install
+  - name: "Apache Thrift [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P thrift install
   - name: "AsyncHttpClient [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
@@ -336,6 +346,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P reactor install
+  - name: "Redisson [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P redisson install
+  - name: "Redisson [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P redisson install
   - name: "RxJava [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
