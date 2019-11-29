@@ -50,20 +50,19 @@ public class PluginManifest {
 
     private final LinkedHashMap<File,PluginManifest> fileToPluginManifest = new LinkedHashMap<>();
 
-    public void put(final File file, final PluginManifest pluginManifest) {
-      fileToPluginManifest.put(pluginManifest != null ? pluginManifest.file : file, pluginManifest);
-      if (logger.isLoggable(Level.FINEST)) {
-        if (pluginManifest == null)
-          logger.finest("%%% add (null): " + file + " " + file.getAbsoluteFile());
-        else
-          logger.finest("%%% add: " + pluginManifest.file + " " + pluginManifest.file.getAbsoluteFile());
-      }
+    public void put(File file, final PluginManifest pluginManifest) {
+      if (pluginManifest != null)
+        file = pluginManifest.file;
+
+      fileToPluginManifest.put(file, pluginManifest);
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("PluginManifest.put(" + file + " <" + file.getAbsoluteFile() + ">, " + AssembleUtil.getSimpleNameId(pluginManifest) + ")");
     }
 
     public boolean containsKey(final File file) {
       final boolean result = fileToPluginManifest.containsKey(file.getAbsoluteFile());
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("%%% contains: " + result + " " + file + " " + file.getAbsoluteFile());
+        logger.finest("PluginManifest.contains(" + file + " <" + file.getAbsoluteFile() + ">): " + result);
 
       return result;
     }
@@ -73,11 +72,11 @@ public class PluginManifest {
     }
 
     public PluginManifest get(final File file) {
-      final PluginManifest pluginManifest = fileToPluginManifest.get(file.getAbsoluteFile());
+      final PluginManifest result = fileToPluginManifest.get(file.getAbsoluteFile());
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("%%% get: " + " " + pluginManifest + " " + file + " " + file.getAbsoluteFile());
+        logger.finest("PluginManifest.get(" + file + " <" + file.getAbsoluteFile() + ">): " + AssembleUtil.getSimpleNameId(result));
 
-      return pluginManifest;
+      return result;
     }
 
     public int size() {

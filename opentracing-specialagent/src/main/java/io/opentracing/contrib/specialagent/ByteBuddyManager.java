@@ -132,9 +132,6 @@ public class ByteBuddyManager extends Manager {
             if (AgentRule.class.isAssignableFrom(agentClass)) {
               ruleIsValid = true;
               final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
-              if (logger.isLoggable(Level.FINEST))
-                logger.finest("%%% 7: " + ruleJar + " " + ruleJar.getAbsoluteFile());
-
               final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
               final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
               if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
