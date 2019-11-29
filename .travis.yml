@@ -367,6 +367,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P rxjava install
+  - name: "Spring Web [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P spring-web install
+  - name: "Spring Web [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P spring-web install
 env:
   global:
   - secure: P/LP/83sZCVr7Tx3PiCpCxMsvijLYrpUCKpIpskY9fWM+REO0fvKpstMcpcq0xA11D1OUu8BJB/sxi2LJ2GMQI+cQB2BLHJkVN4T9x123dAgXtX/1cvqoFhu6cu3uYOFOo3hSvjdaglkYzp3OPlPAL70e3YD3Nn82Xs5/IdB+5VE8rDH9qQntOVtTLxQuRtHbUcr/CVMlXAl9ToA0ylYv1kJwparSVEplSoBMeo1yQT6uF0m3X6VdhEckWqg2APjNhgc1D8zoL8r1I1b7D+bX4XdgOPJHqzeL3UaAky9N2SG7hlDhAm0neTCmGlZ9mZAFzF+0QLUGtBo1yyoHxGIRHpv1jQp+fXyuslkM2QAZhVGZG4FPNX2r2p6FZeC5AhrZvay2I4mffb3WPNWXr3tzIJyzCV3yLNBIHHl3ijNDPoKuR9Q9FA2d8oPAb4hVAS8sW0vbk1qstPTAxzj1ptJ81ggR3RjkZr2U5y8p+zynhz2mw+78Ez4drq4LEchjvJ0OuyjPXYj0dHisBvjfGOINQuOWipG5KIhQOUaYhg4vvNAvI6iE8rucmgT5TIpcPIRrzs5lkgI/ZV0IG42ChJqXv6z3gSYYIXHjtO84TG+3oEO13z5FFFsLObWPKsfVQHoWcXQKXc+tU4igmZsMli239YxAHyQ4y0+MdVLoNM77a4=
