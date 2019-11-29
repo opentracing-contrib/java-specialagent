@@ -56,6 +56,7 @@
     <jaeger-client-bundle>jaeger</jaeger-client-bundle>
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
     <wavefront-opentracing-bundle-java>wavefront</wavefront-opentracing-bundle-java>
+    <opentelemetry-bridge>otel</opentelemetry-bridge>
   </properties>
   <profiles>
     <profile>
@@ -277,6 +278,12 @@
               <artifactId>opentracing-util</artifactId>
             </exclusion>
           </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentelemetry-bridge</artifactId>
+          <version>0.2.0</version>
+          <scope>provided</scope>
         </dependency>
       </dependencies>
     </profile>
