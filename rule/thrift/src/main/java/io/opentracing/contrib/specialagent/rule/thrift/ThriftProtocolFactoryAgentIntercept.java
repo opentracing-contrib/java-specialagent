@@ -27,6 +27,7 @@ import io.opentracing.util.GlobalTracer;
 public class ThriftProtocolFactoryAgentIntercept {
   private static final ConcurrentLinkedQueue<SpanHolder> spanHolders = new ConcurrentLinkedQueue<>();
 
+  @SuppressWarnings("deprecation")
   public static Object exit(final Object protocol) {
     if (!callerHasClass("org.apache.thrift.async.TAsyncMethodCall", 5))
       return protocol;

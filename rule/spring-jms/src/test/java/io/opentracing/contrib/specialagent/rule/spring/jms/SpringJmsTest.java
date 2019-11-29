@@ -37,7 +37,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -84,15 +83,16 @@ public class SpringJmsTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final ApplicationContext context = new AnnotationConfigApplicationContext(RabbitConfiguration.class);
-    final JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
-    jmsTemplate.convertAndSend("mailbox", "message");
+    try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(RabbitConfiguration.class)) {
+      final JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
+      jmsTemplate.convertAndSend("mailbox", "message");
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
 
-    assertEquals(1, counter.get());
-    final List<MockSpan> spans = tracer.finishedSpans();
-    assertEquals(1, spans.size());
+      assertEquals(1, counter.get());
+      final List<MockSpan> spans = tracer.finishedSpans();
+      assertEquals(1, spans.size());
+    }
   }
 
   @EnableJms

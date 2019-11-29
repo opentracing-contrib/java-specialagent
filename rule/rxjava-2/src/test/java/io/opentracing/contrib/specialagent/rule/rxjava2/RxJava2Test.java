@@ -37,6 +37,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 @RunWith(AgentRunner.class)
+@SuppressWarnings("deprecation")
 public class RxJava2Test {
   private static final Logger logger = Logger.getLogger(RxJava2Test.class);
   private static final String COMPLETED = "completed";

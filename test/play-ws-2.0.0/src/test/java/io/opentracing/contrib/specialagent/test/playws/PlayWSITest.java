@@ -15,11 +15,12 @@
 
 package io.opentracing.contrib.specialagent.test.playws;
 
+import java.util.concurrent.TimeUnit;
+
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import io.opentracing.contrib.specialagent.TestUtil;
-import java.util.concurrent.TimeUnit;
 import play.libs.ws.ahc.StandaloneAhcWSClient;
 import play.shaded.ahc.org.asynchttpclient.AsyncHttpClient;
 import play.shaded.ahc.org.asynchttpclient.AsyncHttpClientConfig;
@@ -32,27 +33,24 @@ public class PlayWSITest {
     final ActorSystem system = ActorSystem.create();
     final Materializer materializer = ActorMaterializer.create(system);
 
-    AsyncHttpClientConfig asyncHttpClientConfig =
-        new DefaultAsyncHttpClientConfig.Builder()
-            .setMaxRequestRetry(0)
-            .setShutdownQuietPeriod(0)
-            .setShutdownTimeout(0)
-            .build();
+    final AsyncHttpClientConfig asyncHttpClientConfig = new DefaultAsyncHttpClientConfig.Builder()
+      .setMaxRequestRetry(0)
+      .setShutdownQuietPeriod(0)
+      .setShutdownTimeout(0)
+      .build();
 
-    AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(asyncHttpClientConfig);
+    final AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(asyncHttpClientConfig);
+    try (final StandaloneAhcWSClient wsClient = new StandaloneAhcWSClient(asyncHttpClient, materializer)) {
+      final int status = wsClient.url("http://www.google.com").get()
+        .whenComplete((response, throwable) -> TestUtil.checkActiveSpan())
+        .toCompletableFuture().get(15, TimeUnit.SECONDS)
+        .getStatus();
 
-    final StandaloneAhcWSClient wsClient = new StandaloneAhcWSClient(asyncHttpClient, materializer);
+      if (200 != status)
+        throw new AssertionError("ERROR: response: " + status);
+    }
 
-    final int status = wsClient.url("http://www.google.com").get()
-        .whenComplete((response, throwable) -> {
-          TestUtil.checkActiveSpan();
-        }).toCompletableFuture().get(15, TimeUnit.SECONDS).getStatus();
-    wsClient.close();
     system.terminate();
-
-    if (200 != status)
-      throw new AssertionError("ERROR: response: " + status);
-
     TestUtil.checkSpan("play-ws", 1);
   }
 }

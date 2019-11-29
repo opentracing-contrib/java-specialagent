@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -41,12 +40,13 @@ import io.opentracing.tag.Tags;
 public class SpringScheduleTest {
   @Test
   public void test(final MockTracer tracer) {
-    final ApplicationContext context = new AnnotationConfigApplicationContext(SpringScheduleConfiguration.class);
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), greaterThanOrEqualTo(1));
-    List<MockSpan> spans = tracer.finishedSpans();
-    assertTrue(spans.size() >= 1);
-    for (MockSpan span : spans) {
-      assertEquals("spring-scheduled", span.tags().get(Tags.COMPONENT.getKey()));
+    try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SpringScheduleConfiguration.class)) {
+      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), greaterThanOrEqualTo(1));
+      final List<MockSpan> spans = tracer.finishedSpans();
+      assertTrue(spans.size() >= 1);
+      for (final MockSpan span : spans) {
+        assertEquals("spring-scheduled", span.tags().get(Tags.COMPONENT.getKey()));
+      }
     }
   }
 

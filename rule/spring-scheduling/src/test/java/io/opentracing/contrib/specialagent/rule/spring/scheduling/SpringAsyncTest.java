@@ -44,23 +44,24 @@ import io.opentracing.tag.Tags;
 public class SpringAsyncTest {
   @Test
   public void test(final MockTracer tracer) throws ExecutionException, InterruptedException {
-    final ApplicationContext context = new AnnotationConfigApplicationContext(SpringAsyncConfiguration.class);
-    final SpringAsyncConfiguration configuration = context.getBean(SpringAsyncConfiguration.class);
-    final String res = configuration.async().get();
-    assertEquals("whatever", res);
+    try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SpringAsyncConfiguration.class)) {
+      final SpringAsyncConfiguration configuration = context.getBean(SpringAsyncConfiguration.class);
+      final String res = configuration.async().get();
+      assertEquals("whatever", res);
 
-    try {
-      configuration.asyncException().get();
-      fail();
-    }
-    catch (final Exception ignore) {
-    }
+      try {
+        configuration.asyncException().get();
+        fail();
+      }
+      catch (final Exception ignore) {
+      }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
-    final List<MockSpan> spans = tracer.finishedSpans();
-    assertEquals(2, spans.size());
-    for (final MockSpan span : spans) {
-      assertEquals("spring-async", span.tags().get(Tags.COMPONENT.getKey()));
+      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+      final List<MockSpan> spans = tracer.finishedSpans();
+      assertEquals(2, spans.size());
+      for (final MockSpan span : spans) {
+        assertEquals("spring-async", span.tags().get(Tags.COMPONENT.getKey()));
+      }
     }
   }
 

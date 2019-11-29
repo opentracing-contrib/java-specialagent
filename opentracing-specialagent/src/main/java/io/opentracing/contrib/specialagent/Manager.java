@@ -77,9 +77,9 @@ public abstract class Manager {
 
   /**
    * Initializes the rules of this {@code Manager} and calls
-   * {@link DeferredAttach#isDeferrable(Instrumentation,Runnable)} on all
-   * implementers of the {@link DeferredAttach} interface to attempt to activate
-   * Static Deferred Attach.
+   * {@link DeferredAttach#isDeferrable(Instrumentation)} on all implementers of
+   * the {@link DeferredAttach} interface to attempt to activate Static Deferred
+   * Attach.
    *
    * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
    *          entries to be filled with rules to be later loaded in
@@ -90,8 +90,6 @@ public abstract class Manager {
    *          {@code allRulesClassLoader} classpath.
    * @param pluginManifestDirectory Map between a JAR file and the associated
    *          {@link PluginManifest}.
-   * @param init The {@link Runnable} callback that executes
-   *          {@link #loadRules(Map,Event[])}.
    * @return A {@link List} of {@link DeferredAttach} instances that have been
    *         activated to execute {@link #loadRules(Map,Event[])} via the
    *         {@code init} parameter in a deferred fashion.
