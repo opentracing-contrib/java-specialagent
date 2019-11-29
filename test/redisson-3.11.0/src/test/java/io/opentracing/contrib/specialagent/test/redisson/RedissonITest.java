@@ -35,7 +35,7 @@ public class RedissonITest {
     }, 10);
 
     final Config config = new Config();
-    new Config().useSingleServer().setAddress("redis://127.0.0.1:6379");
+    config.useSingleServer().setAddress("redis://127.0.0.1:6379");
     final RedissonClient redissonClient = Redisson.create(config);
     final RMap<String,String> map = redissonClient.getMap("map");
 
