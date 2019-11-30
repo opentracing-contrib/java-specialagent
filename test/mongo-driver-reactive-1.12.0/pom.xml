@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test</groupId>
     <artifactId>test</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3-SNAPSHOT</version>
   </parent>
   <artifactId>mongo-driver-reactive-1.12.0</artifactId>
   <name>SpecialAgent Test for MongoDB Reactive Streams 1.12.0</name>
