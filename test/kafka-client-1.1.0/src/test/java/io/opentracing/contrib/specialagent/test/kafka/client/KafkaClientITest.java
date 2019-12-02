@@ -74,6 +74,9 @@ public class KafkaClientITest {
 
     embeddedKafkaRule.after();
     TestUtil.checkSpan("java-kafka", 10);
+
+    // Embedded Kafka and Zookeeper processes may not exit
+    System.exit(0);
   }
 
   private static Producer<Long,String> createProducer(final EmbeddedKafkaRule embeddedKafkaRule) {
