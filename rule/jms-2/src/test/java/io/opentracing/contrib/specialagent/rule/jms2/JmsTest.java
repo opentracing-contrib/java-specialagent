@@ -20,7 +20,6 @@ import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;

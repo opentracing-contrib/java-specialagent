@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.test.kafka.client;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,10 +39,22 @@ public class KafkaClientITest {
   private static final int MESSAGE_COUNT = 5;
   private static final String TOPIC_NAME = "demo";
 
-  public static void main(final String[] args) throws InterruptedException {
+  public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-    final EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(1, true, 1, "messages");
-    embeddedKafkaRule.before();
+    final EmbeddedKafkaRule embeddedKafkaRule = TestUtil.retry(new Callable<EmbeddedKafkaRule>() {
+      @Override
+      public EmbeddedKafkaRule call() {
+        final EmbeddedKafkaRule rule = new EmbeddedKafkaRule(1, true, 1, "messages");
+        try {
+          rule.before();
+          return rule;
+        }
+        catch (final Exception e) {
+          rule.after();
+          throw e;
+        }
+      }
+    }, 10);
 
     try (final Producer<Long,String> producer = createProducer(embeddedKafkaRule)) {
       for (int i = 0; i < MESSAGE_COUNT; ++i) {

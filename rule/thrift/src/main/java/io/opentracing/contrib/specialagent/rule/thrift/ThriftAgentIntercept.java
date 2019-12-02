@@ -22,6 +22,7 @@ import io.opentracing.thrift.DefaultClientSpanDecorator;
 import io.opentracing.thrift.SpanProcessor;
 import io.opentracing.util.GlobalTracer;
 
+@SuppressWarnings({"deprecation", "resource"})
 public class ThriftAgentIntercept {
   public static void onComplete() {
     final Scope scope = GlobalTracer.get().scopeManager().active();

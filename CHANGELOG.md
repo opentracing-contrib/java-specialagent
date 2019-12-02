@@ -1,5 +1,28 @@
 # Changes by Version
 
+## v1.5.2 (2019-11-29)
+* Integrate [OpenTelemetry Bridge Tracer Plugin](https://github.com/opentracing-contrib/java-opentelemetry-bridge) into SpecialAgent (#229)
+* Implement Formal API for Static Deferred Attach (#267)
+* Implement integration tests for:
+  1. Hazelcast (#230)
+  1. JAX-RS Client (#235)
+  1. Apache HttpClient (#233)
+  1. Kafka Client (#244)
+  1. Lettuce (#247)
+  1. Reactor (#255)
+  1. Jedis (#257)
+  1. RabbitMQ Client (#249)
+  1. Redisson (#260)
+  1. Thrift (#263)
+  1. Spring Web (#270)
+* Upgrade `opentracing-grpc` to 0.2.x (#242)
+* Upgrade `opentracing-elasticsearch` to 0.1.6 (#251)
+* Upgrade `opentracing-jdbc` to 0.2.3 (#268)
+* Fix to: `elasticsearch-client-rest` plugin causing "authorization failed" (#240)
+* Fix to: `GrpcTest` is unstable (#237)
+* Fix to: `KafkaClientITest` is unstable (#262)
+* Fix to: Termination due to absolute/relative file path mismatch (#225)
+
 ## v1.5.1 (2019-11-15)
 * New [instrumentation plugins](https://github.com/opentracing-contrib/java-specialagent/#supported-instrumentation-plugins): Akka Http Server, OkHttp 4, Play Framework (server and client).
 * Include external instrumentation plugins (those which are not included in the SpecialAgent, such as proprietary plugins).

@@ -67,6 +67,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public void onThrowable(final Throwable t) {
     try (final Scope scope = tracer.scopeManager().activate(span, true)) {
       handler.onThrowable(t);
@@ -77,6 +78,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public Object onCompleted() throws Exception {
     try (final Scope scope = tracer.scopeManager().activate(span, true)) {
       return handler.onCompleted();

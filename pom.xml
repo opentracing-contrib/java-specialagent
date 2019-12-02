@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>1.5.2-SNAPSHOT</version>
+  <version>1.5.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Java SpecialAgent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
@@ -56,6 +56,7 @@
     <jaeger-client-bundle>jaeger</jaeger-client-bundle>
     <lightstep-tracer-jre-bundle>lightstep</lightstep-tracer-jre-bundle>
     <wavefront-opentracing-bundle-java>wavefront</wavefront-opentracing-bundle-java>
+    <opentelemetry-bridge>otel</opentelemetry-bridge>
   </properties>
   <profiles>
     <profile>
@@ -277,6 +278,12 @@
               <artifactId>opentracing-util</artifactId>
             </exclusion>
           </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentelemetry-bridge</artifactId>
+          <version>0.2.0</version>
+          <scope>provided</scope>
         </dependency>
       </dependencies>
     </profile>

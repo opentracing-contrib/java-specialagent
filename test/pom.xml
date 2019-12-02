@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.2-SNAPSHOT</version>
+    <version>1.5.3-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -385,6 +385,48 @@
       <modules>
         <module>reactor-3.2.3</module>
         <module>reactor-3.3.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>redisson</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>redisson-3.11.0</module>
+        <module>redisson-3.11.5</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>thrift</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>thrift-0.10.0</module>
+        <module>thrift-0.12.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-web</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-web-3.0.3</module>
+        <module>spring-web-3.2.18</module>
+        <module>spring-web-4.0.0</module>
+        <module>spring-web-4.0.9</module>
+        <module>spring-web-4.1.0</module>
+        <module>spring-web-4.3.25</module>
+        <module>spring-web-5.0.0</module>
+        <module>spring-web-5.2.1</module>
       </modules>
     </profile>
     <profile>

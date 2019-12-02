@@ -13,12 +13,16 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent;
+package io.opentracing.contrib.specialagent.rule.spring.boot;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
 
+import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.DeferredAttach;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -29,12 +33,11 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringAgent {
-  public static final Logger logger = Logger.getLogger(SpringAgent.class);
+public class SpringBootDeferredAttach implements DeferredAttach {
+  public static final Logger logger = Logger.getLogger(SpringBootDeferredAttach.class);
 
-  public static Runnable runnable;
-
-  public static boolean premain(final Instrumentation inst, final Runnable runnable) {
+  @Override
+  public boolean isDeferrable(final Instrumentation inst) {
     try {
       Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
     }
@@ -55,11 +58,10 @@ public class SpringAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringAgent.class).on(isConstructor()));
+          return builder.visit(Advice.to(SpringBootDeferredAttach.class).on(isConstructor()));
         }})
       .installOn(inst);
 
-    SpringAgent.runnable = runnable;
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Installed SpringAgent <<<<<<<<<<<<<<<<<<<<\n");
 
@@ -68,16 +70,10 @@ public class SpringAgent {
 
   @Advice.OnMethodExit
   public static void exit() {
-    if (runnable == null)
-      return;
-
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Invoking SpringAgent >>>>>>>>>>>>>>>>>>>>\n");
 
-    final Runnable runnable = SpringAgent.runnable;
-    SpringAgent.runnable = null;
-    runnable.run();
-
+    AgentRule.initialize();
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Invoked SpringAgent >>>>>>>>>>>>>>>>>>>>>\n");
   }

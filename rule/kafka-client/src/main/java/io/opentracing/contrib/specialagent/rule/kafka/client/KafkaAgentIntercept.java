@@ -37,7 +37,7 @@ public class KafkaAgentIntercept {
     return new TracingCallback((Callback)callback, span, GlobalTracer.get());
   }
 
-  @SuppressWarnings("resource")
+  @SuppressWarnings({"deprecation", "resource"})
   public static void onProducerExit() {
     final Scope active = GlobalTracer.get().scopeManager().active();
     if (active != null)

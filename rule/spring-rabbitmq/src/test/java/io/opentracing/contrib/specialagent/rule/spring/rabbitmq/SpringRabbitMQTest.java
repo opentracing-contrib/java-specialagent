@@ -38,7 +38,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,16 +68,17 @@ public class SpringRabbitMQTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final ApplicationContext context = new AnnotationConfigApplicationContext(RabbitConfiguration.class);
-    final AmqpTemplate template = context.getBean(AmqpTemplate.class);
-    template.convertAndSend(QUEUE_NAME, "message");
-    template.convertAndSend(QUEUE_NAME2, "message-2");
+    try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(RabbitConfiguration.class)) {
+      final AmqpTemplate template = context.getBean(AmqpTemplate.class);
+      template.convertAndSend(QUEUE_NAME, "message");
+      template.convertAndSend(QUEUE_NAME2, "message-2");
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
 
-    assertEquals(2, counter.get());
-    final List<MockSpan> spans = tracer.finishedSpans();
-    assertEquals(2, spans.size());
+      assertEquals(2, counter.get());
+      final List<MockSpan> spans = tracer.finishedSpans();
+      assertEquals(2, spans.size());
+    }
   }
 
   @Configuration

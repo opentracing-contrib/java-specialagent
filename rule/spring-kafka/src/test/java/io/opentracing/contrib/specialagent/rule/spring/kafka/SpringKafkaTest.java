@@ -20,7 +20,6 @@ import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,7 +27,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,13 +61,14 @@ public class SpringKafkaTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final ApplicationContext context = new AnnotationConfigApplicationContext(KafkaConfiguration.class);
-    KafkaTemplate<Integer,String> kafkaTemplate = context.getBean(KafkaTemplate.class);
-    kafkaTemplate.send("spring", "message");
+    try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(KafkaConfiguration.class)) {
+      final KafkaTemplate<Integer,String> kafkaTemplate = context.getBean(KafkaTemplate.class);
+      kafkaTemplate.send("spring", "message");
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
-    assertEquals(1, counter.get());
-    assertEquals(1, tracer.finishedSpans().size());
+      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+      assertEquals(1, counter.get());
+      assertEquals(1, tracer.finishedSpans().size());
+    }
   }
 
   @Configuration
