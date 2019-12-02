@@ -430,6 +430,18 @@
       </modules>
     </profile>
     <profile>
+      <id>spring-webflux</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-webflux-5.1.0</module>
+        <module>spring-webflux-5.2.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>

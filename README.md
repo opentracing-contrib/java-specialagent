@@ -511,7 +511,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Spring Boot Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | [`spring:kafka`][spring-kafka] | 2.1.0.RELEASE | 2.1.8.RELEASE |
 | [Spring Boot Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 2.1.0.RELEASE | 2.1.8.RELEASE |
 | [Spring Boot RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | 2.1.8.RELEASE |
-| [Spring Boot WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 2.1.0.RELEASE | 2.1.8.RELEASE |
+| [Spring Boot WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | 5.2.1.RELEASE |
 | [Spring Boot WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 2.1.0.RELEASE | 2.1.8.RELEASE |
 | [Spring [`@Async`] and `@Scheduled`](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | [`spring:scheduling`][spring-scheduling] | 1.5.22.RELEASE | 2.1.8.RELEASE |
 | [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
