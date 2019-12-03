@@ -26,8 +26,6 @@
   <artifactId>cassandra-driver-3</artifactId>
   <name>SpecialAgent Rule for Cassandra 3 Driver</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>cassandra:driver:3</sa.plugin.name>
   </properties>
   <dependencies>
