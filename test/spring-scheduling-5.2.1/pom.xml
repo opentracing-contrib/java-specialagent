@@ -31,5 +31,11 @@
       <artifactId>spring-context</artifactId>
       <version>5.2.1.RELEASE</version>
     </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib.specialagent.test</groupId>
+      <artifactId>spring-scheduling-5.0.0</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+    </dependency>
   </dependencies>
 </project>
