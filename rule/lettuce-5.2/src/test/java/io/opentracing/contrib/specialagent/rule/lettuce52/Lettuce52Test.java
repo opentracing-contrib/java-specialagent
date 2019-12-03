@@ -53,7 +53,7 @@ public class Lettuce52Test {
   @BeforeClass
   public static void beforeClass() throws Exception {
     redisServer = new RedisServer();
-    TestUtil.retry(() -> redisServer.start(), 10);
+    TestUtil.retry(redisServer::start, 10);
     client = RedisClient.create(address);
   }
 
@@ -82,7 +82,7 @@ public class Lettuce52Test {
     final RedisCommands<String,String> commands2 = client.connect().sync();
     commands2.publish("channel", "msg");
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(4));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(4));
 
     client.shutdown();
 
