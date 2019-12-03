@@ -44,7 +44,6 @@
       <artifactId>spring-boot-starter-tomcat</artifactId>
     </dependency>
   </dependencies>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -56,5 +55,4 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
 </project>

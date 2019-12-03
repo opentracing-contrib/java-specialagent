@@ -15,13 +15,14 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webflux;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @SpringBootApplication
 public class SpringWebFluxITest {
@@ -36,10 +37,8 @@ public class SpringWebFluxITest {
   public CommandLineRunner commandLineRunner() {
     return new CommandLineRunner() {
       @Override
-      public void run(String... args) {
-
-        final WebClient client = WebClient.builder().baseUrl("http://localhost:8080")
-            .build();
+      public void run(final String ... args) {
+        final WebClient client = WebClient.builder().baseUrl("http://localhost:8080").build();
 
         final ClientResponse response = client.get().exchange().block();
         final int responseCode = response.statusCode().value();
@@ -47,11 +46,9 @@ public class SpringWebFluxITest {
           throw new AssertionError("ERROR: response: " + responseCode);
 
         final String entity = response.bodyToMono(String.class).block();
-
-        if(!"WebFlux".equals(entity))
+        if (!"WebFlux".equals(entity))
           throw new AssertionError("ERROR: response: " + entity);
       }
     };
   }
-
 }
