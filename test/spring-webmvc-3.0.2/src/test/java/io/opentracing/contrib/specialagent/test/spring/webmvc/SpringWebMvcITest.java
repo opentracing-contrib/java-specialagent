@@ -36,9 +36,8 @@ public class SpringWebMvcITest {
     HttpURLConnection con = (HttpURLConnection) obj.openConnection();
     con.setRequestMethod("GET");
     final int responseCode = con.getResponseCode();
-    if (200 != responseCode) {
+    if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
-    }
 
     server.stop();
 
