@@ -16,10 +16,8 @@
 package io.opentracing.contrib.specialagent.rule.jedis;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -29,7 +27,12 @@ import io.opentracing.util.GlobalTracer;
 import redis.clients.jedis.Protocol.Command;
 
 public class JedisAgentIntercept {
-  private static final ThreadLocal<Queue<Span>> spanHolder = ThreadLocal.withInitial(LinkedList::new);
+  private static final ThreadLocal<Queue<Span>> spanHolder = new ThreadLocal<Queue<Span>>() {
+    @Override
+    protected Queue<Span> initialValue() {
+      return new LinkedList<>();
+    }
+  };
 
   public static void sendCommand(final Object command, final byte[][] args) {
     final Command cmd = (Command)command;
@@ -50,11 +53,15 @@ public class JedisAgentIntercept {
     if (args == null || args.length == 0)
       return null;
 
-    final List<String> commands = new ArrayList<>();
-    for (final byte[] arg : args)
-      commands.add(new String(arg, StandardCharsets.UTF_8));
+    final StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < args.length; ++i) {
+      if (i > 0)
+        builder.append(' ');
 
-    return String.join(" ", commands);
+      builder.append(new String(args[i], StandardCharsets.UTF_8));
+    }
+
+    return builder.toString();
   }
 
   public static void readCommandOutput() {

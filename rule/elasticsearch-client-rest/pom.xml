@@ -26,8 +26,6 @@
   <artifactId>elasticsearch-client-rest</artifactId>
   <name>SpecialAgent Rule for Elasticsearch Rest Client</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.apache.logging>2.11.2</version.apache.logging>
     <version.elasticsearch>6.4.0</version.elasticsearch>
     <sa.plugin.name>elasticsearch:client-rest</sa.plugin.name>

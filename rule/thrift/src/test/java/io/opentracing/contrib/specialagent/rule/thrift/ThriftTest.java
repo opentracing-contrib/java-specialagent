@@ -99,7 +99,7 @@ public class ThriftTest {
     final CustomService.Client client = new CustomService.Client(protocol);
     assertEquals("Say Good bye World", client.say("Good bye", "World"));
 
-    await().atMost(5, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(5, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -122,7 +122,7 @@ public class ThriftTest {
 
     assertEquals("no args", client.withoutArgs());
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -154,7 +154,7 @@ public class ThriftTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -181,7 +181,7 @@ public class ThriftTest {
 
     assertEquals("collision", client.withCollision("collision"));
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -206,7 +206,7 @@ public class ThriftTest {
 
     client.oneWayWithError();
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -231,7 +231,7 @@ public class ThriftTest {
 
     client.oneWay();
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -267,7 +267,7 @@ public class ThriftTest {
       }
     });
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
     assertEquals(1, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -304,7 +304,7 @@ public class ThriftTest {
       }
     });
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
     assertEquals(1, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -342,7 +342,7 @@ public class ThriftTest {
       });
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(8));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(8));
     assertEquals(4, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -377,7 +377,7 @@ public class ThriftTest {
       }
     });
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
     assertEquals(1, counter.get());
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -408,7 +408,7 @@ public class ThriftTest {
     assertEquals(user, userWithAddress.user);
     assertEquals(address, userWithAddress.address);
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> mockSpans = tracer.finishedSpans();
     assertEquals(2, mockSpans.size());
@@ -447,7 +447,7 @@ public class ThriftTest {
       }).start();
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(16));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(16));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(16, spans.size());
@@ -477,7 +477,7 @@ public class ThriftTest {
       assertEquals("no args", client.withoutArgs());
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(9));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(9));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(9, spans.size());

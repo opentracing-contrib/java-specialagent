@@ -45,11 +45,5 @@
       <version>${project.version}</version>
       <type>test-jar</type>
     </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib.specialagent.test</groupId>
-      <artifactId>servlet-jetty-8.2.0</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-    </dependency>
   </dependencies>
 </project>

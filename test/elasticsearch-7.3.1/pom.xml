@@ -26,8 +26,6 @@
   <artifactId>elasticsearch-7.3.1</artifactId>
   <name>SpecialAgent Test for Elasticsearch 7.3.1</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   <dependencies>
     <dependency>
