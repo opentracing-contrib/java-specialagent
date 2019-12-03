@@ -26,8 +26,6 @@
   <artifactId>feign</artifactId>
   <name>SpecialAgent Rule for Feign</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.feign>9.0.0</version.feign>
   </properties>
   <dependencies>

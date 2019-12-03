@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.rule.redisson;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -42,7 +43,13 @@ public class RedissonTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     redisServer = new RedisServer();
-    TestUtil.retry(redisServer::start, 10);
+    TestUtil.retry(new Callable<Void>() {
+      @Override
+      public Void call() throws Exception {
+        redisServer.start();
+        return null;
+      }
+    }, 10);
   }
 
   @Before

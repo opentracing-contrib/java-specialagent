@@ -15,19 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.boot.controller;
 
-import java.util.concurrent.CompletableFuture;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -49,30 +40,5 @@ public class AppController {
   public String helloSleuthNewSpan() {
     logger.info("New Span");
     return "success";
-  }
-
-  @RequestMapping("/data/{count}")
-  @Async("asyncExecutor")
-  public CompletableFuture<String> getData(@PathVariable final long count, final HttpServletResponse response) {
-    String respond = "No respond";
-    final HttpHeaders headers = new HttpHeaders();
-
-    // Span span = GlobalTracer.get().activeSpan();
-
-    // String auth = config.getSimpleAuth();
-    final HttpEntity<String> entity = new HttpEntity<>(headers);
-    try {
-      for (int i = 0; i < count; ++i) {
-        respond = restTemplate.exchange(config.getRemoteURL(), HttpMethod.GET, entity, String.class).getBody();
-        logger.info(i + " copapp2 returning " + respond);
-      }
-
-      logger.info("data with sleep " + respond);
-      return CompletableFuture.completedFuture("sleep for " + respond);
-    }
-    catch (final Exception e) {
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return CompletableFuture.completedFuture("exception " + e.getMessage());
-    }
   }
 }

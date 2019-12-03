@@ -43,6 +43,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
@@ -73,7 +74,7 @@ public class SpringRabbitMQTest {
       template.convertAndSend(QUEUE_NAME, "message");
       template.convertAndSend(QUEUE_NAME2, "message-2");
 
-      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
       assertEquals(2, counter.get());
       final List<MockSpan> spans = tracer.finishedSpans();

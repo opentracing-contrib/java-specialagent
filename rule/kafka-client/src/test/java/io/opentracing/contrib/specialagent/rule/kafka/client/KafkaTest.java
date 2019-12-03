@@ -52,6 +52,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
@@ -114,7 +115,7 @@ public class KafkaTest {
     final KafkaStreams streams = new KafkaStreams(builder.build(), config);
     streams.start();
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(3));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(3));
     streams.close();
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
@@ -132,20 +133,23 @@ public class KafkaTest {
     final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
     consumerProps.put("auto.offset.reset", "earliest");
 
-    Executors.newSingleThreadExecutor().execute(() -> {
-      try (final KafkaConsumer<Integer,String> consumer = new KafkaConsumer<>(consumerProps)) {
-        consumer.subscribe(Collections.singletonList("messages"));
-        while (latch.getCount() > 0) {
-          final ConsumerRecords<Integer,String> records = consumer.poll(100);
-          for (final ConsumerRecord<Integer,String> record : records) {
-            final SpanContext spanContext = TracingKafkaUtils.extractSpanContext(record.headers(), tracer);
-            assertNotNull(spanContext);
-            assertEquals("test", record.value());
-            if (key != null)
-              assertEquals(key, record.key());
+    Executors.newSingleThreadExecutor().execute(new Runnable() {
+      @Override
+      public void run() {
+        try (final KafkaConsumer<Integer,String> consumer = new KafkaConsumer<>(consumerProps)) {
+          consumer.subscribe(Collections.singletonList("messages"));
+          while (latch.getCount() > 0) {
+            final ConsumerRecords<Integer,String> records = consumer.poll(100);
+            for (final ConsumerRecord<Integer,String> record : records) {
+              final SpanContext spanContext = TracingKafkaUtils.extractSpanContext(record.headers(), tracer);
+              assertNotNull(spanContext);
+              assertEquals("test", record.value());
+              if (key != null)
+                assertEquals(key, record.key());
 
-            consumer.commitSync();
-            latch.countDown();
+              consumer.commitSync();
+              latch.countDown();
+            }
           }
         }
       }

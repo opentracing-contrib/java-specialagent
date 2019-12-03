@@ -26,8 +26,6 @@
   <artifactId>jms-1</artifactId>
   <name>SpecialAgent Rule for JMS 1</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.activemq>5.15.9</version.activemq>
     <sa.plugin.name>jms:1</sa.plugin.name>
   </properties>

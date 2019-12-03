@@ -26,8 +26,6 @@
   <artifactId>spring-boot</artifactId>
   <name>SpecialAgent Rule for Spring Boot</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.spring.boot>2.0.0.RELEASE</version.spring.boot>
     <version.reactor>3.2.12.RELEASE</version.reactor>
     <sa.plugin.name>spring:boot</sa.plugin.name>

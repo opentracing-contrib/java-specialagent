@@ -85,21 +85,23 @@ public class KafkaClientITest {
   }
 
   private static void createConsumer(final EmbeddedKafkaRule embeddedKafkaRule, final CountDownLatch latch) {
-    final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    executorService.execute(() -> {
-      final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
-      consumerProps.put("auto.offset.reset", "earliest");
-      try (final Consumer<Long,String> consumer = new KafkaConsumer<>(consumerProps)) {
-        consumer.subscribe(Collections.singletonList(TOPIC_NAME));
-        for (int i = 0; i < MESSAGE_COUNT;) {
-          final int count = consumer.poll(100).count();
-          for (int j = 0; j < count; ++j, ++i) {
-            consumer.commitSync();
+    Executors.newSingleThreadExecutor().execute(new Runnable() {
+      @Override
+      public void run() {
+        final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", embeddedKafkaRule.getEmbeddedKafka());
+        consumerProps.put("auto.offset.reset", "earliest");
+        try (final Consumer<Long,String> consumer = new KafkaConsumer<>(consumerProps)) {
+          consumer.subscribe(Collections.singletonList(TOPIC_NAME));
+          for (int i = 0; i < MESSAGE_COUNT;) {
+            final int count = consumer.poll(100).count();
+            for (int j = 0; j < count; ++j, ++i) {
+              consumer.commitSync();
+            }
           }
         }
-      }
 
-      latch.countDown();
+        latch.countDown();
+      }
     });
   }
 }

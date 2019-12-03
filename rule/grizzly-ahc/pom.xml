@@ -26,8 +26,6 @@
   <artifactId>grizzly-ahc</artifactId>
   <name>SpecialAgent Rule for Grizzly Async Http Client</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.grizzly-http-client>1.15</version.grizzly-http-client>
     <version.grizzly-http-server>2.3.35</version.grizzly-http-server>
   </properties>

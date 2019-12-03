@@ -26,8 +26,6 @@
   <artifactId>servlet</artifactId>
   <name>SpecialAgent Rule for Web Servlet Filter</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.apache.tomcat.embed>7.0.65</version.org.apache.tomcat.embed>
     <version.org.eclipse.jetty>9.0.0.v20130308</version.org.eclipse.jetty>
   </properties>

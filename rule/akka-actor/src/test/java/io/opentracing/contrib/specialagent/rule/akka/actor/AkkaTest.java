@@ -38,6 +38,7 @@ import akka.util.Timeout;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -76,7 +77,7 @@ public class AkkaTest {
     final ActorSelection actorSelection = system.actorSelection(actorRef.path());
     actorSelection.tell("tell-selection", ActorRef.noSender());
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(4));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(4));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(4, spans.size());
@@ -93,7 +94,7 @@ public class AkkaTest {
     final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
@@ -110,7 +111,7 @@ public class AkkaTest {
     final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());

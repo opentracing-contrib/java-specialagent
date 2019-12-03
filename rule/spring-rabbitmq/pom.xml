@@ -26,8 +26,6 @@
   <name>SpecialAgent Rule for RabbitMQ Spring</name>
   <artifactId>spring-rabbitmq</artifactId>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>spring:rabbitmq</sa.plugin.name>
   </properties>
   <dependencies>
