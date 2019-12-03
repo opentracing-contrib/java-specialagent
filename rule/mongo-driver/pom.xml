@@ -26,8 +26,6 @@
   <artifactId>mongo-driver</artifactId>
   <name>SpecialAgent Rule for MongoDB Driver</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.mongodb.mongo-java-driver>3.9.0</version.org.mongodb.mongo-java-driver>
     <sa.plugin.name>mongo:driver</sa.plugin.name>
   </properties>
