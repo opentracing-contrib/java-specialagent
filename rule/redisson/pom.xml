@@ -25,8 +25,6 @@
   <artifactId>redisson</artifactId>
   <name>SpecialAgent Rule for Redisson</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.opentracing.redis>0.1.14</version.opentracing.redis>
   </properties>
   <dependencies>

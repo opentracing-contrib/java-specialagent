@@ -35,6 +35,7 @@ import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
 import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -83,7 +84,7 @@ public class Aws2Test {
     catch (final Exception ignore) {
     }
 
-    await().atMost(60, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(60, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals("CreateTableRequest", spans.get(0).operationName());
@@ -102,7 +103,7 @@ public class Aws2Test {
     catch (final Exception ignore) {
     }
 
-    await().atMost(60, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(60, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals("CreateTableRequest", spans.get(0).operationName());

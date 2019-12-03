@@ -26,8 +26,6 @@
   <artifactId>hazelcast</artifactId>
   <name>SpecialAgent Rule for Hazelcast</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.hazelcast>3.12</version.hazelcast>
   </properties>
   <dependencies>

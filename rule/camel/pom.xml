@@ -26,8 +26,6 @@
   <artifactId>camel</artifactId>
   <name>SpecialAgent Rule for Apache Camel</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.apache.camel>2.24.0</version.org.apache.camel>
   </properties>
   <dependencies>

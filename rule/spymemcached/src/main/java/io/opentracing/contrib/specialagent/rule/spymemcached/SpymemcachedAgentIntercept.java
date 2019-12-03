@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.spymemcached;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer.SpanBuilder;
@@ -36,11 +37,21 @@ public class SpymemcachedAgentIntercept {
   @SuppressWarnings("unchecked")
   public static Object get(final Object key, final Object callback) {
     final SpanBuilder spanBuilder = spanBuilder("get");
+    if (key instanceof Collection) {
+      final Iterator<? extends CharSequence> iterator = ((Collection<? extends CharSequence>)key).iterator();
+      final StringBuilder builder = new StringBuilder();
+      for (int i = 0; iterator.hasNext(); ++i) {
+        if (i > 0)
+          builder.append(',');
 
-    if (key instanceof Collection)
-      spanBuilder.withTag("keys", String.join(",", (Collection<? extends CharSequence>)key));
-    else
+        builder.append(iterator.next());
+      }
+
+      spanBuilder.withTag("keys", builder.toString());
+    }
+    else {
       spanBuilder.withTag("key", key.toString()).start();
+    }
 
     final Span span = spanBuilder.start();
     return new TracingGetOperationCallback((GetOperation.Callback)callback, span);

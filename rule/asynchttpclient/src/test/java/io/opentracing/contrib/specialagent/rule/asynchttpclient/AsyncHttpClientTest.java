@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
@@ -55,7 +56,7 @@ public class AsyncHttpClientTest {
       }
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
     assertNull(tracer.activeSpan());
   }
@@ -85,7 +86,7 @@ public class AsyncHttpClientTest {
       }
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
     assertEquals(1, tracer.finishedSpans().size());
     assertEquals(1, counter.get());
     assertNull(tracer.activeSpan());

@@ -41,6 +41,7 @@ import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -86,7 +87,7 @@ public class AkkaHttpClientTest {
     catch (final Exception ignore) {
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());

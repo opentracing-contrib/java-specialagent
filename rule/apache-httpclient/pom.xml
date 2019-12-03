@@ -26,8 +26,6 @@
   <artifactId>apache-httpclient</artifactId>
   <name>SpecialAgent Rule for Apache HttpClient</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <sa.plugin.name>apache:httpclient</sa.plugin.name>
   </properties>
   <dependencies>
