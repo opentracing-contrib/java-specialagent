@@ -59,6 +59,7 @@ public class ElasticsearchTransportClientTest {
   private static Node node;
 
   @BeforeClass
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public static void startElasticsearch() throws Exception {
     final Settings settings = Settings.builder()
       .put("path.home", ES_WORKING_DIR)
@@ -71,7 +72,7 @@ public class ElasticsearchTransportClientTest {
       .put("transport.tcp.port", HTTP_TRANSPORT_PORT)
       .put("network.host", "127.0.0.1")
       .build();
-    final Collection<Class<? extends Plugin>> plugins = Collections.singletonList(Netty4Plugin.class);
+    final Collection plugins = Collections.singletonList(Netty4Plugin.class);
     node = new PluginConfigurableNode(settings, plugins);
     node.start();
   }
