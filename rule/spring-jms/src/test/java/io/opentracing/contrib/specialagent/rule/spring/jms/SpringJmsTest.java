@@ -48,6 +48,7 @@ import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
@@ -87,7 +88,7 @@ public class SpringJmsTest {
       final JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
       jmsTemplate.convertAndSend("mailbox", "message");
 
-      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
 
       assertEquals(1, counter.get());
       final List<MockSpan> spans = tracer.finishedSpans();
