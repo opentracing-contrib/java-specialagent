@@ -442,6 +442,22 @@
       </modules>
     </profile>
     <profile>
+      <id>spring-webmvc</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-webmvc-3.0.2</module>
+        <module>spring-webmvc-3.2.18</module>
+        <module>spring-webmvc-4.0.0</module>
+        <module>spring-webmvc-4.3.25</module>
+        <module>spring-webmvc-5.0.0</module>
+        <module>spring-webmvc-5.2.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
