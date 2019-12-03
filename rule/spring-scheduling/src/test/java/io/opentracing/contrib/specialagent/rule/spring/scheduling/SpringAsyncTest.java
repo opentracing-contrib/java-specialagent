@@ -23,18 +23,18 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -56,7 +56,7 @@ public class SpringAsyncTest {
       catch (final Exception ignore) {
       }
 
-      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(2));
+      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
       final List<MockSpan> spans = tracer.finishedSpans();
       assertEquals(2, spans.size());
       for (final MockSpan span : spans) {
@@ -70,7 +70,32 @@ public class SpringAsyncTest {
   public static class SpringAsyncConfiguration {
     @Async
     public Future<String> async() {
-      return new AsyncResult<>("whatever");
+      return new Future<String>() {
+        @Override
+        public boolean cancel(final boolean mayInterruptIfRunning) {
+          return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+          return false;
+        }
+
+        @Override
+        public boolean isDone() {
+          return false;
+        }
+
+        @Override
+        public String get() throws InterruptedException, ExecutionException {
+          return "whatever";
+        }
+
+        @Override
+        public String get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+          return get();
+        }
+      };
     }
 
     @Async

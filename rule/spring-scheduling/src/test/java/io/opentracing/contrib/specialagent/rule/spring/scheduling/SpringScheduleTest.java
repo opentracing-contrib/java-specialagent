@@ -31,6 +31,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -41,7 +42,7 @@ public class SpringScheduleTest {
   @Test
   public void test(final MockTracer tracer) {
     try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SpringScheduleConfiguration.class)) {
-      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), greaterThanOrEqualTo(1));
+      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), greaterThanOrEqualTo(1));
       final List<MockSpan> spans = tracer.finishedSpans();
       assertTrue(spans.size() >= 1);
       for (final MockSpan span : spans) {
