@@ -29,8 +29,9 @@ import org.springframework.web.client.RestTemplate;
 public class ZuulITest {
   public static void main(final String[] args) {
     TestUtil.initTerminalExceptionHandler();
-
     SpringApplication.run(ZuulITest.class, args).close();
+
+    TestUtil.checkSpan("zuul", 4);
   }
 
   @Bean
@@ -38,15 +39,11 @@ public class ZuulITest {
     return new CommandLineRunner() {
       @Override
       public void run(String... args) {
-
         RestTemplate restTemplate = new RestTemplate();
         final ResponseEntity<String> entity = restTemplate.getForEntity("http://localhost:8080", String.class);
-        if (entity.getStatusCode().value() != 200) {
-          throw new AssertionError("ERROR: Zuul failed");
-        }
-        System.out.println(entity.getStatusCode());
-
-        TestUtil.checkSpan("zuul", 4);
+        final int statusCode = entity.getStatusCode().value();
+        if (200 != statusCode)
+          throw new AssertionError("ERROR: response: " + statusCode);
       }
     };
   }
