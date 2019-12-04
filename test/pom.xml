@@ -442,6 +442,18 @@
       </modules>
     </profile>
     <profile>
+      <id>spring-scheduling</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-scheduling-5.0.0</module>
+        <module>spring-scheduling-5.2.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>spring-webmvc</id>
       <activation>
         <property>
