@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webmvc;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,36 +22,38 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 public class SpringWebMvcITest {
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
 
-    Server server = startServer();
+    final Server server = startServer();
 
-    URL obj = new URL("http://localhost:8080");
-    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+    final URL obj = new URL("http://localhost:8080");
+    final HttpURLConnection con = (HttpURLConnection)obj.openConnection();
     con.setRequestMethod("GET");
     final int responseCode = con.getResponseCode();
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
     server.stop();
-
     TestUtil.checkSpan("java-web-servlet", 1);
   }
 
   private static Server startServer() throws Exception {
-    Server server = new Server(8080);
+    final Server server = new Server(8080);
 
-    final WebAppContext ctx = new WebAppContext();
-    ctx.setServer(server);
-    ctx.setContextPath("/");
-    ctx.setWar(installWebApp().getPath());
+    final WebAppContext context = new WebAppContext();
+    context.setServer(server);
+    context.setContextPath("/");
+    context.setWar(installWebApp().getPath());
 
-    server.setHandler(ctx);
+    server.setHandler(context);
     server.start();
 
     return server;

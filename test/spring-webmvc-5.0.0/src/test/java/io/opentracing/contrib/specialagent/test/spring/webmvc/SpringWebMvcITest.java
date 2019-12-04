@@ -16,16 +16,15 @@
 package io.opentracing.contrib.specialagent.test.spring.webmvc;
 
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
+import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.TestUtil;
-import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 public class SpringWebMvcITest {
@@ -46,10 +45,10 @@ public class SpringWebMvcITest {
     return new CommandLineRunner() {
       @Override
       public void run(final String ... args) throws Exception {
-        URL obj = new URL("http://localhost:8080");
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        con.setRequestMethod("GET");
-        final int responseCode = con.getResponseCode();
+        final URL obj = new URL("http://localhost:8080");
+        final HttpURLConnection connection = (HttpURLConnection)obj.openConnection();
+        connection.setRequestMethod("GET");
+        final int responseCode = connection.getResponseCode();
         if (200 != responseCode)
           throw new AssertionError("ERROR: response: " + responseCode);
       }

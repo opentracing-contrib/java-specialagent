@@ -38,7 +38,6 @@
       <type>test-jar</type>
     </dependency>
   </dependencies>
-
   <dependencyManagement>
     <dependencies>
       <dependency>

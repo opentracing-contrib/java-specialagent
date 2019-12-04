@@ -12,21 +12,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.test.spring.scheduling;
 
-import io.opentracing.contrib.specialagent.TestUtil;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @Component
 public class AsyncComponent {
-
   @Async
   public Future<String> async() {
     TestUtil.checkActiveSpan();
-    return new AsyncResult<>("async");
-  }
+    return new Future<String>() {
+      @Override
+      public boolean cancel(final boolean mayInterruptIfRunning) {
+        return false;
+      }
 
+      @Override
+      public boolean isCancelled() {
+        return false;
+      }
+
+      @Override
+      public boolean isDone() {
+        return false;
+      }
+
+      @Override
+      public String get() throws InterruptedException, ExecutionException {
+        return "async";
+      }
+
+      @Override
+      public String get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return get();
+      }
+    };
+  }
 }

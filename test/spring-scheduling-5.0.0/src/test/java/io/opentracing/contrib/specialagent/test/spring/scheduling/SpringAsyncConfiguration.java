@@ -12,13 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.test.spring.scheduling;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @EnableScheduling
 @EnableAsync
@@ -28,5 +30,4 @@ public class SpringAsyncConfiguration {
   public void scheduledTask() {
     TestUtil.checkActiveSpan();
   }
-
 }

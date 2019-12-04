@@ -15,9 +15,10 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webmvc;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @RestController
 public class HelloController {
