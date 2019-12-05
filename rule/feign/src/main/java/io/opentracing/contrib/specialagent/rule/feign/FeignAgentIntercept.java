@@ -26,6 +26,7 @@ import feign.opentracing.FeignSpanDecorator.StandardTags;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -41,7 +42,8 @@ public class FeignAgentIntercept {
 
   public static Object onRequest(Object arg1, Object arg2) {
     Request request = (Request)arg1;
-    final Span span = GlobalTracer.get()
+    final Tracer tracer = GlobalTracer.get();
+    final Span span = tracer
       .buildSpan(request.method())
       .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
       .start();
@@ -50,7 +52,7 @@ public class FeignAgentIntercept {
 
     request = inject(span.context(), request);
 
-    final Scope scope = GlobalTracer.get().activateSpan(span);
+    final Scope scope = tracer.activateSpan(span);
     final Context context = new Context();
     contextHolder.set(context);
     context.scope = scope;
@@ -62,7 +64,7 @@ public class FeignAgentIntercept {
   private static Request inject(SpanContext spanContext, Request request) {
     final Map<String,Collection<String>> headersWithTracingContext = new HashMap<>(request.headers());
     GlobalTracer.get().inject(spanContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(headersWithTracingContext));
-    return request.create(request.method(), request.url(), headersWithTracingContext, request.body(), request.charset());
+    return Request.create(request.method(), request.url(), headersWithTracingContext, request.body(), request.charset());
   }
 
   public static void onResponse(final Object arg1, final Object arg2, final Object arg3, Exception e) {
