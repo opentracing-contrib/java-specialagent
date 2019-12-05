@@ -27,6 +27,12 @@
   <name>SpecialAgent Test for Netflix Zuul 1.0.0</name>
   <dependencies>
     <dependency>
+      <!-- in Java 11 javax.xml.bind is missing -->
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+    <dependency>
       <groupId>com.netflix.zuul</groupId>
       <artifactId>zuul-core</artifactId>
       <version>1.0.0</version>
