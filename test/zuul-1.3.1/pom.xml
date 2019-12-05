@@ -39,12 +39,6 @@
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib.specialagent.test</groupId>
-      <artifactId>zuul-1.0.0</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-    </dependency>
   </dependencies>
 
   <dependencyManagement>
