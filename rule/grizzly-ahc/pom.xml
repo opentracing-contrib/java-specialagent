@@ -28,6 +28,7 @@
   <properties>
     <version.grizzly-http-client>1.15</version.grizzly-http-client>
     <version.grizzly-http-server>2.3.35</version.grizzly-http-server>
+    <sa.plugin.name>grizzly:ahc</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
