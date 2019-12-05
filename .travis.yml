@@ -296,6 +296,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P mongo-driver install
+  - name: "Netflix Zuul [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P zuul install
+  - name: "Netflix Zuul [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P zuul install
   - name: "OkHttp [oraclejdk8]"
     stage: test
     jdk: oraclejdk8

@@ -523,7 +523,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | 5.2.1.RELEASE |
 | [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | 2.12.3 |
 | [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.12.0 |
-| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 2.1.8 |
+| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 1.3.1 |
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
