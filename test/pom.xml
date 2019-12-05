@@ -470,6 +470,18 @@
       </modules>
     </profile>
     <profile>
+      <id>spring-kafka</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-kafka-2.2.0</module>
+        <module>spring-kafka-2.3.3</module>
+      </modules>
+    </profile>
+    <profile>
       <id>zuul</id>
       <activation>
         <property>
