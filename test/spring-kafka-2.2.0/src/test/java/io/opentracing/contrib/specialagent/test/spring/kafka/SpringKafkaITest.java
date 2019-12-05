@@ -15,10 +15,10 @@
 
 package io.opentracing.contrib.specialagent.test.spring.kafka;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -34,6 +34,8 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @SpringBootApplication
 public class SpringKafkaITest {
@@ -63,7 +65,7 @@ public class SpringKafkaITest {
 
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
 
-    try(final ConfigurableApplicationContext context = SpringApplication.run(SpringKafkaITest.class, args)) {
+    try (final ConfigurableApplicationContext context = SpringApplication.run(SpringKafkaITest.class, args)) {
       TestUtil.checkSpan("java-kafka", 6, latch);
     }
     embeddedKafkaRule.after();
@@ -73,28 +75,27 @@ public class SpringKafkaITest {
   }
 
   @Bean
-  public ProducerFactory<String, String> producerFactory() {
+  public ProducerFactory<String,String> producerFactory() {
     return new DefaultKafkaProducerFactory<>(KafkaTestUtils.producerProps(kafkaEmbedded));
   }
 
   @Bean
-  public ConsumerFactory<String, String> consumerFactory() {
-    final Map<String, Object> consumerProps = KafkaTestUtils
-        .consumerProps("sampleRawConsumer", "false", kafkaEmbedded);
+  public ConsumerFactory<String,String> consumerFactory() {
+    final Map<String,Object> consumerProps = KafkaTestUtils.consumerProps("sampleRawConsumer", "false", kafkaEmbedded);
     consumerProps.put("auto.offset.reset", "earliest");
     return new DefaultKafkaConsumerFactory<>(consumerProps);
   }
 
   @Bean
-  public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
-    ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+  public ConcurrentKafkaListenerContainerFactory<String,String> kafkaListenerContainerFactory() {
+    final ConcurrentKafkaListenerContainerFactory<String,String> factory = new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory());
     factory.setReplyTemplate(kafkaTemplate());
     return factory;
   }
 
   @Bean
-  public KafkaTemplate<String, String> kafkaTemplate() {
+  public KafkaTemplate<String,String> kafkaTemplate() {
     return new KafkaTemplate<>(producerFactory());
   }
 
@@ -107,5 +108,4 @@ public class SpringKafkaITest {
       }
     };
   }
-
 }
