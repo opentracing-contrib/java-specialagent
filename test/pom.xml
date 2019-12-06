@@ -482,6 +482,18 @@
       </modules>
     </profile>
     <profile>
+      <id>spring-rabbitmq</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-rabbitmq-2.0.0</module>
+        <module>spring-rabbitmq-2.2.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>zuul</id>
       <activation>
         <property>
