@@ -25,6 +25,9 @@
   </parent>
   <artifactId>spring-rabbitmq-2.0.0</artifactId>
   <name>SpecialAgent Test for Spring RabbitMQ 2.0.0</name>
+  <properties>
+    <version.qpid>7.1.0</version.qpid>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.amqp</groupId>
@@ -38,17 +41,17 @@
     <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-broker-core</artifactId>
-      <version>7.1.0</version>
+      <version>${version.qpid}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-broker-plugins-amqp-0-8-protocol</artifactId>
-      <version>7.1.0</version>
+      <version>${version.qpid}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-broker-plugins-memory-store</artifactId>
-      <version>7.1.0</version>
+      <version>${version.qpid}</version>
     </dependency>
   </dependencies>
   <dependencyManagement>
