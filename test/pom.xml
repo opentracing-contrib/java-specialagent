@@ -506,6 +506,18 @@
       </modules>
     </profile>
     <profile>
+      <id>spring-jms</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-jms-5.0.0</module>
+        <module>spring-jms-5.2.2</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>

@@ -376,6 +376,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P rxjava install
+  - name: "Spring JMS [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P spring-jms install
+  - name: "Spring JMS [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P spring-jms install
   - name: "Spring Kafka [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
