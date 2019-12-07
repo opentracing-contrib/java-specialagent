@@ -15,9 +15,10 @@
 
 package io.opentracing.contrib.specialagent.test.spring.jms;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.concurrent.CountDownLatch;
+
 import javax.jms.ConnectionFactory;
+
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -35,16 +36,17 @@ import org.springframework.jms.support.converter.MappingJackson2MessageConverter
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 @SpringBootApplication
 @EnableJms
 public class SpringJMSITest {
-
   @Autowired
   private JmsTemplate jmsTemplate;
 
   @Bean
   public JmsListenerContainerFactory<?> myFactory(DefaultJmsListenerContainerFactoryConfigurer configurer) {
-    DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+    final DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
     configurer.configure(factory, connectionFactory());
     return factory;
   }
@@ -56,14 +58,14 @@ public class SpringJMSITest {
 
   @Bean
   public MessageConverter jacksonJmsMessageConverter() {
-    MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+    final MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
     converter.setTargetType(MessageType.TEXT);
     converter.setTypeIdPropertyName("_type");
     return converter;
   }
 
   @JmsListener(destination = "mailbox", containerFactory = "myFactory")
-  public void receiveMessage(String message) {
+  public void receiveMessage(final String message) {
     System.out.println("Received <" + message + ">");
     TestUtil.checkActiveSpan();
   }
@@ -72,7 +74,7 @@ public class SpringJMSITest {
   public CommandLineRunner commandLineRunner() {
     return new CommandLineRunner() {
       @Override
-      public void run(String... args) {
+      public void run(final String ... args) {
         jmsTemplate.convertAndSend("mailbox", "hello");
       }
     };
@@ -80,13 +82,9 @@ public class SpringJMSITest {
 
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(3);
-
-    try(final ConfigurableApplicationContext context = SpringApplication.run(SpringJMSITest.class, args)) {
+    try (final ConfigurableApplicationContext context = SpringApplication.run(SpringJMSITest.class, args)) {
       TestUtil.checkSpan("java-jms", 3, latch);
     }
-
   }
-
 }
