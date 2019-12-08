@@ -37,6 +37,7 @@
         </property>
       </activation>
       <modules>
+        <module>method</module>
         <module>spring-boot</module>
         <module>okhttp</module>
         <module>jdbc</module>

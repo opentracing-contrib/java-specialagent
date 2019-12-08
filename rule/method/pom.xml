@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+        <artifactId>rule</artifactId>
+        <version>1.5.3-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>method</artifactId>
+    <name>SpecialAgent Rule for Method</name>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <sa.plugin.name>method</sa.plugin.name>
+        <version.play.ws>1.0.0</version.play.ws>
+        <version.spring>5.0.0.RELEASE</version.spring>
+    </properties>
+
+</project>
