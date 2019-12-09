@@ -101,8 +101,13 @@ public class SpecialAgent extends SpecialAgentBase {
 
     final VirtualMachine vm = VirtualMachine.attach(args[0]);
     final String agentPath = SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    final StringBuilder inputArguments = SpecialAgentUtil.getInputArguments();
+    if (inputArguments.length() > 0)
+      inputArguments.append(' ');
+
+    inputArguments.append("-D").append(INIT_DEFER).append("=dynamic");
     try {
-      vm.loadAgent(agentPath, SpecialAgentUtil.getInputArguments());
+      vm.loadAgent(agentPath, inputArguments.toString());
     }
     finally {
       vm.detach();
@@ -490,12 +495,19 @@ public class SpecialAgent extends SpecialAgentBase {
         final List<DeferredAttach> deferrers = manager.initRules(agentRules, pluginsClassLoader, ruleJarToIndex, pluginManifestDirectory);
 
         final String initDeferProperty = System.getProperty(INIT_DEFER);
-        isStaticDeferredAttach = initDeferProperty == null || !"false".equals(initDeferProperty);
+        final boolean isDynamicAttach;
+        if (initDeferProperty == null)
+          isDynamicAttach = false;
+        else if (!(isDynamicAttach = "dynamic".equals(initDeferProperty)))
+          isStaticDeferredAttach = !"false".equals(initDeferProperty);
 
         final String displayString = isStaticDeferredAttach ? "Enabled: true (default)   " : "    Enabled: false        ";
         logger.info(".==============================================================.");
         logger.info("|                    Static Deferred Attach                    |");
         logger.info("|                    " + displayString + "                |");
+        if (isDynamicAttach)
+          logger.info("|                    (using dynamic attach)                    |");
+
         logger.info("|==============================================================|");
         if (isStaticDeferredAttach) {
           logger.info("|               To disable Static Deferred Attach,             |");
@@ -504,10 +516,13 @@ public class SpecialAgent extends SpecialAgentBase {
         }
 
         if (deferrers == null) {
-          if (isStaticDeferredAttach)
+          if (isStaticDeferredAttach) {
             logger.info("' 0 deferrers were detected, overriding to: -Dsa.init.defer=false");
-          else
+            isStaticDeferredAttach = false;
+          }
+          else {
             logger.info("' 0 deferrers were detected");
+          }
         }
         else {
           logger.info("' " + deferrers.size() + " deferrers were detected:");
