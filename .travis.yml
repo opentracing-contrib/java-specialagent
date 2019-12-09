@@ -396,6 +396,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P spring-kafka install
+  - name: "Spring Messaging [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P spring-messaging install
+  - name: "Spring Messaging [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P spring-messaging install
   - name: "Spring RabbitMQ [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
