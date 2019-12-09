@@ -33,19 +33,20 @@ public class Logger {
   }
 
   static void init() {
-    try {
-      // Load user log level
-      final String logLevelProperty = System.getProperty(LOG_LEVEL_PROPERTY);
-      if (logLevelProperty != null)
-        Logger.setLevel(Level.parse(logLevelProperty));
+    // Load user log level
+    final String logLevelProperty = System.getProperty(LOG_LEVEL_PROPERTY);
+    if (logLevelProperty != null)
+      Logger.setLevel(Level.parse(logLevelProperty));
 
-      // Load user log file
-      final String logFileProperty = System.getProperty(LOG_FILE_PROPERTY);
-      if (logFileProperty != null)
+    // Load user log file
+    final String logFileProperty = System.getProperty(LOG_FILE_PROPERTY);
+    if (logFileProperty != null) {
+      try {
         Logger.setOut(new PrintStream(new FileOutputStream(logFileProperty), true));
-    }
-    catch (final FileNotFoundException e) {
-      throw new ExceptionInInitializerError(e);
+      }
+      catch (final FileNotFoundException e) {
+        throw new ExceptionInInitializerError(e);
+      }
     }
   }
 

@@ -82,7 +82,7 @@ public final class SpecialAgentUtil {
     return new JarFile(file);
   }
 
-  static String getInputArguments() {
+  static StringBuilder getInputArguments() {
     final StringBuilder builder = new StringBuilder();
     final Iterator<String> iterator = ManagementFactory.getRuntimeMXBean().getInputArguments().iterator();
     for (int i = 0; iterator.hasNext(); ++i) {
@@ -92,7 +92,7 @@ public final class SpecialAgentUtil {
       builder.append(iterator.next());
     }
 
-    return builder.toString();
+    return builder;
   }
 
   private static URL getJavaAgentJar(final String arg) throws MalformedURLException {
