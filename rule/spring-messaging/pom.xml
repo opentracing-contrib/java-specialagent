@@ -29,7 +29,7 @@
     <!-- FIXME: Can this be reduced to 1.7? -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.spring>5.1.0.RELEASE</version.spring>
+    <version.spring>5.1.1.RELEASE</version.spring>
     <version.spring.cloud>2.2.0.RELEASE</version.spring.cloud>
     <sa.plugin.name>spring:messaging</sa.plugin.name>
   </properties>
