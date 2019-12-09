@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.test.spring.messaging;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +23,15 @@ import org.springframework.messaging.Message;
 
 @EnableBinding(Source.class)
 public class Sender {
-
   private final Source source;
 
   @Autowired
-  public Sender(Source source) {
+  public Sender(final Source source) {
     this.source = source;
   }
 
-  public void send(String payload) {
-    Message<String> message = MessageBuilder.withPayload(payload).build();
+  public void send(final String payload) {
+    final Message<String> message = MessageBuilder.withPayload(payload).build();
     source.output().send(message);
   }
-
 }

@@ -12,20 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.test.spring.messaging;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Sink;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 @EnableBinding(Sink.class)
 public class Receiver {
-
   @StreamListener(Sink.INPUT)
-  public void receive(String message) {
+  public void receive(final String message) {
     TestUtil.checkActiveSpan();
     System.out.println("Received " + message);
   }
-
 }
