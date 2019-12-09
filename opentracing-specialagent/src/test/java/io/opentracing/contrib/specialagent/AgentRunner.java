@@ -56,22 +56,21 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
  * A JUnit runner that is designed to run tests for instrumentation rules that
- * have auto-instrumentation rules implemented as per the {@link AgentRule}
- * API.
+ * have auto-instrumentation rules implemented as per the {@link AgentRule} API.
  * <p>
- * The {@code AgentRunner} uses ByteBuddy's self-attach methodology to obtain
- * the {@code Instrumentation} instance. This architecture allows tests with the
- * {@code @RunWith(AgentRunner.class)} annotation to be run from any environment
- * (i.e. from Maven's Surefire plugin, from an IDE, or directly via JUnit
- * itself).
+ * The {@link AgentRunner} uses ByteBuddy's self-attach methodology to obtain
+ * the {@link Instrumentation} instance. This architecture allows tests with the
+ * {@link org.junit.runner.RunWith @RunWith(AgentRunner.class)} annotation to be
+ * run from any environment (i.e. from Maven's Surefire plugin, from an IDE, or
+ * directly via JUnit itself).
  * <p>
- * The {@code AgentRunner} has a facility to "raise" the classes loaded for the
- * purpose of the test into an isolated {@code ClassLoader} (see
+ * The {@link AgentRunner} has a facility to "raise" the classes loaded for the
+ * purpose of the test into an isolated {@link ClassLoader} (see
  * {@link Config#isolateClassLoader()}). This allows the test to ensure that
- * instrumentation is successful for classes that are loaded in a
- * class loader that is not the System or Bootstrap class loader.
+ * instrumentation is successful for classes that are loaded in a class loader
+ * that is not the System or Bootstrap class loader.
  * <p>
- * The {@code AgentRunner} also has a facility to aide in debugging of the
+ * The {@link AgentRunner} also has a facility to aide in debugging of the
  * runner's runtime Please refer to {@link Config}.
  *
  * @author Seva Safris
@@ -137,7 +136,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Annotation to specify configuration parameters for {@code AgentRunner} test methods.
+   * Annotation to specify configuration parameters for {@link AgentRunner} test methods.
    */
   @Target(ElementType.METHOD)
   @Retention(RetentionPolicy.RUNTIME)
@@ -151,7 +150,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Annotation to specify configuration parameters for {@code AgentRunner}.
+   * Annotation to specify configuration parameters for {@link AgentRunner}.
    */
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
@@ -166,91 +165,100 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     Level log() default Level.WARNING;
 
     /**
-     * The events to be outputted during re/transformation.
+     * Events to be logged during re/transformation.
      * <p>
      * Default: <code>{Event.ERROR}</code>.
      *
-     * @return The events to be outputted during re/transformation.
+     * @return Events to be logged during re/transformation.
      */
     Event[] events() default {Event.ERROR};
 
     /**
-     * If {@code true}, Static Deferred Attach is enabled.
-     * <p>
-     * If {@code false}, Static Deferred Attach is disabled.
+     * Whether <u>Static Deferred Attach</u> is to be enabled.
      * <p>
      * Default: <code>false</code>.
      *
-     * @return If {@code true}, Static Deferred Attach is enabled. If
-     *         {@code false}, Static Deferred Attach is disabled.
+     * @return Whether <u>Static Deferred Attach</u> is to be enabled.
      */
     boolean defer() default false;
 
     /**
-     * Names of plugins (either instrumentation or tracer) to disable in the
-     * test runtime.
+     * System properties to be set.
      * <p>
      * Default: <code>{}</code>.
      *
-     * @return Names of plugins (either instrumentation or tracer) to disable in
-     *         the test runtime.
+     * @return System properties to be set.
+     */
+    String[] properties() default {};
+
+    /**
+     * Names of plugins (either instrumentation or tracer) to be disabled.
+     * <p>
+     * Default: <code>{}</code>.
+     *
+     * @return Names of plugins (either instrumentation or tracer) to be
+     *         disabled.
      */
     String[] disable() default {};
 
     /**
-     * Whether the plugin should run in verbose mode.
+     * Whether the plugin is to be run in verbose mode.
      * <p>
      * Default: <code>false</code>.
      *
-     * @return Whether the plugin should run in verbose mode.
+     * @return Whether the plugin is to be run in verbose mode.
      */
     boolean verbose() default false;
 
     /**
-     * @return Whether the tests should be run in a class loader that is
-     *         isolated from the system class loader (i.e. a {@code ClassLoader}
-     *         with a {@code null} parent). <blockquote> <i><b>Important</b>:
-     *         All attempts should be taken to avoid setting this property to
-     *         {@code false}.
-     *         <p>
-     *         It is important to note that this option should only be set to
-     *         {@code false} in special situations, such as if a test relies on
-     *         an integrated module that does not function properly if the class
-     *         loader of its classes is isolated.
-     *         <p>
-     *         If this property is set to {@code false}, the {@code AgentRunner}
-     *         runtime disables all testing that asserts proper functionality of
-     *         the rule when the 3rd-party library it is instrumenting is
-     *         loaded in a class loader that is _not_ the system class loader.
-     *         <p>
-     *         <ins>By disabling this facet of the {@code AgentRunner}, the test
-     *         may pass, but the rule may fail in real-world
-     *         application.</ins>
-     *         <p>
-     *         If this property is set to {@code false}, the build will print a
-     *         <b>WARN</b>-level log message, to warn the developer that
-     *         {@code isolateClassLoader=false}.</i> </blockquote> Default:
-     *         {@code true}.
+     * Whether the tests are to be run in a class loader that is isolated from
+     * the system class loader (i.e. a {@link ClassLoader} with a {@code null}
+     * parent).
+     * <p>
+     * <blockquote><i><b>Important</b>: All attempts should be taken to avoid
+     * setting this property to {@code false}.
+     * <p>
+     * It is important to note that this option should only be set to
+     * {@code false} in special situations, such as if a test relies on an
+     * integrated module that does not function properly if the class loader of
+     * its classes is isolated.
+     * <p>
+     * If this property is set to {@code false}, the {@link AgentRunner} runtime
+     * disables all testing that asserts proper functionality of the rule when
+     * the 3rd-party library it is instrumenting is loaded in a class loader
+     * that is _not_ the system class loader.
+     * <p>
+     * <ins>By disabling this facet of the {@link AgentRunner}, the test may
+     * pass, but the rule may fail in real-world application.</ins>
+     * <p>
+     * If this property is set to {@code false}, the build will print a
+     * <b>WARN</b>-level log message, to warn the developer that
+     * {@code isolateClassLoader=false}.</i> </blockquote> Default:
+     * {@code true}.
+     *
+     * @return Whether the tests are to be run in a class loader that is
+     *         isolated from the system class loader (i.e. a {@link ClassLoader}
+     *         with a {@code null} parent).
      */
     boolean isolateClassLoader() default true;
   }
 
   /**
-   * Loads the specified class in an isolated {@code URLClassLoader}. The class
+   * Loads the specified class in an isolated {@link URLClassLoader}. The class
    * loader will be initialized with the process classpath, and will be detached
-   * from the System {@code ClassLoader}. This construct guarantees that any
+   * from the System {@link ClassLoader}. This construct guarantees that any
    * {@code cls} passed to this function will be unable to resolve classes in
-   * the System {@code ClassLoader}.
+   * the System {@link ClassLoader}.
    * <p>
    * <i><b>Note:</b> If {@code cls} is present in the Bootstrap
-   * {@code ClassLoader}, it will be resolved in the Bootstrap
-   * {@code ClassLoader} instead of the {@code URLClassLoader} created by this
+   * {@link ClassLoader}, it will be resolved in the Bootstrap
+   * {@link ClassLoader} instead of the {@link URLClassLoader} created by this
    * function.</i>
    *
-   * @param testClass The test class to load in the {@code URLClassLoader}.
-   * @return The class loaded in the {@code URLClassLoader}.
+   * @param testClass The test class to load in the {@link URLClassLoader}.
+   * @return The class loaded in the {@link URLClassLoader}.
    * @throws InitializationError If the specified class cannot be located by the
-   *           {@code URLClassLoader}.
+   *           {@link URLClassLoader}.
    * @throws InterruptedException If a required Maven subprocess is interrupted.
    */
   private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
@@ -291,7 +299,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           if (pluginClasses.contains(resourceName))
             return null;
 
-          // Test classes must be resolvable by the classpath {@code URL[]} of
+          // Test classes must be resolvable by the classpath {@link URL URL[]} of
           // this {@code URLClassLoader}.
           // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
           if (testClasses.contains(resourceName))
@@ -314,9 +322,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Find the rule paths using the specified dependencies TGF {@code URL}.
+   * Find the rule paths using the specified dependencies TGF {@link URL}.
    *
-   * @param dependenciesUrl The {@code URL} pointing to the dependencies TGF
+   * @param dependenciesUrl The {@link URL} pointing to the dependencies TGF
    *          file.
    * @return A list of the rule paths.
    * @throws IOException If an I/O error has occurred.
@@ -376,7 +384,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Creates a new {@code AgentRunner} for the specified test class.
+   * Creates a new {@link AgentRunner} for the specified test class.
    *
    * @param testClass The test class.
    * @throws InitializationError If the test class is malformed, or if the
@@ -395,6 +403,21 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       isStaticDeferredAttach = false;
     }
     else {
+      for (int i = 0; i < config.properties().length; ++i) {
+        if (config.properties()[i] == null)
+          continue;
+
+        final String property = config.properties()[i].trim();
+        if (property.length() == 0)
+          continue;
+
+        final int eq = property.indexOf('=');
+        if (eq > 0)
+          System.setProperty(property.substring(0, eq).trim(), property.substring(eq + 1).trim());
+        else
+          System.setProperty(property, "");
+      }
+
       setDisable(config.disable());
       if (config.verbose())
         setVerbose(true);
@@ -485,14 +508,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Creates the {@code TestClass} object for this JUnit runner with the
+   * Creates the {@link TestClass} object for this JUnit runner with the
    * specified test class.
    * <p>
-   * This method has been overridden to retrofit the {@code FrameworkMethod}
+   * This method has been overridden to retrofit the {@link FrameworkMethod}
    * objects.
    *
    * @param testClass The test class.
-   * @return The {@code TestClass} object for this JUnit runner with the
+   * @return The {@link TestClass} object for this JUnit runner with the
    *         specified test class.
    */
   @Override
@@ -520,11 +543,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Retrofits the specified {@code FrameworkMethod} to work with the forked
+   * Retrofits the specified {@link FrameworkMethod} to work with the forked
    * testing architecture of this runner.
    *
-   * @param method The {@code FrameworkMethod} to retrofit.
-   * @return The retrofitted {@code FrameworkMethod}.
+   * @param method The {@link FrameworkMethod} to retrofit.
+   * @return The retrofitted {@link FrameworkMethod}.
    */
   private FrameworkMethod retrofitMethod(final FrameworkMethod method) {
     return new FrameworkMethod(method.getMethod()) {
