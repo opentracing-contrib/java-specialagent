@@ -12,21 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.test.spring.websocket;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 @RestController
 public class HelloController {
-
   @MessageMapping("/hello")
   @SendTo("/topic/greetings")
-  public String greeting(String message) {
+  public String greeting(final String message) {
     TestUtil.checkActiveSpan();
     return message.toUpperCase();
   }
-
 }

@@ -15,16 +15,15 @@
 
 package io.opentracing.contrib.specialagent.test.spring.websocket;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -39,6 +38,8 @@ import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 @SpringBootApplication
 public class SpringWebSocketITest {
   private static final String SEND_HELLO_MESSAGE_ENDPOINT = "/app/hello";
@@ -50,17 +51,16 @@ public class SpringWebSocketITest {
   }
 
   @Bean
-  public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+  public CommandLineRunner commandLineRunner() {
     return new CommandLineRunner() {
       @Override
-      public void run(String... args) throws Exception {
-        String url = "ws://localhost:8080/test-websocket";
+      public void run(final String ... args) throws Exception {
+        final String url = "ws://localhost:8080/test-websocket";
 
-        WebSocketStompClient stompClient = new WebSocketStompClient(
-            new SockJsClient(createTransportClient()));
+        final WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(createTransportClient()));
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-        StompSession stompSession = stompClient.connect(url, new StompSessionHandlerAdapter() {
+        final StompSession stompSession = stompClient.connect(url, new StompSessionHandlerAdapter() {
         }).get(10, TimeUnit.SECONDS);
 
         stompSession.subscribe(SUBSCRIBE_GREETINGS_ENDPOINT, new GreetingStompFrameHandler());
@@ -70,31 +70,27 @@ public class SpringWebSocketITest {
   }
 
   private static List<Transport> createTransportClient() {
-    List<Transport> transports = new ArrayList<>();
+    final List<Transport> transports = new ArrayList<>();
     transports.add(new WebSocketTransport(new StandardWebSocketClient()));
     return transports;
   }
 
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
-
-    try(ConfigurableApplicationContext context = SpringApplication.run(SpringWebSocketITest.class, args)) {
+    try (final ConfigurableApplicationContext context = SpringApplication.run(SpringWebSocketITest.class, args)) {
       TestUtil.checkSpan("websocket", 6, latch);
     }
-
   }
 
   private static class GreetingStompFrameHandler implements StompFrameHandler {
-
     @Override
-    public Type getPayloadType(StompHeaders stompHeaders) {
+    public Type getPayloadType(final StompHeaders stompHeaders) {
       return String.class;
     }
 
     @Override
-    public void handleFrame(StompHeaders stompHeaders, Object o) {
+    public void handleFrame(final StompHeaders stompHeaders, final Object o) {
     }
   }
 }
