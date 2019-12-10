@@ -446,6 +446,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P spring-webflux install
+  - name: "Spring WebSocket [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P spring-websocket install
+  - name: "Spring WebSocket [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P spring-websocket install
   - name: "Spring Web MVC [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
