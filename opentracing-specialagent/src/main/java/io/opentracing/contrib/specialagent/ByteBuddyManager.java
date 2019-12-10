@@ -205,9 +205,11 @@ public class ByteBuddyManager extends Manager {
 
   private void loadAgentRule(final AgentRule agentRule, final AgentBuilder agentBuilder, final int index, final Event[] events) throws Exception {
     final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
-    for (final AgentBuilder builder : builders) {
-//      assertParent(agentBuilder, builder);
-      builder.with(new TransformationListener(index, events)).installOn(inst);
+    if (builders != null) {
+      for (final AgentBuilder builder : builders) {
+//        assertParent(agentBuilder, builder);
+        builder.with(new TransformationListener(index, events)).installOn(inst);
+      }
     }
   }
 
