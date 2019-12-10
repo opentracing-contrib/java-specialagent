@@ -102,6 +102,14 @@ public class SpecialAgent extends SpecialAgentBase {
     final VirtualMachine vm = VirtualMachine.attach(args[0]);
     final String agentPath = SpecialAgent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     final StringBuilder inputArguments = SpecialAgentUtil.getInputArguments();
+    final int logFileProperty = inputArguments.indexOf("-Dsa.log.file=");
+    if (logFileProperty > 0) {
+      final int start = logFileProperty + 14;
+      final int end = Math.max(inputArguments.indexOf(" ", start), inputArguments.length());
+      final String filePath = inputArguments.substring(start, end);
+      inputArguments.replace(start, end, new File(filePath).getAbsolutePath());
+    }
+
     if (inputArguments.length() > 0)
       inputArguments.append(' ');
 
