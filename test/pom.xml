@@ -542,6 +542,17 @@
       </modules>
     </profile>
     <profile>
+      <id>httpurlconnection</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>httpurlconnection</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>

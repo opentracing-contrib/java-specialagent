@@ -394,6 +394,12 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>httpurlconnection</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
