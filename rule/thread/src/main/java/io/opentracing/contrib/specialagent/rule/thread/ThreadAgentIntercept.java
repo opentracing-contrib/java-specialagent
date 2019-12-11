@@ -29,14 +29,16 @@ public class ThreadAgentIntercept {
   private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
 
   static {
-    try {
-      if (ThreadAgentIntercept.class.getClassLoader() != null)
-        cache = (Map<Long,Span>)BootProxyClassLoader.INSTANCE.loadClass(ThreadAgentIntercept.class.getName()).getField("cache").get(null);
-      else
-        cache = new ConcurrentHashMap<>();
+    if (ThreadAgentIntercept.class.getClassLoader() == null) {
+      cache = new ConcurrentHashMap<>();
     }
-    catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-      throw new ExceptionInInitializerError(e);
+    else {
+      try {
+        cache = (Map<Long,Span>)BootProxyClassLoader.INSTANCE.loadClass(ThreadAgentIntercept.class.getName()).getField("cache").get(null);
+      }
+      catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+        throw new ExceptionInInitializerError(e);
+      }
     }
   }
 
