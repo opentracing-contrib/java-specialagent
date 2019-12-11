@@ -57,6 +57,6 @@ public class GrizzlyHttpServerITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("java-grizzly-http-server", 1);
+    TestUtil.checkSpan("java-grizzly-http-server", 2);
   }
 }

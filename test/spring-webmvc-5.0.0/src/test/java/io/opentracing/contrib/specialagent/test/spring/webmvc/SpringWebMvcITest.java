@@ -32,7 +32,7 @@ public class SpringWebMvcITest {
     TestUtil.initTerminalExceptionHandler();
     SpringApplication.run(SpringWebMvcITest.class, args).close();
 
-    TestUtil.checkSpan("java-web-servlet", 1);
+    TestUtil.checkSpan("java-web-servlet", 2);
   }
 
   @Bean

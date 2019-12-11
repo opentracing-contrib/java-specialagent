@@ -47,10 +47,10 @@ public class PlayITest {
 
     final String playVersion = PlayVersion.current();
     if (playVersion.startsWith("2.6")) {
-      TestUtil.checkSpan("play", 2); // 1 Play span + 1 Akka Actor span
+      TestUtil.checkSpan("play", 3); // 1 Play span + 1 Akka Actor span + 1 HttpUrlConnection span
     }
     else {
-      TestUtil.checkSpan("play", 1);
+      TestUtil.checkSpan("play", 2);
     }
   }
 }

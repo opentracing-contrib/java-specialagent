@@ -59,6 +59,6 @@ public class JettyAsyncITest {
       server.join();
     }
 
-    TestUtil.checkSpan("java-web-servlet", 1);
+    TestUtil.checkSpan("java-web-servlet", 2);
   }
 }

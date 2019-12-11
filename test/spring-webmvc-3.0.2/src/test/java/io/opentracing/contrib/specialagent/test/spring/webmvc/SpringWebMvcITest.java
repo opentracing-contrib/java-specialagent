@@ -42,7 +42,7 @@ public class SpringWebMvcITest {
       throw new AssertionError("ERROR: response: " + responseCode);
 
     server.stop();
-    TestUtil.checkSpan("java-web-servlet", 1);
+    TestUtil.checkSpan("java-web-servlet", 2);
   }
 
   private static Server startServer() throws Exception {

@@ -70,6 +70,6 @@ public class AkkaHttpServerITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("akka-http-server", 1);
+    TestUtil.checkSpan("akka-http-server", 2);
   }
 }
