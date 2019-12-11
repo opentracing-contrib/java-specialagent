@@ -267,19 +267,30 @@ The following properties are supported by all [<ins>Instrumentation Plugins</ins
 
 1. Logging:
 
-   The `-Dsa.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
+   * `-Dsa.log.level`
 
-   The `-Dsa.log.events` system property can be used to set the re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, the `ERROR` event is logged (only when run with `AgentRunner`).
+     Set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
 
-   The `-Dsa.log.file` system property can be used to set the logging output file for <ins>SpecialAgent</ins>.
+   * `-Dsa.log.events`
 
-1. Verbose Mode: `-Dsa.instrumentation.plugin.*.verbose`, `-Dsa.instrumentation.plugin.${RULE_NAME_PATTERN}.verbose`
+     Set the re/transformation events to be logged: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, the `ERROR` event is logged (only when run with `AgentRunner`).
 
-   Sets verbose mode for all or one plugin (Default: false). This property can also be set in an `AgentRunner` JUnit test with the `@AgentRunner.Config(verbose=true)` for all tests in a JUnit class, or `@AgentRunner.TestConfig(verbose=true)` for an individual JUnit test method.
+   * `-Dsa.log.file`
+
+     Set the logging output file for <ins>SpecialAgent</ins>.
+
+1. Verbose Mode:
+
+   &nbsp;&nbsp;&nbsp;&nbsp;`-Dsa.instrumentation.plugin.*.verbose`<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;`-Dsa.instrumentation.plugin.${RULE_NAME_PATTERN}.verbose`
+
+   Sets verbose mode for all plugins (i.e. `*`) or one plugin (i.e. `${RULE_NAME_PATTERN}`). This property can also be set in an `AgentRunner` JUnit test with the `@AgentRunner.Config(verbose=true)` for all tests in a JUnit class, or `@AgentRunner.TestConfig(verbose=true)` for an individual JUnit test method.
 
    Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
 
-1. Skip fingerprint verification: `-Dsa.fingerprint.skip`
+1. Skip fingerprint verification:
+
+   &nbsp;&nbsp;&nbsp;&nbsp;`-Dsa.fingerprint.skip`
 
    Tells the [<ins>SpecialAgent</ins>](#41-specialagent) to skip the fingerprint verification when linking [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) into class loaders. This option allows one to work around an unexpected fingerprint verification failure, which can happen in complex runtimes that do not contain all class definitions on the class path. It must be noted, however, that if the fingerprint verification is disabled, the [<ins>SpecialAgent</ins>](#41-specialagent) will indiscriminately install all plugins regardless of library version compatibility issues, which may lead to `NoClassDefFoundError`, `IllegalAccessError`, `AbstractMethodError`, `LinkageError`, etc.
 

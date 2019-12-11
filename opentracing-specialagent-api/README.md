@@ -215,6 +215,7 @@ The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotatio
 1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>**Default:** `WARNING`.
 1. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>**Default:** `{ERROR}`.
 1. `disable`<br>Names of plugins to disable during execution.<br>**Default:** `{}`.
+1. `properties`<br>System properties to be set in the test runtime.<br>Specification: `{"NAME_1=VALUE_1", "NAME_2=VALUE_2", ..., "NAME_N=VALUE_N"}`.<br>**Default:** `{}`.
 1. `verbose`<br>Sets verbose mode for the plugin being tested.<br>**Default:** `false`.
 1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>**Default:** `true`.
 
