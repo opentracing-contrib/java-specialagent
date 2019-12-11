@@ -80,7 +80,7 @@ abstract class SpecialAgentBase {
         if (System.getProperty(entry.getKey()) == null)
           System.setProperty(entry.getKey(), entry.getValue());
 
-      System.setProperty(Logger.LOG_REFRESH_PROPERTY, "true");
+      Logger.refreshLoggers();
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);

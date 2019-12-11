@@ -18,9 +18,12 @@ package io.opentracing.contrib.specialagent;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Logger {
-  static final String LOG_REFRESH_PROPERTY = "sa.log.refresh";
+  private static String REFRESH_PREFIX = "sa.log.refresh.";
+  private static final String LOG_REFRESH_PROPERTY = REFRESH_PREFIX + Logger.class.hashCode();
   static final String LOG_LEVEL_PROPERTY = "sa.log.level";
   static final String LOG_FILE_PROPERTY = "sa.log.file";
 
@@ -30,6 +33,21 @@ public class Logger {
 
   static {
     init();
+  }
+
+  private static void recurseClearProperty(final Iterator<Map.Entry<Object,Object>> iterator) {
+    while (iterator.hasNext()) {
+      final Map.Entry<Object,Object> entry = iterator.next();
+      final String key = String.valueOf(entry.getKey());
+      if (key.startsWith(REFRESH_PREFIX)) {
+        recurseClearProperty(iterator);
+        System.clearProperty(key);
+      }
+    }
+  }
+
+  static void refreshLoggers() {
+    recurseClearProperty(System.getProperties().entrySet().iterator());
   }
 
   static void init() {
@@ -51,11 +69,10 @@ public class Logger {
   }
 
   private static void refresh() {
-    if (System.getProperty(LOG_REFRESH_PROPERTY) == null)
-      return;
-
-    System.clearProperty(LOG_REFRESH_PROPERTY);
-    init();
+    if (System.getProperty(LOG_REFRESH_PROPERTY) == null) {
+      System.setProperty(LOG_REFRESH_PROPERTY, "");
+      init();
+    }
   }
 
   public static Logger getLogger(final Class<?> cls) {

@@ -432,7 +432,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
         if (logLevelProperty == null || config.log().ordinal() < Level.valueOf(logLevelProperty).ordinal()) {
           System.setProperty(Logger.LOG_LEVEL_PROPERTY, String.valueOf(config.log()));
-          System.setProperty(Logger.LOG_REFRESH_PROPERTY, "true");
+          Logger.refreshLoggers();
         }
       }
 

@@ -200,11 +200,11 @@ public class SpecialAgent extends SpecialAgentBase {
       final String key = property.getKey();
       final String value = property.getValue();
       if (key.startsWith("sa.instrumentation.plugin.")) {
-        if (key.endsWith(".verbose"))
+        if (key.indexOf(".verbose", 27) != -1)
           verbosePluginNames.add(key.substring(26, key.length() - 8));
-        else if (key.endsWith(".enable"))
+        else if (key.indexOf(".enable", 27) != -1)
           instruPluginNameToEnable.put(key.substring(26, key.length() - 7), Boolean.parseBoolean(value));
-        else if (key.endsWith(".disable"))
+        else if (key.indexOf(".disable", 27) != -1)
           instruPluginNameToEnable.put(key.substring(26, key.length() - 8), "false".equals(value));
         else if (key.length() == 33 && key.endsWith(".include")) {
           final String[] includedPluginPaths = value.split(File.pathSeparator);
@@ -214,9 +214,9 @@ public class SpecialAgent extends SpecialAgentBase {
         }
       }
       else if (key.startsWith("sa.tracer.plugin.")) {
-        if (key.endsWith(".enable"))
+        if (key.indexOf(".enable", 18) != -1)
           tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), Boolean.parseBoolean(value));
-        else if (key.endsWith(".disable"))
+        else if (key.indexOf(".disable", 18) != -1)
           tracerPluginNameToEnable.put(key.substring(17, key.length() - 8), "false".equals(value));
       }
     }
