@@ -231,6 +231,7 @@ With <ins>Static Deferred Attach</ins>, the application is executed with the `-j
 
 ##### <ins>Static Deferred Attach</ins> is currently supported for:
 
+1. Spring WebMVC (1.0 to LATEST).
 1. Spring Boot (1.0.0.RELEASE to LATEST).
 
 If the above supported application environment is detected, <ins>Static Deferred Attach</ins> is automatically activated.
