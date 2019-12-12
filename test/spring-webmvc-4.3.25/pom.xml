@@ -26,13 +26,13 @@
   <artifactId>spring-webmvc-4.3.25</artifactId>
   <name>SpecialAgent Test for Spring Web MVC 4.3.25</name>
   <properties>
-    <spring.version>4.3.25.RELEASE</spring.version>
+    <version.spring>4.3.25.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent.test</groupId>

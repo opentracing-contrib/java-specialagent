@@ -26,14 +26,14 @@
   <artifactId>spring-webmvc-3.0.2</artifactId>
   <name>SpecialAgent Test for Spring Web MVC 3.0.2</name>
   <properties>
-    <spring.version>3.0.2.RELEASE</spring.version>
+    <version.spring>3.0.2.RELEASE</version.spring>
     <version.jetty>9.2.15.v20160210</version.jetty>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
+      <version>${version.spring}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
