@@ -46,7 +46,7 @@ public class SpringBootDeferredAttach implements DeferredAttach {
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<<<< Installing SpringAgent >>>>>>>>>>>>>>>>>>>>\n");
+      logger.fine("\n<<<<<<<<<<<<<< Installing SpringBootDeferredAttach >>>>>>>>>>>>>\n");
 
     new AgentBuilder.Default()
       .ignore(none())
@@ -63,7 +63,7 @@ public class SpringBootDeferredAttach implements DeferredAttach {
       .installOn(inst);
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Installed SpringAgent <<<<<<<<<<<<<<<<<<<<\n");
+      logger.fine("\n>>>>>>>>>>>>>> Installed SpringBootDeferredAttach <<<<<<<<<<<<<<\n");
 
     return true;
   }
@@ -71,10 +71,10 @@ public class SpringBootDeferredAttach implements DeferredAttach {
   @Advice.OnMethodExit
   public static void exit() {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Invoking SpringAgent >>>>>>>>>>>>>>>>>>>>\n");
+      logger.fine("\n>>>>>>>>>>>>>> Invoking SpringBootDeferredAttach <<<<<<<<<<<<<<\n");
 
     AgentRule.initialize();
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Invoked SpringAgent >>>>>>>>>>>>>>>>>>>>>\n");
+      logger.fine("\n>>>>>>>>>>>>>>> Invoked SpringBootDeferredAttach <<<<<<<<<<<<<<\n");
   }
 }
