@@ -13,44 +13,22 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.test.play;
+package io.opentracing.contrib.specialagent.test.httpurlconnection;
 
-import static play.mvc.Results.*;
-
+import io.opentracing.contrib.specialagent.TestUtil;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import io.opentracing.contrib.specialagent.TestUtil;
-import play.core.PlayVersion;
-import play.routing.RoutingDsl;
-import play.server.Server;
-
-public class PlayITest {
+public class HttpURLConnectionITest {
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-    final Server server = Server.forRouter((components) -> RoutingDsl.fromComponents(components)
-      .GET("/hello/:to")
-      .routeTo((request) -> {
-        TestUtil.checkActiveSpan();
-        return ok("Hello");
-      })
-      .build());
-
-    final URL url = new URL("http://localhost:" + server.httpPort() + "/hello/world");
-    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+    URL url = new URL("http://www.google.com");
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     connection.setRequestMethod("GET");
     final int responseCode = connection.getResponseCode();
-    server.stop();
-
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    final String playVersion = PlayVersion.current();
-    if (playVersion.startsWith("2.6")) {
-      TestUtil.checkSpan("play", 3); // 1 Play span + 1 Akka Actor span + 1 HttpUrlConnection span
-    }
-    else {
-      TestUtil.checkSpan("play", 2);
-    }
+    TestUtil.checkSpan("http-url-connection", 1);
   }
 }

@@ -34,6 +34,7 @@ public class SpringWebMvcITest {
 
     final Server server = startServer();
 
+    TestUtil.resetTracer();
     final URL obj = new URL("http://localhost:8080");
     final HttpURLConnection con = (HttpURLConnection)obj.openConnection();
     con.setRequestMethod("GET");
@@ -42,7 +43,7 @@ public class SpringWebMvcITest {
       throw new AssertionError("ERROR: response: " + responseCode);
 
     server.stop();
-    TestUtil.checkSpan("java-web-servlet", 1);
+    TestUtil.checkSpan("java-web-servlet", 2);
   }
 
   private static Server startServer() throws Exception {

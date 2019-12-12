@@ -54,7 +54,7 @@ public abstract class TomcatTest {
 
     tomcatServer.stop();
     tomcatServer.destroy();
-    TestUtil.checkSpan("java-web-servlet", 1);
+    TestUtil.checkSpan("java-web-servlet", 2);
   }
 
   protected static void run(final Servlet servlet, final boolean async) throws IllegalAccessException, InvocationTargetException, IOException, LifecycleException, ServletException {

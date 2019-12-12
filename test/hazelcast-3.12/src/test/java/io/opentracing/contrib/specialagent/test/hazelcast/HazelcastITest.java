@@ -25,7 +25,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 public class HazelcastITest {
   public static void main(final String[] args) {
     TestUtil.initTerminalExceptionHandler();
-    final HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config());
+    final HazelcastInstance instance = Hazelcast.newHazelcastInstance(new Config().setProperty("hazelcast.phone.home.enabled", "false"));
     final IMap<String,String> map = instance.getMap("map");
     map.put("key", "value");
     if (!"value".equals(map.get("key")))
