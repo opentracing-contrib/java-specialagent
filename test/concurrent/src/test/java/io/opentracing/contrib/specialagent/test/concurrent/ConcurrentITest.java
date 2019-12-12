@@ -15,9 +15,16 @@
 
 package io.opentracing.contrib.specialagent.test.concurrent;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.IntStream;
 
 import io.opentracing.Scope;
@@ -38,6 +45,7 @@ public class ConcurrentITest {
     testRunnable(parent);
     testExecutor(parent);
     testParallelStream(parent);
+    testForkJoinPool(parent);
 
     parent.finish();
     TestUtil.checkSpan("parent", 1);
@@ -108,6 +116,47 @@ public class ConcurrentITest {
         }).sum();
 
       System.out.println("Sum: " + sum);
+    }
+  }
+
+  private static void testForkJoinPool(Span parent) {
+    ForkJoinPool forkJoinPool = new ForkJoinPool(2);
+    ForkJoinRecursiveTask forkJoinRecursiveTask = new ForkJoinRecursiveTask(IntStream.range(1, 10).toArray());
+    try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
+      forkJoinPool.execute(forkJoinRecursiveTask);
+    }
+    int result = forkJoinRecursiveTask.join();
+    if(result != 450)
+      throw new AssertionError("ERROR: wrong fork join result: " + result);
+  }
+
+  private static class ForkJoinRecursiveTask extends RecursiveTask<Integer> {
+    private  final int[] array;
+
+    public ForkJoinRecursiveTask(int[] array) {
+      this.array = array;
+    }
+
+    @Override
+    protected Integer compute() {
+      TestUtil.checkActiveSpan();
+      if (array.length > 2) {
+        return ForkJoinTask.invokeAll(createSubtasks()).stream().mapToInt(ForkJoinTask::join).sum();
+      } else {
+        return processing(array);
+      }
+    }
+
+    private Collection<ForkJoinRecursiveTask> createSubtasks() {
+      List<ForkJoinRecursiveTask> dividedTasks = new ArrayList<>();
+      dividedTasks.add(new ForkJoinRecursiveTask(Arrays.copyOfRange(array, 0, array.length / 2)));
+      dividedTasks.add(new ForkJoinRecursiveTask(Arrays.copyOfRange(array, array.length / 2, array.length)));
+      return dividedTasks;
+    }
+
+    private Integer processing(int[] arr) {
+      TestUtil.checkActiveSpan();
+      return Arrays.stream(arr).map(a -> a * 10).sum();
     }
   }
 }
