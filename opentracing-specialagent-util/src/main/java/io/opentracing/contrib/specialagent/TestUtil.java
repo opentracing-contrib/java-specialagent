@@ -180,6 +180,15 @@ public final class TestUtil {
     }
   }
 
+  public static void resetTracer() {
+    final Tracer tracer = getGlobalTracer();
+
+    if (!(tracer instanceof MockTracer))
+      return;
+
+    ((MockTracer) tracer).reset();
+  }
+
   private TestUtil() {
   }
 }

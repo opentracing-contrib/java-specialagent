@@ -34,6 +34,7 @@ public class SpringWebMvcITest {
 
     final Server server = startServer();
 
+    TestUtil.resetTracer();
     final URL obj = new URL("http://localhost:8080");
     final HttpURLConnection con = (HttpURLConnection)obj.openConnection();
     con.setRequestMethod("GET");
