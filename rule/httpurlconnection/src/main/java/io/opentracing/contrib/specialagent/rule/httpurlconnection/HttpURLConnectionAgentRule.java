@@ -25,7 +25,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class HttpURLConnectionAgentRule extends AgentRule {
@@ -41,15 +40,14 @@ public class HttpURLConnectionAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz, @Advice.FieldValue("connected") final boolean connected) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.FieldValue("connected") final boolean connected) {
     if (isEnabled(origin))
       HttpURLConnectionAgentIntercept.enter(thiz, connected);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
+  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
     if (isEnabled(origin))
       HttpURLConnectionAgentIntercept.exit(thrown, responseCode);
   }
-
 }

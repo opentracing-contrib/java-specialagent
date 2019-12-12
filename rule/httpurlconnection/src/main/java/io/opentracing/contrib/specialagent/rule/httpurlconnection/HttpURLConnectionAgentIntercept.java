@@ -15,6 +15,12 @@
 
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
+import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -22,10 +28,6 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.net.HttpURLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import javax.net.ssl.HttpsURLConnection;
 
 public class HttpURLConnectionAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -46,24 +48,21 @@ public class HttpURLConnectionAgentIntercept {
     if (connected)
       return;
 
-    HttpURLConnection connection = (HttpURLConnection) thiz;
-
+    final HttpURLConnection connection = (HttpURLConnection)thiz;
     final Tracer tracer = GlobalTracer.get();
     final SpanContext spanContext = tracer.extract(Builtin.HTTP_HEADERS, new HttpURLConnectionExtractAdapter(connection));
 
     if (spanContext != null)
       return;
 
-    final Span span = tracer
-        .buildSpan(connection.getRequestMethod())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.HTTP_METHOD, connection.getRequestMethod())
-        .withTag(Tags.HTTP_URL, connection.getURL().toString())
-        .withTag(Tags.PEER_PORT, getPort(connection))
-        .withTag(Tags.PEER_HOSTNAME, connection.getURL().getHost())
-        .start();
-    final Scope scope = tracer.activateSpan(span);
+    final Span span = tracer.buildSpan(connection.getRequestMethod())
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.HTTP_METHOD, connection.getRequestMethod())
+      .withTag(Tags.HTTP_URL, connection.getURL().toString())
+      .withTag(Tags.PEER_PORT, getPort(connection))
+      .withTag(Tags.PEER_HOSTNAME, connection.getURL().getHost()).start();
 
+    final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpURLConnectionInjectAdapter(connection));
 
     final Context context = new Context();
@@ -94,10 +93,11 @@ public class HttpURLConnectionAgentIntercept {
     final int port = connection.getURL().getPort();
     if (port > 0)
       return port;
-    else if (connection instanceof HttpsURLConnection)
+
+    if (connection instanceof HttpsURLConnection)
       return 443;
-    else
-      return 80;
+
+    return 80;
   }
 
   private static void onError(final Throwable t, final Span span) {
@@ -106,8 +106,8 @@ public class HttpURLConnectionAgentIntercept {
       span.log(errorLogs(t));
   }
 
-  private static Map<String, Object> errorLogs(final Throwable t) {
-    final Map<String, Object> errorLogs = new HashMap<>(2);
+  private static Map<String,Object> errorLogs(final Throwable t) {
+    final Map<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", t);
     return errorLogs;

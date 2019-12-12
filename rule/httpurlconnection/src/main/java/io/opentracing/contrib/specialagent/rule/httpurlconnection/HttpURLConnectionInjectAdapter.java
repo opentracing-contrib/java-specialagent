@@ -12,34 +12,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
-import io.opentracing.propagation.TextMap;
 import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.Map;
 
-public final class HttpURLConnectionInjectAdapter implements TextMap {
+import io.opentracing.propagation.TextMap;
 
+public final class HttpURLConnectionInjectAdapter implements TextMap {
   private final HttpURLConnection connection;
   private boolean alreadyConnected;
 
-  public HttpURLConnectionInjectAdapter(HttpURLConnection connection) {
+  public HttpURLConnectionInjectAdapter(final HttpURLConnection connection) {
     this.connection = connection;
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
+  public Iterator<Map.Entry<String,String>> iterator() {
     throw new UnsupportedOperationException("HttpURLConnectionInjectAdapter should only be used with Tracer.inject()");
   }
 
   @Override
-  public void put(String key, String value) {
+  public void put(final String key, final String value) {
     if (alreadyConnected)
       return;
+
     try {
       connection.addRequestProperty(key, value);
-    } catch (IllegalStateException ignore) {
+    }
+    catch (final IllegalStateException ignore) {
       alreadyConnected = true;
     }
   }

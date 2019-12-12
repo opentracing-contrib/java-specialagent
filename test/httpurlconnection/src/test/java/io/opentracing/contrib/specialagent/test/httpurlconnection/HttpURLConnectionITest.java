@@ -15,15 +15,17 @@
 
 package io.opentracing.contrib.specialagent.test.httpurlconnection;
 
-import io.opentracing.contrib.specialagent.TestUtil;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 public class HttpURLConnectionITest {
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) throws IOException {
     TestUtil.initTerminalExceptionHandler();
-    URL url = new URL("http://www.google.com");
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    final URL url = new URL("http://www.google.com");
+    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setRequestMethod("GET");
     final int responseCode = connection.getResponseCode();
     if (200 != responseCode)

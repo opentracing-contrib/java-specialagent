@@ -15,19 +15,21 @@
 
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
 public class HttpURLConnectionTest {
@@ -38,8 +40,8 @@ public class HttpURLConnectionTest {
 
   @Test
   public void succeedRequest(final MockTracer tracer) throws Exception {
-    URL url = new URL("http://www.google.com");
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    final URL url = new URL("http://www.google.com");
+    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setRequestMethod("GET");
     final int responseCode = connection.getResponseCode();
     assertEquals(200, responseCode);
@@ -51,18 +53,18 @@ public class HttpURLConnectionTest {
 
   @Test
   public void failedRequest(final MockTracer tracer) throws Exception {
-    URL url = new URL("http://localhost:12345");
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    final URL url = new URL("http://localhost:12345");
+    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setRequestMethod("GET");
     try {
       final int responseCode = connection.getResponseCode();
       assertEquals(200, responseCode);
-    } catch (ConnectException ignore) {
+    }
+    catch (final ConnectException ignore) {
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertEquals(HttpURLConnectionAgentIntercept.COMPONENT_NAME, spans.get(0).tags().get(Tags.COMPONENT.getKey()));
   }
-
 }

@@ -12,25 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
-import io.opentracing.propagation.TextMap;
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
+
+import io.opentracing.propagation.TextMap;
 
 public final class HttpURLConnectionExtractAdapter implements TextMap {
-  private final Map<String, String> map = new HashMap<>();
+  private final WeakHashMap<String,String> map = new WeakHashMap<>();
 
-  public HttpURLConnectionExtractAdapter(HttpURLConnection connection) {
-    final Map<String, List<String>> requestProperties = connection.getRequestProperties();
+  public HttpURLConnectionExtractAdapter(final HttpURLConnection connection) {
+    final Map<String,List<String>> requestProperties = connection.getRequestProperties();
     if (requestProperties == null)
       return;
 
-    for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
+    for (final Entry<String,List<String>> entry : requestProperties.entrySet()) {
       final List<String> value = entry.getValue();
       if (value != null && value.size() == 1)
         map.put(entry.getKey(), value.get(0));
@@ -38,13 +40,12 @@ public final class HttpURLConnectionExtractAdapter implements TextMap {
   }
 
   @Override
-  public Iterator<Map.Entry<String, String>> iterator() {
+  public Iterator<Map.Entry<String,String>> iterator() {
     return map.entrySet().iterator();
   }
 
   @Override
   public void put(final String key, final String value) {
-    throw new UnsupportedOperationException("This class should be used only with Tracer.inject()!");
+    throw new UnsupportedOperationException("This class should be used only with Tracer.inject()");
   }
-
 }
