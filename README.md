@@ -73,7 +73,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) has 2 artifacts: main and test. 
 
 #### 2.1.1 In Application
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR file. This JAR file is the main artifact that is built by Maven, and contains within it the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented.
+The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR file. This JAR file is the main artifact that is built by Maven, and contains the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented.
 
 To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, please download the [stable](#2111-stable) or [development](#2112-development) artifact.
 
@@ -114,7 +114,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utiliz
 
 1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.2.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.2.jar`][main-release] will contain the built rules inside it.
 
-    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.2.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) within it!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.2.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)!_
 
     _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
@@ -149,7 +149,7 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 </dependency>
 ```
 
-This is the test artifact that contains within it the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
+This is the test artifact that contains the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
 ##### 2.1.2.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
