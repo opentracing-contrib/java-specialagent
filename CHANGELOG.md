@@ -1,5 +1,24 @@
 # Changes by Version
 
+## v1.5.3 (2019-12-13)
+* Reduce source & target versions for all plugins (#277)
+* Fix to startup failure with Dynamic Attach on Windows (#288)
+* Fix to `-Dsa.log.file` resulting in empty logs (#294)
+* Add ability to specify system properties to AgentRunner runtimes (#307)
+* Implement instrumentation rule for `HttpUrlConnection` (#300)
+* Implement [Static Deferred Attach for SpringWebMVC](https://github.com/opentracing-contrib/java-specialagent/#static-deferred-attach-is-currently-supported-for) (#304)
+* Implement integration test for `ForkJoinPool` (#102)
+* Implement integration tests for
+  1. Zuul (#266)
+  1. Spring WebFlux (#275)
+  1. Spring WebMvc (#278)
+  1. Spring Scheduling (#281)
+  1. Spring Kafka (#284)
+  1. Spring RabbitMQ (#289)
+  1. Spring JMS (#291)
+  1. Spring Messaging (#295)
+  1. Spring WebSocket (#297)
+
 ## v1.5.2 (2019-11-29)
 * Integrate [OpenTelemetry Bridge Tracer Plugin](https://github.com/opentracing-contrib/java-opentelemetry-bridge) into SpecialAgent (#229)
 * Implement Formal API for Static Deferred Attach (#267)
