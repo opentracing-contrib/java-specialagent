@@ -553,6 +553,18 @@
       </modules>
     </profile>
     <profile>
+      <id>spymemcached</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spymemcached-2.11.0</module>
+        <module>spymemcached-2.12.3</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
