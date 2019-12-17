@@ -25,7 +25,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringWebRegistryAgentRule extends AgentRule {
@@ -41,7 +40,7 @@ public class SpringWebRegistryAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
     if (isEnabled(origin))
       SpringWebMvcAgentIntercept.getInterceptors(thiz);
   }

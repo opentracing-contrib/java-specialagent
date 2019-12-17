@@ -16,11 +16,11 @@
 package io.opentracing.contrib.specialagent.rule.couchbase;
 
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment.Builder;
+
 import io.opentracing.util.GlobalTracer;
 
 public class CouchbaseClientAgentIntercept {
-
   public static void enter(final Object thiz) {
-    ((Builder) thiz).tracer(GlobalTracer.get());
+    ((Builder)thiz).tracer(GlobalTracer.get());
   }
 }

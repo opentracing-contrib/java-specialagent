@@ -15,29 +15,23 @@
 
 package io.opentracing.contrib.specialagent.rule.couchbase;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import com.couchbase.client.java.env.CouchbaseEnvironment;
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.util.GlobalTracer;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.couchbase.client.java.env.CouchbaseEnvironment;
+import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
+
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.util.GlobalTracer;
+
 @RunWith(AgentRunner.class)
 public class CouchbaseClientTest {
-  @Before
-  public void before(final MockTracer tracer) {
-    tracer.reset();
-  }
-
   @Test
-  public void test(final MockTracer tracer) {
-    // There is no embedded couchbase server to test real scenario
-    CouchbaseEnvironment env = DefaultCouchbaseEnvironment.builder().build();
-    assertTrue(env.tracer() instanceof GlobalTracer);
+  public void test() {
+    // FIXME: There is no embedded couchbase server to test real scenario.
+    final CouchbaseEnvironment environment = DefaultCouchbaseEnvironment.builder().build();
+    assertTrue(environment.tracer() instanceof GlobalTracer);
   }
-
 }

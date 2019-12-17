@@ -48,7 +48,7 @@ public class KafkaAgentRule extends AgentRule {
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
       if (isEnabled(origin))
         KafkaAgentIntercept.onConsumerEnter(returned);
     }

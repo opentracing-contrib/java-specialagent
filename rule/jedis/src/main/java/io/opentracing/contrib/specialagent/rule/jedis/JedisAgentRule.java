@@ -68,7 +68,7 @@ public class JedisAgentRule extends AgentRule {
 
   public static class OnError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
       if (isEnabled(origin))
         JedisAgentIntercept.onError(thrown);
     }

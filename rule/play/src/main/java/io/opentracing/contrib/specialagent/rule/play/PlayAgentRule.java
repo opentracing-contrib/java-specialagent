@@ -47,7 +47,7 @@ public class PlayAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, @Advice.This(typing = Typing.DYNAMIC) Object thiz, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
+  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
     if (isEnabled(origin))
       PlayAgentIntercept.applyEnd(thiz, returned, thrown);
   }

@@ -15,16 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.couchbase;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
+
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import java.util.Arrays;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class CouchbaseClientAgentRule extends AgentRule {
@@ -40,7 +40,7 @@ public class CouchbaseClientAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
     if (isEnabled(origin))
       CouchbaseClientAgentIntercept.enter(thiz);
   }
