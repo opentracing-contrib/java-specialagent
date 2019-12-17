@@ -491,6 +491,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | | [`aws:sdk:2`][aws-sdk-2] | 2.1.4 | 2.7.15 |
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | 4.2.0 |
+| Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>&nbsp; | 7.3.1<br>&nbsp; |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | 10.4.0 |
 | [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | [`grizzly:ahc`][grizzly-ahc] | 1.15 | **1.15** |
@@ -505,6 +506,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
 | Java Thread [`java.lang.Thread`] | [`thread`][thread] | 1.0 | 11 |
+| HttpURLConnection [`java.net.HttpURLConnection`] | [`httpurlconnection`][httpurlconnection] | 1.1 | 11 |
 | [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | [`jax-rs`][jaxrs] | 2.0 | 2.1 |
 | [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | [`jedis`][jedis] | 2.7.0 | 3.1.0 |
 | [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:client`][kafka-client] | 1.1.0 | 2.3.0 |
@@ -536,8 +538,6 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | 2.12.3 |
 | [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.12.0 |
 | [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 1.3.1 |
-| HttpURLConnection [`java.net.HttpURLConnection`] | [`httpurlconnection`][httpurlconnection] | 1.1 | 11 |
-| Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
