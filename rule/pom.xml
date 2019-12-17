@@ -93,6 +93,7 @@
         <module>play</module>
         <module>play-ws</module>
         <module>httpurlconnection</module>
+        <module>couchbase-client</module>
       </modules>
       <build>
         <resources>

@@ -537,6 +537,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.12.0 |
 | [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 1.3.1 |
 | HttpURLConnection [`java.net.HttpURLConnection`] | [`httpurlconnection`][httpurlconnection] | 1.1 | 11 |
+| Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
@@ -648,6 +649,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [thrift]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thrift
 [zuul]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/zuul
 [httpurlconnection]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/httpurlconnection
+[couchbase-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/couchbase-client
 
 [agentrunner-config]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api#51-configuring-agentrunner
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api
