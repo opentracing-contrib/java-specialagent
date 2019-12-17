@@ -39,6 +39,7 @@ import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.utility.JavaModule;
@@ -51,6 +52,29 @@ import net.bytebuddy.utility.JavaModule;
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class);
   private static final String RULES_FILE = "otarules.mf";
+
+  private static final AgentBuilder.LocationStrategy bootFallbackLocationStrategy = new AgentBuilder.LocationStrategy() {
+    @Override
+    public ClassFileLocator classFileLocator(final ClassLoader classLoader, final JavaModule module) {
+      return new ClassFileLocator.Compound(ClassFileLocator.ForClassLoader.of(classLoader), ClassFileLocator.ForClassLoader.ofBootLoader());
+    }
+  };
+
+  private static AgentBuilder newBuilder() {
+    // Prepare the builder to be used to implement transformations in AgentRule(s)
+    AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
+      .disableClassFormatChanges()
+      .ignore(none());
+
+    if (AgentRuleUtil.tracerClassLoader != null)
+      agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
+
+    return agentBuilder
+      .with(RedefinitionStrategy.RETRANSFORMATION)
+      .with(InitializationStrategy.NoOp.INSTANCE)
+      .with(TypeStrategy.Default.REDEFINE)
+      .with(bootFallbackLocationStrategy);
+  }
 
   private static void log(final Level level, final String message, final Throwable t) {
     if (t instanceof IncompatiblePluginException || t instanceof IllegalStateException && t.getMessage().startsWith("Cannot resolve type description for "))
@@ -77,21 +101,6 @@ public class ByteBuddyManager extends Manager {
     catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private static AgentBuilder newBuilder() {
-    // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
-      .disableClassFormatChanges()
-      .ignore(none());
-
-    if (AgentRuleUtil.tracerClassLoader != null)
-      agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
-
-    return agentBuilder
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE);
   }
 
   ByteBuddyManager() {
