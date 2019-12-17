@@ -35,7 +35,10 @@ import java.util.Set;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Default;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
+import net.bytebuddy.agent.builder.AgentBuilder.Listener;
+import net.bytebuddy.agent.builder.AgentBuilder.LocationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.description.type.TypeDescription;
@@ -53,16 +56,13 @@ public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class);
   private static final String RULES_FILE = "otarules.mf";
 
-  private static final AgentBuilder.LocationStrategy bootFallbackLocationStrategy = new AgentBuilder.LocationStrategy() {
-    @Override
-    public ClassFileLocator classFileLocator(final ClassLoader classLoader, final JavaModule module) {
-      return new ClassFileLocator.Compound(ClassFileLocator.ForClassLoader.of(classLoader), ClassFileLocator.ForClassLoader.ofBootLoader());
-    }
-  };
+  private static final LocationStrategy bootFallbackLocationStrategy = LocationStrategy
+    .ForClassLoader.STRONG
+    .withFallbackTo(ClassFileLocator.ForClassLoader.ofBootLoader());
 
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
+    AgentBuilder agentBuilder = new Default(new ByteBuddy().with(TypeValidation.DISABLED))
       .disableClassFormatChanges()
       .ignore(none());
 
@@ -222,7 +222,7 @@ public class ByteBuddyManager extends Manager {
     }
   }
 
-  class TransformationListener implements AgentBuilder.Listener {
+  class TransformationListener implements Listener {
     private final int index;
     private final Event[] events;
 
