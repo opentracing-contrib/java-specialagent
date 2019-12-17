@@ -565,6 +565,18 @@
       </modules>
     </profile>
     <profile>
+      <id>google-http-client</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>google-http-client-1.19.0</module>
+        <module>google-http-client-1.33.0</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>

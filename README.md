@@ -494,6 +494,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>&nbsp; | 7.3.1<br>&nbsp; |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | 10.4.0 |
+| Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | 1.33.0 |
 | [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | [`grizzly:ahc`][grizzly-ahc] | 1.15 | **1.15** |
 | [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | [`grizzly:http-server`][grizzly-http-server] | 2.3.35 | **2.3.35** |
 | [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.6.0 | 1.23.0 |
@@ -650,6 +651,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [zuul]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/zuul
 [httpurlconnection]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/httpurlconnection
 [couchbase-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/couchbase-client
+[google-http-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/google-http-client
 
 [agentrunner-config]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api#51-configuring-agentrunner
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api
