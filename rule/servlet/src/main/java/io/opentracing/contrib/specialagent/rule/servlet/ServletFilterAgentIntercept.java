@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -33,7 +34,7 @@ public abstract class ServletFilterAgentIntercept {
   public static final Logger logger = Logger.getLogger(ServletAgentIntercept.class);
   public static final Map<Object,ServletContext> filterOrServletToServletContext = new HashMap<>();
   public static final Map<ServletRequest,Boolean> servletRequestToState = new HashMap<>();
-  public static final Map<ServletContext,TracingFilter> servletContextToFilter = new HashMap<>();
+  public static final Map<ServletContext,TracingFilter> servletContextToFilter = new ConcurrentHashMap<>();
 
   public static TracingFilter getFilter(final ServletContext context, final boolean proxy) throws ServletException {
     Objects.requireNonNull(context);
