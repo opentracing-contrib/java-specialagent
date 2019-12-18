@@ -146,6 +146,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P feign install
+  - name: "Google Http Client [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P google-http-client install
+  - name: "Google Http Client [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P google-http-client install
   - name: "Grizzly Http Client [oraclejdk8]"
     stage: test
     jdk: oraclejdk8
