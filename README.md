@@ -580,10 +580,11 @@ Thank you to the following developers for filing issues and helping us fix them:
 * [@Vovan2006](https://github.com/Vovan2006)
 * [Randall Theobald](https://github.com/randallt)
 
-Thank you to the following individuals for noticing typographic errors and sending PRs:
+Thank you to the following individuals for all other general contributions to the codebase:
 
 * [Daniel Rodriguez Hernandez](https://github.com/drodriguezhdez)
 * [qudongfang](https://github.com/qudongfang)
+* [Pontus Rydin](https://github.com/prydin)
 
 Finally, thanks for all of the feedback! Please share your comments [as an issue](https://github.com/opentracing-contrib/java-specialagent/issues)!
 
