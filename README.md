@@ -186,9 +186,9 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is used by attaching to a target
 
 | Attach Mode | Number of Required<br>Commands to Attach | SpecialAgent<br>Initialization Timeline |
 |:-|:-:|:-:|
-| [<ins>Static Attach</ins>](#221-static-attach) | 1 (sync) | Before app start |
-| [<ins>Dynamic Attach</ins>](#222-dynamic-attach) | 2 (async) | After app start |
-| [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach) | 1 (sync) | After app start |
+| [<ins>Static Attach</ins>](#221-static-attach)<br>&nbsp; | 1 (sync)<br>&nbsp; | Before app start<br><sup>(any application)</sup> |
+| [<ins>Dynamic Attach</ins>](#222-dynamic-attach)<br>&nbsp; | 2 (async)<br>&nbsp; | After app start<br><sup>(any application)</sup> |
+| [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach)<br>&nbsp; | 1 (sync)<br>&nbsp; | After app start<br><sup>([some applications](#static-deferred-attach-is-currently-supported-for))</sup> |
 
 #### 2.2.1 <ins>Static Attach</ins>
 
