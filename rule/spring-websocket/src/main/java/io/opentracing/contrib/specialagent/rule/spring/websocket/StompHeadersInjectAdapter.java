@@ -31,7 +31,7 @@ public class StompHeadersInjectAdapter implements TextMap {
 
   @Override
   public Iterator<Map.Entry<String,String>> iterator() {
-    throw new UnsupportedOperationException(StompHeadersInjectAdapter.class.getName() + " should only be used with Tracer.inject()");
+    throw new UnsupportedOperationException(StompHeadersInjectAdapter.class.getName() + " can only be used with Tracer.inject()");
   }
 
   @Override

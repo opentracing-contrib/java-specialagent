@@ -25,14 +25,13 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class GoogleHttpClientAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(not(isInterface()).and(hasSuperType(named("com.google.api.client.http.HttpRequest"))))
+      .type(hasSuperType(named("com.google.api.client.http.HttpRequest")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -41,13 +40,13 @@ public class GoogleHttpClientAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This(typing = Typing.DYNAMIC) Object thiz) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
     if (isEnabled(origin))
-       GoogleHttpClientAgentIntercept.enter(thiz);
+      GoogleHttpClientAgentIntercept.enter(thiz);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.Return(typing = Typing.DYNAMIC) final Object returned) {
+  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.Return final Object returned) {
     if (isEnabled(origin))
       GoogleHttpClientAgentIntercept.exit(thrown, returned);
   }

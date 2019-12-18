@@ -31,7 +31,7 @@ public final class HttpURLConnectionInjectAdapter implements TextMap {
 
   @Override
   public Iterator<Map.Entry<String,String>> iterator() {
-    throw new UnsupportedOperationException("HttpURLConnectionInjectAdapter should only be used with Tracer.inject()");
+    throw new UnsupportedOperationException(HttpURLConnectionInjectAdapter.class.getName() + " can only be used with Tracer.inject()");
   }
 
   @Override

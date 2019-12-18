@@ -41,7 +41,7 @@ public class TextMapInjectAdapter implements TextMap {
 
   @Override
   public Iterator<Map.Entry<String,String>> iterator() {
-    throw new UnsupportedOperationException(TextMapInjectAdapter.class.getName() + " should only be used with Tracer.inject()");
+    throw new UnsupportedOperationException(TextMapInjectAdapter.class.getName() + " can only be used with Tracer.inject()");
   }
 
   @Override

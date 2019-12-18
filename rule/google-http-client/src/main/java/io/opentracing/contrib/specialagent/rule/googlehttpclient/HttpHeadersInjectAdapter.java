@@ -12,12 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.googlehttpclient;
 
-import com.google.api.client.http.HttpHeaders;
-import io.opentracing.propagation.TextMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import com.google.api.client.http.HttpHeaders;
+
+import io.opentracing.propagation.TextMap;
 
 public class HttpHeadersInjectAdapter implements TextMap {
   private final HttpHeaders httpHeaders;
@@ -27,8 +30,8 @@ public class HttpHeadersInjectAdapter implements TextMap {
   }
 
   @Override
-  public Iterator<Entry<String, String>> iterator() {
-    throw new UnsupportedOperationException("HttpHeadersInjectAdapter should only be used with Tracer.inject()");
+  public Iterator<Entry<String,String>> iterator() {
+    throw new UnsupportedOperationException(HttpHeadersInjectAdapter.class.getName() + " can only be used with Tracer.inject()");
   }
 
   @Override

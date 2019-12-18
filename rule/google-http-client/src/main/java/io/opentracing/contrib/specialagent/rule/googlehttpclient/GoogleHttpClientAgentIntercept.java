@@ -15,16 +15,18 @@
 
 package io.opentracing.contrib.specialagent.rule.googlehttpclient;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpResponse;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GoogleHttpClientAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -43,14 +45,15 @@ public class GoogleHttpClientAgentIntercept {
     }
 
     final Tracer tracer = GlobalTracer.get();
-    HttpRequest request  = (HttpRequest) thiz;
+    HttpRequest request = (HttpRequest)thiz;
 
-    final Span span = tracer.buildSpan(request.getRequestMethod())
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.HTTP_METHOD, request.getRequestMethod())
-        .withTag(Tags.HTTP_URL, request.getUrl().toString())
-        .withTag(Tags.PEER_PORT, getPort(request))
-        .withTag(Tags.PEER_HOSTNAME, request.getUrl().getHost()).start();
+    final Span span = tracer
+      .buildSpan(request.getRequestMethod())
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.HTTP_METHOD, request.getRequestMethod())
+      .withTag(Tags.HTTP_URL, request.getUrl().toString())
+      .withTag(Tags.PEER_PORT, getPort(request))
+      .withTag(Tags.PEER_HOSTNAME, request.getUrl().getHost()).start();
 
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request.getHeaders()));
@@ -84,7 +87,7 @@ public class GoogleHttpClientAgentIntercept {
     if (port > 0)
       return port;
 
-    if("https".equals(httpRequest.getUrl().getScheme()))
+    if ("https".equals(httpRequest.getUrl().getScheme()))
       return 443;
 
     return 80;

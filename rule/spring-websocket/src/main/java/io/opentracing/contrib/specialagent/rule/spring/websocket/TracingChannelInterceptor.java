@@ -94,7 +94,7 @@ public class TracingChannelInterceptor implements  ExecutorChannelInterceptor {
   }
 
   @SuppressWarnings("unchecked")
-  private Message<?> preSendServerSpan(Message<?> message) {
+  private Message<?> preSendServerSpan(final Message<?> message) {
     final String destination = (String)message.getHeaders().get(SIMP_DESTINATION);
     final SpanBuilder spanBuilder = tracer
       .buildSpan(destination != null ? destination : UNKNOWN_DESTINATION)
@@ -135,5 +135,4 @@ public class TracingChannelInterceptor implements  ExecutorChannelInterceptor {
     final Scope scope = tracer.scopeManager().activate(span);
     return MessageBuilder.fromMessage(message).setHeader(OPENTRACING_SCOPE, scope).build();
   }
-
 }

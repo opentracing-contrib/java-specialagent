@@ -38,6 +38,6 @@ public class HeadersMapExtractAdapter implements TextMap {
 
   @Override
   public void put(final String key, final String value) {
-    throw new UnsupportedOperationException("HeadersMapExtractAdapter can only be used with Tracer.extract()");
+    throw new UnsupportedOperationException(HeadersMapExtractAdapter.class.getName() + " can only be used with Tracer.extract()");
   }
 }
