@@ -2,7 +2,7 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
-[![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.svg?branch=master)](https://travis-ci.org/opentracing-contrib/java-specialagent)
+[![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.svg?branch=master)][travis]
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
 [![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://mvnrepository.com/artifact/io.opentracing.contrib.specialagent/opentracing-specialagent)
@@ -63,25 +63,25 @@ This file contains the operational instructions for the use and development of [
 
 ## 2 Quick Start
 
-When [<ins>SpecialAgent</ins>](#41-specialagent) attaches to an application, either statically or dynamically, it will automatically load the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) explicitly specified as dependencies in its POM ([Project Object Model][pom]).
+When [<ins>SpecialAgent</ins>](#41-specialagent) attaches to an application (either [statically or dynamically](#22-usage)), it will load the bundled [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin).
 
-Any exception that occurs during the execution of the bootstrap process will not adversely affect the stability of the target application. It is, however, possible that the [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) code may result in exceptions that are not properly handled, and could destabilize the target application.
+The [<ins>SpecialAgent</ins>](#41-specialagent) is stable -- any exception that occurs during attachment of [<ins>SpecialAgent</ins>](#41-specialagent) will not adversely affect the stability of the target application. It is, however, important to note that [<ins>SpecialAgent</ins>](#41-specialagent) bundles [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) that are developed by 3rd parties and individual contributors. We strive to assert the stability of [<ins>SpecialAgent</ins>](#41-specialagent) with rigorous [integration tests][travis], yet it is still possible that the code in a bundled [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) may result in an exception that is not properly handled, which could potentially destabilize a target application.
 
 ### 2.1 Installation
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) has 2 artifacts: main and test. These artifacts are built by Maven, and can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from Maven's Central Repository.
+The Maven build of the [<ins>SpecialAgent</ins>](#41-specialagent) project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from [Maven's Central Repository](http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.3/).
 
 #### 2.1.1 In Application
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR file. This JAR file is the main artifact that is built by Maven, and contains the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented.
+The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR file. This JAR file is the **main** artifact that is built by Maven, and bundles the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) from the [opentracing-contrib][opentracing-contrib] organization for which [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) have been implemented.
 
-To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, please download the [stable](#2111-stable) or [development](#2112-development) artifact.
+To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, please download the [stable](#2111-stable) or [development](#2112-development) **main** artifact.
 
-This JAR can then be specified with the `-javaagent:$SPECIAL_AGENT_JAR` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach) to an application. This JAR can also be executed in standalone fashion, with an argument representing the PID of a target process to which it should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#usage) section for usage instructions.
+The artifact JAR can be provided to an application with the `-javaagent:${SPECIAL_AGENT_JAR}` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach). The artifact JAR can also be executed in standalone fashion, which requires an argument to be passed for the PID of a target process to which [<ins>SpecialAgent</ins>](#41-specialagent) should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#usage) section for usage instructions.
 
 ##### 2.1.1.1 Stable
 
-The latest stable release is: [1.5.3][main-release].
+The latest stable release is: [1.5.3][main-release]
 
 ```bash
 wget -O opentracing-specialagent-1.5.3.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.3/opentracing-specialagent-1.5.3.jar"
@@ -89,12 +89,14 @@ wget -O opentracing-specialagent-1.5.3.jar "http://central.maven.org/maven2/io/o
 
 ##### 2.1.1.2 Development
 
-The latest development release is: <ins>1.5.4-SNAPSHOT</ins>.
+The latest development release is: [1.5.4-SNAPSHOT][main-snapshot]
+
 ```bash
 wget -O opentracing-specialagent-1.5.4-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
-**Note**: Sometimes the web service call to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command:
+**Note**: Sometimes the web service call (in the line above) to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command (for Linux and Mac OS):
+
 ```bash
 wget -O opentracing-specialagent-1.5.4-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.4-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
@@ -103,7 +105,7 @@ wget -O opentracing-specialagent-1.5.4-SNAPSHOT.jar $(curl -s https://oss.sonaty
 
 _**Prerequisite**: The [<ins>SpecialAgent</ins>](#41-specialagent) requires [Oracle Java](https://www.oracle.com/technetwork/java/javase/downloads/) to build. Thought the [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenJDK for general application use, it only supports Oracle Java for building and testing._
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utilize different profiles:
+The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely on different profiles:
 
 1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.3.jar`][main-release]
 
@@ -120,13 +122,13 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that utiliz
 
     To run this profile:
     ```bash
-    mvn -Dassemble package
+    mvn -Dassemble install
     ```
 
 * For a one-line build command to build [<ins>SpecialAgent</ins>](#41-specialagent), its rules, run all tests, and create the `assemble` package:
 
     ```bash
-    mvn clean install && mvn -Dassemble package
+    mvn clean install && mvn -Dassemble install
     ```
 
 ##### 2.1.2.1 [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
@@ -149,15 +151,15 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 </dependency>
 ```
 
-This is the test artifact that contains the `AgentRunner`, which is a JUnit runner class provided for testing of the ByteBuddy auto-instrumentation rules. This JAR does not contain within it any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) themselves, and is only intended to be applied to the test phase of the build lifecycle of a single plugin for an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
+The `test-jar` is the **test** artifact that contains the `AgentRunner` class, which is a JUnit runner provided for testing of the [ByteBuddy](https://bytebuddy.net/) auto-instrumentation rules. This JAR does not contain [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) themselves, and is only intended to be applied to the [test phase](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Build_Lifecycle_Basics) of the build lifecycle of a single plugin for an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) implementation. For direction with the `AgentRunner`, please refer to the [`opentracing-specialagent-api`][api] module.
 
 ##### 2.1.2.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
-[<ins>Tracer Plugins</ins>](#43-tracer-plugin) integrate with the [<ins>SpecialAgent</ins>](#41-specialagent) via the [OpenTracing TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver), in order to connect the [<ins>SpecialAgent</ins>](#41-specialagent) to a [<ins>Tracer</ins>](#42-tracer). [<ins>Tracer Plugins</ins>](#43-tracer-plugin) are not coupled to the [<ins>SpecialAgent</ins>](#41-specialagent), and therefore only need to integrate with the SPI mechanism defined in the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver).
+[<ins>Tracer Plugins</ins>](#43-tracer-plugin) integrate with the [<ins>SpecialAgent</ins>](#41-specialagent) via the [OpenTracing TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver), which connect the [<ins>SpecialAgent</ins>](#41-specialagent) to a [<ins>Tracer</ins>](#42-tracer). [<ins>Tracer Plugins</ins>](#43-tracer-plugin) integrate to the [<ins>SpecialAgent</ins>](#41-specialagent) via the [SPI mechanism](https://docs.oracle.com/javase/tutorial/ext/basics/spi.html) defined in the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver), and are therefore not coupled to the [<ins>SpecialAgent</ins>](#41-specialagent).
 
-[<ins>Tracer Plugins</ins>](#43-tracer-plugin) must be provided as JARs that contain the full set of all classes necessary for operation.
+[<ins>Tracer Plugins</ins>](#43-tracer-plugin) must be provided as "fat JARs" that contain the full set of all classes necessary for operation.
 
-[<ins>Tracer Plugins</ins>](#43-tracer-plugin) are integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) by specifying a "provided" dependency in the `!itest` profile id in the [root POM][specialagent-pom]. For instance, the dependency for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is:
+[<ins>Tracer Plugins</ins>](#43-tracer-plugin) are integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) by specifying a "provided" dependency in the `!itest` profile in the [root POM][specialagent-pom]. For instance, the dependency for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is:
 
 ```
 <dependency>
@@ -184,7 +186,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is used by attaching to a target
 
 [<ins>SpecialAgent</ins>](#41-specialagent) supports the following attach modes:
 
-| Attach Mode | Number of Required<br>Commands to Attach | SpecialAgent<br>Initialization Timeline |
+| Attach Mode | Number of Required<br>Commands to Attach | Plugin and Rule<br>Initialization Timeline |
 |:-|:-:|:-:|
 | [<ins>Static Attach</ins>](#221-static-attach)<br>&nbsp; | 1 (sync)<br>&nbsp; | Before app start<br><sup>(any application)</sup> |
 | [<ins>Dynamic Attach</ins>](#222-dynamic-attach)<br>&nbsp; | 2 (async)<br>&nbsp; | After app start<br><sup>(any application)</sup> |
@@ -200,7 +202,7 @@ Statically attaching to a Java application involves the use of the `-javaagent` 
 java -javaagent:opentracing-specialagent-1.5.3.jar -jar MyApp.jar
 ```
 
-This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `myapp.jar`.
+This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `MyApp.jar`.
 
 #### 2.2.2 <ins>Dynamic Attach</ins>
 
@@ -208,20 +210,21 @@ With [<ins>Dynamic Attach</ins>](#222-dynamic-attach), the application is allowe
 
 Dynamically attaching to a Java application involves the use of a running application’s PID, after the application’s startup. The following commands can be used as an example:
 
-1. Call this to obtain the `PID` of the target application:
+1. To obtain the `PID` of the target application:
     ```bash
     jps
     ```
 
-1. For jdk1.8
-    ```bash
-    java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.3.jar <PID>
-    ```
+1. To attach to the target `PID`:
+   * For jdk1.8
+     ```bash
+     java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.3.jar <PID>
+     ```
 
-1. For jdk9+
-    ```bash
-    java -jar opentracing-specialagent-1.5.3.jar <PID>
-    ```
+   * For jdk9+
+     ```bash
+     java -jar opentracing-specialagent-1.5.3.jar <PID>
+     ```
 
 **Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
 
@@ -254,11 +257,13 @@ java -javaagent:opentracing-specialagent-1.5.3.jar -Dsa.init.defer=false -jar My
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) exposes a simple pattern for configuration of [<ins>SpecialAgent</ins>](#41-specialagent), the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin), as well as [<ins>Tracer Plugins</ins>](#43-tracer-plugin). The configuration pattern is based on system properties, which can be defined on the command-line, in a properties file, or in [@AgentRunner.Config][agentrunner-config] for JUnit tests:
 
-1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in layers below...
+**Configuration Layers**
 
-1. The [@AgentRunner.Config][agentrunner-config] annotation allows one to define log level and transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in layers below...
+1. Properties passed on the command-line via `-D${PROPERTY}=...` override same-named properties defined in the subsequent layers.
 
-1. The `-Dsa.config=${PROPERTIES_FILE}` command-line argument can be specified for [<ins>SpecialAgent</ins>](#41-specialagent) to load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the layer below...
+1. The [@AgentRunner.Config][agentrunner-config] annotation allows one to define log level and re/transformation event logging settings. Properties defined in the `@Config` annotation override same-named properties defined in the subsequent layers.
+
+1. The `-Dsa.config=${PROPERTIES_FILE}` command-line argument can be specified for [<ins>SpecialAgent</ins>](#41-specialagent) to load property names from a `${PROPERTIES_FILE}`. Properties defined in the `${PROPERTIES_FILE}` override same-named properties defined in the subsequent layer.
 
 1. The [<ins>SpecialAgent</ins>](#41-specialagent) has a `default.properties` file that defines default values for properties that need to be defined.
 
@@ -660,10 +665,8 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [opentracing-contrib]: https://github.com/opentracing-contrib/
-[pom]: https://maven.apache.org/pom.html
+[travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.3/opentracing-specialagent-1.5.3.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.4-SNAPSHOT
-[test-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.3/opentracing-specialagent-1.5.3-tests.jar
-[test-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.4-SNAPSHOT
