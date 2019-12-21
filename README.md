@@ -26,6 +26,7 @@ In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-sup
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2 [For Development](#212-for-development)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1 [<ins>Instrumentation Plugins</ins>](#2121-instrumentation-plugins)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.2 [<ins>Tracer Plugins</ins>](#2122-tracer-plugins)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.2.1 [<ins>Short Name</ins>](#21221-short-name)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2 [Usage](#22-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.1 [<ins>Static Attach</ins>](#221-static-attach)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2.2 [<ins>Dynamic Attach</ins>](#222-dynamic-attach)<br>
@@ -170,7 +171,9 @@ The `test-jar` is the **test** artifact that contains the `AgentRunner` class, w
 </dependency>
 ```
 
-Each [<ins>Tracer Plugin</ins>](#43-tracer-plugin) integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) must define a "short name", which is a string that is used to reference the plugin with the `-Dsa.plugin=<SHORT_NAME>` system property. To provide a "short name" for the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), you must define a Maven property in the [root POM][specialagent-pom] with the name matching the `artifactId` of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin) module. For instance, the "short name" for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is defined as:
+###### 2.1.2.2.1 <ins>Short Name</ins>
+
+Each [<ins>Tracer Plugin</ins>](#43-tracer-plugin) integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) must define a <ins>Short Name</ins>, which is a string that is used to reference the plugin with the `-Dsa.plugin=<SHORT_NAME>` system property. To provide a <ins>Short Name</ins> for the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), you must define a Maven property in the [root POM][specialagent-pom] with the name matching the `artifactId` of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin) module. For instance, the <ins>Short Name</ins> for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is defined as:
 
 ```
 <properties>
@@ -292,7 +295,7 @@ The following properties are supported by all [<ins>Instrumentation Plugins</ins
 
    Sets verbose mode for all plugins (i.e. `*`) or one plugin (i.e. `${RULE_NAME_PATTERN}`). This property can also be set in an `AgentRunner` JUnit test with the `@AgentRunner.Config(verbose=true)` for all tests in a JUnit class, or `@AgentRunner.TestConfig(verbose=true)` for an individual JUnit test method.
 
-   Concurrent plugin supports verbose mode which is disabled by default. To enable set `sa.concurrent.verbose=true`. In non verbose mode parent span context (if exists) is propagating to task execution. In verbose mode parent span is always created on task submission to executor and child span is created when task is started.
+   The [Java Concurrent API plugin](https://github.com/opentracing-contrib/java-concurrent) supports verbose mode, which is disabled by default. To enable, set `sa.concurrent.verbose=true`. In non-verbose mode, parent span context is propagating to task execution (if a parent span context exists). In verbose mode, a parent span is always created upon task submission to the executor, and a child span is created when the task is started.
 
 1. Skip fingerprint verification:
 
@@ -304,33 +307,33 @@ The following properties are supported by all [<ins>Instrumentation Plugins</ins
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenTracing-compatible tracers. There are 2 ways to connect a tracer to the [<ins>SpecialAgent</ins>](#41-specialagent) runtime:
 
-1. **Internal [<ins>Tracer Plugins</ins>](#43-tracer-plugin)**
+1. **Bundled [<ins>Tracer Plugins</ins>](#43-tracer-plugin)**
 
-    The [<ins>SpecialAgent</ins>](#41-specialagent) includes the following [<ins>Tracer Plugins</ins>](#43-tracer-plugin):
+    The [<ins>SpecialAgent</ins>](#41-specialagent) bundles the following [<ins>Tracer Plugins</ins>](#43-tracer-plugin):
 
     1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
     1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
     1. [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)
 
-    The `-Dsa.tracer=${TRACER_PLUGIN}` property is used on the command-line to specify which [<ins>Tracer Plugin</ins>](#43-tracer-plugin) will be used. The value of `${TRACER_PLUGIN}` is the short name of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), i.e. `jaeger`, `lightstep`, or `wavefront`.
+    The `-Dsa.tracer=${TRACER_PLUGIN}` property specifies which [<ins>Tracer Plugin</ins>](#43-tracer-plugin) is to be used. The value of `${TRACER_PLUGIN}` is the [<ins>Short Name</ins>](#21221-short-name) of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), i.e. `jaeger`, `lightstep`, or `wavefront`.
 
 1. **External [<ins>Tracer Plugins</ins>](#43-tracer-plugin)**
 
     The [<ins>SpecialAgent</ins>](#41-specialagent) allows external [<ins>Tracer Plugins</ins>](#43-tracer-plugin) to be attached to the runtime.
 
-    The `-Dsa.tracer=${TRACER_JAR}` property is used on the command-line to specify the JAR path of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin) to be used. The `${TRACER_JAR}` must be a JAR that conforms to the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) API of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
+    The `-Dsa.tracer=${TRACER_JAR}` property specifies the JAR path of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin) to be used. The `${TRACER_JAR}` must be a JAR that conforms to the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) API of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
 
 _**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the [<ins>SpecialAgent</ins>](#41-specialagent) will present a warning in the log that states: `Tracer NOT RESOLVED`._
 
 ### 3.4 Disabling [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) enabled by default, and allows them to be disabled.
+[<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) bundled with the [<ins>SpecialAgent</ins>](#41-specialagent) are enabled by default.
 
-Multiple properties to <ins>disable</ins> or to <ins>enable</ins> all or individual plugins can be declared either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`. The processing order of the properties is equal to the order of their declaration.
+Multiple properties to <ins>disable</ins> or to <ins>enable</ins> all or individual plugins can be declared via the [Configuration Pattern](#3-configuration). The processing order of the properties is equal to the order of their declaration.
 
 #### 3.4.1 Disabling All Instrumentation Plugins
 
-To <ins>disable</ins> _all **instrumentation** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To <ins>disable</ins> _all **instrumentation** plugins_:
 
 ```
 sa.instrumentation.plugin.*.disable
@@ -339,7 +342,7 @@ sa.instrumentation.plugin.*.disable
 
 #### 3.4.2 Disabling (or enabling) One Instrumentation Plugin
 
-To <ins>disable</ins> _an individual **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To <ins>disable</ins> _an individual **instrumentation** plugin_:
 
 ```
 sa.instrumentation.plugin.${RULE_NAME_PATTERN}.disable
@@ -353,7 +356,7 @@ sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable
 ```
 <sup>The suffix `.enable` is interchangeable with `.disable=false`.</sup>
 
-The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
+The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) ("SpecialAgent Rule" column). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
 1. `lettuce:5.?`<br>Matches all Lettuce plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
 1. `spring:web:*`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
@@ -368,7 +371,7 @@ If the _version part_ of the `${RULE_NAME_PATTERN}` does not end with a `*` or `
 
 #### 3.4.3 Disabling `AgentRule`s of an Instrumentation Plugin
 
-To disable _an individual `AgentRule` of an **instrumentation** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To disable _an individual `AgentRule` of an **instrumentation** plugin_:
 
 ```
 sa.instrumentation.plugin.${PLUGIN_NAME}#${AGENT_RULE_SIMPLE_CLASS_NAME}.disable
@@ -381,21 +384,21 @@ The value of `${AGENT_RULE_SIMPLE_CLASS_NAME}` is the simple class name of the `
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Tracer Plugins</ins>](#43-tracer-plugin) enabled by default, and allows them to be disabled.
 
-To disable _all **tracer** plugins_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To disable _all **tracer** plugins_:
 
 ```
 sa.tracer.plugins.disable
 ```
 <sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
-To disable _an individual **tracer** plugin_, specify a system property, either on the command-line or in the properties file referenced by `-Dconfig=${PROPERTIES_FILE}`.
+To disable _an individual **tracer** plugin_:
 
 ```
 sa.tracer.plugin.${SHORT_NAME}.disable
 ```
 <sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
-The value of `${SHORT_NAME}` is the short name of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
+The value of `${SHORT_NAME}` is the [<ins>Short Name</ins>](#21221-short-name) of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
 
 ### 3.6 Including Custom Instrumentation Plugins
 
