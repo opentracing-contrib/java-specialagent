@@ -19,7 +19,7 @@
         <sa.plugin.name>mule:4:http-service</sa.plugin.name>
 
         <version.mule.service.http>1.4.7</version.mule.service.http>
-        <version.opentracing.grizzly.http.server>0.1.3-SNAPSHOT</version.opentracing.grizzly.http.server>
+        <version.opentracing.grizzly.http.server>0.1.3</version.opentracing.grizzly.http.server>
         <version.mule>4.2.2</version.mule>
 
         <version.apache-logging>2.11.2</version.apache-logging>
