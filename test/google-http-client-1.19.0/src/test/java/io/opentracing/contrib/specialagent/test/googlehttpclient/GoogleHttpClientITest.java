@@ -19,15 +19,15 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.javanet.NetHttpTransport;
+
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class GoogleHttpClientITest {
   public static void main(final String[] args) throws Exception {
     TestUtil.initTerminalExceptionHandler();
-    HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
-    HttpRequest request = requestFactory.buildGetRequest(new GenericUrl("https://www.google.com"));
+    final HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
+    final HttpRequest request = requestFactory.buildGetRequest(new GenericUrl("https://www.google.com"));
     final int statusCode = request.execute().getStatusCode();
-
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
