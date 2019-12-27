@@ -21,11 +21,13 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.4-SNAPSHOT</version>
+    <version>1.5.4</version>
   </parent>
   <artifactId>camel</artifactId>
   <name>SpecialAgent Rule for Apache Camel</name>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.apache.camel>2.24.0</version.org.apache.camel>
   </properties>
   <dependencies>

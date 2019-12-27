@@ -1,5 +1,11 @@
 # Changes by Version
 
+## v1.5.4 (2019-12-27)
+* Fix to possible race condition in "servlet" rule (#316)
+* Implement AgentRule(s) for Google Http Client (#314)
+* Implement AgentRule(s) for Couchbase Client (#310)
+* Implement integration test for Spymemcached (#305)
+
 ## v1.5.3 (2019-12-13)
 * Reduce source & target versions for all plugins (#277)
 * Fix to startup failure with Dynamic Attach on Windows (#288)

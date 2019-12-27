@@ -21,12 +21,10 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.4-SNAPSHOT</version>
+    <version>1.5.4</version>
   </parent>
   <artifactId>thrift</artifactId>
   <name>SpecialAgent Rule for Apache Thrift</name>
-  <properties>
-  </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-thrift -->

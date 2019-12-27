@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test</groupId>
     <artifactId>test</artifactId>
-    <version>1.5.4-SNAPSHOT</version>
+    <version>1.5.4</version>
   </parent>
   <artifactId>feign-9.0.0</artifactId>
   <name>SpecialAgent Test for Feign 9.0.0</name>

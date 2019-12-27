@@ -21,12 +21,10 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test</groupId>
     <artifactId>test</artifactId>
-    <version>1.5.4-SNAPSHOT</version>
+    <version>1.5.4</version>
   </parent>
   <artifactId>spring-webflux-5.2.1</artifactId>
   <name>SpecialAgent Test for Spring WebFlux 5.2.1</name>
-  <properties>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
