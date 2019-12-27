@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.4</version>
+    <version>1.5.5-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -34,82 +34,39 @@
   </properties>
   <profiles>
     <profile>
-      <id>okhttp</id>
+      <id>akka-http</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>okhttp-3.14.2</module>
-        <module>okhttp-3.5.0</module>
-        <module>okhttp-4.0.0</module>
-        <module>okhttp-4.2.2</module>
+        <module>akka-http-10.1.0</module>
+        <module>akka-http-10.1.10</module>
       </modules>
     </profile>
     <profile>
-      <id>jdbc</id>
+      <id>apache-httpclient</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>jdbc</module>
+        <module>apache-httpclient-4.4</module>
+        <module>apache-httpclient-4.5.10</module>
       </modules>
     </profile>
     <profile>
-      <id>concurrent</id>
+      <id>asynchttpclient</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>concurrent</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>mongo-driver</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>mongo-driver-3.9.0</module>
-        <module>mongo-driver-3.11.0</module>
-        <module>mongo-driver-async-3.11.0</module>
-        <module>mongo-driver-async-3.9.0</module>
-        <module>mongo-driver-reactive-1.12.0</module>
-        <module>mongo-driver-reactive-1.8.0</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>servlet-jetty</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>servlet-jetty-7.6.21</module>
-        <module>servlet-jetty-8.2.0</module>
-        <module>servlet-jetty-9.2.15</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>servlet-tomcat</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>servlet-tomcat-7.0.65</module>
-        <module>servlet-tomcat-8.0.53</module>
-        <module>servlet-tomcat-8.5.47</module>
-        <module>servlet-tomcat-9.0.27</module>
+        <module>asynchttpclient-2.7.0</module>
+        <module>asynchttpclient-2.10.4</module>
       </modules>
     </profile>
     <profile>
@@ -149,25 +106,14 @@
       </modules>
     </profile>
     <profile>
-      <id>jms-1</id>
+      <id>concurrent</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>jms-1</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>jms-2</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>jms-2</module>
+        <module>concurrent</module>
       </modules>
     </profile>
     <profile>
@@ -183,66 +129,6 @@
       </modules>
     </profile>
     <profile>
-      <id>akka-http</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>akka-http-10.1.0</module>
-        <module>akka-http-10.1.10</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>rxjava</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>rxjava-2.1.0</module>
-        <module>rxjava-2.2.12</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>play</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>play-2.6.0</module>
-        <module>play-2.7.3</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>play-ws</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>play-ws-2.0.0</module>
-        <module>play-ws-2.0.7</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>asynchttpclient</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>asynchttpclient-2.7.0</module>
-        <module>asynchttpclient-2.10.4</module>
-      </modules>
-    </profile>
-    <profile>
       <id>feign</id>
       <activation>
         <property>
@@ -252,6 +138,18 @@
       <modules>
         <module>feign-9.0.0</module>
         <module>feign-10.6.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>google-http-client</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>google-http-client-1.19.0</module>
+        <module>google-http-client-1.33.0</module>
       </modules>
     </profile>
     <profile>
@@ -303,15 +201,14 @@
       </modules>
     </profile>
     <profile>
-      <id>apache-httpclient</id>
+      <id>httpurlconnection</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>apache-httpclient-4.4</module>
-        <module>apache-httpclient-4.5.10</module>
+        <module>httpurlconnection</module>
       </modules>
     </profile>
     <profile>
@@ -324,6 +221,51 @@
       <modules>
         <module>jaxrs-2.0</module>
         <module>jaxrs-2.1</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jdbc</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jdbc</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jedis</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jedis-2.7.0</module>
+        <module>jedis-3.1.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jms-1</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jms-1</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jms-2</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>jms-2</module>
       </modules>
     </profile>
     <profile>
@@ -352,6 +294,60 @@
       </modules>
     </profile>
     <profile>
+      <id>mongo-driver</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>mongo-driver-3.9.0</module>
+        <module>mongo-driver-3.11.0</module>
+        <module>mongo-driver-async-3.11.0</module>
+        <module>mongo-driver-async-3.9.0</module>
+        <module>mongo-driver-reactive-1.12.0</module>
+        <module>mongo-driver-reactive-1.8.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>okhttp</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>okhttp-3.14.2</module>
+        <module>okhttp-3.5.0</module>
+        <module>okhttp-4.0.0</module>
+        <module>okhttp-4.2.2</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>play-ws</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>play-ws-2.0.0</module>
+        <module>play-ws-2.0.7</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>play</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>play-2.6.0</module>
+        <module>play-2.7.3</module>
+      </modules>
+    </profile>
+    <profile>
       <id>rabbitmq-client</id>
       <activation>
         <property>
@@ -361,18 +357,6 @@
       <modules>
         <module>rabbitmq-client-5.0.0</module>
         <module>rabbitmq-client-5.7.3</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>jedis</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>jedis-2.7.0</module>
-        <module>jedis-3.1.0</module>
       </modules>
     </profile>
     <profile>
@@ -400,15 +384,102 @@
       </modules>
     </profile>
     <profile>
-      <id>thrift</id>
+      <id>rxjava</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>thrift-0.10.0</module>
-        <module>thrift-0.12.0</module>
+        <module>rxjava-2.1.0</module>
+        <module>rxjava-2.2.12</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>servlet-jetty</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>servlet-jetty-7.6.21</module>
+        <module>servlet-jetty-8.2.0</module>
+        <module>servlet-jetty-9.2.15</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>servlet-tomcat</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>servlet-tomcat-7.0.65</module>
+        <module>servlet-tomcat-8.0.53</module>
+        <module>servlet-tomcat-8.5.47</module>
+        <module>servlet-tomcat-9.0.27</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-jms</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-jms-5.0.0</module>
+        <module>spring-jms-5.2.2</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-kafka</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-kafka-2.2.0</module>
+        <module>spring-kafka-2.3.3</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-messaging</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-messaging-5.1.0</module>
+        <module>spring-messaging-5.2.2</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-rabbitmq</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-rabbitmq-2.0.0</module>
+        <module>spring-rabbitmq-2.2.1</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>spring-scheduling</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>spring-scheduling-5.0.0</module>
+        <module>spring-scheduling-5.2.1</module>
       </modules>
     </profile>
     <profile>
@@ -442,18 +513,6 @@
       </modules>
     </profile>
     <profile>
-      <id>spring-scheduling</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>spring-scheduling-5.0.0</module>
-        <module>spring-scheduling-5.2.1</module>
-      </modules>
-    </profile>
-    <profile>
       <id>spring-webmvc</id>
       <activation>
         <property>
@@ -470,66 +529,6 @@
       </modules>
     </profile>
     <profile>
-      <id>spring-kafka</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>spring-kafka-2.2.0</module>
-        <module>spring-kafka-2.3.3</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>spring-rabbitmq</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>spring-rabbitmq-2.0.0</module>
-        <module>spring-rabbitmq-2.2.1</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>zuul</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>zuul-1.0.0</module>
-        <module>zuul-1.3.1</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>spring-jms</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>spring-jms-5.0.0</module>
-        <module>spring-jms-5.2.2</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>spring-messaging</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>spring-messaging-5.1.0</module>
-        <module>spring-messaging-5.2.2</module>
-      </modules>
-    </profile>
-    <profile>
       <id>spring-websocket</id>
       <activation>
         <property>
@@ -539,17 +538,6 @@
       <modules>
         <module>spring-websocket-5.1.0</module>
         <module>spring-websocket-5.2.2</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>httpurlconnection</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>httpurlconnection</module>
       </modules>
     </profile>
     <profile>
@@ -565,15 +553,27 @@
       </modules>
     </profile>
     <profile>
-      <id>google-http-client</id>
+      <id>thrift</id>
       <activation>
         <property>
           <name>all</name>
         </property>
       </activation>
       <modules>
-        <module>google-http-client-1.19.0</module>
-        <module>google-http-client-1.33.0</module>
+        <module>thrift-0.10.0</module>
+        <module>thrift-0.12.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>zuul</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>zuul-1.0.0</module>
+        <module>zuul-1.3.1</module>
       </modules>
     </profile>
     <profile>
