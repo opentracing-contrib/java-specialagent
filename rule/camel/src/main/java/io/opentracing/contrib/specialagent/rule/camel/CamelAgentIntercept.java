@@ -22,6 +22,8 @@ import java.util.WeakHashMap;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.opentracing.OpenTracingTracer;
 
+import io.opentracing.util.GlobalTracer;
+
 public class CamelAgentIntercept {
   public static final Map<DefaultCamelContext,Object> state = Collections.synchronizedMap(new WeakHashMap<DefaultCamelContext,Object>());
 
@@ -31,6 +33,7 @@ public class CamelAgentIntercept {
       return;
 
     final OpenTracingTracer tracer = new OpenTracingTracer();
+    tracer.setTracer(GlobalTracer.get());
     tracer.init(context);
     state.put(context, null);
   }

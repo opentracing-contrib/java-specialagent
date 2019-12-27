@@ -1,12 +1,10 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/* Copyright 2019 The OpenTracing Authors
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +13,9 @@
  * limitations under the License.
  */
 
-package org.apache.camel.opentracing.agent;
+package io.opentracing.contrib.specialagent.test.camel;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.camel.CamelContext;
@@ -31,22 +30,23 @@ import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
-@RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false, log = Level.FINER)
-public class InstallOpenTracingTracerRuleTest extends CamelTestSupport {
+public class CamelITest extends CamelTestSupport {
+  public static void main(final String[] args) throws IOException {
+    TestUtil.initTerminalExceptionHandler();
+    testBuilder();
+    testClient();
+  }
   private static MockTracer tracer;
 
   @BeforeClass
   public static void beforeClass(final MockTracer tracer) {
-    InstallOpenTracingTracerRuleTest.tracer = tracer;
+    CamelITest.tracer = tracer;
   }
 
   @EndpointInject(uri = "mock:result")
