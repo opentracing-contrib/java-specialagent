@@ -64,6 +64,12 @@
             <version>${version.apache-logging}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mule.runtime</groupId>
+            <artifactId>mule-module-container</artifactId>
+            <version>${version.mule}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 

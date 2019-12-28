@@ -3,12 +3,7 @@ package io.opentracing.contrib.specialagent.rule.mule4.module.artifact;
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.asm.Advice.Return;
-import net.bytebuddy.asm.Advice.Argument;
-import net.bytebuddy.asm.Advice.FieldValue;
-import net.bytebuddy.asm.Advice.This;
-import net.bytebuddy.asm.Advice.Origin;
-import net.bytebuddy.asm.Advice.OnMethodExit;
+import net.bytebuddy.asm.Advice.*;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
@@ -41,10 +36,8 @@ public class FilteringArtifactClassLoaderRule extends AgentRule {
                                 final @Argument(value = 0, typing = Assigner.Typing.DYNAMIC) Object resObj,
                                 @FieldValue(value = "filter", typing = Assigner.Typing.DYNAMIC) Object filter,
                                 @FieldValue(value = "artifactClassLoader", typing = Assigner.Typing.DYNAMIC) Object artifactClassLoader) {
-            if (!isEnabled(origin))
-                return;
-
-            FilteringArtifactAgentIntercept.exit(returned, resObj, filter, artifactClassLoader);
+            if (isEnabled(origin))
+                FilteringArtifactAgentIntercept.exit(thiz, returned, resObj, filter, artifactClassLoader);
         }
     }
 }
