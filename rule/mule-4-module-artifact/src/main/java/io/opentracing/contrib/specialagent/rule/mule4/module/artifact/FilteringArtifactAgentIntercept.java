@@ -25,12 +25,12 @@ public class FilteringArtifactAgentIntercept {
     private static final String CLS_SFX = ".class";
     private static final Logger LOGGER = getLogger(FilteringArtifactAgentIntercept.class);
 
-    public static void exit(Object thiz, Object returned, Object resObj, Object filter, Object artifactClassLoader) {
+    public static Object exit(Object thiz, Object returned, Object resObj, Object filter, Object artifactClassLoader) {
         String resName = (String) resObj;
 
         // if it's a class that wasn't found then we continue
         if (returned != null || !resName.endsWith(CLS_SFX))
-            return;
+            return null;
 
         LOGGER.debug("Resource {} was not found on {}.", resName, thiz);
 
@@ -39,12 +39,15 @@ public class FilteringArtifactAgentIntercept {
         // See: https://github.com/mulesoft/mule/blob/mule-4.2.2/modules/artifact/src/main/java/org/mule/runtime/module/artifact/api/classloader/FilteringArtifactClassLoader.java#L91
         ClassLoaderFilter fltr = (ClassLoaderFilter) filter;
         ArtifactClassLoader aCl = (ArtifactClassLoader) artifactClassLoader;
+        Object toReturn = null;
         if (fltr.exportsClass(clazzName)) {
             LOGGER.debug("Filter {} exports {}, returning from {}", fltr, clazzName, aCl);
-            returned = aCl.getClassLoader().getResource(resName);
+            toReturn = aCl.getClassLoader().getResource(resName);
         }
 
-        if (returned == null)
+        if (toReturn == null)
             LOGGER.warn("Could not locate resource {} in {}.", resName, thiz);
+
+        return toReturn;
     }
 }

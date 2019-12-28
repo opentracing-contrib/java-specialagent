@@ -37,7 +37,7 @@ public class FilteringArtifactClassLoaderRule extends AgentRule {
                                 @FieldValue(value = "filter", typing = Assigner.Typing.DYNAMIC) Object filter,
                                 @FieldValue(value = "artifactClassLoader", typing = Assigner.Typing.DYNAMIC) Object artifactClassLoader) {
             if (isEnabled(origin))
-                FilteringArtifactAgentIntercept.exit(thiz, returned, resObj, filter, artifactClassLoader);
+                returned = FilteringArtifactAgentIntercept.exit(thiz, returned, resObj, filter, artifactClassLoader);
         }
     }
 }
