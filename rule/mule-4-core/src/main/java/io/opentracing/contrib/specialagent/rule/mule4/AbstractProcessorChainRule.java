@@ -33,9 +33,10 @@ public class AbstractProcessorChainRule extends AgentRule {
     public static class OnExit {
         @Advice.OnMethodExit
         public static void exit(final @Advice.Origin String origin,
+                                @Advice.FieldValue(value = "muleContext", typing = Assigner.Typing.DYNAMIC) Object muleContext,
                                 @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object interceptors) {
             if (isEnabled(origin))
-                interceptors = AbstractProcessorChainIntercept.exit(interceptors);
+                interceptors = AbstractProcessorChainIntercept.exit(muleContext, interceptors);
         }
     }
 }
