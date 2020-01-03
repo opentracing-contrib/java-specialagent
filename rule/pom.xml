@@ -95,6 +95,7 @@
         <module>httpurlconnection</module>
         <module>couchbase-client</module>
         <module>google-http-client</module>
+        <module>netty</module>
       </modules>
       <build>
         <resources>
