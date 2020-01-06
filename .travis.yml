@@ -326,6 +326,16 @@ jobs:
     jdk: oraclejdk11
     install: true
     script: mvn -B -Dtest -P zuul install
+  - name: "Netty [oraclejdk8]"
+    stage: test
+    jdk: oraclejdk8
+    install: true
+    script: mvn -B -Dtest -P netty install
+  - name: "Netty [oraclejdk11]"
+    stage: test
+    jdk: oraclejdk11
+    install: true
+    script: mvn -B -Dtest -P netty install
   - name: "OkHttp [oraclejdk8]"
     stage: test
     jdk: oraclejdk8

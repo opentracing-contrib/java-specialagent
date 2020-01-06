@@ -43,7 +43,9 @@ public class AsyncHttpClientITest {
       if (200 != statusCode)
         throw new AssertionError("ERROR: response: " + statusCode);
 
-      TestUtil.checkSpan("java-asynchttpclient", 1);
+      // 1 AsyncHttpClient span
+      // 1 Netty span
+      TestUtil.checkSpan("java-asynchttpclient", 2, true);
     }
   }
 }

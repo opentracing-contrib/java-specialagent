@@ -22,6 +22,7 @@ import io.netty.util.AttributeKey;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
@@ -36,33 +37,27 @@ public class TracingServerChannelInboundHandlerAdapter extends ChannelInboundHan
   public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
 
     if (!(msg instanceof HttpRequest)) {
-      final Span span = ctx.channel().attr(SERVER_ATTRIBUTE_KEY).get();
-      if (span == null) {
-        ctx.fireChannelRead(msg);
-      } else {
-        try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
-          ctx.fireChannelRead(msg);
-        }
-      }
+      ctx.fireChannelRead(msg);
       return;
     }
 
     final HttpRequest request = (HttpRequest) msg;
+    final Tracer tracer = GlobalTracer.get();
 
-    final SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(request.getMethod().name())
+    final SpanBuilder spanBuilder = tracer.buildSpan(request.method().name())
         .withTag(Tags.COMPONENT, "netty")
         .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER)
         .withTag(Tags.HTTP_METHOD, request.method().name())
         .withTag(Tags.HTTP_URL, request.uri());
 
-    final SpanContext context = GlobalTracer.get().extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
+    final SpanContext context = tracer.extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
     if(context != null) {
       spanBuilder.asChildOf(context);
     }
 
     final Span span = spanBuilder.start();
 
-    try (final Scope scope = GlobalTracer.get().activateSpan(span)) {
+    try (final Scope scope = tracer.activateSpan(span)) {
       ctx.channel().attr(SERVER_ATTRIBUTE_KEY).set(span);
 
       try {

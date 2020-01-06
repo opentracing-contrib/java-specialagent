@@ -72,7 +72,7 @@ public class NettyITest {
       workerGroup.shutdownGracefully();
     }
 
-    TestUtil.checkSpan("netty", 2);
+    TestUtil.checkSpan("netty", 2, true);
   }
 
   private static void client() throws Exception {

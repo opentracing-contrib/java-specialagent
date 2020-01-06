@@ -24,14 +24,8 @@ import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 
 public class NettyAgentIntercept {
-
-  public static void pipelineAddEnter() {
-    //System.out.println("ENTER");
-  }
 
   public static void pipelineAddExit(Object thiz, Object arg2) {
     ChannelPipeline pipeline = (ChannelPipeline) thiz;
@@ -60,11 +54,4 @@ public class NettyAgentIntercept {
     }
   }
 
-  public static void pipelineConnectEnter(Object thiz) {
-    ChannelPipeline pipeline = (ChannelPipeline) thiz;
-    final Span span = GlobalTracer.get().activeSpan();
-    if(span != null) {
-      pipeline.channel().attr(TracingClientChannelOutboundHandlerAdapter.CLIENT_PARENT_ATTRIBUTE_KEY).set(span);
-    }
-  }
 }
