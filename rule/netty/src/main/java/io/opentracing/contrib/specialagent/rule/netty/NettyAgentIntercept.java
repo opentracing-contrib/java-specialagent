@@ -24,6 +24,8 @@ import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 
 public class NettyAgentIntercept {
 
@@ -35,34 +37,22 @@ public class NettyAgentIntercept {
     ChannelPipeline pipeline = (ChannelPipeline) thiz;
     ChannelHandler handler = (ChannelHandler) arg2;
 
-    //System.out.println("EXIT " + handler);
-
     try {
       // Server
       if (handler instanceof HttpServerCodec) {
-        pipeline.addLast(
-            TracingHttpServerHandler.class.getName(), new TracingHttpServerHandler());
+        pipeline.addLast(TracingHttpServerHandler.class.getName(), new TracingHttpServerHandler());
       } else if (handler instanceof HttpRequestDecoder) {
-        pipeline.addLast(
-            TracingServerChannelInboundHandlerAdapter.class.getName(),
-            new TracingServerChannelInboundHandlerAdapter());
+        pipeline.addLast(TracingServerChannelInboundHandlerAdapter.class.getName(), new TracingServerChannelInboundHandlerAdapter());
       } else if (handler instanceof HttpResponseEncoder) {
-        pipeline.addLast(
-            TracingServerChannelOutboundHandlerAdapter.class.getName(),
-            new TracingServerChannelOutboundHandlerAdapter());
+        pipeline.addLast(TracingServerChannelOutboundHandlerAdapter.class.getName(), new TracingServerChannelOutboundHandlerAdapter());
       } else {
         // Client
         if (handler instanceof HttpClientCodec) {
-          pipeline.addLast(
-              TracingHttpClientTracingHandler.class.getName(), new TracingHttpClientTracingHandler());
+          pipeline.addLast(TracingHttpClientTracingHandler.class.getName(), new TracingHttpClientTracingHandler());
         } else if (handler instanceof HttpRequestEncoder) {
-          pipeline.addLast(
-              TracingClientChannelOutboundHandlerAdapter.class.getName(),
-              new TracingClientChannelOutboundHandlerAdapter());
+          pipeline.addLast(TracingClientChannelOutboundHandlerAdapter.class.getName(), new TracingClientChannelOutboundHandlerAdapter());
         } else if (handler instanceof HttpResponseDecoder) {
-          pipeline.addLast(
-              TracingClientChannelInboundHandlerAdapter.class.getName(),
-              new TracingClientChannelInboundHandlerAdapter());
+          pipeline.addLast(TracingClientChannelInboundHandlerAdapter.class.getName(), new TracingClientChannelInboundHandlerAdapter());
         }
       }
     } catch (IllegalArgumentException ignore) {
@@ -70,4 +60,11 @@ public class NettyAgentIntercept {
     }
   }
 
+  public static void pipelineConnectEnter(Object thiz) {
+    ChannelPipeline pipeline = (ChannelPipeline) thiz;
+    final Span span = GlobalTracer.get().activeSpan();
+    if(span != null) {
+      pipeline.channel().attr(TracingClientChannelOutboundHandlerAdapter.CLIENT_PARENT_ATTRIBUTE_KEY).set(span);
+    }
+  }
 }

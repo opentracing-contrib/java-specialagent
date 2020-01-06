@@ -30,8 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TracingServerChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
-  public static final AttributeKey<Span> SERVER_ATTRIBUTE_KEY = AttributeKey.valueOf(
-      TracingServerChannelInboundHandlerAdapter.class.getName() + ".span");
+  public static final AttributeKey<Span> SERVER_ATTRIBUTE_KEY = AttributeKey.valueOf(TracingServerChannelInboundHandlerAdapter.class.getName() + ".span");
 
   @Override
   public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
@@ -56,8 +55,7 @@ public class TracingServerChannelInboundHandlerAdapter extends ChannelInboundHan
         .withTag(Tags.HTTP_METHOD, request.method().name())
         .withTag(Tags.HTTP_URL, request.uri());
 
-    final SpanContext context = GlobalTracer.get()
-        .extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
+    final SpanContext context = GlobalTracer.get().extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
     if(context != null) {
       spanBuilder.asChildOf(context);
     }

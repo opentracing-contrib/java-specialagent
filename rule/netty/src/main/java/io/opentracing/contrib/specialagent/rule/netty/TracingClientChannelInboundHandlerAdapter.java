@@ -11,9 +11,7 @@ import io.opentracing.util.GlobalTracer;
 
 // ClientResponse
 public class TracingClientChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
-  public static final AttributeKey<Span> CLIENT_ATTRIBUTE_KEY = AttributeKey.valueOf(
-      TracingClientChannelInboundHandlerAdapter.class.getName() + ".span");
-
+  public static final AttributeKey<Span> CLIENT_ATTRIBUTE_KEY = AttributeKey.valueOf(TracingClientChannelInboundHandlerAdapter.class.getName() + ".span");
 
   @Override
   public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
