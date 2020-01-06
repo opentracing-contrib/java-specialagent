@@ -587,6 +587,7 @@ Thank you to the following developers for filing issues and helping us fix them:
 * [@etsangsplk](https://github.com/etsangsplk)
 * [@Vovan2006](https://github.com/Vovan2006)
 * [Randall Theobald](https://github.com/randallt)
+* [Jianshao Wu](https://github.com/jianshaow)
 
 Thank you to the following individuals for all other general contributions to the codebase:
 
