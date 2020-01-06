@@ -54,7 +54,7 @@ public class FilterAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(Advice.to(FilterInitAdvice.class).on(named("init")))
+            .visit(Advice.to(FilterInitAdvice.class).on(named("init").and(takesArguments(1)).and(takesArgument(0, named("javax.servlet.FilterConfig")))))
             .visit(Advice.to(DoFilterEnter.class).on(named("doFilter")));
         }}),
       builder
