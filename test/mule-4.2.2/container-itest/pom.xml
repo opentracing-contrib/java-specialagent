@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>io.opentracing.contrib.specialagent.test</groupId>
+        <artifactId>mule-4.2.2</artifactId>
+        <version>1.5.5-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>container-itest</artifactId>
+
+    <properties>
+        <mule.version>4.2.2</mule.version>
+        <mule.service.weave.version>2.2.2</mule.service.weave.version>
+        <mule.service.scheduler.version>1.2.4</mule.service.scheduler.version>
+        <mule.service.http.version>1.4.7</mule.service.http.version>
+        <mule.home>${project.basedir}/src/test/mule-home</mule.home>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-services</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.mule.services</groupId>
+                                    <artifactId>mule-service-weave</artifactId>
+                                    <version>${mule.service.weave.version}</version>
+                                    <classifier>mule-service</classifier>
+                                    <outputDirectory>${mule.home}/services/mule-service-weave</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.mule.services</groupId>
+                                    <artifactId>mule-service-scheduler</artifactId>
+                                    <version>${mule.service.scheduler.version}</version>
+                                    <classifier>mule-service</classifier>
+                                    <outputDirectory>${mule.home}/services/mule-service-scheduler</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.mule.services</groupId>
+                                    <artifactId>mule-service-http</artifactId>
+                                    <version>${mule.service.http.version}</version>
+                                    <classifier>mule-service</classifier>
+                                    <outputDirectory>${mule.home}/services/mule-service-http</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${mule.home}/services</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-test-app</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.opentracing.contrib.specialagent.test</groupId>
+                                    <artifactId>test-app</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>mule-application</classifier>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${mule.home}/apps</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- override specialagent parent version -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>25.1-jre</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.runtime</groupId>
+            <artifactId>mule-module-launcher</artifactId>
+            <version>${mule.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mule.runtime</groupId>
+            <artifactId>mule-core</artifactId>
+            <version>${mule.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mule.runtime</groupId>
+            <artifactId>mule-module-extensions-spring-support</artifactId>
+            <version>${mule.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mule.runtime</groupId>
+            <artifactId>mule-module-service</artifactId>
+            <version>${mule.version}</version>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>anypoint-exchange-v2</id>
+            <name>Anypoint Exchange</name>
+            <url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>mulesoft-releases</id>
+            <name>MuleSoft Releases Repository</name>
+            <url>https://repository.mulesoft.org/releases/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>mulesoft-releases</id>
+            <name>mulesoft release repository</name>
+            <layout>default</layout>
+            <url>https://repository.mulesoft.org/releases/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>
