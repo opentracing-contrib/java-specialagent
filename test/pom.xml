@@ -406,6 +406,8 @@
         <module>servlet-jetty-7.6.21</module>
         <module>servlet-jetty-8.2.0</module>
         <module>servlet-jetty-9.2.15</module>
+        <module>servlet-jetty-9.3.28</module>
+        <module>servlet-jetty-9.4.24</module>
       </modules>
     </profile>
     <profile>

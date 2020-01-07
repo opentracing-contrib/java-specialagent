@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018 The OpenTracing Authors
+  Copyright 2019 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,24 +19,31 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-    <artifactId>rule</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.test</groupId>
+    <artifactId>test</artifactId>
     <version>1.5.5-SNAPSHOT</version>
   </parent>
-  <artifactId>jdbc</artifactId>
-  <name>SpecialAgent Rule for Java JDBC API</name>
+  <artifactId>servlet-jetty-9.4.24</artifactId>
+  <name>SpecialAgent Test for Jetty 9.4.24</name>
+  <properties>
+    <version.jetty>9.4.24.v20191120</version.jetty>
+  </properties>
   <dependencies>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-jdbc -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jdbc</artifactId>
-      <version>0.2.4</version>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${version.jetty}</version>
     </dependency>
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.199</version>
-      <scope>test</scope>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>${version.jetty}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib.specialagent.test</groupId>
+      <artifactId>servlet-jetty-7.6.21</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
     </dependency>
   </dependencies>
 </project>
