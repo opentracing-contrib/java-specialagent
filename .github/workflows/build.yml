@@ -1,0 +1,66 @@
+# Copyright 2020 The OpenTracing Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['1.8', '11']
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Set up JDK ${{ matrix.jdk }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.jdk }}
+
+    - name: Set up Maven
+      env:
+        MAVEN_VERSION: "3.5.3"
+      run: |
+        # sudo apt-get -y -qq install maven
+        cd /opt
+        sudo wget -qO- https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz | tar -xz
+        sudo rm -rf $M2_HOME && ln -s /opt/apache-maven-$MAVEN_VERSION $M2_HOME
+
+    - env:
+        GPG: ${{ secrets.GPG }}
+        GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      run: |
+        mvn -version
+        if [ "${{ matrix.jdk }}" = "1.8" ] &&
+           [ "${{ github.ref }}" = "refs/heads/master" ] &&
+           [ "${{ github.head_ref }}" = "" ]; then
+          echo $GPG | base64 -d | gpg --import --no-tty --batch --yes &> /dev/null &&
+          mvn -B -P report install &&
+          mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+          mvn -B -Dassemble install;
+        else
+          mvn -B install &&
+          mvn -B -Dassemble install;
+        fi
