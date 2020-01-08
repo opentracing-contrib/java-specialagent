@@ -14,14 +14,14 @@
  */
 package io.opentracing.contrib.specialagent.test.spring.kafka;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 @Service
 public class Consumer {
-
   @KafkaListener(topics = "users")
   @SendTo("reply")
   public String consume(String message) {

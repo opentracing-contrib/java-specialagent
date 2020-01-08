@@ -24,7 +24,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class SpringSchedulingITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
     try (final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SpringAsyncConfiguration.class)) {
       final String response = context.getBean(AsyncComponent.class).async().get(15, TimeUnit.SECONDS);

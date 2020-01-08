@@ -104,8 +104,6 @@ wget -O opentracing-specialagent-1.5.5-SNAPSHOT.jar $(curl -s https://oss.sonaty
 
 #### 2.1.2 For Development
 
-_**Prerequisite**: The [<ins>SpecialAgent</ins>](#41-specialagent) requires [Oracle Java](https://www.oracle.com/technetwork/java/javase/downloads/) to build. Thought the [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenJDK for general application use, it only supports Oracle Java for building and testing._
-
 The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely on different profiles:
 
 1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.4.jar`][main-release]
@@ -418,7 +416,7 @@ The following terms are used throughout this documentation.
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) is software that attaches to Java applications, and automatically instruments 3rd-party libraries integrated in the application. The [<ins>SpecialAgent</ins>](#41-specialagent) uses the OpenTracing API for [<ins>Instrumentation Plugins</ins>](#supported-instrumentation-plugins) that instrument 3rd-party libraries, as well as [<ins>Tracer Plugins</ins>](#supported-tracer-plugins) that implement OpenTracing tracer service providers. Both the [<ins>Instrumentation Plugins</ins>](#supported-instrumentation-plugins), as well as the [<ins>Tracer Plugins</ins>](#supported-tracer-plugins) are open-source, and are developed and supported by the OpenTracing community.
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) supports Oracle Java and OpenJDK. When building [<ins>SpecialAgent</ins>](#41-specialagent) from source, only Oracle Java is supported.
+The [<ins>SpecialAgent</ins>](#41-specialagent) supports Oracle Java and OpenJDK.
 
 #### 4.2 [<ins>Tracer</ins>](#42-tracer)
 
@@ -523,6 +521,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.M1 | 5.1.8.RELEASE |
 | | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | **5.2.0.RELEASE** |
 | [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | 3.11.0 |
+| [Neo4j Driver](https://github.com/opentracing-contrib/java-neo4j-driver) | [`neo4j:driver`][neo4j-driver] | 4.0.0 | 4.0.0 |
 | Netty | [`netty`][netty] | 4.1.0 | 4.1.44 |
 | [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | 4.2.2 |
 | Play Framework | [`play`][play] | 2.6.0 | 2.7.3 |
@@ -636,6 +635,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
 [lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
+[neo4j-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/neo4j-driver
 [okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
 [play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client

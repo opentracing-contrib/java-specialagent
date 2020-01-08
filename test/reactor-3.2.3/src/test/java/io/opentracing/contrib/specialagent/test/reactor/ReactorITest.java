@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 
 public class ReactorITest {
   public static void main(final String[] args) {
-    TestUtil.initTerminalExceptionHandler();
     final Span initSpan = GlobalTracer.get().buildSpan("foo").withTag(Tags.COMPONENT, "parent-reactor").start();
     final AtomicReference<String> spanInSubscriberContext = new AtomicReference<>();
     try (final Scope scope = GlobalTracer.get().scopeManager().activate(initSpan)) {

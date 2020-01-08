@@ -24,7 +24,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class GoogleHttpClientITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
     final HttpRequest request = requestFactory.buildGetRequest(new GenericUrl("https://www.google.com"));
     final int statusCode = request.execute().getStatusCode();

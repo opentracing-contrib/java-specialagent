@@ -310,6 +310,17 @@
       </modules>
     </profile>
     <profile>
+      <id>neo4j-driver</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>neo4j-driver-4.0.0</module>
+      </modules>
+    </profile>
+    <profile>
       <id>okhttp</id>
       <activation>
         <property>

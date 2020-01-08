@@ -22,7 +22,6 @@ import io.reactivex.disposables.Disposable;
 
 public class RxJavaITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     Observable.range(1, 5).subscribe(new Observer<Integer>() {
       @Override
       public void onSubscribe(final Disposable d) {

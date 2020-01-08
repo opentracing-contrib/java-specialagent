@@ -29,7 +29,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class AsyncHttpClientITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     try (final AsyncHttpClient client = new DefaultAsyncHttpClient()) {
       final Request request = new RequestBuilder(HttpConstants.Methods.GET).setUrl("http://www.google.com").build();
       final int statusCode = client.executeRequest(request, new AsyncCompletionHandler<Response>() {

@@ -30,7 +30,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class SpringWebMvcITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
 
     final Server server = startServer();
 

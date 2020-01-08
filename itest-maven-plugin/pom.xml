@@ -58,7 +58,7 @@
   <profiles>
     <profile>
       <id>maven-plugin-test</id>
-      <!--build>
+      <build>
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
@@ -67,17 +67,23 @@
             <executions>
               <execution>
                 <goals>
-                  <goal>fingerprint</goal>
+                  <goal>itest</goal>
                 </goals>
-                <phase>generate-test-resources</phase>
+                <phase>test</phase>
                 <configuration>
-                  <name>test</name>
+                  <mainClasses>
+                    <mainClass>io.opentracing.contrib.specialagent.test.*</mainClass>
+                  </mainClasses>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                  </arguments>
                 </configuration>
               </execution>
             </executions>
           </plugin>
         </plugins>
-      </build-->
+      </build>
     </profile>
   </profiles>
   <dependencies>

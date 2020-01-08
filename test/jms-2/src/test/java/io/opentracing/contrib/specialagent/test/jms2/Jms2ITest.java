@@ -38,7 +38,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class Jms2ITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final HashSet<TransportConfiguration> transports = new HashSet<>();
     transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
