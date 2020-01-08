@@ -4,11 +4,13 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 
+@AgentRunner.Config(isolateClassLoader = false)
 @RunWith(AgentRunner.class)
-public class Test extends AbstractMuleTestCase {
+public class CoreTest extends AbstractMuleTestCase {
 
     @Before
     public void before(final MockTracer tracer) throws Exception {
@@ -21,7 +23,7 @@ public class Test extends AbstractMuleTestCase {
     public void after() throws Exception {
     }
 
-    @org.junit.Test
-    public void httpServiceTest(final MockTracer tracer) throws Exception {
+    @Test
+    public void test(final MockTracer tracer) throws Exception {
     }
 }
