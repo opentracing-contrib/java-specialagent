@@ -17,8 +17,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 
-
 // Based on https://github.com/mulesoft/mule/blob/mule-4.2.2/modules/artifact/src/test/java/org/mule/runtime/module/artifact/api/classloader/FineGrainedControlClassLoaderTestCase.java
+@AgentRunner.Config(isolateClassLoader = false)
 @RunWith(AgentRunner.class)
 public class FineGrainedControlClassLoaderTest extends AbstractMuleTestCase {
     public static final String TEST_CLASS_PACKAGE = "mypackage";

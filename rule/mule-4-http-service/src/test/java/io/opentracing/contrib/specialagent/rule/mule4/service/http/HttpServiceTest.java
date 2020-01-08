@@ -17,7 +17,7 @@ import org.mule.tck.junit4.AbstractMuleTestCase;
 
 import static org.junit.Assert.assertEquals;
 
-
+@AgentRunner.Config(isolateClassLoader = false)
 @RunWith(AgentRunner.class)
 public class HttpServiceTest extends AbstractMuleTestCase {
     private static final String HOST = "localhost";
