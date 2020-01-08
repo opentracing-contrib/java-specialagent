@@ -13,8 +13,6 @@ public class Mule4ContainerITest {
     private static final String MULE_HOME = "/src/test/mule-home";
 
     public static void main(String[] args) throws Exception {
-        TestUtil.initTerminalExceptionHandler();
-
         final String homeDir = new File("").getAbsolutePath() + MULE_HOME;
         System.setProperty("mule.simpleLog", "true");
         System.setProperty(MuleProperties.MULE_HOME_DIRECTORY_PROPERTY, homeDir);
