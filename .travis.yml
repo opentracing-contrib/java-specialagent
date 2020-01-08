@@ -316,6 +316,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: mvn -B -Dtest -P mongo-driver install
+  - name: "Neo4j Driver [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -Dtest -P neo4j-driver install
+  - name: "Neo4j Driver [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: mvn -B -Dtest -P neo4j-driver install
   - name: "Netflix Zuul [openjdk8]"
     stage: test
     jdk: openjdk8

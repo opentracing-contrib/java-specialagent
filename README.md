@@ -521,6 +521,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.M1 | 5.1.8.RELEASE |
 | | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | **5.2.0.RELEASE** |
 | [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | 3.11.0 |
+| [Neo4j Driver](https://github.com/opentracing-contrib/java-neo4j-driver) | [`neo4j:driver`][neo4j-driver] | 4.0.0 | 4.0.0 |
 | [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | 4.2.2 |
 | Play Framework | [`play`][play] | 2.6.0 | 2.7.3 |
 | Play WS | [`play:ws`][play-ws] | 2.0.0 | 2.0.7 |
@@ -633,6 +634,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
 [lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
+[neo4j-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/neo4j-driver
 [okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
 [play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client

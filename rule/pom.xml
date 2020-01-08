@@ -95,6 +95,7 @@
         <module>httpurlconnection</module>
         <module>couchbase-client</module>
         <module>google-http-client</module>
+        <module>neo4j-driver</module>
       </modules>
       <build>
         <resources>
