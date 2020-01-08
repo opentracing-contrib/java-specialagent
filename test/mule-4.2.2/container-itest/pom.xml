@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>container-itest</artifactId>
+    <name>SpecialAgent Test for Mule 4.2.2</name>
 
     <properties>
         <mule.version>4.2.2</mule.version>
