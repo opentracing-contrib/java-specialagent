@@ -116,9 +116,9 @@ public class ConcurrentITest {
     }
   }
 
-  private static void testForkJoinPool(Span parent) {
-    private final ForkJoinPool forkJoinPool = new ForkJoinPool(2);
-    private final ForkJoinRecursiveTask forkJoinRecursiveTask = new ForkJoinRecursiveTask(IntStream.range(1, 10).toArray());
+  private static void testForkJoinPool(final Span parent) {
+    final ForkJoinPool forkJoinPool = new ForkJoinPool(2);
+    final ForkJoinRecursiveTask forkJoinRecursiveTask = new ForkJoinRecursiveTask(IntStream.range(1, 10).toArray());
 
     try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
       forkJoinPool.execute(forkJoinRecursiveTask);
@@ -132,9 +132,9 @@ public class ConcurrentITest {
   private static class ForkJoinRecursiveTask extends RecursiveTask<Integer> {
     private static final long serialVersionUID = -5112698420453150198L;
 
-    private static Integer compute(final int[] arr) {
+    private static Integer compute(final int[] array) {
       TestUtil.checkActiveSpan();
-      return Arrays.stream(arr).map(a -> a * 10).sum();
+      return Arrays.stream(array).map(a -> a * 10).sum();
     }
 
     private final int[] array;
