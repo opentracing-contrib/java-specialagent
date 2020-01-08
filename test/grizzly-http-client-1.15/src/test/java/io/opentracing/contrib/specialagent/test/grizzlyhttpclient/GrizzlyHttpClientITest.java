@@ -26,7 +26,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class GrizzlyHttpClientITest {
   public static void main(final String[] args) throws InterruptedException, IOException, ExecutionException {
-    TestUtil.initTerminalExceptionHandler();
     try (final AsyncHttpClient client = new AsyncHttpClient()) {
       final Response response = client.prepareGet("http://www.google.com").execute().get();
       final int statusCode = response.getStatusCode();

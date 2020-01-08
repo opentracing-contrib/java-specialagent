@@ -31,7 +31,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class GrpcITest {
   public static void main(final String[] args) throws InterruptedException, IOException {
-    TestUtil.initTerminalExceptionHandler();
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
 
     final Server server = ServerBuilder.forPort(8086).addService(new GreeterImpl()).build().start();

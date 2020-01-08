@@ -15,9 +15,8 @@
 
 package io.opentracing.contrib.specialagent.test.spring.rabbitmq;
 
-import com.rabbitmq.client.Channel;
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.concurrent.CountDownLatch;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Message;
@@ -35,6 +34,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+
+import com.rabbitmq.client.Channel;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @SpringBootApplication
 public class SpringRabbitMQITest {
@@ -63,13 +66,12 @@ public class SpringRabbitMQITest {
   }
 
   @Bean
-  Binding binding(Queue queue, TopicExchange exchange) {
+  Binding binding(final Queue queue, final TopicExchange exchange) {
     return BindingBuilder.bind(queue).to(exchange).with("foo.bar.#");
   }
 
   @Bean
-  SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
-      MessageListenerAdapter listenerAdapter) {
+  SimpleMessageListenerContainer container(final ConnectionFactory connectionFactory, final MessageListenerAdapter listenerAdapter) {
     SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
     container.setConnectionFactory(connectionFactory);
     container.setQueueNames(queueName);
@@ -85,10 +87,10 @@ public class SpringRabbitMQITest {
   }
 
   @Bean
-  MessageListenerAdapter listenerAdapter(Receiver receiver) {
+  MessageListenerAdapter listenerAdapter(final Receiver receiver) {
     return new MessageListenerAdapter(receiver, "receiveMessage") {
       @Override
-      public void onMessage(Message message, Channel channel) throws Exception {
+      public void onMessage(final Message message, final Channel channel) throws Exception {
         TestUtil.checkActiveSpan();
         super.onMessage(message, channel);
       }
@@ -96,7 +98,7 @@ public class SpringRabbitMQITest {
   }
 
   @RabbitListener(queues = queueName2)
-  public void listen(String message) {
+  public void listen(final String message) {
     TestUtil.checkActiveSpan();
     System.out.println("Received <" + message + ">");
   }
@@ -105,7 +107,7 @@ public class SpringRabbitMQITest {
   public CommandLineRunner commandLineRunner() {
     return new CommandLineRunner() {
       @Override
-      public void run(String... args) throws Exception {
+      public void run(final String ... args) throws Exception {
         System.out.println("Sending message to Queue 1...");
         rabbitTemplate.convertAndSend(topicExchangeName, "foo.bar.baz", "Message for Queue 1");
 
@@ -116,8 +118,6 @@ public class SpringRabbitMQITest {
   }
 
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
-
     broker = new EmbeddedAMQPBroker();
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
 
@@ -127,5 +127,4 @@ public class SpringRabbitMQITest {
 
     broker.shutdown();
   }
-
 }

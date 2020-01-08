@@ -31,7 +31,6 @@ public class RabbitMQClientITest {
   private static final String message = "Hello World!";
 
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
 
     final EmbeddedAMQPBroker broker = new EmbeddedAMQPBroker();

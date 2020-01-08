@@ -23,7 +23,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class HttpURLConnectionITest {
   public static void main(final String[] args) throws IOException {
-    TestUtil.initTerminalExceptionHandler();
     final URL url = new URL("http://www.google.com");
     final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setRequestMethod("GET");

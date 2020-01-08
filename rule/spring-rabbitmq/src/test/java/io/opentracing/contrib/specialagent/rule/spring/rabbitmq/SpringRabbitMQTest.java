@@ -134,7 +134,7 @@ public class SpringRabbitMQTest {
     }
 
     @RabbitListener(queues = QUEUE_NAME)
-    public void listen(String message) {
+    public void listen(final String message) {
       assertNotNull(GlobalTracer.get().activeSpan());
       assertEquals("message", message);
       counter.incrementAndGet();

@@ -32,7 +32,7 @@ public class Neo4jDriverAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(not(isInterface()).and(hasSuperType(named("org.neo4j.driver.GraphDatabase"))))
+      .type(hasSuperType(named("org.neo4j.driver.GraphDatabase")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

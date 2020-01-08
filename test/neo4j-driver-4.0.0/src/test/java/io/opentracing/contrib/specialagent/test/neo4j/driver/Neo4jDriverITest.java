@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.neo4j.driver;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Query;
@@ -24,22 +23,24 @@ import org.neo4j.driver.Session;
 import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 public class Neo4jDriverITest {
   public static void main(final String[] args) {
-    TestUtil.initTerminalExceptionHandler();
-
     try (final ServerControls server = TestServerBuilders.newInProcessBuilder().newServer()) {
       try (Driver driver = GraphDatabase.driver(server.boltURI().toString())) {
-        try (Session session = driver.session()) {
-          Result result = session.run(new Query("CREATE (n:Person) RETURN n"));
+        try (final Session session = driver.session()) {
+          final Result result = session.run(new Query("CREATE (n:Person) RETURN n"));
           System.out.println(result.single());
         }
-        try (Session session = driver.session()) {
-          Result result = session.run("CREATE (n:Person) RETURN n");
+
+        try (final Session session = driver.session()) {
+          final Result result = session.run("CREATE (n:Person) RETURN n");
           System.out.println(result.single());
         }
       }
     }
+
     TestUtil.checkSpan("java-neo4j", 2);
   }
 }

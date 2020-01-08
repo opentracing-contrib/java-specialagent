@@ -35,7 +35,6 @@ import io.opentracing.util.GlobalTracer;
 
 public class ConcurrentITest {
   public static void main(final String[] args) throws ExecutionException, InterruptedException {
-    TestUtil.initTerminalExceptionHandler();
     final Span parent = GlobalTracer.get()
       .buildSpan("parent")
       .withTag(Tags.COMPONENT, "parent")
@@ -105,58 +104,59 @@ public class ConcurrentITest {
 
   private static void testParallelStream(final Span parent) {
     try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
-      final int sum = IntStream.range(1, 10)
-        .parallel()
-        .map(operand -> {
-          System.out.println("Active span: " + GlobalTracer.get().activeSpan());
-          if (GlobalTracer.get().activeSpan() == null)
-            throw new AssertionError("ERROR: no active span");
+      final int sum = IntStream.range(1, 10).parallel().map(operand -> {
+        System.out.println("Active span: " + GlobalTracer.get().activeSpan());
+        if (GlobalTracer.get().activeSpan() == null)
+          throw new AssertionError("ERROR: no active span");
 
-          return operand * 2;
-        }).sum();
+        return operand * 2;
+      }).sum();
 
       System.out.println("Sum: " + sum);
     }
   }
 
   private static void testForkJoinPool(Span parent) {
-    ForkJoinPool forkJoinPool = new ForkJoinPool(2);
-    ForkJoinRecursiveTask forkJoinRecursiveTask = new ForkJoinRecursiveTask(IntStream.range(1, 10).toArray());
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(2);
+    private final ForkJoinRecursiveTask forkJoinRecursiveTask = new ForkJoinRecursiveTask(IntStream.range(1, 10).toArray());
+
     try (final Scope scope = GlobalTracer.get().activateSpan(parent)) {
       forkJoinPool.execute(forkJoinRecursiveTask);
     }
-    int result = forkJoinRecursiveTask.join();
-    if(result != 450)
+
+    final int result = forkJoinRecursiveTask.join();
+    if (result != 450)
       throw new AssertionError("ERROR: wrong fork join result: " + result);
   }
 
   private static class ForkJoinRecursiveTask extends RecursiveTask<Integer> {
-    private  final int[] array;
+    private static final long serialVersionUID = -5112698420453150198L;
 
-    public ForkJoinRecursiveTask(int[] array) {
+    private static Integer compute(final int[] arr) {
+      TestUtil.checkActiveSpan();
+      return Arrays.stream(arr).map(a -> a * 10).sum();
+    }
+
+    private final int[] array;
+
+    public ForkJoinRecursiveTask(final int[] array) {
       this.array = array;
     }
 
     @Override
     protected Integer compute() {
       TestUtil.checkActiveSpan();
-      if (array.length > 2) {
+      if (array.length > 2)
         return ForkJoinTask.invokeAll(createSubtasks()).stream().mapToInt(ForkJoinTask::join).sum();
-      } else {
-        return processing(array);
-      }
+
+      return compute(array);
     }
 
     private Collection<ForkJoinRecursiveTask> createSubtasks() {
-      List<ForkJoinRecursiveTask> dividedTasks = new ArrayList<>();
+      final List<ForkJoinRecursiveTask> dividedTasks = new ArrayList<>();
       dividedTasks.add(new ForkJoinRecursiveTask(Arrays.copyOfRange(array, 0, array.length / 2)));
       dividedTasks.add(new ForkJoinRecursiveTask(Arrays.copyOfRange(array, array.length / 2, array.length)));
       return dividedTasks;
-    }
-
-    private Integer processing(int[] arr) {
-      TestUtil.checkActiveSpan();
-      return Arrays.stream(arr).map(a -> a * 10).sum();
     }
   }
 }

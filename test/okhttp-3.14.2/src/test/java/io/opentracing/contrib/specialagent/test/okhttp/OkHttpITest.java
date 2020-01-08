@@ -24,7 +24,6 @@ import okhttp3.Response;
 
 public class OkHttpITest {
   public static void main(final String[] args) throws IOException {
-    TestUtil.initTerminalExceptionHandler();
     testBuilder();
     testClient();
   }

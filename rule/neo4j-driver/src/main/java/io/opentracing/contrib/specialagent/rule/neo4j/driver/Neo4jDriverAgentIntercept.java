@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.rule.neo4j.driver;
 
-import io.opentracing.contrib.neo4j.TracingDriver;
-import io.opentracing.util.GlobalTracer;
 import org.neo4j.driver.Driver;
 
-public class Neo4jDriverAgentIntercept {
+import io.opentracing.contrib.neo4j.TracingDriver;
+import io.opentracing.util.GlobalTracer;
 
-  public static Object exit(Object returned) {
-    return new TracingDriver((Driver) returned, GlobalTracer.get());
+public class Neo4jDriverAgentIntercept {
+  public static Object exit(final Object returned) {
+    return new TracingDriver((Driver)returned, GlobalTracer.get());
   }
 }

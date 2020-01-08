@@ -15,13 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.neo4j.driver;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.tag.Tags;
 import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,13 +31,17 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.harness.junit.Neo4jRule;
 
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
+
 @RunWith(AgentRunner.class)
 public class Neo4jDriverTest {
-
   @Rule
   public Neo4jRule neoServer = new Neo4jRule();
-  private Driver driver;
 
+  private Driver driver;
 
   @Before
   public void before(final MockTracer tracer) {
@@ -50,28 +51,27 @@ public class Neo4jDriverTest {
 
   @After
   public void after() {
-    if(driver != null)
+    if (driver != null)
       driver.close();
   }
 
   @Test
   public void test(final MockTracer tracer) {
-    try (Session session = driver.session()) {
-      Result result = session.run(new Query("CREATE (n:Person) RETURN n"));
+    try (final Session session = driver.session()) {
+      final Result result = session.run(new Query("CREATE (n:Person) RETURN n"));
       System.out.println(result.single());
     }
 
-    try (Session session = driver.session()) {
-      Result result = session.run("CREATE (n:Person) RETURN n");
+    try (final Session session = driver.session()) {
+      final Result result = session.run("CREATE (n:Person) RETURN n");
       System.out.println(result.single());
     }
 
-    List<MockSpan> spans = tracer.finishedSpans();
+    final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
 
-    for (MockSpan span : spans) {
+    for (final MockSpan span : spans) {
       assertEquals("java-neo4j", span.tags().get(Tags.COMPONENT.getKey()));
     }
   }
-
 }
