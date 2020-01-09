@@ -17,7 +17,7 @@ public class Mule4ContainerITest {
         System.setProperty("mule.simpleLog", "true");
         System.setProperty(MuleProperties.MULE_HOME_DIRECTORY_PROPERTY, homeDir);
         System.setProperty(MuleProperties.MULE_BASE_DIRECTORY_PROPERTY, homeDir);
-        MuleContainer container = new MuleContainer(new String[]{"-M-Dmule.forceConsoleLog",
+        MuleContainer container = new MuleContainer(new String[]{
                 "-M-Dmule.verbose.exceptions=true",
                 "-M-XX:-UseBiasedLocking",
                 "-M-Dfile.encoding=UTF-8",
