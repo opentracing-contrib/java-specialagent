@@ -54,7 +54,7 @@ jobs:
     script:
     - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        eval "$SIGNING_KEY" | gpg --fast-import &> /dev/null &&
+        eval "$SIGNING_KEY" &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
   - name: "Akka Http [openjdk8]"
