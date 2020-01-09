@@ -29,7 +29,7 @@ jobs:
   include:
   - stage: install
     jdk: openjdk8
-    install: rm -rf ~/.m2/build ~/.m2/repository/*
+    install: rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
     script:
     - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
@@ -43,7 +43,7 @@ jobs:
     before_cache: find . -name target -exec rsync -R -r '{}' ~/.m2/build \;
   - stage: install
     jdk: openjdk11
-    install: rm -rf ~/.m2/build ~/.m2/repository/*
+    install: rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
     script:
     - 'mvn -B install &&
        mvn -B -Dassemble install;'
@@ -54,7 +54,7 @@ jobs:
     script:
     - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        eval "$SIGNING_KEY" | $GPG_EXECUTABLE --fast-import &> /dev/null &&
+        eval "$SIGNING_KEY" &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
   - name: "Akka Http [openjdk8]"
