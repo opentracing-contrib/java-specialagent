@@ -34,8 +34,10 @@ public class Mule4ContainerITest {
             if (200 != responseCode)
                 throw new AssertionError("ERROR: response: " + responseCode);
 
-            TestUtil.checkSpan("java-grizzly-ahc", 2);
-            TestUtil.checkSpan("java-grizzly-http-server", 2);
+            TestUtil.checkSpan("java-grizzly-http-server", 4);
+            TestUtil.checkSpan("Request", 4);
+            TestUtil.checkSpan("java-grizzly-ahc", 4);
+            TestUtil.checkSpan("Logger", 4);
         } finally {
             container.stop();
         }
