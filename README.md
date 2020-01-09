@@ -334,25 +334,25 @@ Multiple properties to <ins>disable</ins> or to <ins>enable</ins> all or individ
 To <ins>disable</ins> _all **instrumentation** plugins_:
 
 ```
-sa.instrumentation.plugin.*.disable
+sa.instrumentation.plugin.*.disable=true
 ```
-<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
+<sup>The suffix `.disable=true` is interchangeable with `.enable=false`.</sup>
 
 #### 3.4.2 Disabling (or enabling) One Instrumentation Plugin
 
 To <ins>disable</ins> _an individual **instrumentation** plugin_:
 
 ```
-sa.instrumentation.plugin.${RULE_NAME_PATTERN}.disable
+sa.instrumentation.plugin.${RULE_NAME_PATTERN}.disable=true
 ```
-<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
+<sup>The suffix `.disable=true` is interchangeable with `.enable=false`.</sup>
 
 Conversely, to <ins>enable</ins> _an individual **instrumentation** plugin_.
 
 ```
-sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable
+sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable=true
 ```
-<sup>The suffix `.enable` is interchangeable with `.disable=false`.</sup>
+<sup>The suffix `.enable=true` is interchangeable with `.disable=false`.</sup>
 
 The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) ("SpecialAgent Rule" column). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
@@ -372,9 +372,9 @@ If the _version part_ of the `${RULE_NAME_PATTERN}` does not end with a `*` or `
 To disable _an individual `AgentRule` of an **instrumentation** plugin_:
 
 ```
-sa.instrumentation.plugin.${PLUGIN_NAME}#${AGENT_RULE_SIMPLE_CLASS_NAME}.disable
+sa.instrumentation.plugin.${PLUGIN_NAME}#${AGENT_RULE_SIMPLE_CLASS_NAME}.disable=true
 ```
-<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
+<sup>The suffix `.disable=true` is interchangeable with `.enable=false`.</sup>
 
 The value of `${AGENT_RULE_SIMPLE_CLASS_NAME}` is the simple class name of the `AgentRule` subclass that is to be disabled.
 
@@ -385,16 +385,16 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) has all of its [<ins>Tracer Plug
 To disable _all **tracer** plugins_:
 
 ```
-sa.tracer.plugins.disable
+sa.tracer.plugins.disable=true
 ```
-<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
+<sup>The suffix `.disable=true` is interchangeable with `.enable=false`.</sup>
 
 To disable _an individual **tracer** plugin_:
 
 ```
-sa.tracer.plugin.${SHORT_NAME}.disable
+sa.tracer.plugin.${SHORT_NAME}.disable=true
 ```
-<sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
+<sup>The suffix `.disable=true` is interchangeable with `.enable=false`.</sup>
 
 The value of `${SHORT_NAME}` is the [<ins>Short Name</ins>](#21221-short-name) of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
 
