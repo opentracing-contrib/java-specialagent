@@ -78,7 +78,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final PluginManifest.Directory pluginManifestDirectory = new PluginManifest.Directory();
   private static final ClassLoaderMap<Map<Integer,Boolean>> classLoaderToCompatibility = new ClassLoaderMap<>();
   private static final ClassLoaderMap<List<RuleClassLoader>> classLoaderToRuleClassLoader = new ClassLoaderMap<>();
-  private static final Map<File,File[]> pluginFileToDependencies = new HashMap<>();
+  private static final HashMap<File,File[]> pluginFileToDependencies = new HashMap<>();
 
   private static PluginsClassLoader pluginsClassLoader;
 
@@ -181,7 +181,7 @@ public class SpecialAgent extends SpecialAgentBase {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("Agent#initialize() java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final Map<String,String> properties = new HashMap<>();
+    final HashMap<String,String> properties = new HashMap<>();
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = String.valueOf(property.getKey());
       final String value = properties.get(key);
@@ -272,7 +272,7 @@ public class SpecialAgent extends SpecialAgentBase {
           final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
           // Next, see if it is included or excluded
           enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-          final Map<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
+          final HashMap<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
           for (final String pluginName : verbosePluginNames) {
             final String namePattern = SpecialAgentUtil.convertToNameRegex(pluginName);
             if (pluginManifest.name.equals(pluginName) || pluginManifest.name.matches(namePattern)) {
@@ -338,7 +338,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
     pluginsClassLoader = new PluginsClassLoader(pluginManifestDirectory.keySet());
 
-    final Map<String,String> nameToVersion = new HashMap<>();
+    final HashMap<String,String> nameToVersion = new HashMap<>();
     final int count = loadDependencies(pluginsClassLoader, nameToVersion) + loadDependencies(ClassLoader.getSystemClassLoader(), nameToVersion);
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
@@ -483,7 +483,7 @@ public class SpecialAgent extends SpecialAgentBase {
 
       try {
         // Create map from rule jar URL to its index in allPluginsClassLoader.getURLs()
-        final Map<File,Integer> ruleJarToIndex = new HashMap<>();
+        final HashMap<File,Integer> ruleJarToIndex = new HashMap<>();
         for (int i = 0; i < pluginsClassLoader.getFiles().length; ++i)
           ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
