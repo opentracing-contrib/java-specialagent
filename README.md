@@ -637,6 +637,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [neo4j-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/neo4j-driver
 [okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
 [play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
+[play-ws]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play-ws
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
 [reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
 [redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson
