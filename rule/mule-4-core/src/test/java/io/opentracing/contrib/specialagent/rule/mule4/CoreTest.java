@@ -25,5 +25,7 @@ public class CoreTest extends AbstractMuleTestCase {
 
     @Test
     public void test(final MockTracer tracer) throws Exception {
+        // TODO: 1/10/20 Figure out how to make MuleArtifactFunctionalTestCase work with AgentRunner
+        // until then the mule-4.x/container-itest will be our only coverage
     }
 }

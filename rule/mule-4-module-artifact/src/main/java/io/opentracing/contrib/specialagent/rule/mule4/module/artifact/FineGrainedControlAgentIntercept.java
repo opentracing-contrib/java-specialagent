@@ -32,8 +32,6 @@ public class FineGrainedControlAgentIntercept {
         if (returned != null || !resName.endsWith(CLS_SFX))
             return returned;
 
-        LOGGER.debug("Resource {} was not found on {}.", resName, thiz);
-
         String clazzName = resName.substring(0, resName.length() - CLS_SFX.length()).replace('/', '.');
 
         // See: https://github.com/mulesoft/mule/blob/mule-4.2.2/modules/artifact/src/main/java/org/mule/runtime/module/artifact/api/classloader/FineGrainedControlClassLoader.java#L67
@@ -43,25 +41,22 @@ public class FineGrainedControlAgentIntercept {
         if (lookupStrategy == null)
             return null;
 
-        LOGGER.debug("Will attempt to locate class using strategy {}.", lookupStrategy);
         Object toReturn;
-
         for (ClassLoader classLoader : lookupStrategy.getClassLoaders(loader)) {
             if (classLoader != thiz) {
                 if (classLoader != null) {
-                    LOGGER.debug("Getting resource from {}.", classLoader);
                     toReturn = classLoader.getResource(resName);
                 } else {
-                    LOGGER.debug("Getting resource from SystemClassLoader.");
                     toReturn = ClassLoader.getSystemResource(resName);
                 }
 
                 if (toReturn != null)
                     return toReturn;
+
+                LOGGER.debug("Could not locate resource {} with strategy {} in {}.", resName, lookupStrategy, thiz);
             }
         }
 
-        LOGGER.warn("Could not locate resource {} in {}.", resName, thiz);
         return null;
     }
 }
