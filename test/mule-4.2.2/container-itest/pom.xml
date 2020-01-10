@@ -100,7 +100,7 @@
                     </mainClasses>
                     <arguments>
                         <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
-                        <argument>-Dsa.log.level=FINE</argument>
+                        <argument>-Dsa.log.level=${sa.log.level}</argument>
                         <argument>-Dsa.tracer=mock</argument>
                         <argument>-Dsa.instrumentation.plugin.*.disable=true</argument>
                         <argument>-Dsa.instrumentation.plugin.mule*.enable=true</argument>
