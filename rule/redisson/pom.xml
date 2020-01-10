@@ -19,7 +19,7 @@
   <parent>
     <artifactId>rule</artifactId>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-    <version>1.5.5</version>
+    <version>1.5.6-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>redisson</artifactId>

@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.5</version>
+    <version>1.5.6-SNAPSHOT</version>
   </parent>
   <artifactId>thread</artifactId>
   <name>SpecialAgent Rule for java.lang.Thread</name>
