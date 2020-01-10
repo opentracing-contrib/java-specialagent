@@ -321,6 +321,18 @@
       </modules>
     </profile>
     <profile>
+      <id>netty</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>netty-4.1.0</module>
+        <module>netty-4.1.44</module>
+      </modules>
+    </profile>
+    <profile>
       <id>okhttp</id>
       <activation>
         <property>
@@ -587,18 +599,6 @@
       <modules>
         <module>zuul-1.0.0</module>
         <module>zuul-1.3.1</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>netty</id>
-      <activation>
-        <property>
-          <name>all</name>
-        </property>
-      </activation>
-      <modules>
-        <module>netty-4.1.0</module>
-        <module>netty-4.1.44</module>
       </modules>
     </profile>
     <profile>
