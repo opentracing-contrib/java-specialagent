@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.netty;
 
-
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -26,32 +25,34 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 
 public class NettyAgentIntercept {
-
-  public static void pipelineAddExit(Object thiz, Object arg2) {
-    ChannelPipeline pipeline = (ChannelPipeline) thiz;
-    ChannelHandler handler = (ChannelHandler) arg2;
+  public static void pipelineAddExit(final Object thiz, final Object arg2) {
+    final ChannelPipeline pipeline = (ChannelPipeline)thiz;
+    final ChannelHandler handler = (ChannelHandler)arg2;
 
     try {
       // Server
       if (handler instanceof HttpServerCodec) {
         pipeline.addLast(TracingHttpServerHandler.class.getName(), new TracingHttpServerHandler());
-      } else if (handler instanceof HttpRequestDecoder) {
-        pipeline.addLast(TracingServerChannelInboundHandlerAdapter.class.getName(), new TracingServerChannelInboundHandlerAdapter());
-      } else if (handler instanceof HttpResponseEncoder) {
-        pipeline.addLast(TracingServerChannelOutboundHandlerAdapter.class.getName(), new TracingServerChannelOutboundHandlerAdapter());
-      } else {
-        // Client
-        if (handler instanceof HttpClientCodec) {
-          pipeline.addLast(TracingHttpClientTracingHandler.class.getName(), new TracingHttpClientTracingHandler());
-        } else if (handler instanceof HttpRequestEncoder) {
-          pipeline.addLast(TracingClientChannelOutboundHandlerAdapter.class.getName(), new TracingClientChannelOutboundHandlerAdapter());
-        } else if (handler instanceof HttpResponseDecoder) {
-          pipeline.addLast(TracingClientChannelInboundHandlerAdapter.class.getName(), new TracingClientChannelInboundHandlerAdapter());
-        }
       }
-    } catch (IllegalArgumentException ignore) {
-       // Prevented adding duplicate handlers.
+      else if (handler instanceof HttpRequestDecoder) {
+        pipeline.addLast(TracingServerChannelInboundHandlerAdapter.class.getName(), new TracingServerChannelInboundHandlerAdapter());
+      }
+      else if (handler instanceof HttpResponseEncoder) {
+        pipeline.addLast(TracingServerChannelOutboundHandlerAdapter.class.getName(), new TracingServerChannelOutboundHandlerAdapter());
+      }
+      else
+      // Client
+      if (handler instanceof HttpClientCodec) {
+        pipeline.addLast(TracingHttpClientTracingHandler.class.getName(), new TracingHttpClientTracingHandler());
+      }
+      else if (handler instanceof HttpRequestEncoder) {
+        pipeline.addLast(TracingClientChannelOutboundHandlerAdapter.class.getName(), new TracingClientChannelOutboundHandlerAdapter());
+      }
+      else if (handler instanceof HttpResponseDecoder) {
+        pipeline.addLast(TracingClientChannelInboundHandlerAdapter.class.getName(), new TracingClientChannelInboundHandlerAdapter());
+      }
+    }
+    catch (final IllegalArgumentException ignore) {
     }
   }
-
 }

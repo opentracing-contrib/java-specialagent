@@ -86,21 +86,21 @@ public final class TestUtil {
       printSpan(span);
       if (component.equals(span.tags().get(Tags.COMPONENT.getKey()))) {
         found = true;
-        System.out.println("Found " + component + " span");
+        System.out.println("Found \"" + component + "\" span");
       }
     }
 
     if (!found)
-      throw new AssertionError("ERROR: " + component + " span not found");
+      throw new AssertionError("\"" + component + "\" span not found");
 
     if (spans.size() != spanCount)
-      throw new AssertionError("ERROR: " + spans.size() + " spans instead of " + spanCount);
+      throw new AssertionError(spans.size() + " spans instead of " + spanCount);
 
-    if(sameTrace && spans.size() > 1) {
+    if (sameTrace && spans.size() > 1) {
       final long traceId = spans.get(0).context().traceId();
-      for (int i = 1; i < spans.size(); i++) {
-        if(spans.get(i).context().traceId() != traceId) {
-          throw new AssertionError("ERROR: not the same trace");
+      for (int i = 1; i < spans.size(); ++i) {
+        if (spans.get(i).context().traceId() != traceId) {
+          throw new AssertionError("Not the same trace");
         }
       }
     }
@@ -121,7 +121,7 @@ public final class TestUtil {
     final Span span = GlobalTracer.get().activeSpan();
     System.out.println("Active span: " + span);
     if (span == null)
-      throw new AssertionError("Error: no active span");
+      throw new AssertionError("No active span");
   }
 
   public static Callable<Integer> reportedSpansSize(final MockTracer tracer) {
@@ -146,7 +146,7 @@ public final class TestUtil {
     }
   }
 
-  public static <T>T retry(final Callable<T> callable, final int maxRetries) throws Exception {
+  public static <T> T retry(final Callable<T> callable, final int maxRetries) throws Exception {
     for (int i = 1; i <= maxRetries; ++i) {
       try {
         return callable.call();
@@ -196,7 +196,7 @@ public final class TestUtil {
     if (!(tracer instanceof MockTracer))
       return;
 
-    ((MockTracer) tracer).reset();
+    ((MockTracer)tracer).reset();
   }
 
   private TestUtil() {

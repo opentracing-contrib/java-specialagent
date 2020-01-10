@@ -15,6 +15,9 @@
 
 package io.opentracing.contrib.specialagent.rule.netty;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
@@ -27,42 +30,38 @@ import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TracingServerChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
   public static final AttributeKey<Span> SERVER_ATTRIBUTE_KEY = AttributeKey.valueOf(TracingServerChannelInboundHandlerAdapter.class.getName() + ".span");
 
   @Override
-  public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-
-    if (!(msg instanceof HttpRequest)) {
-      ctx.fireChannelRead(msg);
+  public void channelRead(final ChannelHandlerContext handlerContext, final Object message) {
+    if (!(message instanceof HttpRequest)) {
+      handlerContext.fireChannelRead(message);
       return;
     }
 
-    final HttpRequest request = (HttpRequest) msg;
+    final HttpRequest request = (HttpRequest)message;
     final Tracer tracer = GlobalTracer.get();
 
     final SpanBuilder spanBuilder = tracer.buildSpan(request.method().name())
-        .withTag(Tags.COMPONENT, "netty")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER)
-        .withTag(Tags.HTTP_METHOD, request.method().name())
-        .withTag(Tags.HTTP_URL, request.uri());
+      .withTag(Tags.COMPONENT, "netty")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER)
+      .withTag(Tags.HTTP_METHOD, request.method().name())
+      .withTag(Tags.HTTP_URL, request.uri());
 
-    final SpanContext context = tracer.extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
-    if(context != null) {
-      spanBuilder.asChildOf(context);
-    }
+    final SpanContext spanContext = tracer.extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
+    if (spanContext != null)
+      spanBuilder.asChildOf(spanContext);
 
     final Span span = spanBuilder.start();
-
     try (final Scope scope = tracer.activateSpan(span)) {
-      ctx.channel().attr(SERVER_ATTRIBUTE_KEY).set(span);
+      handlerContext.channel().attr(SERVER_ATTRIBUTE_KEY).set(span);
 
       try {
-        ctx.fireChannelRead(msg);
-      } catch (final Throwable throwable) {
+        handlerContext.fireChannelRead(message);
+      }
+      catch (final Throwable throwable) {
         onError(throwable, span);
         span.finish();
         throw throwable;

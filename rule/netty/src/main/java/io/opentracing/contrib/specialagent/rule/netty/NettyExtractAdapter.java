@@ -15,10 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.netty;
 
-import io.netty.handler.codec.http.HttpHeaders;
-import io.opentracing.propagation.TextMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import io.netty.handler.codec.http.HttpHeaders;
+import io.opentracing.propagation.TextMap;
 
 public final class NettyExtractAdapter implements TextMap {
   private final HttpHeaders headers;

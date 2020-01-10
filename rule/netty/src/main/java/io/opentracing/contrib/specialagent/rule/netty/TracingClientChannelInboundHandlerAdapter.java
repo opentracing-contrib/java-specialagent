@@ -29,21 +29,21 @@ public class TracingClientChannelInboundHandlerAdapter extends ChannelInboundHan
   public static final AttributeKey<Span> CLIENT_ATTRIBUTE_KEY = AttributeKey.valueOf(TracingClientChannelInboundHandlerAdapter.class.getName() + ".span");
 
   @Override
-  public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+  public void channelRead(final ChannelHandlerContext handlerContext, final Object message) {
+    final Span span = handlerContext.channel().attr(CLIENT_ATTRIBUTE_KEY).get();
 
-    final Span span = ctx.channel().attr(CLIENT_ATTRIBUTE_KEY).get();
-
-    final boolean finishSpan = msg instanceof HttpResponse;
+    final boolean finishSpan = message instanceof HttpResponse;
     Scope scope = null;
 
     if (span != null && finishSpan) {
       scope = GlobalTracer.get().activateSpan(span);
-      span.setTag(Tags.HTTP_STATUS, ((HttpResponse) msg).status().code());
+      span.setTag(Tags.HTTP_STATUS, ((HttpResponse)message).status().code());
     }
 
     try {
-      ctx.fireChannelRead(msg);
-    } finally {
+      handlerContext.fireChannelRead(message);
+    }
+    finally {
       if (span != null && scope != null) {
         scope.close();
         span.finish();

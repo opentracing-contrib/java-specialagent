@@ -17,8 +17,7 @@ package io.opentracing.contrib.specialagent.rule.netty;
 
 import io.netty.channel.CombinedChannelDuplexHandler;
 
-public class TracingHttpServerHandler extends CombinedChannelDuplexHandler<TracingServerChannelInboundHandlerAdapter, TracingServerChannelOutboundHandlerAdapter> {
-
+public class TracingHttpServerHandler extends CombinedChannelDuplexHandler<TracingServerChannelInboundHandlerAdapter,TracingServerChannelOutboundHandlerAdapter> {
   public TracingHttpServerHandler() {
     super(new TracingServerChannelInboundHandlerAdapter(), new TracingServerChannelOutboundHandlerAdapter());
   }

@@ -17,30 +17,23 @@ package io.opentracing.contrib.specialagent.rule.netty;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 
 public class HttpClientHandler extends SimpleChannelInboundHandler<HttpObject> {
-
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
-    if (msg instanceof HttpResponse) {
-      HttpResponse response = (HttpResponse) msg;
-      System.out.println(response);
-    }
-    if (msg instanceof HttpContent) {
-      HttpContent content = (HttpContent) msg;
-      if (content instanceof LastHttpContent) {
-        ctx.close();
-      }
-    }
+  public void channelRead0(final ChannelHandlerContext handlerContext, final HttpObject message) {
+    if (message instanceof HttpResponse)
+      System.out.println(message);
+
+    if (message instanceof LastHttpContent)
+      handlerContext.close();
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+  public void exceptionCaught(final ChannelHandlerContext handlerContext, final Throwable cause) {
     cause.printStackTrace();
-    ctx.close();
+    handlerContext.close();
   }
 }

@@ -15,8 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.netty;
 
-
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.HttpVersion.*;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -43,29 +42,28 @@ import io.netty.handler.logging.LoggingHandler;
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class NettyITest {
-  public static void main(final String[] args) throws Exception {
-    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    EventLoopGroup workerGroup = new NioEventLoopGroup();
+  public static void main(final String[] args) throws InterruptedException {
+    final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    final EventLoopGroup workerGroup = new NioEventLoopGroup();
     try {
-      ServerBootstrap b = new ServerBootstrap();
-      b.option(ChannelOption.SO_BACKLOG, 1024);
-      b.group(bossGroup, workerGroup)
-          .channel(NioServerSocketChannel.class)
-          .handler(new LoggingHandler(LogLevel.INFO))
-          .childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel socketChannel)  {
-              ChannelPipeline p = socketChannel.pipeline();
-              p.addLast(new HttpServerCodec());
-              p.addLast(new HttpServerHandler());
-            }
-          });
+      final ServerBootstrap bootstrap = new ServerBootstrap()
+        .option(ChannelOption.SO_BACKLOG, 1024)
+        .group(bossGroup, workerGroup)
+        .channel(NioServerSocketChannel.class)
+        .handler(new LoggingHandler(LogLevel.INFO))
+        .childHandler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(final SocketChannel socketChannel) {
+            final ChannelPipeline pipeline = socketChannel.pipeline();
+            pipeline.addLast(new HttpServerCodec());
+            pipeline.addLast(new HttpServerHandler());
+          }
+        });
 
-      b.bind(8086).sync().channel();
-
+      bootstrap.bind(8086).sync().channel();
       client();
-
-    } finally {
+    }
+    finally {
       bossGroup.shutdownGracefully();
       workerGroup.shutdownGracefully();
     }
@@ -73,39 +71,39 @@ public class NettyITest {
     TestUtil.checkSpan("netty", 2, true);
   }
 
-  private static void client() throws Exception {
+  private static void client() throws InterruptedException {
     // Configure the client.
-    EventLoopGroup group = new NioEventLoopGroup();
+    final EventLoopGroup group = new NioEventLoopGroup();
     try {
-      Bootstrap b = new Bootstrap();
-      b.group(group)
-          .channel(NioSocketChannel.class)
-          .handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel socketChannel) throws Exception {
-              ChannelPipeline p = socketChannel.pipeline();
-              p.addLast(new HttpClientCodec());
-              p.addLast(new HttpContentDecompressor());
-              p.addLast(new HttpClientHandler());
-            }
-          });
+      final Bootstrap bootstrap = new Bootstrap()
+        .group(group)
+        .channel(NioSocketChannel.class)
+        .handler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(final SocketChannel socketChannel) throws InterruptedException {
+            final ChannelPipeline pipeline = socketChannel.pipeline();
+            pipeline.addLast(new HttpClientCodec());
+            pipeline.addLast(new HttpContentDecompressor());
+            pipeline.addLast(new HttpClientHandler());
+          }
+        });
 
       // Make the connection attempt.
-      Channel ch = b.connect("127.0.0.1", 8086).sync().channel();
+      final Channel channel = bootstrap.connect("127.0.0.1", 8086).sync().channel();
 
       // Prepare the HTTP request.
-      HttpRequest request = new DefaultFullHttpRequest(
-          HTTP_1_1, HttpMethod.GET, "/", Unpooled.EMPTY_BUFFER);
+      final HttpRequest request = new DefaultFullHttpRequest(HTTP_1_1, HttpMethod.GET, "/", Unpooled.EMPTY_BUFFER);
       request.headers().set(HttpHeaderNames.HOST, "127.0.0.1");
       request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
       request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
 
       // Send the HTTP request.
-      ch.writeAndFlush(request);
+      channel.writeAndFlush(request);
 
       // Wait for the server to close the connection.
-      ch.closeFuture().sync();
-    } finally {
+      channel.closeFuture().sync();
+    }
+    finally {
       // Shut down executor threads to exit.
       group.shutdownGracefully();
     }

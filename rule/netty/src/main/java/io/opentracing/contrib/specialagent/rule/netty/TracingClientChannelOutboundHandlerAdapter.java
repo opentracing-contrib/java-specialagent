@@ -30,48 +30,44 @@ import io.opentracing.util.GlobalTracer;
 
 // Client Request
 public class TracingClientChannelOutboundHandlerAdapter extends ChannelOutboundHandlerAdapter {
-
   @Override
-  public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise prm) {
-    if (!(msg instanceof HttpRequest)) {
-      ctx.write(msg, prm);
+  public void write(final ChannelHandlerContext context, final Object message, final ChannelPromise promise) {
+    if (!(message instanceof HttpRequest)) {
+      context.write(message, promise);
       return;
     }
 
-    final HttpRequest request = (HttpRequest) msg;
+    final HttpRequest request = (HttpRequest)message;
     final Tracer tracer = GlobalTracer.get();
-
-    final SpanBuilder builder = tracer.buildSpan(request.method().name())
-        .withTag(Tags.COMPONENT, "netty")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.HTTP_METHOD, request.method().name())
-        .withTag(Tags.HTTP_URL, request.uri());
+    final SpanBuilder builder = tracer
+      .buildSpan(request.method().name())
+      .withTag(Tags.COMPONENT, "netty")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.HTTP_METHOD, request.method().name())
+      .withTag(Tags.HTTP_URL, request.uri());
 
     final SpanContext parentContext = tracer.extract(Builtin.HTTP_HEADERS, new NettyExtractAdapter(request.headers()));
 
-    if (parentContext != null) {
+    if (parentContext != null)
       builder.asChildOf(parentContext);
-    }
 
     final Span span = builder.start();
-
     try (final Scope scope = tracer.activateSpan(span)) {
-      // AWS calls are often signed, so we can't add headers without breaking the signature.
+      // AWS calls are often signed, so we can't add headers without breaking
+      // the signature.
       if (!request.headers().contains("amz-sdk-invocation-id")) {
         tracer.inject(span.context(), Builtin.HTTP_HEADERS, new NettyInjectAdapter(request.headers()));
       }
 
-      ctx.channel().attr(TracingClientChannelInboundHandlerAdapter.CLIENT_ATTRIBUTE_KEY).set(span);
-
+      context.channel().attr(TracingClientChannelInboundHandlerAdapter.CLIENT_ATTRIBUTE_KEY).set(span);
       try {
-        ctx.write(msg, prm);
-      } catch (final Throwable throwable) {
-        TracingServerChannelInboundHandlerAdapter.onError(throwable, span);
+        context.write(message, promise);
+      }
+      catch (final Throwable t) {
+        TracingServerChannelInboundHandlerAdapter.onError(t, span);
         span.finish();
-        throw throwable;
+        throw t;
       }
     }
-
   }
-
 }

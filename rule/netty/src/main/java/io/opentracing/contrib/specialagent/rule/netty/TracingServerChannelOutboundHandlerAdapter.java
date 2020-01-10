@@ -24,25 +24,27 @@ import io.opentracing.tag.Tags;
 
 public class TracingServerChannelOutboundHandlerAdapter extends ChannelOutboundHandlerAdapter {
   @Override
-  public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise prm) {
-    final Span span = ctx.channel().attr(TracingServerChannelInboundHandlerAdapter.SERVER_ATTRIBUTE_KEY).get();
-    if (span == null || !(msg instanceof HttpResponse)) {
-      ctx.write(msg, prm);
+  public void write(final ChannelHandlerContext handlerContext, final Object message, final ChannelPromise promise) {
+    final Span span = handlerContext.channel().attr(TracingServerChannelInboundHandlerAdapter.SERVER_ATTRIBUTE_KEY).get();
+    if (span == null || !(message instanceof HttpResponse)) {
+      handlerContext.write(message, promise);
       return;
     }
 
-    final HttpResponse response = (HttpResponse) msg;
+    final HttpResponse response = (HttpResponse)message;
 
     try {
-      ctx.write(msg, prm);
-    } catch (final Throwable throwable) {
+      handlerContext.write(message, promise);
+    }
+    catch (final Throwable throwable) {
       TracingServerChannelInboundHandlerAdapter.onError(throwable, span);
       span.setTag(Tags.HTTP_STATUS, 500);
-      span.finish(); // Finish the span manually since finishSpanOnClose was false
+      span.finish(); // Finish the span manually since finishSpanOnClose was
+                     // false
       throw throwable;
     }
 
-    span.setTag(Tags.HTTP_STATUS, response.getStatus().code());
+    span.setTag(Tags.HTTP_STATUS, response.status().code());
     span.finish(); // Finish the span manually since finishSpanOnClose was false
   }
 }
