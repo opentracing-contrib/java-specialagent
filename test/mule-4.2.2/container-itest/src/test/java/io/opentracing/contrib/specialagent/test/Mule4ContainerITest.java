@@ -1,12 +1,17 @@
 package io.opentracing.contrib.specialagent.test;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.module.launcher.MuleContainer;
 
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Mule4ContainerITest {
 
@@ -30,16 +35,29 @@ public class Mule4ContainerITest {
             final HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
             connection.setRequestMethod("GET");
             int responseCode = connection.getResponseCode();
+            connection.disconnect();
 
             if (200 != responseCode)
                 throw new AssertionError("ERROR: response: " + responseCode);
 
-            TestUtil.checkSpan("java-grizzly-http-server", 4);
-            TestUtil.checkSpan("Request", 4);
-            TestUtil.checkSpan("java-grizzly-ahc", 4);
-            TestUtil.checkSpan("Logger", 4);
+            checkSpans("java-grizzly-http-server", "http:request", "java-grizzly-ahc", "mule:logger");
         } finally {
             container.stop();
         }
+    }
+
+    private static void checkSpans(String... components) {
+        MockTracer mockTracer = (MockTracer) TestUtil.getGlobalTracer();
+        Map<String, MockSpan> finishedSpans = mockTracer.finishedSpans()
+                .stream()
+                .collect(Collectors.toMap(mockSpan -> (String) mockSpan.tags().get(Tags.COMPONENT.getKey()),
+                        mockSpan -> mockSpan));
+
+        for (String component : components) {
+            if (!finishedSpans.containsKey(component))
+                throw new AssertionError("ERROR: " + component + " span not found");
+        }
+
+        mockTracer.reset();
     }
 }
