@@ -5,7 +5,7 @@
     <parent>
         <artifactId>rule</artifactId>
         <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-        <version>1.5.5-SNAPSHOT</version>
+        <version>1.5.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,9 +15,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-
-        <sa.plugin.name>mule:4</sa.plugin.name>
-
+        <sa.plugin.name>mule:4:core</sa.plugin.name>
         <mule.version>4.2.2</mule.version>
     </properties>
     <dependencies>

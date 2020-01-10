@@ -6,7 +6,7 @@
 
     <groupId>io.opentracing.contrib.specialagent.test</groupId>
     <artifactId>test-app</artifactId>
-    <version>1.5.5-SNAPSHOT</version>
+    <version>1.5.6-SNAPSHOT</version>
 
     <packaging>mule-application</packaging>
     <name>SpecialAgent Test mule-application for Mule 4.2.2</name>
@@ -14,7 +14,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <app.runtime>4.2.2</app.runtime>
         <mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
     </properties>
