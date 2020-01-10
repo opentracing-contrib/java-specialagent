@@ -15,7 +15,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        
+
         <mule.version>4.2.2</mule.version>
         <mule.service.weave.version>2.2.2</mule.service.weave.version>
         <mule.service.scheduler.version>1.2.4</mule.service.scheduler.version>
@@ -82,6 +82,33 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.opentracing.contrib.specialagent</groupId>
+                <artifactId>itest-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>itest</goal>
+                        </goals>
+                        <phase>test</phase>
+                    </execution>
+                </executions>
+                <configuration combine.self="override">
+                    <mainClasses>
+                        <mainClass>io.opentracing.contrib.specialagent.test.*</mainClass>
+                    </mainClasses>
+                    <arguments>
+                        <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
+                        <argument>-Dsa.log.level=FINE</argument>
+                        <argument>-Dsa.tracer=mock</argument>
+                        <argument>-Dsa.instrumentation.plugin.*.disable=true</argument>
+                        <argument>-Dsa.instrumentation.plugin.mule*.enable=true</argument>
+                        <argument>-Dsa.instrumentation.plugin.grizzly:ahc.enable=true</argument>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                    </arguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>
