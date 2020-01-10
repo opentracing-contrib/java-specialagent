@@ -72,7 +72,7 @@ public class ElasticsearchITest {
       runTransportClient();
     }
 
-    TestUtil.checkSpan("java-elasticsearch", 4);
+    TestUtil.checkSpan("java-elasticsearch", 6);
   }
 
   private static void runRestClient() throws IOException, InterruptedException {

@@ -590,6 +590,18 @@
       </modules>
     </profile>
     <profile>
+      <id>netty</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>netty-4.1.0</module>
+        <module>netty-4.1.44</module>
+      </modules>
+    </profile>
+    <profile>
       <id>default</id>
       <activation>
         <file>
