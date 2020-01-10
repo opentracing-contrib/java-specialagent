@@ -44,8 +44,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class NettyITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
-
     EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup workerGroup = new NioEventLoopGroup();
     try {
