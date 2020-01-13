@@ -371,6 +371,18 @@
       </modules>
     </profile>
     <profile>
+      <id>pulsar-client</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>pulsar-client-2.2.0</module>
+        <module>pulsar-client-2.4.2</module>
+      </modules>
+    </profile>
+    <profile>
       <id>rabbitmq-client</id>
       <activation>
         <property>

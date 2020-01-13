@@ -97,6 +97,7 @@
         <module>google-http-client</module>
         <module>neo4j-driver</module>
         <module>netty</module>
+        <module>pulsar-client</module>
       </modules>
       <build>
         <resources>
