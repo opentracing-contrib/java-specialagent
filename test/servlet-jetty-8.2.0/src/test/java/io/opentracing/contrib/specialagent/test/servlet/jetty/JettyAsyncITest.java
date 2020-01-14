@@ -27,7 +27,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JettyAsyncITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final Server server = new Server(8080);
     final ServletContextHandler context = new ServletContextHandler();
     context.setContextPath("/");

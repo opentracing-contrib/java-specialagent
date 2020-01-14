@@ -12,17 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.test.spring.rabbitmq;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.stereotype.Component;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @Component
 public class Receiver {
-
-  public void receiveMessage(String message) {
+  public void receiveMessage(final String message) {
     TestUtil.checkActiveSpan();
     System.out.println("Received <" + message + ">");
   }
-
 }

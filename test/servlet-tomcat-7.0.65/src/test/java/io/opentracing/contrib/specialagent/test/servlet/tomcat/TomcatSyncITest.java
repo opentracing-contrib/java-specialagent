@@ -19,7 +19,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class TomcatSyncITest extends TomcatTest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     run(new SyncServlet(), false);
   }
 }

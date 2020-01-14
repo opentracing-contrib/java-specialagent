@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.5-SNAPSHOT</version>
+    <version>1.5.6-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -310,6 +310,29 @@
       </modules>
     </profile>
     <profile>
+      <id>neo4j-driver</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>neo4j-driver-4.0.0</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>netty</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>netty-4.1.0</module>
+        <module>netty-4.1.44</module>
+      </modules>
+    </profile>
+    <profile>
       <id>okhttp</id>
       <activation>
         <property>
@@ -406,6 +429,8 @@
         <module>servlet-jetty-7.6.21</module>
         <module>servlet-jetty-8.2.0</module>
         <module>servlet-jetty-9.2.15</module>
+        <module>servlet-jetty-9.3.28</module>
+        <module>servlet-jetty-9.4.24</module>
       </modules>
     </profile>
     <profile>

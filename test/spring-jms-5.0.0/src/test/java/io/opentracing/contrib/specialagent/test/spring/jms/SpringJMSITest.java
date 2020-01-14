@@ -41,11 +41,18 @@ import io.opentracing.contrib.specialagent.TestUtil;
 @SpringBootApplication
 @EnableJms
 public class SpringJMSITest {
+  public static void main(final String[] args) throws Exception {
+    final CountDownLatch latch = TestUtil.initExpectedSpanLatch(3);
+    try (final ConfigurableApplicationContext context = SpringApplication.run(SpringJMSITest.class, args)) {
+      TestUtil.checkSpan("java-jms", 3, latch);
+    }
+  }
+
   @Autowired
   private JmsTemplate jmsTemplate;
 
   @Bean
-  public JmsListenerContainerFactory<?> myFactory(DefaultJmsListenerContainerFactoryConfigurer configurer) {
+  public JmsListenerContainerFactory<?> myFactory(final DefaultJmsListenerContainerFactoryConfigurer configurer) {
     final DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
     configurer.configure(factory, connectionFactory());
     return factory;
@@ -78,13 +85,5 @@ public class SpringJMSITest {
         jmsTemplate.convertAndSend("mailbox", "hello");
       }
     };
-  }
-
-  public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
-    final CountDownLatch latch = TestUtil.initExpectedSpanLatch(3);
-    try (final ConfigurableApplicationContext context = SpringApplication.run(SpringJMSITest.class, args)) {
-      TestUtil.checkSpan("java-jms", 3, latch);
-    }
   }
 }

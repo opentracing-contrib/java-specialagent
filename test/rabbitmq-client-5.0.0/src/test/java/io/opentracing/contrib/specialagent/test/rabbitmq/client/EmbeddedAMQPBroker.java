@@ -27,6 +27,7 @@ import org.apache.qpid.server.model.SystemConfig;
 
 class EmbeddedAMQPBroker {
   private int brokerPort;
+
   private final SystemLauncher broker = new SystemLauncher(new SystemLauncherListener() {
     private SystemConfig<?> systemConfig;
 

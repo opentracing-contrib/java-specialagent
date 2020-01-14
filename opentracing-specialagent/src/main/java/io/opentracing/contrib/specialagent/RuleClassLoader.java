@@ -23,7 +23,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
@@ -66,8 +65,8 @@ class RuleClassLoader extends URLClassLoader {
     }
   };
 
-  private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-  private final Map<ClassLoader,Boolean> preLoaded = new IdentityHashMap<>();
+  private final IdentityHashMap<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
+  private final IdentityHashMap<ClassLoader,Boolean> preLoaded = new IdentityHashMap<>();
   private final PluginManifest pluginManifest;
   private final IsoClassLoader isoClassLoader;
 

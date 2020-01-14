@@ -35,7 +35,6 @@ public class ThriftITest {
   private static final int port = 8883;
 
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
     final TServerTransport serverTransport = new TServerSocket(port);
     final TServer server = startNewThreadPoolServer(serverTransport);
@@ -79,5 +78,4 @@ public class ThriftITest {
 
     return server;
   }
-
 }

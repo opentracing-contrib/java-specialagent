@@ -55,10 +55,30 @@ public final class ITestMojo extends ExecMojo {
   CommandLine getExecutablePath(final Map<String,String> enviro, final File dir) {
     final CommandLine cli = super.getExecutablePath(enviro, dir);
     return new CommandLine(cli) {
+
+      @Override
+      public String[] getArguments() {
+        final String[] arguments = super.getArguments();
+        for (int i = 0, len = arguments.length; i < len; ++i) {
+          if (!"-cp".equals(arguments[i]) && !"-classpath".equals(arguments[i]))
+            continue;
+
+          if (++i < len)
+            arguments[i] = arguments[i] + File.pathSeparator + Exec.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+
+          break;
+        }
+
+        super.addArgument(Exec.class.getName());
+        super.addArgument(mainClass);
+        return arguments;
+      }
+
       @Override
       public CommandLine addArguments(final String[] addArguments, final boolean handleQuoting) {
-        super.addArguments(addArguments, handleQuoting);
-        final CommandLine cli = super.addArgument(mainClass);
+        final CommandLine cli = super.addArguments(addArguments, handleQuoting);
+        super.addArgument(Exec.class.getName());
+        super.addArgument(mainClass);
         getLog().info(cli.toString().replace(", ", " "));
         return cli;
       }

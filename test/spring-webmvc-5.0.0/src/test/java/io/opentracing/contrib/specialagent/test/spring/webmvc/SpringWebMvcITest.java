@@ -29,9 +29,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 @SpringBootApplication
 public class SpringWebMvcITest {
   public static void main(final String[] args) {
-    TestUtil.initTerminalExceptionHandler();
     SpringApplication.run(SpringWebMvcITest.class, args).close();
-
     TestUtil.checkSpan("java-web-servlet", 2);
   }
 

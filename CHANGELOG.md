@@ -1,5 +1,14 @@
 # Changes by Version
 
+## v1.5.5 (2020-01-10)
+* Implement AgentRule(s) for Neo4J Driver (#321)
+* Implement AgentRule(s) for Netty (#318)
+* Explicitly support OpenJDK (#158)
+* Explicitly support Jetty 9.3.x and 9.4.x (#327)
+* Use strict advice clauses in FilterAgentRule (#331, #338)
+* Improve integration test architecture (#335)
+* Upgrade JDBC Plugin to v0.2.5 (DynamicProxy) (#343)
+
 ## v1.5.4 (2019-12-27)
 * Fix to possible race condition in "servlet" rule (#316)
 * Implement AgentRule(s) for Google Http Client (#314)

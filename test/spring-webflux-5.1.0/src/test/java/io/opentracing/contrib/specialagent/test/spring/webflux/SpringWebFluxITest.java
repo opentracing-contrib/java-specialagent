@@ -27,10 +27,8 @@ import io.opentracing.contrib.specialagent.TestUtil;
 @SpringBootApplication
 public class SpringWebFluxITest {
   public static void main(final String[] args) {
-    TestUtil.initTerminalExceptionHandler();
     SpringApplication.run(SpringWebFluxITest.class, args).close();
-
-    TestUtil.checkSpan("java-spring-webclient", 3);
+    TestUtil.checkSpan("java-spring-webclient", 4, true);
   }
 
   @Bean

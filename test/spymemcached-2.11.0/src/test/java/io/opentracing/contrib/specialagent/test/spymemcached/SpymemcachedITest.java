@@ -23,7 +23,6 @@ import net.spy.memcached.MemcachedClient;
 
 public class SpymemcachedITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final MemcachedClient client = new MemcachedClient(new InetSocketAddress("localhost", 11211));
     final boolean op = client.set("key", 120, "value").get(15, TimeUnit.SECONDS);
     if (!op)

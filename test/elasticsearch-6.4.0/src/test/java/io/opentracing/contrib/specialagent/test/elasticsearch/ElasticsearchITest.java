@@ -53,7 +53,6 @@ public class ElasticsearchITest {
   private static final String clusterName = "cluster-name";
 
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final Settings settings = Settings.builder()
       .put("path.home", ES_WORKING_DIR)
       .put("path.data", ES_WORKING_DIR + "/data")
@@ -73,7 +72,7 @@ public class ElasticsearchITest {
       runTransportClient();
     }
 
-    TestUtil.checkSpan("java-elasticsearch", 4);
+    TestUtil.checkSpan("java-elasticsearch", 6);
   }
 
   private static void runRestClient() throws IOException, InterruptedException {

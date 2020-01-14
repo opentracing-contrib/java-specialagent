@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 The OpenTracing Authors
+/* Copyright 2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.qpid.server.SystemLauncher;
 import org.apache.qpid.server.SystemLauncherListener;
 import org.apache.qpid.server.model.Port;
@@ -26,6 +27,7 @@ import org.apache.qpid.server.model.SystemConfig;
 
 class EmbeddedAMQPBroker {
   private int brokerPort;
+
   private final SystemLauncher broker = new SystemLauncher(new SystemLauncherListener() {
     private SystemConfig<?> systemConfig;
 

@@ -23,9 +23,9 @@ public class Producer {
   private static final String TOPIC = "users";
 
   @Autowired
-  private KafkaTemplate<String, String> kafkaTemplate;
+  private KafkaTemplate<String,String> kafkaTemplate;
 
-  void sendMessage(String message) {
+  void sendMessage(final String message) {
     System.out.println(String.format("#### -> Producing message -> %s", message));
     this.kafkaTemplate.send(TOPIC, message);
   }

@@ -46,8 +46,9 @@ public class FilterAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("setStatus")))
-            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError")));
+            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("setStatus").and(takesArguments(1)).and(takesArguments(Integer.class))))
+            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError").and(takesArguments(2)).and(takesArguments(Integer.class, String.class))))
+            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError").and(takesArguments(1)).and(takesArguments(Integer.class))));
         }})
       .type(not(isInterface()).and(hasSuperType(named("javax.servlet.Filter")).and(not(named("io.opentracing.contrib.web.servlet.filter.TracingFilter")))))
       .transform(new Transformer() {
@@ -55,15 +56,15 @@ public class FilterAgentRule extends AgentRule {
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
             .visit(Advice.to(FilterInitAdvice.class).on(named("init").and(takesArguments(1)).and(takesArgument(0, named("javax.servlet.FilterConfig")))))
-            .visit(Advice.to(DoFilterEnter.class).on(named("doFilter")));
+            .visit(Advice.to(DoFilterEnter.class).on(named("doFilter").and(takesArguments(3)).and(takesArgument(0, named("javax.servlet.ServletRequest")).and(takesArgument(1, named("javax.servlet.ServletResponse")).and(takesArgument(2, named("javax.servlet.FilterChain")))))));
         }}),
       builder
-      .type(not(isInterface()).and(hasSuperType(named("javax.servlet.Filter")).and(not(named("io.opentracing.contrib.web.servlet.filter.TracingFilter")))))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(DoFilterExit.class).on(named("doFilter")));
-        }}));
+        .type(not(isInterface()).and(hasSuperType(named("javax.servlet.Filter")).and(not(named("io.opentracing.contrib.web.servlet.filter.TracingFilter")))))
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(DoFilterExit.class).on(named("doFilter").and(takesArguments(3)).and(takesArgument(0, named("javax.servlet.ServletRequest")).and(takesArgument(1, named("javax.servlet.ServletResponse")).and(takesArgument(2, named("javax.servlet.FilterChain")))))));
+          }}));
   }
 
   public static class ServletInitAdvice {

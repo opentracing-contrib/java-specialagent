@@ -29,7 +29,6 @@ import play.shaded.ahc.org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 public class PlayWSITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     final ActorSystem system = ActorSystem.create();
     final Materializer materializer = ActorMaterializer.create(system);
 

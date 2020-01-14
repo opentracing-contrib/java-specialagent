@@ -29,7 +29,6 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class AsyncHttpClientITest {
   public static void main(final String[] args) throws Exception {
-    TestUtil.initTerminalExceptionHandler();
     try (final AsyncHttpClient client = new DefaultAsyncHttpClient()) {
       final Request request = new RequestBuilder(HttpConstants.Methods.GET).setUrl("http://www.google.com").build();
       final int statusCode = client.executeRequest(request, new AsyncCompletionHandler<Response>() {
@@ -43,7 +42,9 @@ public class AsyncHttpClientITest {
       if (200 != statusCode)
         throw new AssertionError("ERROR: response: " + statusCode);
 
-      TestUtil.checkSpan("java-asynchttpclient", 1);
+      // 1 AsyncHttpClient span
+      // 1 Netty span
+      TestUtil.checkSpan("java-asynchttpclient", 2, true);
     }
   }
 }
