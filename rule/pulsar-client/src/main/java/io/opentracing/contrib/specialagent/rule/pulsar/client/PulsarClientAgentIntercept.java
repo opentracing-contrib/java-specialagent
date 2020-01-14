@@ -36,6 +36,7 @@ import org.apache.pulsar.client.impl.MessageImpl;
 
 public class PulsarClientAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
+  static final String COMPONENT_NAME = "java-pulsar";
 
   private static class Context {
     private Scope scope;
@@ -49,7 +50,7 @@ public class PulsarClientAgentIntercept {
         .extract(Builtin.TEXT_MAP, new TextMapAdapter(message.getProperties()));
 
     final SpanBuilder spanBuilder = tracer.buildSpan("receive")
-        .withTag(Tags.COMPONENT, "pulsar")
+        .withTag(Tags.COMPONENT, COMPONENT_NAME)
         .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
         .withTag("topic", consumer.getTopic())
         .withTag("subscription", consumer.getSubscription())
@@ -89,7 +90,7 @@ public class PulsarClientAgentIntercept {
     final Tracer tracer = GlobalTracer.get();
 
     final Span span = tracer.buildSpan("send")
-        .withTag(Tags.COMPONENT, "pulsar")
+        .withTag(Tags.COMPONENT, COMPONENT_NAME)
         .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER)
         .withTag(Tags.MESSAGE_BUS_DESTINATION, producer.getTopic())
         .withTag(Tags.PEER_SERVICE, "pulsar")

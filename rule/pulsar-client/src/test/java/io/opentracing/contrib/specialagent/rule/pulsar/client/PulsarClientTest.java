@@ -54,7 +54,6 @@ public class PulsarClientTest {
   private static LocalBookkeeperEnsemble bkEnsemble;
   private static PulsarService pulsarService;
 
-
   @BeforeClass
   public static void beforeClass() throws Exception {
     bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
@@ -86,9 +85,8 @@ public class PulsarClientTest {
       propAdmin.setAllowedClusters(Sets.newHashSet(Lists.newArrayList(CLUSTER_NAME)));
 
       admin.tenants().createTenant("public", propAdmin);
-      admin.namespaces().createNamespace("public/default");
+      admin.namespaces().createNamespace("public/default", Sets.newHashSet(CLUSTER_NAME));
     }
-
   }
 
   @AfterClass
@@ -96,7 +94,6 @@ public class PulsarClientTest {
     if (pulsarService != null) {
       pulsarService.close();
     }
-
     if (bkEnsemble != null) {
       bkEnsemble.stop();
     }
@@ -118,7 +115,6 @@ public class PulsarClientTest {
   }
 
   private void test(final MockTracer tracer, boolean async) throws Exception {
-
     try (final PulsarClient client = PulsarClient.builder()
         .serviceUrl(pulsarService.getBrokerServiceUrl()).build()) {
       try (final Consumer<byte[]> consumer = client.newConsumer().topic("my-topic")
@@ -141,13 +137,13 @@ public class PulsarClientTest {
       }
     }
 
-    final List<MockSpan> mockSpans = tracer.finishedSpans();
-    assertEquals(2, mockSpans.size());
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(2, spans.size());
     assertNull(tracer.activeSpan());
-    for (MockSpan mockSpan : mockSpans) {
-      assertEquals("pulsar", mockSpan.tags().get(Tags.COMPONENT.getKey()));
+    for (MockSpan span : spans) {
+      assertEquals(PulsarClientAgentIntercept.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
     }
-    assertEquals(mockSpans.get(0).context().traceId(), mockSpans.get(1).context().traceId());
+    assertEquals(spans.get(0).context().traceId(), spans.get(1).context().traceId());
   }
 
 }
