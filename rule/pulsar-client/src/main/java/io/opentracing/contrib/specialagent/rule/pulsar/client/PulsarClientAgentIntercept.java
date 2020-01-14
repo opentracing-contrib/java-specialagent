@@ -46,8 +46,7 @@ public class PulsarClientAgentIntercept {
 
   private static void buildConsumerSpan(Consumer<?> consumer, Message<?> message) {
     final Tracer tracer = GlobalTracer.get();
-    final SpanContext parentContext = tracer
-        .extract(Builtin.TEXT_MAP, new TextMapAdapter(message.getProperties()));
+    final SpanContext parentContext = tracer.extract(Builtin.TEXT_MAP, new TextMapAdapter(message.getProperties()));
 
     final SpanBuilder spanBuilder = tracer.buildSpan("receive")
         .withTag(Tags.COMPONENT, COMPONENT_NAME)
@@ -118,15 +117,14 @@ public class PulsarClientAgentIntercept {
       return returned;
 
     context.scope.close();
-
-    if (thrown != null) {
-      onError(thrown, context.span);
-      context.span.finish();
-      return returned;
-    }
-
     final Span span = context.span;
     contextHolder.remove();
+
+    if (thrown != null) {
+      onError(thrown, span);
+      span.finish();
+      return returned;
+    }
 
     return ((CompletableFuture<MessageId>) returned)
         .thenApply(messageId -> {
