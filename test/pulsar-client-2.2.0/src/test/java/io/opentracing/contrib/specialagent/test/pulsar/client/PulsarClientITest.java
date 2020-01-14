@@ -36,13 +36,18 @@ import org.apache.pulsar.common.policies.data.TenantInfo;
 import org.apache.pulsar.zookeeper.LocalBookkeeperEnsemble;
 
 public class PulsarClientITest {
+  // Pulsar doesn't yet support the latest JDK versions. We are still on 1.8
+  private static final boolean isJdkSupported = System.getProperty("java.version").startsWith("1.8.");
+
   private static final String CLUSTER_NAME = "test-cluster";
   private static final int ZOOKEEPER_PORT = 8880;
   private static final AtomicInteger port = new AtomicInteger(ZOOKEEPER_PORT);
 
   public static void main(final String[] args) throws Exception {
-    LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT,
-        port::incrementAndGet);
+    if (!isJdkSupported)
+      return;
+
+    LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
     bkEnsemble.startStandalone();
 
     int brokerWebServicePort = 8885;
