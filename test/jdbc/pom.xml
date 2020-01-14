@@ -24,7 +24,7 @@
     <version>1.5.6-SNAPSHOT</version>
   </parent>
   <artifactId>jdbc</artifactId>
-  <name>SpecialAgent Test for Java JDBC API</name>
+  <name>SpecialAgent Test for JDBC API</name>
   <dependencies>
     <dependency>
       <groupId>com.h2database</groupId>
