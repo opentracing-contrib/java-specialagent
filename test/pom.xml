@@ -29,7 +29,6 @@
   <name>SpecialAgent Tests</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/test</url>
   <properties>
-    <failIfNoTests>false</failIfNoTests>
     <sa.log.level>FINER</sa.log.level>
   </properties>
   <modules>
