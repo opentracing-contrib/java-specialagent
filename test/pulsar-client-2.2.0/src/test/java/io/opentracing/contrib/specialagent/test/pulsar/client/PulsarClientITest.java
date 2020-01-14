@@ -39,11 +39,10 @@ public class PulsarClientITest {
   private static final String CLUSTER_NAME = "test-cluster";
   private static final int ZOOKEEPER_PORT = 8880;
   private static final AtomicInteger port = new AtomicInteger(ZOOKEEPER_PORT);
-  private static LocalBookkeeperEnsemble bkEnsemble;
-  private static PulsarService pulsarService;
 
   public static void main(final String[] args) throws Exception {
-    bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
+    LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT,
+        port::incrementAndGet);
     bkEnsemble.startStandalone();
 
     int brokerWebServicePort = 8885;
@@ -91,7 +90,7 @@ public class PulsarClientITest {
     config.setTlsAllowInsecureConnection(true);
     config.setAdvertisedAddress("localhost");
 
-    pulsarService = new PulsarService(config);
+    PulsarService pulsarService = new PulsarService(config);
 
     pulsarService.start();
 

@@ -73,9 +73,7 @@ public class PulsarClientAgentIntercept {
   public static void receiveAsyncEnd(Object thiz, Object returned) {
     final Consumer<?> consumer = (Consumer<?>) thiz;
     CompletableFuture<Message<?>> completableFuture = (CompletableFuture<Message<?>>) returned;
-    completableFuture.thenAccept(message -> {
-      buildConsumerSpan(consumer, message);
-    });
+    completableFuture.thenAccept(message -> buildConsumerSpan(consumer, message));
   }
 
   public static Object internalSendAsyncEnter(Object thiz, Object arg) {

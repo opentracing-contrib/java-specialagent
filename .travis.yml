@@ -377,6 +377,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: mvn -B -Dtest -P play-ws install
+  - name: "Pulsar Client [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -Dtest -P pulsar-client install
+  - name: "Pulsar Client [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: mvn -B -Dtest -P pulsar-client install
   - name: "RabbitMQ Client [openjdk8]"
     stage: test
     jdk: openjdk8
