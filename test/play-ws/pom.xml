@@ -27,6 +27,10 @@
   <artifactId>play-ws</artifactId>
   <packaging>pom</packaging>
   <name>SpecialAgent Tests for Play WS</name>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
   <modules>
     <module>play-ws-2.0.0</module>
     <module>play-ws-2.0.7</module>

@@ -24,5 +24,5 @@
     <version>1.5.6-SNAPSHOT</version>
   </parent>
   <artifactId>httpurlconnection</artifactId>
-  <name>SpecialAgent Test for HttpURLConnection</name>
+  <name>SpecialAgent Test for Java HttpURLConnection</name>
 </project>
