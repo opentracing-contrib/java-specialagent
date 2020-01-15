@@ -132,7 +132,7 @@ public class PulsarClientITest {
     pulsarService.close();
     bkEnsemble.stop();
 
-    TestUtil.checkSpan("pulsar", 2, true);
+    TestUtil.checkSpan("java-pulsar", 2, true);
 
     // Embedded Zookeeper processes may not exit
     System.exit(0);
