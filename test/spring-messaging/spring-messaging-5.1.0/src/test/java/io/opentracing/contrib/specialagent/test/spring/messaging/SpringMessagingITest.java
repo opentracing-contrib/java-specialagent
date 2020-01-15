@@ -103,10 +103,14 @@ public class SpringMessagingITest {
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringMessagingITest.class, args)) {
       TestUtil.checkSpan("spring-messaging", 5, latch);
     }
-
-    embeddedKafkaRule.after();
-
-    // Embedded Kafka and Zookeeper processes may not exit
-    System.exit(0);
+    catch (final Throwable t) {
+      t.printStackTrace(System.err);
+      embeddedKafkaRule.after();
+      System.exit(1);
+    }
+    finally {
+      embeddedKafkaRule.after();
+      System.exit(0);
+    }
   }
 }

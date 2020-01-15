@@ -69,13 +69,18 @@ public class KafkaClientITest {
       final CountDownLatch latch = new CountDownLatch(1);
       createConsumer(embeddedKafkaRule, latch);
       latch.await(15, TimeUnit.SECONDS);
+
+      TestUtil.checkSpan("java-kafka", 10);
     }
-
-    embeddedKafkaRule.after();
-    TestUtil.checkSpan("java-kafka", 10);
-
-    // Embedded Kafka and Zookeeper processes may not exit
-    System.exit(0);
+    catch (final Throwable t) {
+      t.printStackTrace(System.err);
+      embeddedKafkaRule.after();
+      System.exit(1);
+    }
+    finally {
+      embeddedKafkaRule.after();
+      System.exit(0);
+    }
   }
 
   private static Producer<Long,String> createProducer(final EmbeddedKafkaRule embeddedKafkaRule) {

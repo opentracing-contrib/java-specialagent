@@ -63,14 +63,18 @@ public class SpringKafkaITest {
     kafkaEmbedded = embeddedKafkaRule.getEmbeddedKafka();
 
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
-
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringKafkaITest.class, args)) {
       TestUtil.checkSpan("java-kafka", 6, latch);
     }
-    embeddedKafkaRule.after();
-
-    // Embedded Kafka and Zookeeper processes may not exit
-    System.exit(0);
+    catch (final Throwable t) {
+      t.printStackTrace(System.err);
+      embeddedKafkaRule.after();
+      System.exit(1);
+    }
+    finally {
+      embeddedKafkaRule.after();
+      System.exit(0);
+    }
   }
 
   @Bean
