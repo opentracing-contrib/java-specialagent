@@ -26,7 +26,7 @@
   <artifactId>spring-messaging-5.2.2</artifactId>
   <name>SpecialAgent Test for Spring Messaging 5.2.2</name>
   <properties>
-    <version.messaging>5.1.0.RELEASE</version.messaging>
+    <version.messaging>5.2.2.RELEASE</version.messaging>
   </properties>
   <dependencies>
     <dependency>
