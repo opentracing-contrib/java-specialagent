@@ -26,13 +26,13 @@
   <artifactId>spring-web-5.2.1</artifactId>
   <name>SpecialAgent Test for Spring Web 5.2.1</name>
   <properties>
-    <version.spring.web>5.2.1.RELEASE</version.spring.web>
+    <version.spring>5.2.1.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <version>${version.spring.web}</version>
+      <version>${version.spring}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>

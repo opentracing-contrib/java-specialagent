@@ -26,13 +26,13 @@
   <artifactId>spring-webflux-5.2.1</artifactId>
   <name>SpecialAgent Test for Spring WebFlux 5.2.1</name>
   <properties>
-    <version.spring.webflux>5.2.1.RELEASE</version.spring.webflux>
+    <version.spring>5.2.1.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webflux</artifactId>
-      <version>${version.spring.webflux}</version>
+      <version>${version.spring}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>

@@ -27,7 +27,7 @@
   <name>SpecialAgent Test for Spring Kafka 2.2.0</name>
   <properties>
     <version.kafka>2.0.1</version.kafka>
-    <version.kafka.spring>2.2.0.RELEASE</version.kafka.spring>
+    <version.spring>2.2.0.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka</artifactId>
-      <version>${version.kafka.spring}</version>
+      <version>${version.spring}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>

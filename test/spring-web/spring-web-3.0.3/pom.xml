@@ -26,13 +26,13 @@
   <artifactId>spring-web-3.0.3</artifactId>
   <name>SpecialAgent Test for Spring Web 3.0.3</name>
   <properties>
-    <version.spring.web>3.0.3.RELEASE</version.spring.web>
+    <version.spring>3.0.3.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <version>${version.spring.web}</version>
+      <version>${version.spring}</version>
     </dependency>
   </dependencies>
 </project>

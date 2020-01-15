@@ -26,13 +26,13 @@
   <artifactId>spring-kafka-2.3.3</artifactId>
   <name>SpecialAgent Test for Spring Kafka 2.3.3</name>
   <properties>
-    <version.kafka.spring>2.3.4.RELEASE</version.kafka.spring>
+    <version.spring>2.3.3.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka</artifactId>
-      <version>${version.kafka.spring}</version>
+      <version>${version.spring}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>

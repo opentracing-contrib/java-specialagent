@@ -26,7 +26,7 @@
   <artifactId>spring-websocket-5.2.2</artifactId>
   <name>SpecialAgent Test for Spring WebSocket 5.2.2</name>
   <properties>
-    <version.spring>5.1.0.RELEASE</version.spring>
+    <version.spring>5.2.2.RELEASE</version.spring>
   </properties>
   <dependencies>
     <dependency>
