@@ -129,6 +129,18 @@
       </modules>
     </profile>
     <profile>
+      <id>couchbase-client</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>couchbase-client-2.7.3</module>
+        <module>couchbase-client-2.7.11</module>
+      </modules>
+    </profile>
+    <profile>
       <id>elasticsearch</id>
       <activation>
         <property>

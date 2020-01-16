@@ -137,6 +137,16 @@ jobs:
 #    jdk: openjdk11
 #    install: true
 #    script: mvn -B -Dtest -P cassandra install
+  - name: "Couchbase Client [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -Dtest -P couchbase-client install
+  - name: "Couchbase Client [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: mvn -B -Dtest -P couchbase-client install
   - name: "ElasticSearch [openjdk8]"
     stage: test
     jdk: openjdk8
