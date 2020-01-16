@@ -18,7 +18,9 @@ package io.opentracing.contrib.specialagent.rule.jdbc;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentracing.contrib.jdbc.TracingDriver;
@@ -41,12 +43,32 @@ public class JdbcAgentIntercept {
     if (tracingDriver.get() == null) {
       synchronized (tracingDriver) {
         if (tracingDriver.get() == null) {
-          TracingDriver.setInterceptorMode(true);
+          initTracingDriver();
           tracingDriver.set(TracingDriver.load());
         }
       }
     }
 
     return tracingDriver.get().connect(url, info);
+  }
+
+  private static void initTracingDriver() {
+    TracingDriver.setInterceptorMode(true);
+
+    final String withActiveSpanOnly = System.getProperty("sa.instrumentation.plugin.jdbc.withActiveSpanOnly");
+    TracingDriver.setInterceptorProperty("true".equals(withActiveSpanOnly));
+
+    // multi-statement separated by the separator specified by a system property
+    // "@@"  is default separator if the system property not present
+    final String separator = System.getProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing.separator", "@@");
+    final String ignoreForTracing = System.getProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing");
+    if (ignoreForTracing != null) {
+      String[] spliteds = ignoreForTracing.split(separator);
+      final Set<String> ignoreStatements = new HashSet<String>();
+      for(String splited : spliteds) {
+    	ignoreStatements.add(splited.trim());
+      }
+      TracingDriver.setInterceptorProperty(ignoreStatements);
+    }
   }
 }
