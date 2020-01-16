@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.rule.jdbc;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,7 +59,7 @@ public class JdbcAgentIntercept {
     TracingDriver.setInterceptorMode(true);
 
     final String withActiveSpanOnly = System.getProperty(WITH_ACTIVE_SPAN_ONLY);
-    TracingDriver.setInterceptorProperty(!"false".equals(withActiveSpanOnly));
+    TracingDriver.setInterceptorProperty(withActiveSpanOnly != null && !"false".equals(withActiveSpanOnly));
 
     // multi-statement separated by the separator specified by a system property
     // "@@" is default separator if the system property not present
