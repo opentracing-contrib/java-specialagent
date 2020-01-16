@@ -15,8 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.couchbase;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
@@ -27,17 +35,11 @@ import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import com.couchbase.mock.BucketConfiguration;
 import com.couchbase.mock.CouchbaseMock;
+
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
 public class CouchbaseClientTest {
@@ -47,11 +49,11 @@ public class CouchbaseClientTest {
   @BeforeClass
   public static void startCouchbaseMock() throws Exception {
     couchbaseMock = new CouchbaseMock("localhost", 8091, 2, 1);
-    BucketConfiguration bucketConfiguration = new BucketConfiguration();
+    final BucketConfiguration bucketConfiguration = new BucketConfiguration();
     bucketConfiguration.name = bucketName;
     bucketConfiguration.numNodes = 1;
     bucketConfiguration.numReplicas = 1;
-    bucketConfiguration.password="";
+    bucketConfiguration.password = "";
     couchbaseMock.start();
     couchbaseMock.waitForStartup();
     couchbaseMock.createBucket(bucketConfiguration);
@@ -59,7 +61,7 @@ public class CouchbaseClientTest {
 
   @AfterClass
   public static void stopCouchbaseMock() {
-    if(couchbaseMock != null)
+    if (couchbaseMock != null)
       couchbaseMock.stop();
   }
 
@@ -70,18 +72,15 @@ public class CouchbaseClientTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    final Cluster cluster = CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder()
-        .connectTimeout(TimeUnit.SECONDS.toMillis(60)).build());
-
+    final Cluster cluster = CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder().connectTimeout(TimeUnit.SECONDS.toMillis(60)).build());
     final Bucket bucket = cluster.openBucket(bucketName);
 
     final JsonObject arthur = JsonObject.create()
-        .put("name", "Arthur")
-        .put("email", "kingarthur@couchbase.com")
-        .put("interests", JsonArray.from("Holy Grail", "African Swallows"));
+      .put("name", "Arthur")
+      .put("email", "kingarthur@couchbase.com")
+      .put("interests", JsonArray.from("Holy Grail", "African Swallows"));
 
     bucket.upsert(JsonDocument.create("u:king_arthur", arthur));
-
     System.out.println(bucket.get("u:king_arthur"));
 
     cluster.disconnect(60, TimeUnit.SECONDS);
@@ -90,9 +89,9 @@ public class CouchbaseClientTest {
     assertEquals(6, spans.size());
 
     boolean foundCouchbaseSpan = false;
-    for (MockSpan span : spans) {
-      final String component = (String) span.tags().get(Tags.COMPONENT.getKey());
-      if(component != null && component.startsWith("couchbase-java-client")) {
+    for (final MockSpan span : spans) {
+      final String component = (String)span.tags().get(Tags.COMPONENT.getKey());
+      if (component != null && component.startsWith("couchbase-java-client")) {
         foundCouchbaseSpan = true;
         break;
       }
