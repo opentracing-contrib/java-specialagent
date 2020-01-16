@@ -34,6 +34,18 @@
   </properties>
   <profiles>
     <profile>
+      <id>akka-actor</id>
+      <activation>
+        <property>
+          <name>all</name>
+        </property>
+      </activation>
+      <modules>
+        <module>akka-actor-2.5.0</module>
+        <module>akka-actor-2.6.1</module>
+      </modules>
+    </profile>
+    <profile>
       <id>akka-http</id>
       <activation>
         <property>
