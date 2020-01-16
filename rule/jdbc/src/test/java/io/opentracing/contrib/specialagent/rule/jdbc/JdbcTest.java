@@ -36,7 +36,12 @@ import io.opentracing.mock.MockTracer;
 public class JdbcTest {
   @Test
   public void test(final MockTracer tracer) throws Exception {
-    DriverManager.setLogWriter(new PrintWriter(System.err));
+	// for withActiveSpanOnly and ignoreForTracing support
+	System.setProperty("sa.instrumentation.plugin.jdbc.withActiveSpanOnly", Boolean.TRUE.toString());
+	System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing.separator", "@@@");
+	System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing", "select 1 from dual @@@ select 2 from dual");
+
+	DriverManager.setLogWriter(new PrintWriter(System.err));
     Driver.load();
     try (
       final Scope ignored = tracer.buildSpan("jdbc-test").startActive(true);
@@ -47,6 +52,33 @@ public class JdbcTest {
 
       final List<MockSpan> spans = tracer.finishedSpans();
       assertEquals(2, spans.size());
+    }
+
+    // parent span closed
+    assertEquals(3, tracer.finishedSpans().size());
+    try (
+      final Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc");
+    ) {
+      final Scope ignored = tracer.buildSpan("jdbc-test").startActive(true);
+      final Statement statement = connection.createStatement();
+
+      // should be ignored as ignoreForTracing specified, spans no change
+      statement.executeQuery("select 1 from dual");
+      statement.executeQuery("select 2 from dual");
+      assertEquals(3, tracer.finishedSpans().size());
+
+      // not an ignored sql, spans increased
+      statement.executeQuery("select 3 from dual");
+      assertEquals(4, tracer.finishedSpans().size());
+
+      // parent span closed
+      ignored.close();
+      assertEquals(5, tracer.finishedSpans().size());
+
+      // no more span created if no active span
+      statement.executeQuery("select 3 from dual");
+      statement.executeQuery("select 4 from dual");
+      assertEquals(5, tracer.finishedSpans().size());
     }
   }
 }
