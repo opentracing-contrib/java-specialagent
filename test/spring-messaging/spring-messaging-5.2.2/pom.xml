@@ -26,6 +26,7 @@
   <artifactId>spring-messaging-5.2.2</artifactId>
   <name>SpecialAgent Test for Spring Messaging 5.2.2</name>
   <properties>
+    <version.kafka>2.3.1</version.kafka>
     <version.messaging>5.2.2.RELEASE</version.messaging>
   </properties>
   <dependencies>
@@ -33,6 +34,23 @@
       <groupId>org.springframework.integration</groupId>
       <artifactId>spring-integration-core</artifactId>
       <version>${version.messaging}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.12</artifactId>
+      <version>${version.kafka}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.12</artifactId>
+      <version>${version.kafka}</version>
+      <classifier>test</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${version.kafka}</version>
+      <classifier>test</classifier>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
