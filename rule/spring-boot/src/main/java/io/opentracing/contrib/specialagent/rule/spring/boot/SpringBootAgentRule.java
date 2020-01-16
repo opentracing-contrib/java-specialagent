@@ -18,9 +18,9 @@ package io.opentracing.contrib.specialagent.rule.spring.boot;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.DeferredAttach;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -33,39 +33,32 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringBootDeferredAttach implements DeferredAttach {
-  public static final Logger logger = Logger.getLogger(SpringBootDeferredAttach.class);
+public class SpringBootAgentRule extends AgentRule {
+  public static final Logger logger = Logger.getLogger(SpringBootAgentRule.class);
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
     try {
       Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
+      return true;
     }
     catch (final ClassNotFoundException e) {
       return false;
     }
+  }
 
+  @Override
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<< Installing SpringBootDeferredAttach >>>>>>>>>>>>>\n");
-
-    new AgentBuilder.Default()
-      .ignore(none())
-      .disableClassFormatChanges()
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
+    
+    return Arrays.asList(builder
       .type(hasSuperType(named("org.springframework.boot.StartupInfoLogger")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringBootDeferredAttach.class).on(isConstructor()));
-        }})
-      .installOn(inst);
-
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>> Installed SpringBootDeferredAttach <<<<<<<<<<<<<<\n");
-
-    return true;
+          return builder.visit(Advice.to(SpringBootAgentRule.class).on(isConstructor()));
+        }}));
   }
 
   @Advice.OnMethodExit

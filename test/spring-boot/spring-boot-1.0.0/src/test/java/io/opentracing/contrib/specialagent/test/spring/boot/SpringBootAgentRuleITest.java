@@ -13,32 +13,29 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.spring.boot;
+package io.opentracing.contrib.specialagent.test.spring.boot;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
-import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Level;
-
 @EnableAsync
 @SpringBootApplication
-@RunWith(AgentRunner.class)
-@AgentRunner.Config(defer = true, log = Level.FINE)
-public class SpringBootDeferredAttachTest {
-  @Test
-  public void test() {
-    assertFalse(AgentRule.isEnabled(null));
-    SpringApplication.run(SpringBootDeferredAttachTest.class);
-    assertTrue(AgentRule.isEnabled(null));
+public class SpringBootAgentRuleITest {
+  static {
+    // Avoid: https://github.com/spring-projects/spring-boot/issues/3100
+    System.setProperty("spring.devtools.restart.enabled", "false");
+  }
+
+  public static void main(final String[] args) {
+    assertNull("If this is 'false', it means SpecialAgent set this to 'false', because no deferrers were found", System.getProperty("sa.init.defer"));
+    SpringApplication.run(SpringBootAgentRuleITest.class);
+    assertNull(System.getProperty("sa.init.defer"));
+    System.exit(0);
   }
 
   @Bean

@@ -32,7 +32,7 @@ import io.opentracing.contrib.specialagent.Level;
 
 @RunWith(AgentRunner.class)
 @Config(defer = true, isolateClassLoader = false, log = Level.FINE)
-public class SpringWebMvcDeferredAttachTest {
+public class SpringWebMvcAgentRuleTest {
   public static Server startServer() throws Exception {
     final Server server = new Server(0);
 

@@ -69,6 +69,7 @@
     <module>rxjava</module>
     <module>servlet-jetty</module>
     <module>servlet-tomcat</module>
+    <module>spring-boot</module>
     <module>spring-jms</module>
     <module>spring-kafka</module>
     <module>spring-messaging</module>

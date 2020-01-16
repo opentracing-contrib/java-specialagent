@@ -90,12 +90,11 @@ public abstract class Manager {
    *          {@code allRulesClassLoader} classpath.
    * @param pluginManifestDirectory Map between a JAR file and the associated
    *          {@link PluginManifest}.
-   * @return A {@link List} of {@link DeferredAttach} instances that have been
-   *         activated to execute {@link #loadRules(Map,Event[])} via the
-   *         {@code init} parameter in a deferred fashion.
+   * @return A {@link LinkedHashMap} of {@link AgentRule}-to-index entries with
+   *         deferrers to be loaded in {@link #loadRules(Map,Event[])}.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract List<DeferredAttach> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
+  abstract LinkedHashMap<AgentRule,Integer> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in

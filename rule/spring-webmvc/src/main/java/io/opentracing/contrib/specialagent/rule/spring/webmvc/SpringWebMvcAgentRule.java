@@ -18,23 +18,20 @@ package io.opentracing.contrib.specialagent.rule.spring.webmvc;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
+import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.DeferredAttach;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringWebMvcDeferredAttach implements DeferredAttach {
-  public static final Logger logger = Logger.getLogger(SpringWebMvcDeferredAttach.class);
+public class SpringWebMvcAgentRule extends AgentRule {
+  public static final Logger logger = Logger.getLogger(SpringWebMvcAgentRule.class);
   public static boolean initialized;
 
   @Override
@@ -52,31 +49,26 @@ public class SpringWebMvcDeferredAttach implements DeferredAttach {
       return false;
     }
 
+    return true;
+  }
+
+  @Override
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<< Installing SpringWebMvcDeferredAttach >>>>>>>>>>>>\n");
 
-    new AgentBuilder.Default()
-      .ignore(none())
-      .disableClassFormatChanges()
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
+    return Arrays.asList(builder
       .type(hasSuperType(named("org.springframework.context.event.ContextRefreshedEvent")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringWebMvcDeferredAttach.class).on(isConstructor()));
-        }})
-      .installOn(inst);
-
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>> Installed SpringWebMvcDeferredAttach <<<<<<<<<<<<<\n");
-
-    return true;
+          return builder.visit(Advice.to(SpringWebMvcAgentRule.class).on(isConstructor()));
+        }}));
   }
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.This Object thiz) throws ReflectiveOperationException {
+    System.out.println("hi");
     if (initialized)
       return;
 

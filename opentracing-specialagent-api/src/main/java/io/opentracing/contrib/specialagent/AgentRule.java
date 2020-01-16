@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.lang.instrument.Instrumentation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,6 +81,19 @@ public abstract class AgentRule {
     final String pluginVerboseProperty = System.getProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
     final boolean pluginVerbose = pluginVerboseProperty != null && !"false".equals(pluginVerboseProperty);
     return pluginsVerbose || pluginVerbose;
+  }
+
+  /**
+   * @param inst The {@code Instrumentation}.
+   * @return If this method returns {@code true} for any enabled
+   *         {@link AgentRule}s, the SpecialAgent will delegate the invocation
+   *         of the {@code init} {@link Runnable} to the first {@link AgentRule}
+   *         that triggers the deferred initialization. If this method returns
+   *         {@code false} for all {@link AgentRule}s, the SpecialAgent will
+   *         invoke {@code init} immediately.
+   */
+  public boolean isDeferrable(final Instrumentation inst) {
+    return false;
   }
 
   public abstract Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception;

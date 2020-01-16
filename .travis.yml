@@ -447,6 +447,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: mvn -B -P test -pl test/rxjava -amd install
+  - name: "Spring Boot [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -P test -pl test/spring-boot -amd install
+  - name: "Spring Boot [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: mvn -B -P test -pl test/spring-boot -amd install
   - name: "Spring JMS [openjdk8]"
     stage: test
     jdk: openjdk8
