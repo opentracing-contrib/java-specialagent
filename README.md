@@ -506,7 +506,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.6.0 | 1.23.0 |
 | [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.4 |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
-| [Java JDBC API \[`java.sql`\]][java-jdbc] | [`jdbc`][jdbc] | 3.1 | 4.3 |
+| [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
 | [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1 | 1.1 |
 | | [`jms:2`][jms-2] | 2.0 | 2.0a |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | [`servlet`][servlet] | 2.3 | 3.1 |

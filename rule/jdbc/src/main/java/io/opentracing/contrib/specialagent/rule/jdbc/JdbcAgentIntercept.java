@@ -20,7 +20,6 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentracing.contrib.jdbc.TracingDriver;
@@ -28,6 +27,9 @@ import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 
 public class JdbcAgentIntercept {
+  public static final String IGNORE_FOR_TRACING = "sa.instrumentation.plugin.jdbc.ignoreForTracing";
+  public static final String IGNORE_FOR_TRACING_SEPARATOR = "sa.instrumentation.plugin.jdbc.ignoreForTracing.separator";
+  public static final String WITH_ACTIVE_SPAN_ONLY = "sa.instrumentation.plugin.jdbc.withActiveSpanOnly";
   public static final AtomicReference<Driver> tracingDriver = new AtomicReference<>();
 
   public static void isDriverAllowed(final Class<?> caller) {
@@ -55,19 +57,19 @@ public class JdbcAgentIntercept {
   private static void initTracingDriver() {
     TracingDriver.setInterceptorMode(true);
 
-    final String withActiveSpanOnly = System.getProperty("sa.instrumentation.plugin.jdbc.withActiveSpanOnly");
-    TracingDriver.setInterceptorProperty("true".equals(withActiveSpanOnly));
+    final String withActiveSpanOnly = System.getProperty(WITH_ACTIVE_SPAN_ONLY);
+    TracingDriver.setInterceptorProperty(!"false".equals(withActiveSpanOnly));
 
     // multi-statement separated by the separator specified by a system property
-    // "@@"  is default separator if the system property not present
-    final String separator = System.getProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing.separator", "@@");
-    final String ignoreForTracing = System.getProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing");
+    // "@@" is default separator if the system property not present
+    final String separator = System.getProperty(IGNORE_FOR_TRACING_SEPARATOR, "@@");
+    final String ignoreForTracing = System.getProperty(IGNORE_FOR_TRACING);
     if (ignoreForTracing != null) {
-      String[] spliteds = ignoreForTracing.split(separator);
-      final Set<String> ignoreStatements = new HashSet<String>();
-      for(String splited : spliteds) {
-    	ignoreStatements.add(splited.trim());
-      }
+      final String[] parts = ignoreForTracing.split(separator);
+      final HashSet<String> ignoreStatements = new HashSet<>();
+      for (final String part : parts)
+        ignoreStatements.add(part.trim());
+
       TracingDriver.setInterceptorProperty(ignoreStatements);
     }
   }

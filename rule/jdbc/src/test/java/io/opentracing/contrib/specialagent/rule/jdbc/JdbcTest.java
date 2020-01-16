@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.jdbc;
 
 import static org.junit.Assert.*;
 
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -36,12 +35,12 @@ import io.opentracing.mock.MockTracer;
 public class JdbcTest {
   @Test
   public void test(final MockTracer tracer) throws Exception {
-	// for withActiveSpanOnly and ignoreForTracing support
-	System.setProperty("sa.instrumentation.plugin.jdbc.withActiveSpanOnly", Boolean.TRUE.toString());
-	System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing.separator", "@@@");
-	System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing", "select 1 from dual @@@ select 2 from dual");
+    // for withActiveSpanOnly and ignoreForTracing support
+    System.setProperty(JdbcAgentIntercept.WITH_ACTIVE_SPAN_ONLY, "");
+    System.setProperty(JdbcAgentIntercept.IGNORE_FOR_TRACING_SEPARATOR, "@@@");
+    System.setProperty(JdbcAgentIntercept.IGNORE_FOR_TRACING, "SELECT 1 FROM dual @@@ SELECT 2 FROM dual");
 
-	DriverManager.setLogWriter(new PrintWriter(System.err));
+    // DriverManager.setLogWriter(new PrintWriter(System.err));
     Driver.load();
     try (
       final Scope ignored = tracer.buildSpan("jdbc-test").startActive(true);
@@ -63,12 +62,12 @@ public class JdbcTest {
       final Statement statement = connection.createStatement();
 
       // should be ignored as ignoreForTracing specified, spans no change
-      statement.executeQuery("select 1 from dual");
-      statement.executeQuery("select 2 from dual");
+      statement.executeQuery("SELECT 1 FROM dual");
+      statement.executeQuery("SELECT 2 FROM dual");
       assertEquals(3, tracer.finishedSpans().size());
 
       // not an ignored sql, spans increased
-      statement.executeQuery("select 3 from dual");
+      statement.executeQuery("SELECT 3 FROM dual");
       assertEquals(4, tracer.finishedSpans().size());
 
       // parent span closed
@@ -76,8 +75,8 @@ public class JdbcTest {
       assertEquals(5, tracer.finishedSpans().size());
 
       // no more span created if no active span
-      statement.executeQuery("select 3 from dual");
-      statement.executeQuery("select 4 from dual");
+      statement.executeQuery("SELECT 3 FROM dual");
+      statement.executeQuery("SELECT 4 FROM dual");
       assertEquals(5, tracer.finishedSpans().size());
     }
   }
