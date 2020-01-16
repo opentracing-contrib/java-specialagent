@@ -83,7 +83,7 @@
         <module>spring-websocket</module>
         <module>spring-jms</module>
         <module>spring-messaging</module>
-        <module>grizzly-ahc</module>
+        <module>grizzly-http-client</module>
         <module>grizzly-http-server</module>
         <module>reactor</module>
         <module>jaxrs</module>

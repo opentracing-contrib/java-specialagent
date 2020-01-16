@@ -15,6 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.client;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import org.apache.pulsar.client.api.Consumer;
+import org.apache.pulsar.client.api.Message;
+import org.apache.pulsar.client.api.MessageId;
+import org.apache.pulsar.client.api.Producer;
+import org.apache.pulsar.client.impl.MessageImpl;
+
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -25,14 +35,6 @@ import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import org.apache.pulsar.client.api.Consumer;
-import org.apache.pulsar.client.api.Message;
-import org.apache.pulsar.client.api.MessageId;
-import org.apache.pulsar.client.api.Producer;
-import org.apache.pulsar.client.impl.MessageImpl;
 
 public class PulsarClientAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -48,56 +50,57 @@ public class PulsarClientAgentIntercept {
     final Tracer tracer = GlobalTracer.get();
     final SpanContext parentContext = tracer.extract(Builtin.TEXT_MAP, new TextMapAdapter(message.getProperties()));
 
-    final SpanBuilder spanBuilder = tracer.buildSpan("receive")
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
-        .withTag("topic", consumer.getTopic())
-        .withTag("subscription", consumer.getSubscription())
-        .withTag(Tags.PEER_SERVICE, "pulsar");
+    final SpanBuilder spanBuilder = tracer
+      .buildSpan("receive")
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
+      .withTag("topic", consumer.getTopic())
+      .withTag("subscription", consumer.getSubscription())
+      .withTag(Tags.PEER_SERVICE, "pulsar");
 
-    if(parentContext != null) {
+    if (parentContext != null)
       spanBuilder.addReference(References.FOLLOWS_FROM, parentContext);
-    }
 
     spanBuilder.start().finish();
   }
 
-  public static void receiveEnd(Object thiz, Object returned) {
-    Message<?> message = (Message<?>) returned;
-    Consumer<?> consumer = (Consumer<?>) thiz;
+  public static void receiveEnd(final Object thiz, final Object returned) {
+    final Message<?> message = (Message<?>)returned;
+    final Consumer<?> consumer = (Consumer<?>)thiz;
     buildConsumerSpan(consumer, message);
   }
 
   @SuppressWarnings("unchecked")
-  public static void receiveAsyncEnd(Object thiz, Object returned) {
-    final Consumer<?> consumer = (Consumer<?>) thiz;
-    CompletableFuture<Message<?>> completableFuture = (CompletableFuture<Message<?>>) returned;
+  public static void receiveAsyncEnd(final Object thiz, final Object returned) {
+    final Consumer<?> consumer = (Consumer<?>)thiz;
+    CompletableFuture<Message<?>> completableFuture = (CompletableFuture<Message<?>>)returned;
     completableFuture.thenAccept(message -> buildConsumerSpan(consumer, message));
   }
 
-  public static Object internalSendAsyncEnter(Object thiz, Object arg) {
+  public static Object internalSendAsyncEnter(final Object thiz, final Object arg) {
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
       return arg;
     }
 
-    MessageImpl<?> message = (MessageImpl<?>) arg;
-    Producer<?> producer = (Producer<?>) thiz;
+    final MessageImpl<?> message = (MessageImpl<?>)arg;
+    final Producer<?> producer = (Producer<?>)thiz;
 
     final Tracer tracer = GlobalTracer.get();
 
-    final Span span = tracer.buildSpan("send")
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER)
-        .withTag(Tags.MESSAGE_BUS_DESTINATION, producer.getTopic())
-        .withTag(Tags.PEER_SERVICE, "pulsar")
-        .start();
+    final Span span = tracer
+      .buildSpan("send")
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER)
+      .withTag(Tags.MESSAGE_BUS_DESTINATION, producer.getTopic())
+      .withTag(Tags.PEER_SERVICE, "pulsar")
+      .start();
 
     message.getProperties();
 
     tracer.inject(span.context(), Builtin.TEXT_MAP, new PropertiesMapInjectAdapter(message.getMessageBuilder()));
 
-    final Scope scope = GlobalTracer.get().activateSpan(span);
+    final Scope scope = tracer.activateSpan(span);
 
     final Context context = new Context();
     contextHolder.set(context);
@@ -126,18 +129,17 @@ public class PulsarClientAgentIntercept {
       return returned;
     }
 
-    return ((CompletableFuture<MessageId>) returned)
-        .thenApply(messageId -> {
-          span.finish();
-          return messageId;
-        }).exceptionally(throwable -> {
-          onError(throwable, span);
-          span.finish();
-          return null;
-        });
+    return ((CompletableFuture<MessageId>)returned).thenApply(messageId -> {
+      span.finish();
+      return messageId;
+    }).exceptionally(throwable -> {
+      onError(throwable, span);
+      span.finish();
+      return null;
+    });
   }
 
-  static void onError(final Throwable t, final Span span) {
+  private static void onError(final Throwable t, final Span span) {
     Tags.ERROR.set(span, Boolean.TRUE);
     if (t != null)
       span.log(errorLogs(t));

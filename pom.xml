@@ -300,11 +300,6 @@
     </profile>
     <profile>
       <id>test</id>
-      <activation>
-        <property>
-          <name>test</name>
-        </property>
-      </activation>
       <modules>
         <module>test</module>
       </modules>
