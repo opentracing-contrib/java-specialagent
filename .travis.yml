@@ -57,6 +57,16 @@ jobs:
         eval "$SIGNING_KEY" &> /dev/null &&
         mvn -B -Dassemble -P deploy deploy;
       fi'
+  - name: "Akka Actor [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -P test -pl test/akka-actor -amd install
+  - name: "Akka Actor [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: mvn -B -P test -pl test/akka-actor -amd install
   - name: "Akka Http [openjdk8]"
     stage: test
     jdk: openjdk8
@@ -117,6 +127,16 @@ jobs:
 #    jdk: openjdk11
 #    install: true
 #    script: mvn -B -P test -pl test/cassandra-driver -amd install
+  - name: "Couchbase Client [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -P test -pl test/couchbase-client -amd install
+  - name: "Couchbase Client [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: mvn -B -P test -pl test/couchbase-client -amd install
   - name: "Elasticsearch Client [openjdk8]"
     stage: test
     jdk: openjdk8
@@ -377,6 +397,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: mvn -B -P test -pl test/play-ws -amd install
+  - name: "Pulsar Client [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: mvn -B -P test -pl pulsar-client -amd install
+#  - name: "Pulsar Client [openjdk11]" # This is commented out, because Pulsar does not run ok jdk11
+#    stage: test
+#    jdk: openjdk11
+#    install: true
+#    script: mvn -B -P test -pl pulsar-client -amd install
   - name: "RabbitMQ Client [openjdk8]"
     stage: test
     jdk: openjdk8

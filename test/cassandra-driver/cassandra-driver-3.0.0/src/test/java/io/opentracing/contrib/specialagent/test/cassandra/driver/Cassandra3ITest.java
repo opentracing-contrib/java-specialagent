@@ -29,7 +29,7 @@ public class Cassandra3ITest {
   public static void main(final String[] args) throws Exception {
     if (!System.getProperty("java.version").startsWith("1.8.")) {
       System.err.println("Cassandra only works with jdk1.8.");
-      System.exit(0);
+      return;
     }
 
     System.getProperties().setProperty("java.library.path", new File("src/test/resources/libs").getAbsolutePath());

@@ -43,8 +43,8 @@ public class CassandraTest {
 
   @Before
   public void before(final MockTracer tracer) throws Exception {
-    tracer.reset();
     if (isJdkSupported) {
+      tracer.reset();
       EmbeddedCassandraServerHelper.startEmbeddedCassandra();
       //EmbeddedCassandraServerHelper.getSession();
     }
@@ -65,7 +65,7 @@ public class CassandraTest {
   @Test
   public void test(final MockTracer tracer) {
     if (!isJdkSupported) {
-      logger.warning("jdk" + System.getProperty("java.version") + " is not supported by Cassandra.");
+      logger.warning("jdk" + System.getProperty("java.version") + " is not supported by Cassandra");
       return;
     }
 

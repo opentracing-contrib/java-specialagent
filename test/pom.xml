@@ -32,12 +32,14 @@
     <sa.log.level>FINER</sa.log.level>
   </properties>
   <modules>
+    <module>akka-actor</module>
     <module>akka-http</module>
     <module>apache-httpclient</module>
     <module>asynchttpclient</module>
     <module>aws-sdk</module>
     <module>cassandra-driver</module>
     <module>concurrent</module>
+    <module>couchbase-client</module>
     <module>elasticsearch-client</module>
     <module>feign</module>
     <module>google-http-client</module>
@@ -60,6 +62,7 @@
     <module>okhttp</module>
     <module>play-ws</module>
     <module>play</module>
+    <module>pulsar-client</module>
     <module>rabbitmq-client</module>
     <module>reactor</module>
     <module>redisson</module>
