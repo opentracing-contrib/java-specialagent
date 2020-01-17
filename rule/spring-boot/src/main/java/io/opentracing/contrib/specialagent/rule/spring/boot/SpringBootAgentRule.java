@@ -24,10 +24,7 @@ import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
@@ -40,6 +37,9 @@ public class SpringBootAgentRule extends AgentRule {
   public boolean isDeferrable(final Instrumentation inst) {
     try {
       Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("\n<<<<<<<<<<<<<<<< Installing SpringBootAgentRule >>>>>>>>>>>>>>>>\n");
+
       return true;
     }
     catch (final ClassNotFoundException e) {
@@ -49,9 +49,6 @@ public class SpringBootAgentRule extends AgentRule {
 
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<< Installing SpringBootDeferredAttach >>>>>>>>>>>>>\n");
-    
     return Arrays.asList(builder
       .type(hasSuperType(named("org.springframework.boot.StartupInfoLogger")))
       .transform(new Transformer() {
@@ -64,10 +61,10 @@ public class SpringBootAgentRule extends AgentRule {
   @Advice.OnMethodExit
   public static void exit() {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>> Invoking SpringBootDeferredAttach <<<<<<<<<<<<<<\n");
+      logger.fine("\n>>>>>>>>>>>>>>>> Invoking SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
 
     AgentRule.initialize();
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>> Invoked SpringBootDeferredAttach <<<<<<<<<<<<<<\n");
+      logger.fine("\n>>>>>>>>>>>>>>>>> Invoked SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
   }
 }
