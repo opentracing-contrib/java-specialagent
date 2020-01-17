@@ -37,7 +37,7 @@ public class SpringWebMvcAgentRule extends AgentRule {
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
     try {
-      Class.forName("org.springframework.context.event.ContextRefreshedEvent", false, ClassLoader.getSystemClassLoader());
+      Class.forName("org.springframework.web.servlet.HandlerInterceptor", false, ClassLoader.getSystemClassLoader());
       try {
         Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
         return false;
@@ -49,14 +49,14 @@ public class SpringWebMvcAgentRule extends AgentRule {
       return false;
     }
 
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<< Installing SpringWebMvcAgentRule >>>>>>>>>>>>>>>\n");
+
     return true;
   }
 
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<< Installing SpringWebMvcDeferredAttach >>>>>>>>>>>>\n");
-
     return Arrays.asList(builder
       .type(hasSuperType(named("org.springframework.context.event.ContextRefreshedEvent")))
       .transform(new Transformer() {
@@ -68,7 +68,6 @@ public class SpringWebMvcAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.This Object thiz) throws ReflectiveOperationException {
-    System.out.println("hi");
     if (initialized)
       return;
 
@@ -77,11 +76,11 @@ public class SpringWebMvcAgentRule extends AgentRule {
     if (parent == null) {
       initialized = true;
       if (logger.isLoggable(Level.FINE))
-        logger.fine("\n<<<<<<<<<<<<< Invoking SpringWebMvcDeferredAttach >>>>>>>>>>>>>\n");
+        logger.fine("\n<<<<<<<<<<<<<<< Invoking SpringWebMvcAgentRule >>>>>>>>>>>>>>>>\n");
 
       AgentRule.initialize();
       if (logger.isLoggable(Level.FINE))
-        logger.fine("\n<<<<<<<<<<<<< Invoked SpringWebMvcDeferredAttach >>>>>>>>>>>>>>\n");
+        logger.fine("\n<<<<<<<<<<<<<<<< Invoked SpringWebMvcAgentRule >>>>>>>>>>>>>>>>\n");
     }
   }
 }
