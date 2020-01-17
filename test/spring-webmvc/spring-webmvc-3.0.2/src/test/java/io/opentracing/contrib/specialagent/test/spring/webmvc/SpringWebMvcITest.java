@@ -30,10 +30,10 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class SpringWebMvcITest {
   public static void main(final String[] args) throws Exception {
-
     final Server server = startServer();
 
     TestUtil.resetTracer();
+
     final URL obj = new URL("http://localhost:8080");
     final HttpURLConnection con = (HttpURLConnection)obj.openConnection();
     con.setRequestMethod("GET");
