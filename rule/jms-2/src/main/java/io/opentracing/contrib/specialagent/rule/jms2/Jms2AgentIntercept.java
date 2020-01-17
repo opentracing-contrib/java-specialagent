@@ -24,10 +24,10 @@ import io.opentracing.util.GlobalTracer;
 
 public class Jms2AgentIntercept {
   public static Object createProducer(final Object thiz) {
-    return thiz instanceof TracingMessageProducer ? thiz : new TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
+    return new TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
   }
 
   public static Object createConsumer(final Object thiz) {
-    return thiz instanceof TracingMessageConsumer ? thiz : new TracingMessageConsumer((MessageConsumer)thiz, GlobalTracer.get(), true);
+    return new TracingMessageConsumer((MessageConsumer)thiz, GlobalTracer.get(), true);
   }
 }

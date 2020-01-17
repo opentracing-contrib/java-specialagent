@@ -13,15 +13,11 @@
  */
 package io.opentracing.mock;
 
-import io.opentracing.propagation.BinaryExtract;
-import io.opentracing.propagation.BinaryInject;
-import io.opentracing.propagation.TextMapExtract;
-import io.opentracing.propagation.TextMapInject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,10 +30,11 @@ import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.noop.NoopScopeManager;
-import io.opentracing.propagation.Binary;
+import io.opentracing.propagation.BinaryExtract;
+import io.opentracing.propagation.BinaryInject;
 import io.opentracing.propagation.Format;
-import io.opentracing.propagation.TextMap;
+import io.opentracing.propagation.TextMapExtract;
+import io.opentracing.propagation.TextMapInject;
 import io.opentracing.tag.Tag;
 import io.opentracing.util.ThreadLocalScopeManager;
 

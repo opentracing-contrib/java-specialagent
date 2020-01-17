@@ -40,7 +40,7 @@ public class FeignAgentIntercept {
     private Span span;
   }
 
-  public static Object onRequest(Object arg1, Object arg2) {
+  public static Object onRequest(final Object arg1, final Object arg2) {
     Request request = (Request)arg1;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer
@@ -61,13 +61,13 @@ public class FeignAgentIntercept {
     return request;
   }
 
-  private static Request inject(SpanContext spanContext, Request request) {
+  private static Request inject(final SpanContext spanContext, final Request request) {
     final Map<String,Collection<String>> headersWithTracingContext = new HashMap<>(request.headers());
     GlobalTracer.get().inject(spanContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(headersWithTracingContext));
     return Request.create(request.method(), request.url(), headersWithTracingContext, request.body(), request.charset());
   }
 
-  public static void onResponse(final Object arg1, final Object arg2, final Object arg3, Exception e) {
+  public static void onResponse(final Object arg1, final Object arg2, final Object arg3, final Exception e) {
     final Response response = (Response)arg1;
     final Request request = (Request)arg2;
     final Options options = (Options)arg3;

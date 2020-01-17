@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.contrib.specialagent.rule.spring.web40.copied.TracingAsyncRequestCallback;
 import io.opentracing.contrib.specialagent.rule.spring.web40.copied.TracingListenableFuture;
 import io.opentracing.contrib.specialagent.rule.spring.web40.copied.TracingListenableFutureCallback;
@@ -71,11 +72,10 @@ public class SpringWebAgentIntercept {
     context.scope = scope;
     context.span = span;
 
-    return new TracingAsyncRequestCallback(requestCallback, span.context());
+    return DynamicProxy.wrap(requestCallback, new TracingAsyncRequestCallback(requestCallback, span.context()));
   }
 
-  public static Object asyncEnd(Object response, final Throwable thrown) {
-    final ListenableFuture<?> listenableFuture = (ListenableFuture<?>)response;
+  public static Object asyncEnd(final Object response, final Throwable thrown) {
     final Context context = contextHolder.get();
     if (context == null)
       return response;
@@ -88,6 +88,7 @@ public class SpringWebAgentIntercept {
       return response;
     }
 
+    final ListenableFuture<?> listenableFuture = (ListenableFuture<?>)response;
     try {
       listenableFuture.addCallback(new TracingListenableFutureCallback(null, context.span, true));
     }
@@ -95,6 +96,6 @@ public class SpringWebAgentIntercept {
     }
 
     contextHolder.remove();
-    return new TracingListenableFuture(listenableFuture, context.span);
+    return DynamicProxy.wrap(listenableFuture, new TracingListenableFuture(listenableFuture, context.span));
   }
 }

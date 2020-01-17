@@ -21,10 +21,11 @@ import java.util.Set;
 import com.hazelcast.core.HazelcastInstance;
 
 import io.opentracing.contrib.hazelcast.TracingHazelcastInstance;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 
 public class HazelcastAgentIntercept {
   public static Object getOneInstance(final Object returned) {
-    return returned == null ? null : new TracingHazelcastInstance((HazelcastInstance)returned, false);
+    return returned == null ? null : DynamicProxy.wrap(returned, new TracingHazelcastInstance((HazelcastInstance)returned, false));
   }
 
   @SuppressWarnings("unchecked")

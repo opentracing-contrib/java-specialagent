@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.servlet.tomcat;
 
-import io.opentracing.contrib.specialagent.TestUtil;
-
 public class TomcatSyncITest extends TomcatTest {
   public static void main(final String[] args) throws Exception {
     run(new SyncServlet(), false);

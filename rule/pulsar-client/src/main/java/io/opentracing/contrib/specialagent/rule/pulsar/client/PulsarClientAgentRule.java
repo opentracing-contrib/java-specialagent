@@ -66,9 +66,9 @@ public class PulsarClientAgentRule extends AgentRule {
 
   public static class Producer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object message) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
       if (isEnabled(origin))
-        message = PulsarClientAgentIntercept.internalSendAsyncEnter(thiz, message);
+        PulsarClientAgentIntercept.internalSendAsyncEnter(thiz, message);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)

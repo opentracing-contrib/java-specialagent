@@ -18,10 +18,11 @@ package io.opentracing.contrib.specialagent.rule.neo4j.driver;
 import org.neo4j.driver.Driver;
 
 import io.opentracing.contrib.neo4j.TracingDriver;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.util.GlobalTracer;
 
 public class Neo4jDriverAgentIntercept {
   public static Object exit(final Object returned) {
-    return new TracingDriver((Driver)returned, GlobalTracer.get());
+    return DynamicProxy.wrap(returned, new TracingDriver((Driver)returned, GlobalTracer.get()));
   }
 }

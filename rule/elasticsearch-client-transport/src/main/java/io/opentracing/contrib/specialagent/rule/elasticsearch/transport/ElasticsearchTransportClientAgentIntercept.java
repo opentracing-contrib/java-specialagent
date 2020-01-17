@@ -20,18 +20,19 @@ import org.elasticsearch.action.ActionListener;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class ElasticsearchTransportClientAgentIntercept {
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public static ActionListener<?> transport(final Object request, final Object listener) {
+  public static Object transport(final Object request, final Object listener) {
     final Tracer.SpanBuilder spanBuilder = GlobalTracer.get()
       .buildSpan(request.getClass().getSimpleName())
       .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
     final Span span = spanBuilder.start();
     SpanDecorator.onRequest(span);
-    return new TracingResponseListener<>((ActionListener)listener, span);
+    return DynamicProxy.wrap(listener, new TracingResponseListener<>((ActionListener)listener, span));
   }
 }

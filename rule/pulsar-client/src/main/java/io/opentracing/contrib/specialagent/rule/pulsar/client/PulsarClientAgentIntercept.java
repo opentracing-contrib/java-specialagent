@@ -46,7 +46,7 @@ public class PulsarClientAgentIntercept {
     private int counter = 1;
   }
 
-  private static void buildConsumerSpan(Consumer<?> consumer, Message<?> message) {
+  private static void buildConsumerSpan(final Consumer<?> consumer, final Message<?> message) {
     final Tracer tracer = GlobalTracer.get();
     final SpanContext parentContext = tracer.extract(Builtin.TEXT_MAP, new TextMapAdapter(message.getProperties()));
 
@@ -77,10 +77,10 @@ public class PulsarClientAgentIntercept {
     completableFuture.thenAccept(message -> buildConsumerSpan(consumer, message));
   }
 
-  public static Object internalSendAsyncEnter(final Object thiz, final Object arg) {
+  public static void internalSendAsyncEnter(final Object thiz, final Object arg) {
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
-      return arg;
+      return;
     }
 
     final MessageImpl<?> message = (MessageImpl<?>)arg;
@@ -106,12 +106,10 @@ public class PulsarClientAgentIntercept {
     contextHolder.set(context);
     context.scope = scope;
     context.span = span;
-
-    return arg;
   }
 
   @SuppressWarnings("unchecked")
-  public static Object internalSendAsyncEnd(Object returned, Throwable thrown) {
+  public static Object internalSendAsyncEnd(final Object returned, final Throwable thrown) {
     final Context context = contextHolder.get();
     if (context == null)
       return returned;

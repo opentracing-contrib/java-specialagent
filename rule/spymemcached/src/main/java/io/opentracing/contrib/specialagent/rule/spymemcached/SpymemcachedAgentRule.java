@@ -20,6 +20,7 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -83,7 +84,7 @@ public class SpymemcachedAgentRule extends AgentRule {
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object key, @Advice.Argument(value = 1, typing = Typing.DYNAMIC, readOnly = false) Object callback, @Advice.Argument(value = 2, typing = Typing.DYNAMIC, optional = true, readOnly = false) Object callback2) {
       if (isEnabled(origin)) {
         if (callback2 != null) {
-          callback2 = SpymemcachedAgentIntercept.delete(key, callback2);
+          callback2 = DynamicProxy.wrap(callback2, SpymemcachedAgentIntercept.delete(key, callback2));
         }
         else {
           callback = SpymemcachedAgentIntercept.delete(key, callback);
