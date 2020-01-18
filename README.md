@@ -312,8 +312,10 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) supports OpenTracing-compatible 
     1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)
     1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
     1. [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)
+    1. [OpenTelemetry Bridge Tracer Plugin](https://github.com/opentracing-contrib/java-opentelemetry-bridge)
+    1. [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
-    The `-Dsa.tracer=${TRACER_PLUGIN}` property specifies which [<ins>Tracer Plugin</ins>](#43-tracer-plugin) is to be used. The value of `${TRACER_PLUGIN}` is the [<ins>Short Name</ins>](#21221-short-name) of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), i.e. `jaeger`, `lightstep`, or `wavefront`.
+    The `-Dsa.tracer=${TRACER_PLUGIN}` property specifies which [<ins>Tracer Plugin</ins>](#43-tracer-plugin) is to be used. The value of `${TRACER_PLUGIN}` is the [<ins>Short Name</ins>](#21221-short-name) of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), i.e. `jaeger`, `lightstep`, `wavefront`, or `otel`.
 
 1. **External [<ins>Tracer Plugins</ins>](#43-tracer-plugin)**
 
@@ -396,7 +398,7 @@ sa.tracer.plugin.${SHORT_NAME}.disable
 ```
 <sup>The suffix `.disable` is interchangeable with `.enable=false`.</sup>
 
-The value of `${SHORT_NAME}` is the [<ins>Short Name</ins>](#21221-short-name) of the plugin, such as `lightstep`, `wavefront`, or `jaeger`.
+The value of `${SHORT_NAME}` is the [<ins>Short Name</ins>](#21221-short-name) of the plugin, such as `jaeger`, `lightstep`, `wavefront`, or `otel`.
 
 ### 3.6 Including Custom Instrumentation Plugins
 
@@ -426,7 +428,6 @@ Examples:
 * [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
 * [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
 * [Wavefront Tracer](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java)
-* [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
 <sub>_[<ins>Tracers</ins>](#42-tracer) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -455,7 +456,6 @@ Examples:
 * [`rule/okhttp`][okhttp]
 * [`rule/jdbc`][jdbc]
 * [`rule/jms-1`][jms-1]
-* [`rule/jms-2`][jms-2]
 
 <sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -486,7 +486,7 @@ Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support 
 The  following plugins have [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) implemented.
 Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) is available in the [`opentracing-specialagent-api`][api] module.
 
-| OpenTracing Plugin | SpecialAgent Rule | Min Version | Max Version |
+| OpenTracing Plugin<br/><sup>(link to <ins>plugin</ins> implementation)</sup> | SpecialAgent Rule<br/><sup>(link to <ins>rule</ins> implementation)</sup> | Min Version<br/><sup>(min supported)</sup> | Max Version<br/><sup>(max supported)</sup> |
 |:-|:-|:-:|:-:|
 | [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka-actor] | 2.5.0 | 2.6.1 |
 | Akka Http | [`akka:http`][akka-http] | 10.1.0 | 10.1.10 |
@@ -537,7 +537,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | 2.2.1.RELEASE |
 | [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | 5.2.1.RELEASE |
 | [Spring Boot WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 2.1.0.RELEASE | 2.1.8.RELEASE |
-| [Spring [`@Async`] and `@Scheduled`](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | [`spring:scheduling`][spring-scheduling] | 5.0.0.RELEASE | 5.2.1.RELEASE |
+| [Spring \[`@Async` and `@Scheduled`\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | [`spring:scheduling`][spring-scheduling] | 5.0.0.RELEASE | 5.2.1.RELEASE |
 | [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
 | | [`spring:web:4.0`][spring-web-4.0] | 4.0.0.RELEASE | 4.0.9.RELEASE |
 | | [`spring:web:4.x`][spring-web-4] | 4.1.0.RELEASE | 4.3.25.RELEASE |
@@ -553,9 +553,13 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 
 Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support for the following [<ins>Tracer Plugins</ins>](#43-tracer-plugin). A demo can be referenced [here](https://github.com/opentracing-contrib/java-specialagent-demo).
 
-1. [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) ([Configuration reference](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment))
-1. [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)
-1. [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)
+| OpenTracing Plugin<br/><sup>(link to <ins>plugin</ins> implementation)</sup> | [Short Name](#21221-short-name)<br/><sup>(`-Dsa.tracer=<short_name>`)</sup> |
+|:-|:-|
+| [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)<br/><sup>[(configuration reference)](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment)</sup> | `jaeger`<br/>&nbsp; |
+| [LightStep Tracer Plugin](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)<br/><sup>[(configuration reference)](https://docs.lightstep.com/docs/create-projects-for-your-environments)</sup> | `lightstep`<br/>&nbsp; |
+| [Wavefront Tracer Plugin](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)<br/><sup>[(configuration reference)](https://github.com/wavefrontHQ/wavefront-jersey-sdk-java#quickstart)</sup> | `wavefront`<br/>&nbsp; |
+| [OpenTelemetry Bridge Tracer Plugin](https://github.com/opentracing-contrib/java-opentelemetry-bridge)<br/><sup><ins>(configuration reference)</ins></sup> | `otel`<br/>&nbsp; |
+| [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)| `mock` |
 
 ### 6.3 [<ins>Instrumented libraries by existing rules</ins>](#46-instrumented-libs)
 
@@ -585,8 +589,7 @@ Thank you to the following developers for filing issues and helping us fix them:
 * [Marcos Trejo Munguia](https://github.com/mtrejo)
 * [@kaushikdeb](https://github.com/kaushikdeb)
 * [@deepakgoenka](https://github.com/deepakgoenka)
-* [@etsangsplk](https://github.com/etsangsplk)
-* [@Vovan2006](https://github.com/Vovan2006)
+* [Prometheus](https://github.com/etsangsplk)
 * [Randall Theobald](https://github.com/randallt)
 * [Jianshao Wu](https://github.com/jianshaow)
 
@@ -610,41 +613,45 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 
 [akka-actor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/akka-actor
 [akka-http]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/akka-http
-[camel]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/camel
 [apache-httpclient]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient
 [asynchttpclient]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/asynchttpclient
 [aws-sdk-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-1
 [aws-sdk-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-2
+[camel]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/camel
 [cassandra-driver-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-3
 [cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-4
+[concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent
+[couchbase-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/couchbase-client
 [elasticsearch-7-rest-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-rest-client
 [elasticsearch-7-transport-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-transport-client
 [feign]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/feign
+[google-http-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/google-http-client
 [grizzly-ahc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/grizzly-ahc
 [grizzly-http-server]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/grizzly-http-server
 [grpc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/grpc
 [hazelcast]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/hazelcast
-[concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent
+[httpurlconnection]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/httpurlconnection
+[jaxrs]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jaxrs
 [jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jdbc
+[jedis]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jedis
 [jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-1
 [jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-2
-[servlet]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet
-[jaxrs]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jaxrs
-[jedis]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jedis
 [kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-client
 [lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.0
 [lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
 [lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
 [neo4j-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/neo4j-driver
+[netty]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty
 [okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
-[play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [play-ws]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play-ws
+[play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [pulsar-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/pulsar-client
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
 [reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
 [redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson
 [rxjava-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rxjava-2
+[servlet]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet
 [spring-jms]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-jms
 [spring-kafka]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-kafka
 [spring-messaging]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-messaging
@@ -663,10 +670,6 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [thread]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thread
 [thrift]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thrift
 [zuul]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/zuul
-[httpurlconnection]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/httpurlconnection
-[couchbase-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/couchbase-client
-[google-http-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/google-http-client
-[netty]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty
 
 [agentrunner-config]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api#51-configuring-agentrunner
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api
@@ -674,8 +677,8 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-jms]: https://github.com/opentracing-contrib/java-jms
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [opentracing-contrib]: https://github.com/opentracing-contrib/
-[travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
+[travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
 
 [main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7-SNAPSHOT
