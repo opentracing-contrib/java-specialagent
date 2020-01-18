@@ -21,7 +21,7 @@
   <parent>
     <artifactId>rule</artifactId>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-    <version>1.5.6-SNAPSHOT</version>
+    <version>1.5.6</version>
   </parent>
   <artifactId>spring-websocket</artifactId>
   <name>SpecialAgent Rule for Spring WebSocket STOMP</name>

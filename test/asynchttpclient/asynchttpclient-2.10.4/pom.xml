@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.asynchttpclient</groupId>
     <artifactId>asynchttpclient</artifactId>
-    <version>1.5.6-SNAPSHOT</version>
+    <version>1.5.6</version>
   </parent>
   <artifactId>asynchttpclient-2.10.4</artifactId>
   <name>SpecialAgent Test for AsyncHttpClient 2.10.4</name>
