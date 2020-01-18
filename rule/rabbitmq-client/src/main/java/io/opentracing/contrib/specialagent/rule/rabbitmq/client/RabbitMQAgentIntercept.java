@@ -54,7 +54,7 @@ public class RabbitMQAgentIntercept {
     span.finish();
   }
 
-  public static void exitPublish(Throwable thrown) {
+  public static void exitPublish(final Throwable thrown) {
     finish(thrown);
   }
 
@@ -66,7 +66,7 @@ public class RabbitMQAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     contextHolder.set(new Context(scope, span));
 
-    return DynamicProxy.wrap(properties, inject(properties, span, tracer));
+    return inject(properties, span, tracer);
   }
 
   public static Object enterConsume(final Object callback, final Object queue) {
