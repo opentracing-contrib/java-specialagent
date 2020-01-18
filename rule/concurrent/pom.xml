@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.6</version>
+    <version>1.5.7-SNAPSHOT</version>
   </parent>
   <artifactId>concurrent</artifactId>
   <name>SpecialAgent Rule for Java Concurrent API</name>

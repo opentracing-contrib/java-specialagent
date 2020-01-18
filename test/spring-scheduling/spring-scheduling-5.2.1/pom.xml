@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-scheduling</groupId>
     <artifactId>spring-scheduling</artifactId>
-    <version>1.5.6</version>
+    <version>1.5.7-SNAPSHOT</version>
   </parent>
   <artifactId>spring-scheduling-5.2.1</artifactId>
   <name>SpecialAgent Test for Spring Scheduling 5.2.1</name>

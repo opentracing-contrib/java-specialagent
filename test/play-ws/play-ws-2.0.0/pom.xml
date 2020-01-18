@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.play-ws</groupId>
     <artifactId>play-ws</artifactId>
-    <version>1.5.6</version>
+    <version>1.5.7-SNAPSHOT</version>
   </parent>
   <artifactId>play-ws-2.0.0</artifactId>
   <name>SpecialAgent Test for Play WS 2.0.0</name>

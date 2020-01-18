@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.okhttp</groupId>
     <artifactId>okhttp</artifactId>
-    <version>1.5.6</version>
+    <version>1.5.7-SNAPSHOT</version>
   </parent>
   <artifactId>okhttp-4.2.2</artifactId>
   <name>SpecialAgent Test for OkHttp 4.2.2</name>
