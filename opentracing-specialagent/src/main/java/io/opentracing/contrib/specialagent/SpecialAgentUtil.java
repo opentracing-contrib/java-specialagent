@@ -481,7 +481,7 @@ public final class SpecialAgentUtil {
     if (lastCh == '*')
       pattern = pattern.substring(0, pattern.length() - 1);
 
-    final String regex = AssembleUtil.convertToRegex(pattern).replace(".*", "[^:]*");
+    final String regex = "^" + AssembleUtil.convertToRegex(pattern).replace(".*", "[^:]*");
     boolean hasDigit = false;
     for (int i = regex.length() - 2; i >= 0; --i) {
       if (regex.charAt(i) == ':') {
@@ -493,10 +493,10 @@ public final class SpecialAgentUtil {
     if (lastCh == '?')
       return regex;
 
-    if (hasDigit || regex.length() == 0 || regex.endsWith(":"))
+    if (hasDigit || regex.length() == 1 || regex.endsWith(":"))
       return regex + ".*";
 
-    return regex + ":.*";
+    return "(" + regex + "|" + regex + ":.*)";
   }
 
   private SpecialAgentUtil() {
