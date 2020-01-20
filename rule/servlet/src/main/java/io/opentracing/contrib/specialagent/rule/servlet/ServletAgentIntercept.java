@@ -15,42 +15,50 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import java.io.IOException;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 
-import javax.servlet.FilterChain;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
-  public static final FilterChain noopFilterChain = new FilterChain() {
-    @Override
-    public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
-    }
-  };
+  private static class Context {
+    private Scope scope;
+    private Span span;
+  }
+
+  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
   public static void init(final Object thiz, final Object servletConfig) {
     filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());
   }
 
+  private static ServletContext getServletContext(final HttpServlet servlet) {
+    ServletContext context = servlet.getServletContext();
+    if (context == null)
+      context = filterOrServletToServletContext.get(servlet);
+
+    if (context == null)
+      logger.log(Level.WARNING, "Could not get context for: " + servlet);
+
+    return context;
+  }
+
   public static void service(final Object thiz, final Object req, final Object res) {
     try {
       final HttpServlet servlet = (HttpServlet)thiz;
-      ServletContext context = servlet.getServletContext();
+      ServletContext context = getServletContext(servlet);
       if (context == null)
-        context = filterOrServletToServletContext.get(servlet);
-
-      if (context == null) {
-        logger.log(Level.WARNING, "Could not get context for: " + servlet);
         return;
-      }
 
       final TracingFilter tracingFilter = getFilter(context, true);
 
@@ -65,9 +73,43 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (servletRequestToState.remove((ServletRequest)req) != null)
         return;
 
-      tracingFilter.doFilter((ServletRequest)req, (ServletResponse)res, noopFilterChain);
+      Context spanContext = contextHolder.get();
+      if (spanContext != null) {
+        return;
+      }
+      spanContext = new Context();
+      contextHolder.set(spanContext);
+      final Span span = tracingFilter.buildSpan((HttpServletRequest) req);
+      spanContext.span = span;
+      spanContext.scope = GlobalTracer.get().activateSpan(span);
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
+    }
+    catch (final Exception e) {
+      logger.log(Level.WARNING, e.getMessage(), e);
+    }
+  }
+
+  public static void serviceExit(Object thiz, Object request, Object response, Throwable thrown) {
+    try {
+      final Context spanContext = contextHolder.get();
+      if (spanContext == null)
+        return;
+
+      final ServletContext context = getServletContext((HttpServlet) thiz);
+      final TracingFilter tracingFilter = getFilter(context, true);
+
+      HttpServletRequest httpRequest = (HttpServletRequest) request;
+      HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+      if(thrown != null)
+        tracingFilter.onError(httpRequest, httpResponse, thrown, spanContext.span);
+      else
+        tracingFilter.onResponse(httpRequest, httpResponse, spanContext.span);
+
+      spanContext.scope.close();
+      spanContext.span.finish();
+      contextHolder.remove();
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
