@@ -34,7 +34,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <version>${version.spring.boot}</version>
-      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -46,25 +45,21 @@
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-sleuth</artifactId>
       <version>${version.spring.boot}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jetty</artifactId>
       <version>${version.spring.boot}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web-services</artifactId>
       <version>${version.spring.boot}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webflux</artifactId>
       <version>${version.spring.boot}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -81,43 +76,36 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${version.spring.boot}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
       <version>${version.reactor}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.brave</groupId>
       <artifactId>brave-opentracing</artifactId>
       <version>0.25.0</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.zipkin.reporter</groupId>
       <artifactId>zipkin-reporter</artifactId>
       <version>1.1.2</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.zipkin.brave</groupId>
       <artifactId>brave</artifactId>
       <version>4.19.3</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.xml.soap</groupId>
       <artifactId>javax.xml.soap-api</artifactId>
       <version>1.3.8</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.messaging.saaj</groupId>
       <artifactId>saaj-impl</artifactId>
       <version>1.5.0</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
@@ -126,6 +114,36 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${version.spring.boot}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <executable>java</executable>
+              <arguments>
+                <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
+                <argument>-Dsa.log.level=FINER</argument>
+                <argument>-Dsa.tracer=mock</argument>
+                <argument>-jar</argument>
+                <argument>target/${project.artifactId}-${project.version}.jar</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

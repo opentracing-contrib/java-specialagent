@@ -32,19 +32,23 @@ import net.bytebuddy.utility.JavaModule;
 
 public class SpringBootAgentRule extends AgentRule {
   public static final Logger logger = Logger.getLogger(SpringBootAgentRule.class);
+  private static final String[] testClasses = {"org.springframework.boot.loader.Launcher", "org.springframework.boot.SpringApplication"};
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
-    try {
-      Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("\n<<<<<<<<<<<<<<<< Installing SpringBootAgentRule >>>>>>>>>>>>>>>>\n");
+    for (int i = 0; i < testClasses.length; ++i) {
+      try {
+        Class.forName(testClasses[i], false, ClassLoader.getSystemClassLoader());
+        if (logger.isLoggable(Level.FINE))
+          logger.fine("\n<<<<<<<<<<<<<<<< Installing SpringBootAgentRule >>>>>>>>>>>>>>>>\n");
 
-      return true;
+        return true;
+      }
+      catch (final ClassNotFoundException e) {
+      }
     }
-    catch (final ClassNotFoundException e) {
-      return false;
-    }
+
+    return false;
   }
 
   @Override
