@@ -102,16 +102,16 @@ public class SpecialAgentUtilTest {
       "spring:webmvc", "spring:boot");
     testRegexMatch("spring:*:*", "^spring:[^:]*:.*",
       "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
-    testRegexMatch("spring:boot", "(^spring:boot|^spring:boot:.*)",
+    testRegexMatch("spring:boot", "(^spring:boot$|^spring:boot:.*)",
       "spring:boot");
-    testRegexMatch("spring:webmvc", "(^spring:webmvc|^spring:webmvc:.*)",
+    testRegexMatch("spring:webmvc", "(^spring:webmvc$|^spring:webmvc:.*)",
       "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
 
     testRegexMatch("lettuce:5.?", "^lettuce:5\\..",
       "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
     testRegexMatch("lettuce:5", "^lettuce:5.*",
       "lettuce:5", "lettuce:5.1", "lettuce:5.2");
-    testRegexMatch("lettuce", "(^lettuce|^lettuce:.*)",
+    testRegexMatch("lettuce", "(^lettuce$|^lettuce:.*)",
       "lettuce:5", "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
   }
 }

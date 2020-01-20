@@ -496,7 +496,7 @@ public final class SpecialAgentUtil {
     if (hasDigit || regex.length() == 1 || regex.endsWith(":"))
       return regex + ".*";
 
-    return "(" + regex + "|" + regex + ":.*)";
+    return "(" + regex + "$|" + regex + ":.*)";
   }
 
   private SpecialAgentUtil() {
