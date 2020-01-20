@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.5.6 (2020-01-17)
+* Improve test module structure (#348)
+* Use DynamicProxy for all objects instrumented via inheritance pattern (#359)
+* Update `CouchbaseClientTest` to resemble `CouchbaseClientITest` (#352)
+* Static deferred attach is unavailable (#356)
+* Upgrade JDBC Plugin to v0.2.7
+
 ## v1.5.5 (2020-01-10)
 * Implement AgentRule(s) for Neo4J Driver (#321)
 * Implement AgentRule(s) for Netty (#318)

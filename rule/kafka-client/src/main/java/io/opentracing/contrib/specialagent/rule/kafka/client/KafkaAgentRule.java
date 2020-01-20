@@ -56,7 +56,7 @@ public class KafkaAgentRule extends AgentRule {
 
   public static class Producer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
       if (isEnabled(origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }

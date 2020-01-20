@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.GetResponse;
 
@@ -30,6 +29,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -54,12 +54,12 @@ public class RabbitMQAgentIntercept {
     span.finish();
   }
 
-  public static void exitPublish(Throwable thrown) {
+  public static void exitPublish(final Throwable thrown) {
     finish(thrown);
   }
 
-  public static BasicProperties enterPublish(final Object exchange, final Object routingKey, final Object props) {
-    final AMQP.BasicProperties properties = (BasicProperties)props;
+  public static AMQP.BasicProperties enterPublish(final Object exchange, final Object routingKey, final Object props) {
+    final AMQP.BasicProperties properties = (AMQP.BasicProperties)props;
     final Tracer tracer = GlobalTracer.get();
     final Span span = TracingUtils.buildSpan((String)exchange, (String)routingKey, properties, tracer);
 
@@ -70,7 +70,7 @@ public class RabbitMQAgentIntercept {
   }
 
   public static Object enterConsume(final Object callback, final Object queue) {
-    return new TracingConsumer((Consumer)callback, (String)queue, GlobalTracer.get());
+    return DynamicProxy.wrap(callback, new TracingConsumer((Consumer)callback, (String)queue, GlobalTracer.get()));
   }
 
   private static void finish(final Throwable thrown) {

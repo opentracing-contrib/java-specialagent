@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.6-SNAPSHOT</version>
+    <version>1.5.7-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -30,6 +30,7 @@
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/test</url>
   <properties>
     <sa.log.level>FINER</sa.log.level>
+    <sa.itest.args></sa.itest.args>
   </properties>
   <modules>
     <module>akka-actor</module>
@@ -124,6 +125,7 @@
                 <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
                 <argument>-Dsa.log.level=${sa.log.level}</argument>
                 <argument>-Dsa.tracer=mock</argument>
+                <argument>${sa.itest.args}</argument>
                 <argument>-classpath</argument>
                 <classpath/>
               </arguments>

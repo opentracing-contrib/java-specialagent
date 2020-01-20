@@ -52,7 +52,7 @@ public class JedisAgentRule extends AgentRule {
 
   public static class SendCommand {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
       if (isEnabled(origin))
         JedisAgentIntercept.sendCommand(command, args);
     }

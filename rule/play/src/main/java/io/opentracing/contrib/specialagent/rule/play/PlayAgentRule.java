@@ -25,7 +25,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class PlayAgentRule extends AgentRule {
@@ -41,9 +40,9 @@ public class PlayAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
+  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0) {
     if (isEnabled(origin))
-      arg0 = PlayAgentIntercept.applyStart(arg0);
+      PlayAgentIntercept.applyStart(arg0);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)

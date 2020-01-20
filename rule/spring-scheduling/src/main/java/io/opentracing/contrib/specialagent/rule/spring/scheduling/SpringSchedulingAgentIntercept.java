@@ -24,6 +24,7 @@ import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -74,7 +75,6 @@ public class SpringSchedulingAgentIntercept {
   }
 
   public static Object invoke(final Object arg) {
-    final MethodInvocation invocation = (MethodInvocation)arg;
-    return new TracingMethodInvocation(invocation);
+    return DynamicProxy.wrap(arg, new TracingMethodInvocation((MethodInvocation)arg));
   }
 }

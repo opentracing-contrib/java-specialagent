@@ -21,12 +21,13 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-webmvc</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>1.5.6-SNAPSHOT</version>
+    <version>1.5.7-SNAPSHOT</version>
   </parent>
   <artifactId>spring-webmvc-4.3.25</artifactId>
   <name>SpecialAgent Test for Spring Web MVC 4.3.25</name>
   <properties>
     <version.spring>4.3.25.RELEASE</version.spring>
+    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
   </properties>
   <dependencies>
     <dependency>

@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -50,16 +51,16 @@ public class Jms2AgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = Jms2AgentIntercept.createProducer(returned);
+      if (isEnabled(origin) && !DynamicProxy.isProxy(returned))
+        returned = DynamicProxy.wrap(returned, Jms2AgentIntercept.createProducer(returned));
     }
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = Jms2AgentIntercept.createConsumer(returned);
+      if (isEnabled(origin) && !DynamicProxy.isProxy(returned))
+        returned = DynamicProxy.wrap(returned, Jms2AgentIntercept.createConsumer(returned));
     }
   }
 }
