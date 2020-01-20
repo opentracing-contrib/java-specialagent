@@ -28,7 +28,6 @@
   <properties>
     <version.spring>3.0.2.RELEASE</version.spring>
     <version.jetty>9.2.15.v20160210</version.jetty>
-    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
   </properties>
   <dependencies>
     <dependency>

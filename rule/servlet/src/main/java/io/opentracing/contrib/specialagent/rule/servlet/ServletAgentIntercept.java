@@ -17,16 +17,14 @@ package io.opentracing.contrib.specialagent.rule.servlet;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
-
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -77,9 +75,21 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (spanContext != null) {
         return;
       }
+
+      HttpServletRequest httpServletRequest = (HttpServletRequest) req;
+      if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null) {
+        return;
+      }
+
+      try {
+        TracingFilter.class.getMethod("buildSpan", HttpServletRequest.class);
+      } catch (NoSuchMethodException ignore) {
+        return;
+      }
+
       spanContext = new Context();
       contextHolder.set(spanContext);
-      final Span span = tracingFilter.buildSpan((HttpServletRequest) req);
+      final Span span = tracingFilter.buildSpan(httpServletRequest);
       spanContext.span = span;
       spanContext.scope = GlobalTracer.get().activateSpan(span);
       if (logger.isLoggable(Level.FINER))
