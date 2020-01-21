@@ -15,18 +15,19 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
-import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.web.servlet.filter.TracingFilter;
-import io.opentracing.util.GlobalTracer;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.web.servlet.filter.TracingFilter;
+import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   private static class Context {
@@ -51,7 +52,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
     return context;
   }
 
-  public static void service(final Object thiz, final Object req, final Object res) {
+  public static void serviceEnter(final Object thiz, final Object req, final Object res) {
     try {
       final HttpServlet servlet = (HttpServlet)thiz;
       ServletContext context = getServletContext(servlet);
@@ -72,20 +73,12 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       Context spanContext = contextHolder.get();
-      if (spanContext != null) {
+      if (spanContext != null)
         return;
-      }
 
-      HttpServletRequest httpServletRequest = (HttpServletRequest) req;
-      if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null) {
+      final HttpServletRequest httpServletRequest = (HttpServletRequest)req;
+      if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
-      }
-
-      try {
-        TracingFilter.class.getMethod("buildSpan", HttpServletRequest.class);
-      } catch (NoSuchMethodException ignore) {
-        return;
-      }
 
       spanContext = new Context();
       contextHolder.set(spanContext);
@@ -100,19 +93,19 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
     }
   }
 
-  public static void serviceExit(Object thiz, Object request, Object response, Throwable thrown) {
+  public static void serviceExit(final Object thiz, final Object request, final Object response, final Throwable thrown) {
     try {
       final Context spanContext = contextHolder.get();
       if (spanContext == null)
         return;
 
-      final ServletContext context = getServletContext((HttpServlet) thiz);
+      final ServletContext context = getServletContext((HttpServlet)thiz);
       final TracingFilter tracingFilter = getFilter(context, true);
 
-      HttpServletRequest httpRequest = (HttpServletRequest) request;
-      HttpServletResponse httpResponse = (HttpServletResponse) response;
+      final HttpServletRequest httpRequest = (HttpServletRequest)request;
+      final HttpServletResponse httpResponse = (HttpServletResponse)response;
 
-      if(thrown != null)
+      if (thrown != null)
         tracingFilter.onError(httpRequest, httpResponse, thrown, spanContext.span);
       else
         tracingFilter.onResponse(httpRequest, httpResponse, spanContext.span);

@@ -79,7 +79,7 @@ public class FilterAgentRule extends AgentRule {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response) {
       if (isEnabled(origin))
-        ServletAgentIntercept.service(thiz, request, response);
+        ServletAgentIntercept.serviceEnter(thiz, request, response);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
