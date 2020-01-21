@@ -156,6 +156,36 @@ public class TracingFilter implements Filter {
         }
     }
 
+    public Span buildSpan(HttpServletRequest httpRequest) {
+        SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+            new HttpServletRequestExtractAdapter(httpRequest));
+
+        final Span span = tracer.buildSpan(httpRequest.getMethod())
+            .asChildOf(extractedContext)
+            .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+            .start();
+
+        httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
+
+        for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+            spanDecorator.onRequest(httpRequest, span);
+        }
+
+        return span;
+    }
+
+    public void onResponse(HttpServletRequest httpRequest, HttpServletResponse httpResponse, Span span) {
+        for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+            spanDecorator.onResponse(httpRequest, httpResponse, span);
+        }
+    }
+
+    public void onError(HttpServletRequest httpRequest, HttpServletResponse httpResponse, Throwable ex, Span span) {
+        for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+            spanDecorator.onError(httpRequest, httpResponse, ex, span);
+        }
+    }
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
             throws IOException, ServletException {
@@ -178,33 +208,16 @@ public class TracingFilter implements Filter {
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                    new HttpServletRequestExtractAdapter(httpRequest));
-
-            final Span span = tracer.buildSpan(httpRequest.getMethod())
-                    .asChildOf(extractedContext)
-                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    .start();
-
-            httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
-
-            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                spanDecorator.onRequest(httpRequest, span);
-            }
-
+            final Span span = buildSpan(httpRequest);
             final Boolean[] isAsyncStarted = {Boolean.FALSE};
             try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
                 if (!ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) || !isAsyncStarted[0]) {
-                    for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                        spanDecorator.onResponse(httpRequest, httpResponse, span);
-                    }
+                    onResponse(httpRequest, httpResponse, span);
                 }
             // catch all exceptions (e.g. RuntimeException, ServletException...)
             } catch (Throwable ex) {
-                for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                    spanDecorator.onError(httpRequest, httpResponse, ex, span);
-                }
+                onError(httpRequest, httpResponse, ex, span);
                 throw ex;
             } finally {
                 if (isAsyncStarted[0]) {

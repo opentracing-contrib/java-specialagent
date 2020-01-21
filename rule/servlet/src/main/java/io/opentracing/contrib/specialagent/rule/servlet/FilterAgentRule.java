@@ -81,6 +81,12 @@ public class FilterAgentRule extends AgentRule {
       if (isEnabled(origin))
         ServletAgentIntercept.service(thiz, request, response);
     }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response, final @Advice.Thrown(typing = Typing.DYNAMIC) Throwable thrown) {
+      if (isEnabled(origin))
+        ServletAgentIntercept.serviceExit(thiz, request, response, thrown);
+    }
   }
 
   public static class HttpServletResponseAdvice {
