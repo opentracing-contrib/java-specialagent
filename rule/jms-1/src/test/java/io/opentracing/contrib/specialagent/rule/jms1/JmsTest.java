@@ -42,26 +42,24 @@ import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
-//NOTE: This class is copied from specialagent-jms-2.
-//NOTE: It should be a 100% duplicate!
 public abstract class JmsTest {
   static final Logger logger = Logger.getLogger(JmsTest.class);
 
-  Session session;
-  Connection connection;
+  static Session session;
+  static Connection connection;
 
   @Test
   public void sendAndReceive(final MockTracer tracer) throws Exception {
-    final Destination destination = session.createQueue("TEST.FOO");
-
-    final MessageProducer producer = session.createProducer(destination);
-    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-    assertTrue(DynamicProxy.isProxy(producer, TracingMessageProducer.class));
+    final Destination destination = session.createQueue("TEST.JMS1.RECEIVE");
 
     final MessageConsumer consumer = session.createConsumer(destination);
     assertTrue(DynamicProxy.isProxy(consumer, TracingMessageConsumer.class));
 
     final TextMessage message = session.createTextMessage("Hello world");
+
+    final MessageProducer producer = session.createProducer(destination);
+    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+    assertTrue(DynamicProxy.isProxy(producer, TracingMessageProducer.class));
     producer.send(message);
 
     final TextMessage received = (TextMessage)consumer.receive(5000);
@@ -69,13 +67,14 @@ public abstract class JmsTest {
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());
+
+    producer.close();
+    consumer.close();
   }
 
   @Test
   public void sendAndReceiveInListener(final MockTracer tracer) throws Exception {
-    final Destination destination = session.createQueue("TEST.FOO");
-    final MessageProducer producer = session.createProducer(destination);
-    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+    final Destination destination = session.createQueue("TEST.JMS1.LISTENER");
 
     final MessageConsumer consumer = session.createConsumer(destination);
     final MessageListener messageListener = new MessageListener() {
@@ -88,11 +87,17 @@ public abstract class JmsTest {
     consumer.setMessageListener(messageListener);
 
     final TextMessage message = session.createTextMessage("Hello world");
+
+    final MessageProducer producer = session.createProducer(destination);
+    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
     producer.send(message);
 
     await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());
+
+    producer.close();
+    consumer.close();
   }
 }

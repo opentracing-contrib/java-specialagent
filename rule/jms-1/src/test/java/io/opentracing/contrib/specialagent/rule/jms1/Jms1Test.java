@@ -19,8 +19,9 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
@@ -30,16 +31,20 @@ import io.opentracing.mock.MockTracer;
 @AgentRunner.Config(isolateClassLoader = false)
 public class Jms1Test extends JmsTest {
   @Before
-  public void before(final MockTracer tracer) throws JMSException {
+  public void before(final MockTracer tracer) {
     tracer.reset();
+  }
+
+  @BeforeClass
+  public static void startActiveMQ() throws JMSException {
     final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
     connection = connectionFactory.createConnection();
     connection.start();
     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
   }
 
-  @After
-  public void after() throws JMSException {
+  @AfterClass
+  public static void stopActiveMQ() throws JMSException {
     session.close();
     connection.close();
   }
