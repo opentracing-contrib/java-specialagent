@@ -15,20 +15,13 @@
 
 package io.opentracing.contrib.specialagent.rule.jms2;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import io.opentracing.contrib.jms.common.TracingMessageConsumer;
-import io.opentracing.contrib.jms2.TracingMessageProducer;
-import io.opentracing.contrib.specialagent.DynamicProxy;
-import io.opentracing.contrib.specialagent.Logger;
-import io.opentracing.contrib.specialagent.TestUtil;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -38,7 +31,16 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
 import org.junit.Test;
+
+import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.contrib.jms2.TracingMessageProducer;
+import io.opentracing.contrib.specialagent.DynamicProxy;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 public abstract class JmsTest {
   static final Logger logger = Logger.getLogger(JmsTest.class);
@@ -50,18 +52,17 @@ public abstract class JmsTest {
   public void sendAndReceive(final MockTracer tracer) throws Exception {
     final Destination destination = session.createQueue("TEST.JMS2.RECEIVE");
 
-    try(final MessageConsumer consumer = session.createConsumer(destination)) {
+    try (final MessageConsumer consumer = session.createConsumer(destination)) {
       assertTrue(DynamicProxy.isProxy(consumer, TracingMessageConsumer.class));
 
       final TextMessage message = session.createTextMessage("Hello world");
-
-      try(final MessageProducer producer = session.createProducer(destination)) {
+      try (final MessageProducer producer = session.createProducer(destination)) {
         producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
         assertTrue(DynamicProxy.isProxy(producer, TracingMessageProducer.class));
         producer.send(message);
       }
 
-      final TextMessage received = (TextMessage) consumer.receive(5000);
+      final TextMessage received = (TextMessage)consumer.receive(5000);
       assertEquals("Hello world", received.getText());
     }
 

@@ -90,15 +90,14 @@ public class Jms2Test extends JmsTest {
   @Test
   public void sendAndReceiveJMSProducer(final MockTracer tracer) throws Exception {
     final Destination destination = session.createQueue("TEST.JMS2.JMSPRODUCER");
-
-    try(final MessageConsumer consumer = session.createConsumer(destination)) {
+    try (final MessageConsumer consumer = session.createConsumer(destination)) {
       final TextMessage message = session.createTextMessage("Hello world");
 
       final JMSProducer producer = context.createProducer();
       producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       producer.send(destination, message);
 
-      final TextMessage received = (TextMessage) consumer.receive(5000);
+      final TextMessage received = (TextMessage)consumer.receive(5000);
       assertEquals("Hello world", received.getText());
     }
 
