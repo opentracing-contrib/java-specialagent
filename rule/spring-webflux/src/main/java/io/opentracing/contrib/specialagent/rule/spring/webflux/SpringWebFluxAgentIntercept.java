@@ -38,7 +38,7 @@ public class SpringWebFluxAgentIntercept {
   public static Object filters(final Object arg) {
     final List<WebFilter> filters = new ArrayList<>((List<WebFilter>)arg);
     filters.add(new TracingWebFilter(GlobalTracer.get(), Integer.MIN_VALUE, pattern, Collections.emptyList(), Arrays.asList(new WebFluxSpanDecorator.StandardTags(), new WebFluxSpanDecorator.WebFluxTags())));
-    return Collections.unmodifiableList(filters);
+    return filters;
   }
 
   public static void client(final Object thiz) {

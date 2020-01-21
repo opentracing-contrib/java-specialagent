@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>1.5.6-SNAPSHOT</version>
+  <version>1.5.7-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Java SpecialAgent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
@@ -264,7 +264,7 @@
         <dependency>
           <groupId>com.lightstep.tracer</groupId>
           <artifactId>lightstep-tracer-jre-bundle</artifactId>
-          <version>0.17.0</version>
+          <version>0.18.3</version>
           <scope>provided</scope>
         </dependency>
         <dependency>
@@ -300,11 +300,6 @@
     </profile>
     <profile>
       <id>test</id>
-      <activation>
-        <property>
-          <name>test</name>
-        </property>
-      </activation>
       <modules>
         <module>test</module>
       </modules>

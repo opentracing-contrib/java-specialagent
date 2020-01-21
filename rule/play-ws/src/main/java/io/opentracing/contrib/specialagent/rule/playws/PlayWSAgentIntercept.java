@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.rule.playws;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -39,6 +40,6 @@ public class PlayWSAgentIntercept {
       .start();
 
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request.getHeaders()));
-    return new TracingAsyncHandler(asyncHandler, span);
+    return DynamicProxy.wrap(asyncHandler, new TracingAsyncHandler(asyncHandler, span));
   }
 }

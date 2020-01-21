@@ -43,10 +43,10 @@ public class PlayAgentIntercept {
     private int counter = 1;
   }
 
-  public static Object applyStart(final Object arg0) {
+  public static void applyStart(final Object arg0) {
     if (contextHolder.get() != null) {
       ++contextHolder.get().counter;
-      return arg0;
+      return;
     }
 
     final Request<?> request = (Request<?>)arg0;
@@ -67,8 +67,6 @@ public class PlayAgentIntercept {
     final Span span = spanBuilder.start();
     context.span = span;
     context.scope = tracer.activateSpan(span);
-
-    return arg0;
   }
 
   @SuppressWarnings("unchecked")

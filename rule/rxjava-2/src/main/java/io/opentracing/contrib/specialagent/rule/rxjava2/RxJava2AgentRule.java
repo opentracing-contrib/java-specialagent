@@ -56,7 +56,6 @@ public class RxJava2AgentRule extends AgentRule {
   }
 
   public static class OnExit {
-    @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown, @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object onNext) {
       if (thrown instanceof NullPointerException && onNext == null) {

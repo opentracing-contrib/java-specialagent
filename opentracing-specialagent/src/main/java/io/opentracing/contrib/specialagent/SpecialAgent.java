@@ -28,11 +28,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 
@@ -51,8 +49,9 @@ import io.opentracing.util.GlobalTracer;
 public class SpecialAgent extends SpecialAgentBase {
   private static final Logger logger = Logger.getLogger(SpecialAgent.class);
 
-  private static class ClassLoaderMap<T> extends IdentityHashMap<ClassLoader,T> {
+  private static class ClassLoaderMap<T> extends ConcurrentHashMap<ClassLoader,T> {
     private static final long serialVersionUID = 5515722666603482519L;
+    private static final ClassLoader NULL = new ClassLoader() {};
 
     /**
      * This method is modified to support value lookups where the key is a
@@ -65,12 +64,17 @@ public class SpecialAgent extends SpecialAgentBase {
     @Override
     @SuppressWarnings("unlikely-arg-type")
     public T get(final Object key) {
-      T value = super.get(key);
+      T value = super.get(key == null ? NULL : key);
       if (value != null || !(key instanceof URLClassLoader))
         return value;
 
       final URLClassLoader classLoader = (URLClassLoader)key;
-      return classLoader.getURLs().length > 0 || classLoader.getParent() != null ? null : super.get(null);
+      return classLoader.getURLs().length > 0 || classLoader.getParent() != null ? null : super.get(NULL);
+    }
+
+    @Override
+    public T put(final ClassLoader key, final T value) {
+      return super.put(key == null ? NULL : key, value);
     }
   }
 
@@ -186,7 +190,7 @@ public class SpecialAgent extends SpecialAgentBase {
       final String key = String.valueOf(property.getKey());
       final String value = properties.get(key);
       if (value != null && !value.equals(property.getValue()))
-        throw new IllegalStateException("System property " + key + " is specified twice with different values");
+        throw new IllegalStateException("System property " + key + " is specified twice with different values: \"" + value + "\" and \"" + property.getValue() + "\"");
 
       properties.put(key, property.getValue() == null ? null : String.valueOf(property.getValue()));
     }
@@ -361,7 +365,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static URL findTracer(final ClassLoader classLoader, final String name) {
     try {
       final Enumeration<URL> enumeration = classLoader.getResources(TRACER_FACTORY);
-      final Set<URL> urls = new HashSet<>();
+      final HashSet<URL> urls = new HashSet<>();
       while (enumeration.hasMoreElements()) {
         final URL url = enumeration.nextElement();
         if (urls.contains(url))
@@ -397,7 +401,7 @@ public class SpecialAgent extends SpecialAgentBase {
     int count = 0;
     try {
       final Enumeration<URL> enumeration = classLoader.getResources(DEPENDENCIES_TGF);
-      final Set<String> urls = new HashSet<>();
+      final HashSet<String> urls = new HashSet<>();
       while (enumeration.hasMoreElements()) {
         final URL url = enumeration.nextElement();
         if (urls.contains(url.toString()))
@@ -468,12 +472,18 @@ public class SpecialAgent extends SpecialAgentBase {
     return count;
   }
 
+  enum AttachMode {
+    STATIC,
+    DYNAMIC,
+    STATIC_DEFERRED
+  }
+
   /**
    * This method loads any OpenTracing {@code AgentRule}s, delegated to the
    * instrumentation {@link Manager} in the runtime.
    */
   private static void loadRules(final Manager manager) {
-    boolean isStaticDeferredAttach = false;
+    AttachMode attachMode = AttachMode.STATIC_DEFERRED;
     try {
       if (logger.isLoggable(Level.FINE))
         logger.fine("\n<<<<<<<<<<<<<<<<<<<<< Loading AgentRule(s) >>>>>>>>>>>>>>>>>>>>\n");
@@ -500,33 +510,37 @@ public class SpecialAgent extends SpecialAgentBase {
           }
         };
 
-        final List<DeferredAttach> deferrers = manager.initRules(agentRules, pluginsClassLoader, ruleJarToIndex, pluginManifestDirectory);
+        final LinkedHashMap<AgentRule,Integer> deferrers = manager.initRules(agentRules, pluginsClassLoader, ruleJarToIndex, pluginManifestDirectory);
 
         final String initDeferProperty = System.getProperty(INIT_DEFER);
-        final boolean isDynamicAttach;
-        if (initDeferProperty == null)
-          isDynamicAttach = false;
-        else if (!(isDynamicAttach = "dynamic".equals(initDeferProperty)))
-          isStaticDeferredAttach = !"false".equals(initDeferProperty);
+        if (initDeferProperty != null) {
+          if ("dynamic".equals(initDeferProperty))
+            attachMode = AttachMode.DYNAMIC;
+          else if ("false".equals(initDeferProperty))
+            attachMode = AttachMode.STATIC;
+          else
+            attachMode = AttachMode.STATIC_DEFERRED;
+        }
 
-        final String displayString = isStaticDeferredAttach ? "Enabled: true (default)   " : "    Enabled: false        ";
+        final String displayString = attachMode == AttachMode.STATIC_DEFERRED ? "Enabled: true (default)   " : "    Enabled: false        ";
         logger.info(".==============================================================.");
         logger.info("|                    Static Deferred Attach                    |");
         logger.info("|                    " + displayString + "                |");
-        if (isDynamicAttach)
+        if (attachMode == AttachMode.DYNAMIC)
           logger.info("|                    (using dynamic attach)                    |");
 
         logger.info("|==============================================================|");
-        if (isStaticDeferredAttach) {
+        if (attachMode == AttachMode.STATIC_DEFERRED) {
           logger.info("|               To disable Static Deferred Attach,             |");
           logger.info("|                 specify -Dsa.init.defer=false                |");
           logger.info("|=============================================================='");
         }
 
         if (deferrers == null) {
-          if (isStaticDeferredAttach) {
+          if (attachMode == AttachMode.STATIC_DEFERRED) {
             logger.info("' 0 deferrers were detected, overriding to: -Dsa.init.defer=false");
-            isStaticDeferredAttach = false;
+            attachMode = AttachMode.STATIC;
+            System.setProperty(INIT_DEFER, "false");
           }
           else {
             logger.info("' 0 deferrers were detected");
@@ -534,11 +548,13 @@ public class SpecialAgent extends SpecialAgentBase {
         }
         else {
           logger.info("' " + deferrers.size() + " deferrers were detected:");
-          for (final DeferredAttach deferrer : deferrers)
+          for (final AgentRule deferrer : deferrers.keySet())
             logger.info("  " + deferrer.getClass().getName());
 
-          if (isStaticDeferredAttach)
+          if (attachMode == AttachMode.STATIC_DEFERRED) {
+            manager.loadRules(deferrers, events);
             return;
+          }
         }
 
         AgentRule.initialize();
@@ -551,7 +567,7 @@ public class SpecialAgent extends SpecialAgentBase {
     }
     finally {
       if (logger.isLoggable(Level.FINE)) {
-        if (isStaticDeferredAttach)
+        if (attachMode == AttachMode.STATIC_DEFERRED)
           logger.fine("\n>>>>>>>>>>>>> Loading of AgentRule(s) is Deferred <<<<<<<<<<<<<\n");
         else
           logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded AgentRule(s) <<<<<<<<<<<<<<<<<<<<<\n");

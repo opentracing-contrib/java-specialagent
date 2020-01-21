@@ -17,21 +17,86 @@ package io.opentracing.contrib.specialagent.rule.couchbase;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.couchbase.client.java.env.CouchbaseEnvironment;
+import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.document.json.JsonArray;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
+import com.couchbase.mock.BucketConfiguration;
+import com.couchbase.mock.CouchbaseMock;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.util.GlobalTracer;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
 public class CouchbaseClientTest {
+  private static final String bucketName = "test";
+  private static CouchbaseMock couchbaseMock;
+
+  @BeforeClass
+  public static void startCouchbaseMock() throws Exception {
+    couchbaseMock = new CouchbaseMock("localhost", 8091, 2, 1);
+    final BucketConfiguration bucketConfiguration = new BucketConfiguration();
+    bucketConfiguration.name = bucketName;
+    bucketConfiguration.numNodes = 1;
+    bucketConfiguration.numReplicas = 1;
+    bucketConfiguration.password = "";
+    couchbaseMock.start();
+    couchbaseMock.waitForStartup();
+    couchbaseMock.createBucket(bucketConfiguration);
+  }
+
+  @AfterClass
+  public static void stopCouchbaseMock() {
+    if (couchbaseMock != null)
+      couchbaseMock.stop();
+  }
+
+  @Before
+  public void before(final MockTracer tracer) {
+    tracer.reset();
+  }
+
   @Test
-  public void test() {
-    // FIXME: There is no embedded couchbase server to test real scenario.
-    final CouchbaseEnvironment environment = DefaultCouchbaseEnvironment.builder().build();
-    assertTrue(environment.tracer() instanceof GlobalTracer);
+  public void test(final MockTracer tracer) {
+    final Cluster cluster = CouchbaseCluster.create(DefaultCouchbaseEnvironment.builder().connectTimeout(TimeUnit.SECONDS.toMillis(60)).build());
+    final Bucket bucket = cluster.openBucket(bucketName);
+
+    final JsonObject arthur = JsonObject.create()
+      .put("name", "Arthur")
+      .put("email", "kingarthur@couchbase.com")
+      .put("interests", JsonArray.from("Holy Grail", "African Swallows"));
+
+    bucket.upsert(JsonDocument.create("u:king_arthur", arthur));
+    System.out.println(bucket.get("u:king_arthur"));
+
+    cluster.disconnect(60, TimeUnit.SECONDS);
+
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(6, spans.size());
+
+    boolean foundCouchbaseSpan = false;
+    for (final MockSpan span : spans) {
+      final String component = (String)span.tags().get(Tags.COMPONENT.getKey());
+      if (component != null && component.startsWith("couchbase-java-client")) {
+        foundCouchbaseSpan = true;
+        break;
+      }
+    }
+
+    assertTrue("couchbase-java-client span not found", foundCouchbaseSpan);
   }
 }

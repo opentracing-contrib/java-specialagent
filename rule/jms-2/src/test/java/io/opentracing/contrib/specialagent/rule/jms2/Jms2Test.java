@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
@@ -35,8 +36,9 @@ import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,14 +48,17 @@ import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 public class Jms2Test extends JmsTest {
-  private ActiveMQServer server;
-  private JMSContext context;
+  private static ActiveMQServer server;
+  private static JMSContext context;
 
   @Before
-  @SuppressWarnings("resource")
-  public void before(final MockTracer tracer) throws Exception {
+  public void before(final MockTracer tracer) {
     tracer.reset();
+  }
 
+  @BeforeClass
+  @SuppressWarnings("resource")
+  public static void startActiveMQ() throws Exception {
     final HashSet<TransportConfiguration> transports = new HashSet<>();
     transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
@@ -74,8 +79,8 @@ public class Jms2Test extends JmsTest {
     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
   }
 
-  @After
-  public void after() throws Exception {
+  @AfterClass
+  public static void stopActiveMQ() throws Exception {
     context.close();
     session.close();
     connection.close();
@@ -84,16 +89,17 @@ public class Jms2Test extends JmsTest {
 
   @Test
   public void sendAndReceiveJMSProducer(final MockTracer tracer) throws Exception {
-    final Destination destination = session.createQueue("TEST.FOO");
+    final Destination destination = session.createQueue("TEST.JMS2.JMSPRODUCER");
+    try (final MessageConsumer consumer = session.createConsumer(destination)) {
+      final TextMessage message = session.createTextMessage("Hello world");
 
-    final JMSProducer producer = context.createProducer();
-    final MessageConsumer consumer = session.createConsumer(destination);
-    final TextMessage message = session.createTextMessage("Hello world");
+      final JMSProducer producer = context.createProducer();
+      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      producer.send(destination, message);
 
-    producer.send(destination, message);
-
-    final TextMessage received = (TextMessage)consumer.receive(5000);
-    assertEquals("Hello world", received.getText());
+      final TextMessage received = (TextMessage)consumer.receive(5000);
+      assertEquals("Hello world", received.getText());
+    }
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());

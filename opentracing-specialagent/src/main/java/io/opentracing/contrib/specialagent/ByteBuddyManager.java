@@ -24,12 +24,10 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -112,8 +110,8 @@ public class ByteBuddyManager extends Manager {
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  List<DeferredAttach> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
-    List<DeferredAttach> deferrers = null;
+  LinkedHashMap<AgentRule,Integer> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
+    LinkedHashMap<AgentRule,Integer> deferrers = null;
     AgentRule agentRule = null;
     try {
       // Prepare the agent rules
@@ -138,42 +136,38 @@ public class ByteBuddyManager extends Manager {
               continue;
             }
 
-            boolean ruleIsValid = false;
+            System.err.println(line);
             final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
+            if (!AgentRule.class.isAssignableFrom(agentClass)) {
+              logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
+              continue;
+            }
+
+            final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
+            final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
+            final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
+            if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
+              if (logger.isLoggable(Level.FINE))
+                logger.fine("Skipping disabled rule: " + line);
+
+              continue;
+            }
+
             if (AgentRule.class.isAssignableFrom(agentClass)) {
-              ruleIsValid = true;
-              final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
-              final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
-              final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
-              if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
-                if (logger.isLoggable(Level.FINE))
-                  logger.fine("Skipping disabled rule: " + line);
-
-                continue;
-              }
-
               if (logger.isLoggable(Level.FINE))
                 logger.fine("Installing new rule: " + line);
 
-              AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
-
               agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-              agentRules.put(agentRule, index);
-            }
-
-            if (DeferredAttach.class.isAssignableFrom(agentClass)) {
-              ruleIsValid = true;
-              final DeferredAttach deferrer = (DeferredAttach)agentClass.getConstructor().newInstance();
-              if (deferrer.isDeferrable(inst)) {
+              if (agentRule.isDeferrable(inst)) {
                 if (deferrers == null)
-                  deferrers = new ArrayList<>(1);
+                  deferrers = new LinkedHashMap<>(1);
 
-                deferrers.add(deferrer);
+                deferrers.put(agentRule, index);
               }
-            }
-
-            if (!ruleIsValid) {
-              logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class + " nor " + DeferredAttach.class.getName());
+              else {
+                AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
+                agentRules.put(agentRule, index);
+              }
             }
           }
         }

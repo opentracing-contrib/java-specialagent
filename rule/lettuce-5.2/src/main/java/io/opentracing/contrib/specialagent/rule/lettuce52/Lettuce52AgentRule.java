@@ -20,6 +20,7 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -55,24 +56,24 @@ public class Lettuce52AgentRule extends AgentRule {
   public static class StatefulRedis {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = Lettuce52AgentIntercept.getAsyncCommands(returned);
+      if (isEnabled(origin) && !DynamicProxy.isProxy(returned))
+        returned = DynamicProxy.wrap(returned, Lettuce52AgentIntercept.getAsyncCommands(returned));
     }
   }
 
   public static class StatefulRedisCluster {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
-        returned = Lettuce52AgentIntercept.getAsyncClusterCommands(returned);
+      if (isEnabled(origin) && !DynamicProxy.isProxy(returned))
+        returned = DynamicProxy.wrap(returned, Lettuce52AgentIntercept.getAsyncClusterCommands(returned));
     }
   }
 
   public static class AddPubSubListener {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-      if (isEnabled(origin))
-        arg = Lettuce52AgentIntercept.addPubSubListener(arg);
+      if (isEnabled(origin) && !DynamicProxy.isProxy(arg))
+        arg = DynamicProxy.wrap(arg, Lettuce52AgentIntercept.addPubSubListener(arg));
     }
   }
 }

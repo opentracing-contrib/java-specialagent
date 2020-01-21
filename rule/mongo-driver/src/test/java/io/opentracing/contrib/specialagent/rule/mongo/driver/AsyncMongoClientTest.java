@@ -41,7 +41,6 @@ import com.mongodb.connection.ClusterSettings;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 

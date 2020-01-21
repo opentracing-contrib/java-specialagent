@@ -36,35 +36,35 @@ import org.junit.Test;
 
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 import io.opentracing.contrib.jms2.TracingMessageProducer;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
-// NOTE: This class is copied from specialagent-jms-1.
-// NOTE: It should be a 100% duplicate!
 public abstract class JmsTest {
   static final Logger logger = Logger.getLogger(JmsTest.class);
 
-  Session session;
-  Connection connection;
+  static Session session;
+  static Connection connection;
 
   @Test
   public void sendAndReceive(final MockTracer tracer) throws Exception {
-    final Destination destination = session.createQueue("TEST.FOO");
+    final Destination destination = session.createQueue("TEST.JMS2.RECEIVE");
 
-    final MessageProducer producer = session.createProducer(destination);
-    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-    assertTrue(producer instanceof TracingMessageProducer);
+    try (final MessageConsumer consumer = session.createConsumer(destination)) {
+      assertTrue(DynamicProxy.isProxy(consumer, TracingMessageConsumer.class));
 
-    final MessageConsumer consumer = session.createConsumer(destination);
-    assertTrue(consumer instanceof TracingMessageConsumer);
+      final TextMessage message = session.createTextMessage("Hello world");
+      try (final MessageProducer producer = session.createProducer(destination)) {
+        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        assertTrue(DynamicProxy.isProxy(producer, TracingMessageProducer.class));
+        producer.send(message);
+      }
 
-    final TextMessage message = session.createTextMessage("Hello world");
-    producer.send(message);
-
-    final TextMessage received = (TextMessage)consumer.receive(5000);
-    assertEquals("Hello world", received.getText());
+      final TextMessage received = (TextMessage)consumer.receive(5000);
+      assertEquals("Hello world", received.getText());
+    }
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());
@@ -72,24 +72,25 @@ public abstract class JmsTest {
 
   @Test
   public void sendAndReceiveInListener(final MockTracer tracer) throws Exception {
-    final Destination destination = session.createQueue("TEST.FOO");
-    final MessageProducer producer = session.createProducer(destination);
-    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+    final Destination destination = session.createQueue("TEST.JMS2.LISTENER");
+    try (final MessageConsumer consumer = session.createConsumer(destination)) {
+      final MessageListener messageListener = new MessageListener() {
+        @Override
+        public void onMessage(final Message message) {
+          logger.fine("onMessage[" + tracer.activeSpan() + "]: " + message);
+        }
+      };
 
-    final MessageConsumer consumer = session.createConsumer(destination);
-    final MessageListener messageListener = new MessageListener() {
-      @Override
-      public void onMessage(final Message message) {
-        logger.fine("onMessage[" + tracer.activeSpan() + "]: " + message);
+      consumer.setMessageListener(messageListener);
+
+      final TextMessage message = session.createTextMessage("Hello world");
+      try (final MessageProducer producer = session.createProducer(destination)) {
+        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        producer.send(message);
       }
-    };
 
-    consumer.setMessageListener(messageListener);
-
-    final TextMessage message = session.createTextMessage("Hello world");
-    producer.send(message);
-
-    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
+      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
+    }
 
     final List<MockSpan> finishedSpans = tracer.finishedSpans();
     assertEquals(2, finishedSpans.size());

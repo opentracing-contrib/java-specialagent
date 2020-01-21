@@ -18,10 +18,11 @@ package io.opentracing.contrib.specialagent.rule.cassandra.driver3;
 import com.datastax.driver.core.Session;
 
 import io.opentracing.contrib.cassandra.TracingSession;
+import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.util.GlobalTracer;
 
 public class CassandraAgentIntercept {
-  public static TracingSession exit(final Object thiz) {
-    return new TracingSession((Session)thiz, GlobalTracer.get());
+  public static Object exit(final Object thiz) {
+    return DynamicProxy.wrap(thiz, new TracingSession((Session)thiz, GlobalTracer.get()));
   }
 }

@@ -32,9 +32,9 @@ public class OkHttpAgentIntercept {
       if (interceptor instanceof TracingInterceptor)
         return returned;
 
-    final List<Interceptor> newInterceptors = new ArrayList<>(interceptors);
+    final ArrayList<Interceptor> newInterceptors = new ArrayList<>(interceptors);
     final TracingInterceptor interceptor = new TracingInterceptor(GlobalTracer.get(), Collections.singletonList(OkHttpClientSpanDecorator.STANDARD_TAGS));
     newInterceptors.add(0, interceptor);
-    return Collections.unmodifiableList(newInterceptors);
+    return newInterceptors;
   }
 }

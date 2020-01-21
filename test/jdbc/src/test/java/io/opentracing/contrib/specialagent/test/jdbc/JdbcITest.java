@@ -25,18 +25,33 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JdbcITest {
   public static void main(final String[] args) throws SQLException, ClassNotFoundException {
+    System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing.separator", "@@@");
+    System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing", "SELECT 1 FROM dual @@@ SELECT 2 FROM dual");
+
     Class.forName("org.h2.Driver");
 
     try (
       final Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc");
       final Statement statement = connection.createStatement();
-      final ResultSet resultSet = statement.executeQuery("show databases;");
+      final ResultSet resultSet = statement.executeQuery("show databases");
     ) {
-      while (resultSet.next()) {
+      while (resultSet.next())
         System.out.println(resultSet.getString(1));
-      }
+
+      statement.executeUpdate("CREATE TABLE employer (id INTEGER)");
+
+      // should be ignored as ignoreForTracing specified, spans no change
+      statement.executeQuery("SELECT 1 FROM dual");
+      statement.executeQuery("SELECT 2 FROM dual");
+
+      // not an ignored sql, spans increased
+      statement.executeQuery("SELECT 3 FROM dual");
+
+      // no more span created if no active span
+      statement.executeQuery("SELECT 3 FROM dual");
+      statement.executeQuery("SELECT 4 FROM dual");
     }
 
-    TestUtil.checkSpan("java-jdbc", 2);
+    TestUtil.checkSpan("java-jdbc", 6);
   }
 }

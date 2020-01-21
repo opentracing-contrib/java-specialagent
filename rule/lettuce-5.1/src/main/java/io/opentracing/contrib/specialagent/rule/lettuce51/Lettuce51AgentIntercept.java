@@ -28,9 +28,6 @@ import io.opentracing.util.GlobalTracer;
 
 public class Lettuce51AgentIntercept {
   public static Object getAsyncCommands(final Object returned) {
-    if (returned instanceof TracingRedisAsyncCommands)
-      return returned;
-
     if (returned instanceof RedisPubSubAsyncCommands)
       return new TracingRedisPubSubAsyncCommands<>((RedisPubSubAsyncCommands<?,?>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
 
@@ -38,16 +35,10 @@ public class Lettuce51AgentIntercept {
   }
 
   public static Object getAsyncClusterCommands(final Object returned) {
-    if (returned instanceof TracingRedisAdvancedClusterAsyncCommands)
-      return returned;
-
     return new TracingRedisAdvancedClusterAsyncCommands<>((RedisAdvancedClusterAsyncCommands<?,?>)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 
   public static Object addPubSubListener(final Object arg) {
-    if (arg instanceof TracingRedisPubSubListener)
-      return arg;
-
     return new TracingRedisPubSubListener<>((RedisPubSubListener<?,?>)arg, new TracingConfiguration.Builder(GlobalTracer.get()).build());
   }
 }

@@ -1,0 +1,96 @@
+version: 2.1
+
+executors:
+  openjdk8:
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+    working_directory: /tmp/jdk8
+  openjdk11:
+    docker:
+      - image: circleci/openjdk:11-jdk-stretch
+    working_directory: /tmp/jdk11
+
+env: &env
+  steps:
+    - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+install: &install
+  steps:
+    - checkout
+    - restore_cache:
+        key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
+    - run: mvn dependency:go-offline
+    - save_cache:
+        paths:
+          - ~/.m2
+        key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
+    <<: *env
+    - run: |
+        mkdir -p ~/.m2
+        cp settings.xml ~/.m2/settings.xml
+        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
+        if [ "$CIRCLE_BRANCH" = "master" ] &&
+           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+          mvn -B -P report install &&
+          mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+          mvn -B -Dassemble install;
+        else
+          mvn -B install &&
+          mvn -B -Dassemble install;
+        fi
+    - persist_to_workspace:
+        root: /tmp
+        paths:
+          - ${CIRCLE_JOB}
+
+test: &test
+  steps:
+    - attach_workspace:
+      at: /tmp/${CIRCLE_JOB}
+    - run:
+        command: |
+          TESTS=$(circleci tests glob "test/???[!.]*" | circleci tests split)
+          mvn -B -P test -pl $TESTS -amd install
+
+jobs:
+  install-jdk8:
+    executor: openjdk8
+    <<: *install
+  install-jdk11:
+    executor: openjdk11
+    <<: *install
+  test-jdk8:
+    executor: openjdk8
+    <<: *test
+  test-jdk11:
+    executor: openjdk11
+    <<: *test
+  deploy:
+    executor: openjdk8
+    steps:
+      - attach_workspace:
+        at: /tmp/${CIRCLE_JOB}
+      <<: *env
+      - run: |
+          if [ "$CIRCLE_BRANCH" = "master" ] &&
+             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+            eval "$SIGNING_KEY" &> /dev/null &&
+            mvn -B -Dassemble -P deploy deploy;
+          fi
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - install-jdk8
+      - install-jdk11
+      - test-jdk8:
+          requires:
+            - install-jdk8
+      - test-jdk11:
+          requires:
+            - install-jdk11
+      - deploy:
+          requires:
+            - test-jdk8
+            - test-jdk11

@@ -41,7 +41,6 @@ import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.rule.servlet.ServletFilterAgentIntercept;
-import io.opentracing.contrib.specialagent.rule.servlet.TracingProxyFilter;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
