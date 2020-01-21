@@ -74,6 +74,12 @@ public class SpecialAgentUtilTest {
     assertEquals(name, SpecialAgentUtil.getName("foo" + s + "bar" + s + name));
   }
 
+  private static void testRegexMatch(final String pluginName, final String expectedRegex, final String ... tests) {
+    assertEquals(expectedRegex, SpecialAgentUtil.convertToNameRegex(pluginName));
+    for (final String test : tests)
+      assertTrue(test.matches(expectedRegex));
+  }
+
   @Test
   public void testConvertToNameRegex() {
     try {
@@ -90,12 +96,22 @@ public class SpecialAgentUtilTest {
     catch (final IllegalArgumentException e) {
     }
 
-    assertEquals(".*", SpecialAgentUtil.convertToNameRegex("*"));
-    assertEquals("spring:.*", SpecialAgentUtil.convertToNameRegex("spring:*"));
-    assertEquals("spring:[^:]*:.*", SpecialAgentUtil.convertToNameRegex("spring:*:*"));
+    testRegexMatch("*", "^.*", "spring:webmvc",
+      "okhttp", "lettuce", "jdbc");
+    testRegexMatch("spring:*", "^spring:.*",
+      "spring:webmvc", "spring:boot");
+    testRegexMatch("spring:*:*", "^spring:[^:]*:.*",
+      "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:boot", "(^spring:boot$|^spring:boot:.*)",
+      "spring:boot");
+    testRegexMatch("spring:webmvc", "(^spring:webmvc$|^spring:webmvc:.*)",
+      "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
 
-    assertEquals("lettuce:5\\..", SpecialAgentUtil.convertToNameRegex("lettuce:5.?"));
-    assertEquals("lettuce:5.*", SpecialAgentUtil.convertToNameRegex("lettuce:5"));
-    assertEquals("lettuce:.*", SpecialAgentUtil.convertToNameRegex("lettuce"));
+    testRegexMatch("lettuce:5.?", "^lettuce:5\\..",
+      "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
+    testRegexMatch("lettuce:5", "^lettuce:5.*",
+      "lettuce:5", "lettuce:5.1", "lettuce:5.2");
+    testRegexMatch("lettuce", "(^lettuce$|^lettuce:.*)",
+      "lettuce:5", "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
   }
 }

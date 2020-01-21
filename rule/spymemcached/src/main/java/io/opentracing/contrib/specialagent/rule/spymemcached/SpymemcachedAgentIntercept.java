@@ -68,7 +68,7 @@ public class SpymemcachedAgentIntercept {
 
   public static Object delete(final Object key, final Object callback) {
     final Span span = spanBuilder("delete").withTag("key", key.toString()).start();
-    return new TracingDeleteOperationCallback((OperationCallback)callback, span);
+    return DynamicProxy.wrap(callback, new TracingDeleteOperationCallback((OperationCallback)callback, span));
   }
 
   public static void exception(final Throwable thrown, final Object callback) {
