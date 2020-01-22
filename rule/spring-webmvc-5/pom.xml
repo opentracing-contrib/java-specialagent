@@ -52,12 +52,6 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-web-servlet-filter</artifactId>
-      <version>0.4.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
       <version>${version.jetty}</version>
