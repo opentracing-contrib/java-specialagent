@@ -18,8 +18,8 @@ package io.opentracing.contrib.specialagent;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -38,6 +38,18 @@ public final class DynamicProxy {
     set.add(iface);
     for (final Class<?> extended : iface.getInterfaces())
       recurse(extended, set);
+  }
+
+  static Method getDeclaredMethodDeep(final Class<?> cls, final String name, final Class<?> ... parameterTypes) {
+    Class<?> next = cls;
+    do {
+      final Method[] methods = next.getDeclaredMethods();
+      for (final Method method : methods)
+        if (name.equals(method.getName()) && Arrays.equals(method.getParameterTypes(), parameterTypes))
+          return method;
+    }
+    while ((next = next.getSuperclass()) != null);
+    return null;
   }
 
   static Set<Class<?>> getAllInterfaces(final Class<?> cls) {
@@ -70,11 +82,11 @@ public final class DynamicProxy {
     if (obj == null || wrapper == null || obj == wrapper)
       return wrapper;
 
-    final Class<?> cls = obj.getClass();
-    Objects.requireNonNull(wrapper);
-    final Set<Class<?>> ifaces = getAllInterfaces(cls);
+    final Class<?> objClass = obj.getClass();
+    final Class<?> wrapperClass = wrapper.getClass();
+    final Set<Class<?>> ifaces = getAllInterfaces(objClass);
     ifaces.add($Wrapper.class);
-    return (T)Proxy.newProxyInstance(cls.getClassLoader(), ifaces.toArray(new Class[ifaces.size()]), new InvocationHandler() {
+    return (T)Proxy.newProxyInstance(objClass.getClassLoader(), ifaces.toArray(new Class[ifaces.size()]), new InvocationHandler() {
       @Override
       public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
         if ("_$$object".equals(method.getName()))
@@ -84,11 +96,17 @@ public final class DynamicProxy {
           return wrapper;
 
         try {
-          return method.invoke(wrapper, args);
+          if (method.getDeclaringClass().isAssignableFrom(wrapperClass))
+            return method.invoke(wrapper, args);
+
+          final Method specific = getDeclaredMethodDeep(wrapperClass, method.getName(), method.getParameterTypes());
+          if (specific != null)
+            return specific.invoke(wrapper, args);
         }
         catch (final IllegalArgumentException e) {
-          return method.invoke(obj, args);
         }
+
+        return method.invoke(obj, args);
       }
     });
   }
