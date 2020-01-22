@@ -1,16 +1,29 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:http="http://www.mulesoft.org/schema/mule/http"
       xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-          http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+          http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+          http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
     <http:listener-config name="HTTP_Listener_config" >
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-
-    <flow name="test-flow">
-        <http:listener config-ref="HTTP_Listener_config" path="/"/>
+    <flow name="http-test-flow">
+        <http:listener config-ref="HTTP_Listener_config" path="/http"/>
         <http:request method="GET" url="https://postman-echo.com/get" doc:name="Request"/>
         <logger level="INFO" doc:name="Logger" message="#[message]"/>
+    </flow>
+
+
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="6aeddd01-2882-44c1-9e53-960e8f435d40" >
+        <db:generic-connection url="jdbc:h2:mem:test" driverClassName="org.h2.Driver" user="sa" />
+    </db:config>
+    <flow name="db-test-flow">
+        <http:listener config-ref="HTTP_Listener_config" path="/db"/>
+        <db:select doc:name="Select" doc:id="3d31330d-97cc-49a5-af1a-79b73858217c" config-ref="Database_Config">
+            <db:sql >SELECT 'foo-bar';</db:sql>
+        </db:select>
+        <set-payload value="#[output application/json --- payload]" doc:name="Set Payload" doc:id="dea44e19-772b-4267-8682-64f6b9f398ab" />
     </flow>
 
 </mule>

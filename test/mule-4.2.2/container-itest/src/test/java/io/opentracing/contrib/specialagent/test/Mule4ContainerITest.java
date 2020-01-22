@@ -9,9 +9,11 @@ import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.module.launcher.MuleContainer;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Mule4ContainerITest {
@@ -31,27 +33,14 @@ public class Mule4ContainerITest {
 
         try {
             container.start(false);
-
             // giving the runtime time to make the http listener available
             synchronized (lock) {
                 lock.wait(200);
             }
 
-            final URL obj = new URL("http://localhost:8081");
-            final HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
-            connection.disconnect();
+            testHttpFlow(lock);
+            testDbFlow(lock);
 
-            // giving grizzly-http-server time to finish the span, since it's on a diff thread
-            synchronized (lock) {
-                lock.wait(200);
-            }
-
-            if (200 != responseCode)
-                throw new AssertionError("ERROR: response: " + responseCode);
-
-            checkSpans("java-grizzly-http-server", "http:request", "java-grizzly-ahc", "mule:logger");
         } finally {
             container.stop();
             System.clearProperty(MuleSystemProperties.MULE_SIMPLE_LOG);
@@ -60,10 +49,44 @@ public class Mule4ContainerITest {
         }
     }
 
+    private static void testHttpFlow(Mule4ContainerITest lock) throws InterruptedException, IOException {
+        final HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8081/http").openConnection();
+        connection.setRequestMethod("GET");
+        int responseCode = connection.getResponseCode();
+        connection.disconnect();
+
+        // giving grizzly-http-server time to finish the span, since it's on a diff thread
+        synchronized (lock) {
+            lock.wait(200);
+        }
+
+        if (200 != responseCode)
+            throw new AssertionError("ERROR: response: " + responseCode);
+
+        checkSpans("java-grizzly-http-server", "http:request", "java-grizzly-ahc", "mule:logger");
+    }
+
+    private static void testDbFlow(Mule4ContainerITest lock) throws InterruptedException, IOException, ClassNotFoundException {
+        final HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8081/db").openConnection();
+        connection.setRequestMethod("GET");
+        int responseCode = connection.getResponseCode();
+        connection.disconnect();
+
+        // giving grizzly-http-server time to finish the span, since it's on a diff thread
+        synchronized (lock) {
+            lock.wait(200);
+        }
+
+        if (200 != responseCode)
+            throw new AssertionError("ERROR: response: " + responseCode);
+
+        checkSpans("java-grizzly-http-server", "db:select", "java-jdbc");
+    }
+
     private static void checkSpans(String... components) {
         MockTracer mockTracer = (MockTracer) TestUtil.getGlobalTracer();
         System.out.println("Spans: " + mockTracer.finishedSpans());
-        Map<String, MockSpan> finishedSpans = mockTracer.finishedSpans()
+        Map<String, Set<MockSpan>> finishedSpans = mockTracer.finishedSpans()
                 .stream()
                 .peek(mockSpan -> {
                     System.out.println("Span: " + mockSpan);
@@ -73,8 +96,8 @@ public class Mule4ContainerITest {
                     for (final MockSpan.LogEntry logEntry : mockSpan.logEntries())
                         System.out.println("\t" + logEntry.fields());
                 })
-                .collect(Collectors.toMap(mockSpan -> (String) mockSpan.tags().get(Tags.COMPONENT.getKey()),
-                        mockSpan -> mockSpan));
+                .collect(Collectors.groupingBy(mockSpan -> (String) mockSpan.tags().get(Tags.COMPONENT.getKey()),
+                        Collectors.toSet()));
 
         for (String component : components) {
             if (!finishedSpans.containsKey(component))
