@@ -15,10 +15,9 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
-import io.opentracing.contrib.web.servlet.filter.TracingFilterUtil;
 import java.util.Collections;
 import java.util.List;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -30,7 +29,9 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
+import io.opentracing.contrib.web.servlet.filter.TracingFilterUtil;
 import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
@@ -59,8 +60,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
   public static void serviceEnter(final Object thiz, final Object req, final Object res) {
     try {
-      final HttpServlet servlet = (HttpServlet)thiz;
-      ServletContext context = getServletContext(servlet);
+      final ServletContext context = getServletContext((HttpServlet)thiz);
       if (context == null)
         return;
 
