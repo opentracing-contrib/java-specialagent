@@ -25,7 +25,8 @@ import spark.Spark;
 
 public class SparkJavaITest {
   public static void main(String[] args) throws Exception {
-    Spark.port(8080);
+    final int port = 8085;
+    Spark.port(port);
     Spark.get("/", new Route() {
       @Override
       public Object handle(Request request, Response response) {
@@ -34,7 +35,7 @@ public class SparkJavaITest {
     });
     Spark.awaitInitialization();
 
-    final URL url = new URL("http://localhost:8085");
+    final URL url = new URL("http://localhost:" + port);
     final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     connection.setRequestMethod("GET");
     final int responseCode = connection.getResponseCode();
@@ -43,7 +44,7 @@ public class SparkJavaITest {
       throw new AssertionError("ERROR: response: " + responseCode);
     }
 
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan("java-web-servlet", 2, true);
 
     Spark.stop();
 

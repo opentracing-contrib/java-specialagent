@@ -124,6 +124,8 @@ public class TracingFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         this.filterConfig = filterConfig;
         ServletContext servletContext = filterConfig.getServletContext();
+        if (servletContext == null)
+            return;
 
         // Check whether the servlet context provides a tracer
         Object tracerObj = servletContext.getAttribute(Tracer.class.getName());

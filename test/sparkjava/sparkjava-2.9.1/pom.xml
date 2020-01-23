@@ -19,16 +19,26 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent.test</groupId>
-    <artifactId>test</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.test.sparkjava</groupId>
+    <artifactId>sparkjava</artifactId>
     <version>1.5.7-SNAPSHOT</version>
   </parent>
-  <groupId>io.opentracing.contrib.specialagent.test.sparkjava</groupId>
-  <artifactId>sparkjava</artifactId>
-  <packaging>pom</packaging>
-  <name>SpecialAgent Tests for SparkJava</name>
-  <modules>
-    <module>sparkjava-2.2</module>
-    <module>sparkjava-2.9.1</module>
-  </modules>
+  <artifactId>sparkjava-2.9.1</artifactId>
+  <name>SpecialAgent Test for SparkJava 2.9.1</name>
+  <properties>
+    <version.sparkjava>2.9.1</version.sparkjava>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.sparkjava</groupId>
+      <artifactId>spark-core</artifactId>
+      <version>${version.sparkjava}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sparkjava-2.2</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+    </dependency>
+  </dependencies>
 </project>

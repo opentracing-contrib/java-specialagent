@@ -23,10 +23,10 @@
     <artifactId>sparkjava</artifactId>
     <version>1.5.7-SNAPSHOT</version>
   </parent>
-  <artifactId>sparkjava-2.3</artifactId>
-  <name>SpecialAgent Test for SparkJava 2.3</name>
+  <artifactId>sparkjava-2.2</artifactId>
+  <name>SpecialAgent Test for SparkJava 2.2</name>
   <properties>
-    <version.sparkjava>2.3</version.sparkjava>
+    <version.sparkjava>2.2</version.sparkjava>
   </properties>
   <dependencies>
     <dependency>
