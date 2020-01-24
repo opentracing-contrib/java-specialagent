@@ -476,7 +476,7 @@ Examples:
 
 ### 5.2 Non-Goals
 
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) is not designed to modify application code, beyond the installation of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin). For example, there is no facility for dynamically tracing arbitrary code.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) is not designed to modify application code, beyond the installation of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin). For example, there is no facility for dynamically augmenting arbitrary code.
 
 ## 6 Supported Plugins
 
