@@ -568,6 +568,11 @@
         <artifactId>opentracing-noop</artifactId>
         <version>${version.opentracing}</version>
       </dependency>
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>common</artifactId>
+        <version>0.1.3</version>
+      </dependency>
 
       <dependency>
         <groupId>net.bytebuddy</groupId>

@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.specialagent.DynamicProxy;
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import net.spy.memcached.ops.GetOperation;
@@ -32,7 +32,7 @@ public class SpymemcachedAgentIntercept {
 
   public static Object store(final Object storeType, final Object key, final Object callback) {
     final Span span = spanBuilder(storeType.toString()).withTag("key", key.toString()).start();
-    return DynamicProxy.wrap(callback, new TracingStoreOperationCallback((OperationCallback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingStoreOperationCallback((OperationCallback)callback, span));
   }
 
   @SuppressWarnings("unchecked")
@@ -55,7 +55,7 @@ public class SpymemcachedAgentIntercept {
     }
 
     final Span span = spanBuilder.start();
-    return DynamicProxy.wrap(callback, new TracingGetOperationCallback((GetOperation.Callback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingGetOperationCallback((GetOperation.Callback)callback, span));
   }
 
   private static SpanBuilder spanBuilder(final String operation) {
@@ -68,7 +68,7 @@ public class SpymemcachedAgentIntercept {
 
   public static Object delete(final Object key, final Object callback) {
     final Span span = spanBuilder("delete").withTag("key", key.toString()).start();
-    return DynamicProxy.wrap(callback, new TracingDeleteOperationCallback((OperationCallback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingDeleteOperationCallback((OperationCallback)callback, span));
   }
 
   public static void exception(final Throwable thrown, final Object callback) {
@@ -78,12 +78,12 @@ public class SpymemcachedAgentIntercept {
 
   public static Object getAndTouch(final Object key, final Object callback) {
     final Span span = spanBuilder("getAndTouch").withTag("key", key.toString()).start();
-    return DynamicProxy.wrap(callback, new TracingGetAndTouchOperationCallback((OperationCallback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingGetAndTouchOperationCallback((OperationCallback)callback, span));
   }
 
   public static Object gets(final Object key, final Object callback) {
     final Span span = spanBuilder("gets").withTag("key", key.toString()).start();
-    return DynamicProxy.wrap(callback, new TracingGetsOperationCallback((OperationCallback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingGetsOperationCallback((OperationCallback)callback, span));
   }
 
   public static Object tracingCallback(final String operation, final Object key, final Object callback) {
@@ -92,11 +92,11 @@ public class SpymemcachedAgentIntercept {
       spanBuilder.withTag("key", key.toString());
 
     final Span span = spanBuilder.start();
-    return DynamicProxy.wrap(callback, new TracingOperationCallback((OperationCallback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingOperationCallback((OperationCallback)callback, span));
   }
 
   public static Object cas(final Object key, final Object callback) {
     final Span span = spanBuilder("cas").withTag("key", key.toString()).start();
-    return DynamicProxy.wrap(callback, new TracingStoreOperationCallback((OperationCallback)callback, span));
+    return WrapperProxy.wrap(callback, new TracingStoreOperationCallback((OperationCallback)callback, span));
   }
 }

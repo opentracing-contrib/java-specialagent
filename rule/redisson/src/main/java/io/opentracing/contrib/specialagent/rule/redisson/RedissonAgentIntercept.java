@@ -17,13 +17,13 @@ package io.opentracing.contrib.specialagent.rule.redisson;
 
 import org.redisson.api.RedissonClient;
 
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.redis.common.TracingConfiguration;
 import io.opentracing.contrib.redis.redisson.TracingRedissonClient;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.util.GlobalTracer;
 
 public class RedissonAgentIntercept {
   public static Object exit(final Object returned) {
-    return DynamicProxy.wrap(returned, new TracingRedissonClient((RedissonClient)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build()));
+    return WrapperProxy.wrap(returned, new TracingRedissonClient((RedissonClient)returned, new TracingConfiguration.Builder(GlobalTracer.get()).build()));
   }
 }

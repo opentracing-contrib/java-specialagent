@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Properties;
 
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
@@ -100,7 +100,7 @@ public class JdbcAgentRule extends AgentRule {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) throws Exception {
       if (thrown instanceof EarlyReturnException) {
-        returned = DynamicProxy.wrap(returned, ((EarlyReturnException)thrown).getReturnValue());
+        returned = WrapperProxy.wrap(returned, ((EarlyReturnException)thrown).getReturnValue());
         thrown = null;
       }
     }
