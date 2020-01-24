@@ -100,6 +100,27 @@ public class DynamicSpecTest {
     }
     catch (final IllegalArgumentException e) {
     }
+
+    try {
+      DynamicSpec.parseRules("java.lang.Object#<init>():<void>");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
+
+    try {
+      DynamicSpec.parseRules("java.lang.Object#<clinit>():<void>");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
+
+    try {
+      DynamicSpec.parseRules("java.lang.Object#<clinit>()");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
   }
 
   @Test

@@ -78,7 +78,7 @@ public final class DynamicSpec {
         methodName = classNameMethodSpec[1].substring(0, start).trim();
       }
 
-      if (methodName.isEmpty())
+      if (methodName.isEmpty() || ("<init>".equals(methodName) && returning != null) || ("<clinit>".equals(methodName) && (args != null || returning != null)))
         throw error(rules[i]);
 
       specs[i] = new DynamicSpec(polymorphic, className, methodName, args, returning);
