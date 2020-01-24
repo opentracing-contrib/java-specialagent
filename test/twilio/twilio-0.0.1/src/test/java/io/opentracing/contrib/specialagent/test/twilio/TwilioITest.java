@@ -15,52 +15,57 @@
 
 package io.opentracing.contrib.specialagent.test.twilio;
 
+import java.lang.reflect.Method;
+import java.net.URI;
+
 import com.twilio.Twilio;
-import com.twilio.base.ResourceSet;
 import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Call;
 import com.twilio.rest.api.v2010.account.CallCreator;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.Endpoint;
 import com.twilio.type.PhoneNumber;
+
 import io.opentracing.contrib.specialagent.TestUtil;
-import java.lang.reflect.Method;
-import java.net.URI;
 
 public class TwilioITest {
   private static final String ACCOUNT_SID = "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
   private static final String AUTH_TOKEN = "your_auth_token";
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
     try {
       Message.creator(new PhoneNumber("+1 555 1234567"), new PhoneNumber("+1 555 7654321"), "Test").create();
-    } catch (ApiException ignore) {
+    }
+    catch (final ApiException ignore) {
     }
 
     Method method;
     try {
       method = Call.class.getMethod("creator", Endpoint.class, PhoneNumber.class, URI.class);
-    } catch (NoSuchMethodException e) {
+    }
+    catch (final NoSuchMethodException e) {
       method = Call.class.getMethod("creator", Endpoint.class, Endpoint.class, URI.class);
     }
 
-    final CallCreator callCreator = (CallCreator) method.invoke(null, new PhoneNumber("+1 555 1234567"), new PhoneNumber("+1 555 7654321"), new URI("http://demo.twilio.com/docs/voice.xml"));
-
+    final CallCreator callCreator = (CallCreator)method.invoke(null, new PhoneNumber("+1 555 1234567"), new PhoneNumber("+1 555 7654321"), new URI("http://demo.twilio.com/docs/voice.xml"));
     try {
       callCreator.create();
-    } catch (ApiException ignore) {
+    }
+    catch (final ApiException ignore) {
     }
 
     try {
       Call.fetcher("CA42ed11f93dc08b952027ffbc406d0868").fetch();
-    } catch (ApiException ignore) {
+    }
+    catch (final ApiException ignore) {
     }
 
     try {
       Call.reader().read();
-    } catch (ApiException ignore) {
+    }
+    catch (final ApiException ignore) {
     }
 
     // Twilio uses Apache HttpClient
