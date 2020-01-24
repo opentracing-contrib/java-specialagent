@@ -100,7 +100,7 @@ public final class TestUtil {
     final List<MockSpan> spans = tracer.finishedSpans();
     for (final MockSpan span : spans) {
       printSpan(span);
-      final String spanComponent = (String) span.tags().get(Tags.COMPONENT.getKey());
+      final String spanComponent = (String)span.tags().get(Tags.COMPONENT.getKey());
       if (spanComponent != null && spanComponent.matches(component)) {
         found = true;
         System.out.println("Found \"" + component + "\" span");
