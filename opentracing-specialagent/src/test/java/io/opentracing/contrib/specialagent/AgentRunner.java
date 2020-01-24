@@ -462,6 +462,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
     }
 
+    System.setProperty("sa.config.instrumentation.plugin.method",
+            "io.opentracing.contrib.specialagent.rule.method.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.rule.method.ExampleMethodClass#test2");
+
     try {
       SpecialAgent.premain(null, inst);
     }
