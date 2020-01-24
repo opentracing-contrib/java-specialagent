@@ -30,6 +30,7 @@ public class SparkJavaITest {
     Spark.get("/", new Route() {
       @Override
       public Object handle(Request request, Response response) {
+        TestUtil.checkActiveSpan();
         return "Hello";
       }
     });
@@ -47,6 +48,5 @@ public class SparkJavaITest {
     TestUtil.checkSpan("java-web-servlet", 2, true);
 
     Spark.stop();
-
   }
 }
