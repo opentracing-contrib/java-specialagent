@@ -23,7 +23,7 @@ import org.asynchttpclient.Request;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.DynamicProxy;
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
@@ -54,6 +54,6 @@ public class AsyncHttpClientAgentIntercept {
       }
     });
 
-    return DynamicProxy.wrap(handler, new TracingAsyncHandler(tracer, (AsyncHandler<?>)handler, span));
+    return WrapperProxy.wrap(handler, new TracingAsyncHandler(tracer, (AsyncHandler<?>)handler, span));
   }
 }

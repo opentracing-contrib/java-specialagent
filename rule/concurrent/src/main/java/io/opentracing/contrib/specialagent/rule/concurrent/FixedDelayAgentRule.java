@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -60,11 +60,11 @@ public class FixedDelayAgentRule extends AgentRule {
         .buildSpan("scheduleWithFixedDelay")
         .withTag(Tags.COMPONENT, "java-concurrent")
         .start();
-      arg = DynamicProxy.wrap(arg, new TracedRunnable(arg, span, true));
+      arg = WrapperProxy.wrap(arg, new TracedRunnable(arg, span, true));
       span.finish();
     }
     else if (tracer.activeSpan() != null) {
-      arg = DynamicProxy.wrap(arg, new TracedRunnable(arg, tracer.activeSpan(), false));
+      arg = WrapperProxy.wrap(arg, new TracedRunnable(arg, tracer.activeSpan(), false));
     }
   }
 }

@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarFile;
 
@@ -395,7 +396,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
-    this.pluginManifest = PluginManifest.getPluginManifest(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
+    String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
+    if (path.endsWith("/test-classes/"))
+      path = path.substring(0, path.length() - 13) + "classes/";
+
+    this.pluginManifest = Objects.requireNonNull(PluginManifest.getPluginManifest(new File(path)));
     final Event[] events;
     final boolean isStaticDeferredAttach;
     if (config == null) {

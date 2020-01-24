@@ -97,15 +97,17 @@ public class SpecialAgentUtilTest {
     }
 
     testRegexMatch("*", "^.*", "spring:webmvc",
-      "okhttp", "lettuce", "jdbc");
+      "okhttp", "lettuce", "jdbc", "spring:boot", "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
     testRegexMatch("spring:*", "^spring:.*",
-      "spring:webmvc", "spring:boot");
+      "spring:boot", "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
     testRegexMatch("spring:*:*", "^spring:[^:]*:.*",
-      "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+      "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
     testRegexMatch("spring:boot", "(^spring:boot$|^spring:boot:.*)",
       "spring:boot");
     testRegexMatch("spring:webmvc", "(^spring:webmvc$|^spring:webmvc:.*)",
-      "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+      "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:web", "(^spring:web$|^spring:web:.*)",
+      "spring:web:3", "spring:web:4", "spring:web:5");
 
     testRegexMatch("lettuce:5.?", "^lettuce:5\\..",
       "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");

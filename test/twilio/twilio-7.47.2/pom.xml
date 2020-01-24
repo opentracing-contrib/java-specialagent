@@ -19,40 +19,26 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent.test.spring-webmvc</groupId>
-    <artifactId>spring-webmvc</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.test.twilio</groupId>
+    <artifactId>twilio</artifactId>
     <version>1.5.7-SNAPSHOT</version>
   </parent>
-  <artifactId>spring-webmvc-1.0</artifactId>
-  <name>SpecialAgent Test for Spring Web MVC 1.0</name>
+  <artifactId>twilio-7.47.2</artifactId>
+  <name>SpecialAgent Test for Twilio 7.47.2</name>
   <properties>
-    <version.spring>3.0.2.RELEASE</version.spring>
-    <version.jetty>9.3.15.v20161220</version.jetty>
+    <version.twilio>7.47.2</version.twilio>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>${version.spring}</version>
-      <scope>test</scope>
+      <groupId>com.twilio.sdk</groupId>
+      <artifactId>twilio</artifactId>
+      <version>${version.twilio}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${version.jetty}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${version.jetty}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${version.jetty}</version>
-      <scope>test</scope>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>twilio-0.0.1</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
     </dependency>
   </dependencies>
 </project>

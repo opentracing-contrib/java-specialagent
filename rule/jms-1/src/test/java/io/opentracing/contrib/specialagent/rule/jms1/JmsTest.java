@@ -34,9 +34,9 @@ import javax.jms.TextMessage;
 
 import org.junit.Test;
 
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
@@ -53,13 +53,13 @@ public abstract class JmsTest {
     final Destination destination = session.createQueue("TEST.JMS1.RECEIVE");
 
     final MessageConsumer consumer = session.createConsumer(destination);
-    assertTrue(DynamicProxy.isProxy(consumer, TracingMessageConsumer.class));
+    assertTrue(WrapperProxy.isWrapper(consumer, TracingMessageConsumer.class));
 
     final TextMessage message = session.createTextMessage("Hello world");
 
     final MessageProducer producer = session.createProducer(destination);
     producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-    assertTrue(DynamicProxy.isProxy(producer, TracingMessageProducer.class));
+    assertTrue(WrapperProxy.isWrapper(producer, TracingMessageProducer.class));
     producer.send(message);
 
     final TextMessage received = (TextMessage)consumer.receive(5000);

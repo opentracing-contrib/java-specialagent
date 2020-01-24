@@ -358,16 +358,17 @@ sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable
 
 The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) ("SpecialAgent Rule" column). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
-1. `lettuce:5.?`<br>Matches all Lettuce plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
-1. `spring:web:*`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
-1. `spring:web*`<br>Matches all Spring Web and WebMVC plugins, including `spring:web:3`, `spring:web:5`, `spring:webmvc:3`, and `spring:webmvc:5`.
+1. `lettuce:5.?`<br>Matches all <ins>Lettuce</ins> rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
+1. `spring:web:*`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
+1. `spring:web*`<br>Matches all <ins>Spring Web</ins> and <ins>Spring WebMVC</ins> rules, including `spring:web:3`, `spring:web:5`, `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
+1. `spring:webmvc`<br>Matches all <ins>Spring WebMVC</ins> rules, including `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
 
 If the _version part_ of the `${RULE_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
 
-1. `lettuce:5`<br>Matches all Lettuce v5 plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
-1. `spring:web`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
-1. `spring`<br>Matches all Spring plugins.
-1. `spring:w`<br>Does not match any plugins.
+1. `lettuce:5`<br>Matches all <ins>Lettuce</ins> v5 rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
+1. `spring:web`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
+1. `spring`<br>Matches all <ins>Spring</ins> rules.
+1. `spring:w`<br>Does not match any rules.
 
 #### 3.4.3 Disabling `AgentRule`s of an Instrumentation Plugin
 
@@ -569,6 +570,7 @@ The following libraries are instrumented by existing [<ins>Instrumentation Rules
 1. [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)
 1. [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
+1. [Twilio](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient)
 1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 
 ## 7 Credits

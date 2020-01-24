@@ -27,9 +27,9 @@ import com.rabbitmq.client.GetResponse;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -70,7 +70,7 @@ public class RabbitMQAgentIntercept {
   }
 
   public static Object enterConsume(final Object callback, final Object queue) {
-    return DynamicProxy.wrap(callback, new TracingConsumer((Consumer)callback, (String)queue, GlobalTracer.get()));
+    return WrapperProxy.wrap(callback, new TracingConsumer((Consumer)callback, (String)queue, GlobalTracer.get()));
   }
 
   private static void finish(final Throwable thrown) {

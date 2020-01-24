@@ -536,6 +536,11 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>common</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
       <optional>true</optional>

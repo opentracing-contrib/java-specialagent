@@ -19,8 +19,8 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
 
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
@@ -56,24 +56,24 @@ public class Lettuce50AgentRule extends AgentRule {
   public static class StatefulRedis {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin) && !DynamicProxy.isProxy(returned))
-        returned = DynamicProxy.wrap(returned, Lettuce50AgentIntercept.getAsyncCommands(returned));
+      if (isEnabled(origin) && !WrapperProxy.isWrapper(returned))
+        returned = WrapperProxy.wrap(returned, Lettuce50AgentIntercept.getAsyncCommands(returned));
     }
   }
 
   public static class StatefulRedisCluster {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin) && !DynamicProxy.isProxy(returned))
-        returned = DynamicProxy.wrap(returned, Lettuce50AgentIntercept.getAsyncClusterCommands(returned));
+      if (isEnabled(origin) && !WrapperProxy.isWrapper(returned))
+        returned = WrapperProxy.wrap(returned, Lettuce50AgentIntercept.getAsyncClusterCommands(returned));
     }
   }
 
   public static class AddPubSubListener {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-      if (isEnabled(origin) && !DynamicProxy.isProxy(arg))
-        arg = DynamicProxy.wrap(arg, Lettuce50AgentIntercept.addPubSubListener(arg));
+      if (isEnabled(origin) && !WrapperProxy.isWrapper(arg))
+        arg = WrapperProxy.wrap(arg, Lettuce50AgentIntercept.addPubSubListener(arg));
     }
   }
 }
