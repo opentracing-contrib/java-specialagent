@@ -33,6 +33,7 @@ import net.bytebuddy.utility.JavaModule;
 public class SpringBootAgentRule extends AgentRule {
   public static final Logger logger = Logger.getLogger(SpringBootAgentRule.class);
   private static final String[] testClasses = {"org.springframework.boot.loader.Launcher", "org.springframework.boot.SpringApplication"};
+  public static boolean initialized;
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
@@ -54,21 +55,30 @@ public class SpringBootAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.boot.StartupInfoLogger")))
+      .type(hasSuperType(named("org.springframework.boot.SpringApplication")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringBootAgentRule.class).on(isConstructor()));
+          return builder.visit(Advice.to(SpringBootAgentRule.class).on(named("run").and(isStatic())));
         }}));
   }
 
-  @Advice.OnMethodExit
-  public static void exit() {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>> Invoking SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
+  @Advice.OnMethodExit(onThrowable = Throwable.class)
+  public static void exit(final @Advice.Thrown Throwable thrown) {
+    if (initialized)
+      return;
 
+    if (thrown != null) {
+      logger.log(Level.SEVERE, "Terminating SpecialAgent in liue of application exception:", thrown);
+      return;
+    }
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<< Invoking SpringBootAgentRule >>>>>>>>>>>>>>>>>\n");
+
+    initialized = true;
     AgentRule.initialize();
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>> Invoked SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
+      logger.fine("\n<<<<<<<<<<<<<<<<< Invoked SpringBootAgentRule >>>>>>>>>>>>>>>>>\n");
   }
 }

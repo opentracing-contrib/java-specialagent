@@ -27,6 +27,9 @@
   <artifactId>spring-websocket</artifactId>
   <packaging>pom</packaging>
   <name>SpecialAgent Tests for Spring WebSocket</name>
+  <properties>
+    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
+  </properties>
   <modules>
     <module>spring-websocket-5.1.0</module>
     <module>spring-websocket-5.2.2</module>
