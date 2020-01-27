@@ -66,6 +66,7 @@
     <module>play</module>
     <module>pulsar-client</module>
     <module>rabbitmq-client</module>
+    <module>ratpack</module>
     <module>reactor</module>
     <module>redisson</module>
     <module>rxjava</module>

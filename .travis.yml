@@ -427,6 +427,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry mvn -B -P test -pl test/rabbitmq-client -amd install
+  - name: "Ratpack [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry mvn -B -P test -pl test/ratpack -amd install
+  - name: "Ratpack [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry mvn -B -P test -pl test/ratpack -amd install
   - name: "Reactor [openjdk8]"
     stage: test
     jdk: openjdk8
