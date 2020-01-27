@@ -15,21 +15,23 @@
 
 package io.opentracing.contrib.specialagent.test.sparkjava;
 
-import io.opentracing.contrib.specialagent.TestUtil;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 import spark.Spark;
 
 public class SparkJavaITest {
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws IOException {
     final int port = 8085;
     Spark.port(port);
     Spark.get("/", new Route() {
       @Override
-      public Object handle(Request request, Response response) {
+      public Object handle(final Request request, final Response response) {
         TestUtil.checkActiveSpan();
         return "Hello";
       }
@@ -37,13 +39,12 @@ public class SparkJavaITest {
     Spark.awaitInitialization();
 
     final URL url = new URL("http://localhost:" + port);
-    final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setRequestMethod("GET");
     final int responseCode = connection.getResponseCode();
 
-    if (200 != responseCode) {
+    if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
-    }
 
     TestUtil.checkSpan("java-web-servlet", 2, true);
 
