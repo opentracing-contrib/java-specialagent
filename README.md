@@ -572,6 +572,7 @@ The following libraries are instrumented by existing [<ins>Instrumentation Rules
 1. [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
 1. [Twilio](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient)
+1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 
 ## 7 Credits
 
