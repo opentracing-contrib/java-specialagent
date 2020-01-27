@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent.test.ratpack;
 
-
-import io.netty.buffer.PooledByteBufAllocator;
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+
+import io.netty.buffer.PooledByteBufAllocator;
+import io.opentracing.contrib.specialagent.TestUtil;
 import ratpack.exec.ExecResult;
 import ratpack.exec.Execution;
 import ratpack.exec.Promise;
@@ -39,16 +39,15 @@ import ratpack.test.exec.ExecHarness;
 
 public class RatpackITest {
   public static void main(final String[] args) throws Exception {
-
     final RatpackServer server = RatpackServer.start(new Action<RatpackServerSpec>() {
       @Override
-      public void execute(RatpackServerSpec ratpackServerSpec) {
+      public void execute(final RatpackServerSpec ratpackServerSpec) {
         ratpackServerSpec.handlers(new Action<Chain>() {
           @Override
-          public void execute(Chain chain) throws Exception {
+          public void execute(final Chain chain) {
             chain.get(new Handler() {
               @Override
-              public void handle(Context context) throws Exception {
+              public void handle(final Context context) {
                 TestUtil.checkActiveSpan();
                 context.render("Test");
               }
@@ -60,33 +59,29 @@ public class RatpackITest {
 
     final HttpClient client = HttpClient.of(new Action<HttpClientSpec>() {
       @Override
-      public void execute(HttpClientSpec httpClientSpec) throws Exception {
-        httpClientSpec.poolSize(10)
-            .maxContentLength(ServerConfig.DEFAULT_MAX_CONTENT_LENGTH)
-            .readTimeout(Duration.of(60, ChronoUnit.SECONDS))
-            .byteBufAllocator(PooledByteBufAllocator.DEFAULT);
-
+      public void execute(final HttpClientSpec httpClientSpec) {
+        httpClientSpec
+          .poolSize(10)
+          .maxContentLength(ServerConfig.DEFAULT_MAX_CONTENT_LENGTH)
+          .readTimeout(Duration.of(60, ChronoUnit.SECONDS))
+          .byteBufAllocator(PooledByteBufAllocator.DEFAULT);
       }
     });
 
-    try(final ExecHarness harness = ExecHarness.harness()) {
-      final ExecResult<ReceivedResponse> result = harness
-          .yield(new Function<Execution, Promise<ReceivedResponse>>() {
-            @Override
-            public Promise<ReceivedResponse> apply(Execution execution) throws Exception {
-              return client.get(URI.create("http://localhost:5050"));
-            }
-          });
+    try (final ExecHarness harness = ExecHarness.harness()) {
+      final ExecResult<ReceivedResponse> result = harness.yield(new Function<Execution,Promise<ReceivedResponse>>() {
+        @Override
+        public Promise<ReceivedResponse> apply(final Execution execution) {
+          return client.get(URI.create("http://localhost:5050"));
+        }
+      });
 
       final int statusCode = result.getValue().getStatusCode();
-
-      if (200 != statusCode) {
+      if (200 != statusCode)
         throw new AssertionError("ERROR: response: " + statusCode);
-      }
     }
 
     server.stop();
-
     TestUtil.checkSpan("netty", 2, true);
   }
 }
