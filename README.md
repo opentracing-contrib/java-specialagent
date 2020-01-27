@@ -567,12 +567,12 @@ Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support 
 
 The following libraries are instrumented by existing [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule).
 
-1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
-1. [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)
 1. [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
+1. [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)
+1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
+1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
 1. [Twilio](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient)
-1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 
 ## 7 Credits
 
