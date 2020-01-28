@@ -19,9 +19,7 @@ import static org.junit.Assert.*;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.client.RestTemplate;
 
 @EnableAsync
 @SpringBootApplication
@@ -36,10 +34,5 @@ public class SpringBootAgentRuleITest {
     SpringApplication.run(SpringBootAgentRuleITest.class);
     assertNull(System.getProperty("sa.init.defer"));
     System.exit(0);
-  }
-
-  @Bean
-  public RestTemplate getRestTemplate() {
-    return new RestTemplate();
   }
 }

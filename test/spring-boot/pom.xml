@@ -28,6 +28,6 @@
   <packaging>pom</packaging>
   <name>SpecialAgent Tests for Spring Boot</name>
   <modules>
-    <module>spring-boot-1.0.0</module>
+    <module>spring-boot-2.0.0</module>
   </modules>
 </project>
