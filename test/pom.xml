@@ -59,7 +59,7 @@
     <module>mongo-driver-async</module>
     <module>mongo-driver-reactive</module>
     <module>mongo-driver</module>
-    <module>mule-4.2.2/container-itest</module>
+    <module>mule</module>
     <module>neo4j-driver</module>
     <module>netty</module>
     <module>okhttp</module>
