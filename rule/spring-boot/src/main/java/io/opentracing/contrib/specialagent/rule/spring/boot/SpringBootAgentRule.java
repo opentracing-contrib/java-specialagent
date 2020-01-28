@@ -37,6 +37,15 @@ public class SpringBootAgentRule extends AgentRule {
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
+    // If `FrameworkServlet` is present, then Spring WebMVC is present, so rely on `SpringWebMvcAgentRule`
+    try {
+      Class.forName("org.springframework.web.servlet.FrameworkServlet", false, ClassLoader.getSystemClassLoader());
+      return false;
+    }
+    catch (final ClassNotFoundException e) {
+    }
+
+    // Otherwise, check for the existence of `testClasses`
     for (int i = 0; i < testClasses.length; ++i) {
       try {
         Class.forName(testClasses[i], false, ClassLoader.getSystemClassLoader());
@@ -55,23 +64,23 @@ public class SpringBootAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.boot.SpringApplication")))
+      .type(hasSuperType(named("org.springframework.context.event.ContextRefreshedEvent")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringBootAgentRule.class).on(named("run").and(isStatic())));
+          return builder.visit(Advice.to(SpringBootAgentRule.class).on(isConstructor()));
         }}));
   }
 
-  @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Thrown Throwable thrown) {
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.This Object thiz) throws ReflectiveOperationException {
     if (initialized)
       return;
 
-    if (thrown != null) {
-      logger.log(Level.SEVERE, "Terminating SpecialAgent in liue of application exception:", thrown);
+    final Object applicationContext = thiz.getClass().getMethod("getSource").invoke(thiz);
+    final Object parent = applicationContext.getClass().getMethod("getParent").invoke(applicationContext);
+    if (parent != null)
       return;
-    }
 
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<< Invoking SpringBootAgentRule >>>>>>>>>>>>>>>>>\n");
@@ -79,6 +88,6 @@ public class SpringBootAgentRule extends AgentRule {
     initialized = true;
     AgentRule.initialize();
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<< Invoked SpringBootAgentRule >>>>>>>>>>>>>>>>>\n");
+      logger.fine("\n>>>>>>>>>>>>>>>>> Invoked SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
   }
 }

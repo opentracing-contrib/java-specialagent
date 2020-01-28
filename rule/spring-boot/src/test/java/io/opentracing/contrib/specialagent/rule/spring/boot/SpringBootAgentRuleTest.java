@@ -21,9 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRunner;
@@ -39,10 +37,5 @@ public class SpringBootAgentRuleTest {
     assertFalse(AgentRule.isEnabled(null));
     SpringApplication.run(SpringBootAgentRuleTest.class);
     assertTrue(AgentRule.isEnabled(null));
-  }
-
-  @Bean
-  public RestTemplate getRestTemplate() {
-    return new RestTemplate();
   }
 }
