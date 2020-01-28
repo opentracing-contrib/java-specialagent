@@ -27,9 +27,6 @@
   <artifactId>spring-rabbitmq</artifactId>
   <packaging>pom</packaging>
   <name>SpecialAgent Tests for Spring RabbitMQ</name>
-  <properties>
-    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
-  </properties>
   <modules>
     <module>spring-rabbitmq-2.0.0</module>
     <module>spring-rabbitmq-2.2.1</module>
