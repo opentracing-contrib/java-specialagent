@@ -58,10 +58,10 @@ public class SpringWebFluxTest {
   @BeforeClass
   public static void beforeClass() {
     APPLICATION_CONTEXT.registerBean("jettyReactiveWebServerFactory", JettyReactiveWebServerFactory.class, () -> new JettyReactiveWebServerFactory(0));
-    APPLICATION_CONTEXT.registerBean("httpHandler", HttpHandler.class, WebHttpHandlerBuilder.applicationContext(APPLICATION_CONTEXT)::build);
-
+    APPLICATION_CONTEXT.registerBean("httpHandler", HttpHandler.class, () -> WebHttpHandlerBuilder.applicationContext(APPLICATION_CONTEXT).build());
     APPLICATION_CONTEXT.registerBean("webHandler", WebHandler.class, () -> SpringWebFluxTest::handler);
     APPLICATION_CONTEXT.refresh();
+
     final int serverPort = APPLICATION_CONTEXT.getWebServer().getPort();
     testRestTemplate = new TestRestTemplate(new RestTemplateBuilder().rootUri("http://127.0.0.1:" + serverPort));
   }
@@ -80,9 +80,11 @@ public class SpringWebFluxTest {
   @Test
   public void testClient(final MockTracer tracer) {
     final WebClient client = WebClient.builder().build();
-    client.get().uri(URI.create("http://example.com")).retrieve().bodyToMono(String.class).doAfterTerminate(() -> {
-      Assert.assertEquals(1, tracer.finishedSpans().size());
-    });
+    client.get()
+      .uri(URI.create("http://example.com"))
+      .retrieve()
+      .bodyToMono(String.class)
+      .doAfterTerminate(() -> Assert.assertEquals(1, tracer.finishedSpans().size()));
   }
 
   @Test
