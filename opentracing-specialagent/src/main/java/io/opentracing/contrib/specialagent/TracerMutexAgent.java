@@ -35,8 +35,8 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class MutexAgent {
-  private static final Logger logger = Logger.getLogger(MutexAgent.class);
+public class TracerMutexAgent {
+  private static final Logger logger = Logger.getLogger(TracerMutexAgent.class);
 
   public static void premain(final Instrumentation inst) {
     if (logger.isLoggable(Level.FINE))
@@ -57,7 +57,7 @@ public class MutexAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(MutexAgent.class).on(isPublic().and(any())));
+          return builder.visit(Advice.to(TracerMutexAgent.class).on(isPublic().and(any())));
         }})
       .installOn(inst);
 

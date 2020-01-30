@@ -26,7 +26,7 @@ import net.bytebuddy.description.type.TypeDefinition;
  * @author Seva Safris
  */
 public final class AgentRuleUtil {
-  static ClassLoader tracerClassLoader;
+  public static ClassLoader tracerClassLoader;
 
   /**
    * Returns the name of the class of the specified object suffixed with

@@ -62,14 +62,13 @@ public class ByteBuddyManager extends Manager {
 
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new Default(new ByteBuddy().with(TypeValidation.DISABLED))
-      .disableClassFormatChanges()
-      .ignore(none());
-
+    AgentBuilder agentBuilder = new Default(new ByteBuddy().with(TypeValidation.DISABLED));
     if (AgentRuleUtil.tracerClassLoader != null)
       agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
 
     return agentBuilder
+      .ignore(none())
+      .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
@@ -194,8 +193,12 @@ public class ByteBuddyManager extends Manager {
       agentRule = new ClassLoaderAgentRule();
       loadAgentRule(agentRule, newBuilder(), -1, events);
 
+      // Load ClassLoader Agent
+      agentRule = new ThreadMutexAgent();
+      loadAgentRule(agentRule, newBuilder(), -1, events);
+
       // Load the Mutex Agent
-      MutexAgent.premain(inst);
+      TracerMutexAgent.premain(inst);
 
       for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
         agentRule = entry.getKey();

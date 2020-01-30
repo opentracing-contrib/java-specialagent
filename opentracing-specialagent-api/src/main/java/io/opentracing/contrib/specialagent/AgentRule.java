@@ -17,7 +17,9 @@ package io.opentracing.contrib.specialagent;
 
 import java.lang.instrument.Instrumentation;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 
@@ -50,6 +52,8 @@ public abstract class AgentRule {
     return true;
   }
 
+  public static final Set<Long> tracerThreadIds = new HashSet<>();
+
   public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
     @Override
     protected Integer initialValue() {
@@ -58,7 +62,7 @@ public abstract class AgentRule {
   };
 
   public static boolean isEnabled(final String origin) {
-    final boolean enabled = initialized && latch.get() == 0;
+    final boolean enabled = initialized && latch.get() == 0 && !tracerThreadIds.contains(Thread.currentThread().getId());
     if (enabled) {
       if (logger.isLoggable(Level.FINER))
         logger.finer("-------> Intercept [" + Thread.currentThread().getName() + "] from: " + origin);
