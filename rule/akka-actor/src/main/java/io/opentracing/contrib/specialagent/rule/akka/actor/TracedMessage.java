@@ -22,9 +22,9 @@ import java.util.Map;
 
 public class TracedMessage<T> {
   private T message;
-  private Map<String, String> headers;
+  private Map<String,String> headers;
 
-  public TracedMessage(final T message, final Map<String, String> headers) {
+  public TracedMessage(final T message, final Map<String,String> headers) {
     this.message = message;
     this.headers = headers;
   }
@@ -33,7 +33,7 @@ public class TracedMessage<T> {
     return message;
   }
 
-  public SpanContext spanContext(Tracer tracer) {
-    return tracer.extract(Format.Builtin.TEXT_MAP_EXTRACT, () -> headers.entrySet().iterator());
+  public SpanContext spanContext(final Tracer tracer) {
+    return tracer.extract(Format.Builtin.TEXT_MAP_EXTRACT, headers.entrySet()::iterator);
   }
 }

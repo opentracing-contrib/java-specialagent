@@ -65,7 +65,7 @@ public class SpringKafkaTest {
       final KafkaTemplate<Integer,String> kafkaTemplate = context.getBean(KafkaTemplate.class);
       kafkaTemplate.send("spring", "message");
 
-      await().atMost(15, TimeUnit.SECONDS).until(() -> tracer.finishedSpans().size(), equalTo(1));
+      await().atMost(15, TimeUnit.SECONDS).until(tracer.finishedSpans()::size, equalTo(1));
       assertEquals(1, counter.get());
       assertEquals(1, tracer.finishedSpans().size());
     }

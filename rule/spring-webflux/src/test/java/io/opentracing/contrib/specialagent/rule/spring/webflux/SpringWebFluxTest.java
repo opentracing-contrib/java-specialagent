@@ -58,7 +58,7 @@ public class SpringWebFluxTest {
   @BeforeClass
   public static void beforeClass() {
     APPLICATION_CONTEXT.registerBean("jettyReactiveWebServerFactory", JettyReactiveWebServerFactory.class, () -> new JettyReactiveWebServerFactory(0));
-    APPLICATION_CONTEXT.registerBean("httpHandler", HttpHandler.class, () -> WebHttpHandlerBuilder.applicationContext(APPLICATION_CONTEXT).build());
+    APPLICATION_CONTEXT.registerBean("httpHandler", HttpHandler.class, WebHttpHandlerBuilder.applicationContext(APPLICATION_CONTEXT)::build);
 
     APPLICATION_CONTEXT.registerBean("webHandler", WebHandler.class, () -> SpringWebFluxTest::handler);
     APPLICATION_CONTEXT.refresh();

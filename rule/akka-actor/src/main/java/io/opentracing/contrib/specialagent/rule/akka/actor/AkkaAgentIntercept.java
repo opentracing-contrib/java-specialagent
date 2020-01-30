@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.akka.actor;
 
 import io.opentracing.propagation.Format;
 import java.util.HashMap;
-import java.util.Map;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
@@ -49,7 +48,6 @@ public class AkkaAgentIntercept {
     }
 
     final Tracer tracer = GlobalTracer.get();
-    final AbstractActor actor = (AbstractActor)thiz;
     final SpanBuilder spanBuilder = tracer
       .buildSpan("receive")
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
@@ -62,6 +60,7 @@ public class AkkaAgentIntercept {
     }
     else {
       tracedMessage = null;
+      final AbstractActor actor = (AbstractActor)thiz;
       spanBuilder.withTag(Tags.MESSAGE_BUS_DESTINATION, actor.getSelf().path().toString());
     }
 
@@ -105,16 +104,13 @@ public class AkkaAgentIntercept {
     if (sender instanceof ActorRef && ((ActorRef)sender).isTerminated())
       return message;
 
-    String path;
-    if (arg0 instanceof ActorRef) {
+    final String path;
+    if (arg0 instanceof ActorRef)
       path = ((ActorRef)arg0).path().toString();
-    }
-    else if (arg0 instanceof ActorSelection) {
+    else if (arg0 instanceof ActorSelection)
       path = ((ActorSelection)arg0).toSerializationFormat();
-    }
-    else {
+    else
       return message;
-    }
 
     if (path.contains("/system/"))
       return message;
@@ -126,7 +122,7 @@ public class AkkaAgentIntercept {
       .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER)
       .withTag(Tags.MESSAGE_BUS_DESTINATION, path).start();
 
-    final Map<String, String> headers = new HashMap<>();
+    final HashMap<String,String> headers = new HashMap<>();
     tracer.inject(span.context(), Format.Builtin.TEXT_MAP_INJECT, headers::put);
 
     final Scope scope = tracer.activateSpan(span);
@@ -161,8 +157,8 @@ public class AkkaAgentIntercept {
       span.log(errorLogs(t));
   }
 
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
+  private static HashMap<String,Object> errorLogs(final Throwable t) {
+    final HashMap<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", t);
     return errorLogs;
