@@ -37,13 +37,6 @@ public class SpringBootAgentRule extends AgentRule {
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
-    // If `FrameworkServlet` is present, then Spring WebMVC is present, so rely on `SpringWebMvcAgentRule`
-    try {
-      Class.forName("org.springframework.web.servlet.FrameworkServlet", false, ClassLoader.getSystemClassLoader());
-      return false;
-    }
-    catch (final ClassNotFoundException e) {
-    }
 
     // Otherwise, check for the existence of `testClasses`
     for (int i = 0; i < testClasses.length; ++i) {
@@ -64,22 +57,17 @@ public class SpringBootAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.context.event.ContextRefreshedEvent")))
+      .type(hasSuperType(named("org.springframework.boot.StartupInfoLogger")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringBootAgentRule.class).on(isConstructor()));
+          return builder.visit(Advice.to(SpringBootAgentRule.class).on(named("getStartedMessage")));
         }}));
   }
 
-  @Advice.OnMethodExit
+  @Advice.OnMethodEnter
   public static void exit(final @Advice.This Object thiz) throws ReflectiveOperationException {
     if (initialized)
-      return;
-
-    final Object applicationContext = thiz.getClass().getMethod("getSource").invoke(thiz);
-    final Object parent = applicationContext.getClass().getMethod("getParent").invoke(applicationContext);
-    if (parent != null)
       return;
 
     if (logger.isLoggable(Level.FINE))
