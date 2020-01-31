@@ -354,7 +354,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("rulePaths of runner will be:\n" + AssembleUtil.toIndentedString(rulePaths));
 
-      System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
+      System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), File.pathSeparator));
     }
 
     if (!isMain) {

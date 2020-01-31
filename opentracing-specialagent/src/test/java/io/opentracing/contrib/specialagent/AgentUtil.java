@@ -71,7 +71,7 @@ class AgentUtil {
         AssembleUtil.recurseDir(file, new Predicate<File>() {
           @Override
           public boolean test(final File t) {
-            final String name = filePath.relativize(t.toPath()).toString();
+            final String name = filePath.relativize(t.toPath()).toString().replace('\\', '/');
             if (predicate.test(name))
               classFiles.add(name);
 
