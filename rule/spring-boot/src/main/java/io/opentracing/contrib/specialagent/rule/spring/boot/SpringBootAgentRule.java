@@ -37,15 +37,6 @@ public class SpringBootAgentRule extends AgentRule {
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
-    // If `FrameworkServlet` is present, then Spring WebMVC is present, so rely on `SpringWebMvcAgentRule`
-    try {
-      Class.forName("org.springframework.web.servlet.FrameworkServlet", false, ClassLoader.getSystemClassLoader());
-      return false;
-    }
-    catch (final ClassNotFoundException e) {
-    }
-
-    // Otherwise, check for the existence of `testClasses`
     for (int i = 0; i < testClasses.length; ++i) {
       try {
         Class.forName(testClasses[i], false, ClassLoader.getSystemClassLoader());
