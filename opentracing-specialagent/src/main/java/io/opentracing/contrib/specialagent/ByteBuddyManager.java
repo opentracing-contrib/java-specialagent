@@ -52,6 +52,7 @@ import net.bytebuddy.utility.JavaModule;
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class);
   private static final String RULES_FILE = "otarules.mf";
+  private static final ByteBuddy byteBuddy = new ByteBuddy().with(TypeValidation.DISABLED);
 
   private static final AgentBuilder.LocationStrategy bootFallbackLocationStrategy  = new AgentBuilder.LocationStrategy() {
     @Override
@@ -62,7 +63,7 @@ public class ByteBuddyManager extends Manager {
 
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new Default(new ByteBuddy().with(TypeValidation.DISABLED));
+    AgentBuilder agentBuilder = new Default(byteBuddy);
     if (AgentRuleUtil.tracerClassLoader != null)
       agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
 
