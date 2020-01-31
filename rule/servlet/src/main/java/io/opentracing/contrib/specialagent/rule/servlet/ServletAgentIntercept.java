@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
@@ -48,8 +49,9 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   }
 
   private static ServletContext getServletContext(final HttpServlet servlet) {
-    ServletContext context = servlet.getServletContext();
-    if (context == null)
+    final ServletConfig servletConfig = servlet.getServletConfig();
+    ServletContext context;
+    if (servletConfig == null || (context = servletConfig.getServletContext()) == null)
       context = filterOrServletToServletContext.get(servlet);
 
     if (context == null)
@@ -85,11 +87,13 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 
+      final Tracer tracer = GlobalTracer.get();
       spanContext = new Context();
       contextHolder.set(spanContext);
-      final Span span = TracingFilterUtil.buildSpan(httpServletRequest, GlobalTracer.get(), spanDecorators);
+
+      final Span span = TracingFilterUtil.buildSpan(httpServletRequest, tracer, spanDecorators);
       spanContext.span = span;
-      spanContext.scope = GlobalTracer.get().activateSpan(span);
+      spanContext.scope = tracer.activateSpan(span);
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
