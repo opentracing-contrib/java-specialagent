@@ -70,7 +70,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is stable -- any exception that 
 
 ### 2.1 Installation
 
-The Maven build of the [<ins>SpecialAgent</ins>](#41-specialagent) project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from [Maven's Central Repository](http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/).
+The Maven build of the [<ins>SpecialAgent</ins>](#41-specialagent) project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from [Maven's Central Repository](https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/).
 
 #### 2.1.1 In Application
 
@@ -85,7 +85,7 @@ The artifact JAR can be provided to an application with the `-javaagent:${SPECIA
 The latest stable release is: [1.5.6][main-release]
 
 ```bash
-wget -O opentracing-specialagent-1.5.6.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar"
+wget -O opentracing-specialagent-1.5.6.jar "https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar"
 ```
 
 ##### 2.1.1.2 Development
@@ -686,5 +686,5 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 [travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
 
-[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar
+[main-release]: https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7-SNAPSHOT
