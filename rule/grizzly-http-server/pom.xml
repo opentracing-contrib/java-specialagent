@@ -28,6 +28,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <version.opentracing.grizzly>0.1.3</version.opentracing.grizzly>
     <version.org.glassfish.grizzly>2.3.35</version.org.glassfish.grizzly>
     <sa.plugin.name>grizzly:http-server</sa.plugin.name>
   </properties>
@@ -36,12 +37,12 @@
       <!-- https://github.com/opentracing-contrib/java-grizzly-http-server -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grizzly-http-server</artifactId>
-      <version>0.1.2</version>
+      <version>${version.opentracing.grizzly}</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grizzly-http-server</artifactId>
-      <version>0.1.2</version>
+      <version>${version.opentracing.grizzly}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

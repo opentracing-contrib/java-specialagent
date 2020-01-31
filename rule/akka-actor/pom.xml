@@ -35,7 +35,7 @@
       <!-- https://github.com/opentracing-contrib/java-akka -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-akka</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.4</version>
       <exclusions>
         <exclusion>
           <groupId>com.typesafe.akka</groupId>

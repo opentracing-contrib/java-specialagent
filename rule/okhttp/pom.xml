@@ -33,7 +33,7 @@
       <!-- https://github.com/opentracing-contrib/java-okhttp -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
-      <version>2.0.1</version>
+      <version>3.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>io.opentracing.contrib</groupId>
