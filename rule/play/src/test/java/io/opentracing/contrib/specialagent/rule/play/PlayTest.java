@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.rule.play;
 import static org.junit.Assert.*;
 import static play.mvc.Results.*;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -39,10 +40,10 @@ public class PlayTest {
   }
 
   @Test
-  public void test(final MockTracer tracer) throws Exception {
-    final Server server = Server.forRouter((components) -> RoutingDsl.fromComponents(components)
+  public void test(final MockTracer tracer) throws IOException {
+    final Server server = Server.forRouter(components -> RoutingDsl.fromComponents(components)
       .GET("/hello/:to")
-      .routeTo((request) -> {
+      .routeTo(request -> {
         assertNotNull(tracer.activeSpan());
         return ok("Hello");
       })

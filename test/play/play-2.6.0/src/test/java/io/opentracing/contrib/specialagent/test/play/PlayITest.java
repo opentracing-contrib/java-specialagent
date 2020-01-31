@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.test.play;
 
 import static play.mvc.Results.*;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -26,10 +27,10 @@ import play.routing.RoutingDsl;
 import play.server.Server;
 
 public class PlayITest {
-  public static void main(final String[] args) throws Exception {
-    final Server server = Server.forRouter((components) -> RoutingDsl.fromComponents(components)
+  public static void main(final String[] args) throws IOException {
+    final Server server = Server.forRouter(components -> RoutingDsl.fromComponents(components)
       .GET("/hello/:to")
-      .routeTo((request) -> {
+      .routeTo(request -> {
         TestUtil.checkActiveSpan();
         return ok("Hello");
       })
