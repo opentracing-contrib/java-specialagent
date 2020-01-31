@@ -105,7 +105,7 @@
                         <argument>-Dsa.tracer=mock</argument>
                         <argument>-Dsa.instrumentation.plugin.*.disable=true</argument>
                         <argument>-Dsa.instrumentation.plugin.mule*.enable=true</argument>
-                        <argument>-Dsa.instrumentation.plugin.grizzly:ahc.enable=true</argument>
+                        <argument>-Dsa.instrumentation.plugin.grizzly:http-client.enable=true</argument>
                         <argument>-Dsa.instrumentation.plugin.jdbc.enable=true</argument>
                         <argument>-Dsa.log.events=ERROR</argument>
                         <argument>-classpath</argument>
