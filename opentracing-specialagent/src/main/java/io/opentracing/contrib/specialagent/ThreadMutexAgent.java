@@ -49,8 +49,13 @@ public class ThreadMutexAgent extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-    if (!isEnabled(origin) || AgentRuleUtil.tracerClassLoader == null)
+    if (AgentRuleUtil.tracerClassLoader == null)
       return;
+
+    if (!isEnabled(origin)) {
+      tracerThreadIds.add(thiz.getId());
+      return;
+    }
 
     final Class<?>[] callStack = AgentRuleUtil.getExecutionStack();
     for (final Class<?> cls : callStack) {
