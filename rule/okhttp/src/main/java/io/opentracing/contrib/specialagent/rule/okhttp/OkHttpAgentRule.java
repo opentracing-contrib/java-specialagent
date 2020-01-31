@@ -36,28 +36,13 @@ public class OkHttpAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Interceptors.class).on(named("interceptors")));
-        }})
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(NetworkInterceptors.class).on(named("networkInterceptors")));
+          return builder.visit(Advice.to(OkHttpAgentRule.class).on(named("interceptors").or(named("networkInterceptors"))));
         }}));
   }
 
-  public static class Interceptors {
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(OkHttpAgentRule.class, origin))
-        returned = OkHttpAgentIntercept.exit(returned);
-    }
-  }
-
-  public static class NetworkInterceptors {
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(OkHttpAgentRule.class, origin))
-        returned = OkHttpAgentIntercept.exit(returned);
-    }
+  @Advice.OnMethodExit
+  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(OkHttpAgentRule.class, origin))
+      returned = OkHttpAgentIntercept.exit(returned);
   }
 }
