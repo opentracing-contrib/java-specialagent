@@ -48,7 +48,7 @@ public class AkkaHttpServerAgentRule extends AgentRule {
   public static class SyncHandler {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
-      if (isEnabled(origin))
+      if (isEnabled(AkkaHttpServerAgentRule.class, origin))
         arg0 = AkkaAgentIntercept.bindAndHandleSync(arg0);
     }
   }
@@ -56,7 +56,7 @@ public class AkkaHttpServerAgentRule extends AgentRule {
   public static class AsyncHandler {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
-      if (isEnabled(origin))
+      if (isEnabled(AkkaHttpServerAgentRule.class, origin))
         arg0 = AkkaAgentIntercept.bindAndHandleAsync(arg0);
     }
   }

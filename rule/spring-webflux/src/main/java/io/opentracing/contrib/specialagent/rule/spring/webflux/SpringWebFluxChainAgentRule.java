@@ -56,7 +56,7 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
   public static class Chain {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(typing = Typing.DYNAMIC, readOnly = false, value = 0) Object filters) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebFluxChainAgentRule.class, origin))
         filters = SpringWebFluxAgentIntercept.filters(filters);
     }
   }
@@ -64,7 +64,7 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
   public static class Filters {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebFluxChainAgentRule.class, origin))
         returned = SpringWebFluxAgentIntercept.filters(returned);
     }
   }
@@ -72,7 +72,7 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
   public static class FluxClient {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebFluxChainAgentRule.class, origin))
         SpringWebFluxAgentIntercept.client(thiz);
     }
   }

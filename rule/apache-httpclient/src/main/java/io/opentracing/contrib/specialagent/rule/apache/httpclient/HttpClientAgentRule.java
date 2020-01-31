@@ -44,7 +44,7 @@ public class HttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg1, @Advice.Argument(value = 2, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg2) {
-    if (!isEnabled(origin))
+    if (!isEnabled(HttpClientAgentRule.class, origin))
       return;
 
     final Object[] objects = HttpClientAgentIntercept.enter(arg0, arg1, arg2);
@@ -59,7 +59,7 @@ public class HttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-    if (isEnabled(origin))
+    if (isEnabled(HttpClientAgentRule.class, origin))
       HttpClientAgentIntercept.exit(returned);
   }
 

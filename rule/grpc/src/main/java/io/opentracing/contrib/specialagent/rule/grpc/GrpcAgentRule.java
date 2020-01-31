@@ -55,7 +55,7 @@ public class GrpcAgentRule extends AgentRule {
   public static class Registry {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object service) {
-      if (isEnabled(origin))
+      if (isEnabled(GrpcAgentRule.class, origin))
         service = GrpcAgentIntercept.addService(service);
     }
   }
@@ -63,7 +63,7 @@ public class GrpcAgentRule extends AgentRule {
   public static class Stub {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(GrpcAgentRule.class, origin))
         returned = GrpcAgentIntercept.build(returned);
     }
   }

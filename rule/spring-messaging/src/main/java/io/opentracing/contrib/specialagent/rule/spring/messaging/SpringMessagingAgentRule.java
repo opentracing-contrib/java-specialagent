@@ -42,7 +42,7 @@ public class SpringMessagingAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 0) Class<?> arg) {
-    if (isEnabled(origin))
+    if (isEnabled(SpringMessagingAgentRule.class, origin))
       SpringMessagingAgentIntercept.exit(returned, arg);
   }
 }

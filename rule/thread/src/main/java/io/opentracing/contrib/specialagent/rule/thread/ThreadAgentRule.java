@@ -45,7 +45,7 @@ public class ThreadAgentRule extends AgentRule {
   public static class Start {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(origin))
+      if (isEnabled(ThreadAgentRule.class, origin))
         ThreadAgentIntercept.start(thiz);
     }
   }
@@ -53,13 +53,13 @@ public class ThreadAgentRule extends AgentRule {
   public static class Run {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(origin))
+      if (isEnabled(ThreadAgentRule.class, origin))
         ThreadAgentIntercept.runEnter(thiz);
     }
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(origin))
+      if (isEnabled(ThreadAgentRule.class, origin))
         ThreadAgentIntercept.runExit(thiz);
     }
   }
@@ -67,7 +67,7 @@ public class ThreadAgentRule extends AgentRule {
   public static class RunError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.This Thread thiz, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(origin) && thrown != null)
+      if (isEnabled(ThreadAgentRule.class, origin) && thrown != null)
         ThreadAgentIntercept.runExit(thiz);
     }
   }

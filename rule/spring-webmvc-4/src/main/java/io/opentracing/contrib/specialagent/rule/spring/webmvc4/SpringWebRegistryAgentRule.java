@@ -42,7 +42,7 @@ public class SpringWebRegistryAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(origin))
+    if (isEnabled(SpringWebRegistryAgentRule.class, origin))
       returned = SpringWebMvcAgentIntercept.getInterceptors(returned);
   }
 }

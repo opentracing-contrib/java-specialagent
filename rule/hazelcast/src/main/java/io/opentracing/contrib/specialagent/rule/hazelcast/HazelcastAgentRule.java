@@ -79,7 +79,7 @@ public class HazelcastAgentRule extends AgentRule {
   public static class OneInstance {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(HazelcastAgentRule.class, origin))
         returned = HazelcastAgentIntercept.getOneInstance(returned);
     }
   }
@@ -87,7 +87,7 @@ public class HazelcastAgentRule extends AgentRule {
   public static class AllInstances {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(HazelcastAgentRule.class, origin))
         returned = HazelcastAgentIntercept.getAllInstances(returned);
     }
   }

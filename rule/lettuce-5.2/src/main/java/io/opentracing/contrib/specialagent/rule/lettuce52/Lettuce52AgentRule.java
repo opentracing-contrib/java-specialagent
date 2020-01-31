@@ -56,7 +56,7 @@ public class Lettuce52AgentRule extends AgentRule {
   public static class StatefulRedis {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin) && !WrapperProxy.isWrapper(returned))
+      if (isEnabled(Lettuce52AgentRule.class, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Lettuce52AgentIntercept.getAsyncCommands(returned));
     }
   }
@@ -64,7 +64,7 @@ public class Lettuce52AgentRule extends AgentRule {
   public static class StatefulRedisCluster {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(origin) && !WrapperProxy.isWrapper(returned))
+      if (isEnabled(Lettuce52AgentRule.class, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Lettuce52AgentIntercept.getAsyncClusterCommands(returned));
     }
   }
@@ -72,7 +72,7 @@ public class Lettuce52AgentRule extends AgentRule {
   public static class AddPubSubListener {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-      if (isEnabled(origin) && !WrapperProxy.isWrapper(arg))
+      if (isEnabled(Lettuce52AgentRule.class, origin) && !WrapperProxy.isWrapper(arg))
         arg = WrapperProxy.wrap(arg, Lettuce52AgentIntercept.addPubSubListener(arg));
     }
   }

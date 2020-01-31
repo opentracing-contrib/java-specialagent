@@ -49,7 +49,7 @@ public class KafkaAgentRule extends AgentRule {
   public static class Consumer {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(KafkaAgentRule.class, origin))
         KafkaAgentIntercept.onConsumerEnter(returned);
     }
   }
@@ -57,13 +57,13 @@ public class KafkaAgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (isEnabled(origin))
+      if (isEnabled(KafkaAgentRule.class, origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(origin))
+      if (isEnabled(KafkaAgentRule.class, origin))
         KafkaAgentIntercept.onProducerExit();
     }
   }

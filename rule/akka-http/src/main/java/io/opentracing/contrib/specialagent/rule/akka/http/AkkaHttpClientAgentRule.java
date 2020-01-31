@@ -42,13 +42,13 @@ public class AkkaHttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request) {
-    if (isEnabled(origin))
+    if (isEnabled(AkkaHttpClientAgentRule.class, origin))
      request = AkkaAgentIntercept.requestStart(request);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(origin))
+    if (isEnabled(AkkaHttpClientAgentRule.class, origin))
       returned = AkkaAgentIntercept.requestEnd(returned, thrown);
   }
 }

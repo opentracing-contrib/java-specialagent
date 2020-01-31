@@ -41,13 +41,13 @@ public class HttpURLConnectionAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.FieldValue("connected") final boolean connected) {
-    if (isEnabled(origin))
+    if (isEnabled(HttpURLConnectionAgentRule.class, origin))
       HttpURLConnectionAgentIntercept.enter(thiz, connected);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
-    if (isEnabled(origin))
+    if (isEnabled(HttpURLConnectionAgentRule.class, origin))
       HttpURLConnectionAgentIntercept.exit(thrown, responseCode);
   }
 }

@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.rule.spring.kafka;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -29,8 +28,6 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringKafkaAgentRule extends AgentRule {
-  private static final Logger logger = Logger.getLogger(SpringKafkaAgentRule.class.getName());
-
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
@@ -44,13 +41,13 @@ public class SpringKafkaAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record) {
-    if (isEnabled(origin))
+    if (isEnabled(SpringKafkaAgentRule.class, origin))
       SpringKafkaAgentIntercept.onMessageEnter(record);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(origin))
+    if (isEnabled(SpringKafkaAgentRule.class, origin))
       SpringKafkaAgentIntercept.onMessageExit(thrown);
   }
 }

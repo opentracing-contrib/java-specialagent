@@ -53,7 +53,7 @@ public class JedisAgentRule extends AgentRule {
   public static class SendCommand {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
-      if (isEnabled(origin))
+      if (isEnabled(JedisAgentRule.class, origin))
         JedisAgentIntercept.sendCommand(command, args);
     }
   }
@@ -61,7 +61,7 @@ public class JedisAgentRule extends AgentRule {
   public static class ReadCommandOutput {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(origin))
+      if (isEnabled(JedisAgentRule.class, origin))
         JedisAgentIntercept.readCommandOutput();
     }
   }
@@ -69,7 +69,7 @@ public class JedisAgentRule extends AgentRule {
   public static class OnError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(origin))
+      if (isEnabled(JedisAgentRule.class, origin))
         JedisAgentIntercept.onError(thrown);
     }
   }

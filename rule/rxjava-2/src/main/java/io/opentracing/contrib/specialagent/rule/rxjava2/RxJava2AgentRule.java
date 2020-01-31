@@ -56,6 +56,7 @@ public class RxJava2AgentRule extends AgentRule {
   }
 
   public static class OnExit {
+    @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown, @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object onNext) {
       if (thrown instanceof NullPointerException && onNext == null) {
@@ -68,7 +69,7 @@ public class RxJava2AgentRule extends AgentRule {
   public static class OnEnter1 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext) {
-      if (!isEnabled(origin))
+      if (!isEnabled(RxJava2AgentRule.class, origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 1, onNext, null, null, null);
@@ -80,7 +81,7 @@ public class RxJava2AgentRule extends AgentRule {
   public static class OnEnter2 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError) {
-      if (!isEnabled(origin))
+      if (!isEnabled(RxJava2AgentRule.class, origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 2, onNext, onError, null, null);
@@ -92,7 +93,7 @@ public class RxJava2AgentRule extends AgentRule {
   public static class OnEnter3 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete) {
-      if (!isEnabled(origin))
+      if (!isEnabled(RxJava2AgentRule.class, origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 3, onNext, onError, onComplete, null);
@@ -104,7 +105,7 @@ public class RxJava2AgentRule extends AgentRule {
   public static class OnEnter4 {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete, @Advice.Argument(value = 3, readOnly = false, typing = Typing.DYNAMIC) Object onSubscribe) {
-      if (!isEnabled(origin))
+      if (!isEnabled(RxJava2AgentRule.class, origin))
         return;
 
       final Object enter = RxJava2AgentIntercept.enter(thiz, 4, onNext, onError, onComplete, onSubscribe);

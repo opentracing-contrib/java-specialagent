@@ -42,7 +42,7 @@ public class Cassandra4AgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(origin))
+    if (isEnabled(Cassandra4AgentRule.class, origin))
      returned = Cassandra4AgentIntercept.exit(returned);
   }
 }

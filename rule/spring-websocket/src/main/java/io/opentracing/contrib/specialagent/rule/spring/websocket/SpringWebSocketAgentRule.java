@@ -51,7 +51,7 @@ public class SpringWebSocketAgentRule extends AgentRule {
   public static class InboundChannel {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebSocketAgentRule.class, origin))
         SpringWebSocketAgentIntercept.clientInboundChannel(returned);
     }
   }
@@ -59,7 +59,7 @@ public class SpringWebSocketAgentRule extends AgentRule {
   public static class OutboundChannel {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebSocketAgentRule.class, origin))
         SpringWebSocketAgentIntercept.clientOutboundChannel(returned);
     }
   }
@@ -67,13 +67,13 @@ public class SpringWebSocketAgentRule extends AgentRule {
   public static class StompSessionSend {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebSocketAgentRule.class, origin))
         SpringWebSocketAgentIntercept.sendEnter(arg);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(origin))
+      if (isEnabled(SpringWebSocketAgentRule.class, origin))
         SpringWebSocketAgentIntercept.sendExit(thrown);
     }
   }
