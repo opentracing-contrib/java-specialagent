@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.7</version>
   </parent>
   <artifactId>spymemcached</artifactId>
   <name>SpecialAgent Rule for Spymemcached</name>

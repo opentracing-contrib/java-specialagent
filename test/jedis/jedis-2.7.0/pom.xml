@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.jedis</groupId>
     <artifactId>jedis</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.7</version>
   </parent>
   <artifactId>jedis-2.7.0</artifactId>
   <name>SpecialAgent Test for Jedis 2.7.0</name>

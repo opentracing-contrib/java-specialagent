@@ -21,7 +21,7 @@
   <parent>
     <artifactId>rule</artifactId>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.7</version>
   </parent>
   <artifactId>spring-webmvc-4</artifactId>
   <name>SpecialAgent Rule for Spring Web MVC 4</name>
