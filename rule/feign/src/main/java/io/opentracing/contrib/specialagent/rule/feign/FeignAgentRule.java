@@ -51,13 +51,13 @@ public class FeignAgentRule extends AgentRule {
   public static class FeignClient {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request, final @Advice.Argument(value = 1) Object options) {
-      if (isEnabled(FeignAgentRule.class, origin))
+      if (isEnabled("FeignAgentRule", origin))
         request = FeignAgentIntercept.onRequest(request, options);
     }
 
     @Advice.OnMethodExit(onThrowable = Exception.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Exception thrown, @Advice.Return Object response, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object options) {
-      if (isEnabled(FeignAgentRule.class, origin))
+      if (isEnabled("FeignAgentRule", origin))
         FeignAgentIntercept.onResponse(response, request, options, thrown);
     }
   }

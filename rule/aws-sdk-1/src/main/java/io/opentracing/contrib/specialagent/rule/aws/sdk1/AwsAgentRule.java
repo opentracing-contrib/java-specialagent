@@ -41,7 +41,7 @@ public class AwsAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(AwsAgentRule.class, origin))
+    if (isEnabled("AwsAgentRule", origin))
       AwsAgentIntercept.enter(thiz);
   }
 }

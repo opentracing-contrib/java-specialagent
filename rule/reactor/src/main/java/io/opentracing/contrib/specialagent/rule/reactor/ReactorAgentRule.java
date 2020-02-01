@@ -54,7 +54,7 @@ public class ReactorAgentRule extends AgentRule {
   public static class Mono {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin) {
-      if (isEnabled(ReactorAgentRule.class, origin))
+      if (isEnabled("ReactorAgentRule", origin))
         MonoAgentIntercept.enter();
     }
   }
@@ -62,7 +62,7 @@ public class ReactorAgentRule extends AgentRule {
   public static class Flux {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin) {
-      if (isEnabled(ReactorAgentRule.class, origin))
+      if (isEnabled("ReactorAgentRule", origin))
         FluxAgentIntercept.enter();
     }
   }
@@ -70,7 +70,7 @@ public class ReactorAgentRule extends AgentRule {
   public static class ParallelFlux {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin) {
-      if (isEnabled(ReactorAgentRule.class, origin))
+      if (isEnabled("ReactorAgentRule", origin))
         ParallelFluxAgentIntercept.enter();
     }
   }

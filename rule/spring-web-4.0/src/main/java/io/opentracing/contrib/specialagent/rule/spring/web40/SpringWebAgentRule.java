@@ -49,7 +49,7 @@ public class SpringWebAgentRule extends AgentRule {
   public static class RestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(SpringWebAgentRule.class, origin))
+      if (isEnabled("SpringWebAgentRule", origin))
         SpringWebAgentIntercept.enter(thiz);
     }
   }
@@ -57,13 +57,13 @@ public class SpringWebAgentRule extends AgentRule {
   public static class AsyncRestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object url, final @Advice.Argument(value = 1) Object method, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object requestCallback) {
-      if (isEnabled(SpringWebAgentRule.class, origin))
+      if (isEnabled("SpringWebAgentRule", origin))
         requestCallback = SpringWebAgentIntercept.asyncStart(url, method, requestCallback);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object response, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(SpringWebAgentRule.class, origin))
+      if (isEnabled("SpringWebAgentRule", origin))
         response = SpringWebAgentIntercept.asyncEnd(response, thrown);
     }
   }

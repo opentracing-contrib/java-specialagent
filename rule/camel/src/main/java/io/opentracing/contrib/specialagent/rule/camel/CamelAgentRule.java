@@ -41,7 +41,7 @@ public class CamelAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(CamelAgentRule.class, origin))
+    if (isEnabled("CamelAgentRule", origin))
       CamelAgentIntercept.enter(thiz);
   }
 }

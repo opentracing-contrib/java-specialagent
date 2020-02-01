@@ -41,7 +41,7 @@ public class AsyncHttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(AsyncHttpClientAgentRule.class, origin))
+    if (isEnabled("AsyncHttpClientAgentRule", origin))
       AsyncHttpClientAgentIntercept.exit(thiz);
   }
 }

@@ -52,7 +52,7 @@ public class FilterChainAgentRule extends AgentRule {
   public static class OnEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) throws EarlyReturnException {
-      if (!isEnabled(FilterChainAgentRule.class, origin))
+      if (!isEnabled("FilterChainAgentRule", origin))
         return;
 
       final Object filterChain = FilterChainAgentIntercept.enter(thiz);

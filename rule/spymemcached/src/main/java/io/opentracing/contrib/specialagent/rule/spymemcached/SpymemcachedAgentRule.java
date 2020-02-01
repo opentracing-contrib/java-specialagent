@@ -53,7 +53,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Store {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object storeType, final @Advice.Argument(value = 1) Object key, @Advice.Argument(value = 5, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.store(storeType, key, callback);
     }
 
@@ -67,7 +67,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Get {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object key, @Advice.Argument(value = 1, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.get(key, callback);
     }
 
@@ -81,7 +81,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Delete {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object key, @Advice.Argument(value = 1, typing = Typing.DYNAMIC, readOnly = false) Object callback, @Advice.Argument(value = 2, typing = Typing.DYNAMIC, optional = true, readOnly = false) Object callback2) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin)) {
+      if (isEnabled("SpymemcachedAgentRule", origin)) {
         if (callback2 != null) {
           callback2 = SpymemcachedAgentIntercept.delete(key, callback2);
         }
@@ -105,7 +105,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Flush {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 1, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.tracingCallback("flush", null, callback);
     }
 
@@ -119,7 +119,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class GetAndTouch {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object key, @Advice.Argument(value = 2, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.getAndTouch(key, callback);
     }
 
@@ -133,7 +133,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Gets {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object key, @Advice.Argument(value = 1, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.gets(key, callback);
     }
 
@@ -147,7 +147,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Mutate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object key, @Advice.Argument(value = 5, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.tracingCallback("mutate", key, callback);
     }
 
@@ -161,7 +161,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Touch {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object key, @Advice.Argument(value = 2, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.tracingCallback("touch", key, callback);
     }
 
@@ -175,7 +175,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Cat {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 2) Object key, @Advice.Argument(value = 4, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.tracingCallback("cat", key, callback);
     }
 
@@ -189,7 +189,7 @@ public class SpymemcachedAgentRule extends AgentRule {
   public static class Cas {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object key, @Advice.Argument(value = 6, typing = Typing.DYNAMIC, readOnly = false) Object callback) {
-      if (isEnabled(SpymemcachedAgentRule.class, origin))
+      if (isEnabled("SpymemcachedAgentRule", origin))
         callback = SpymemcachedAgentIntercept.cas(key, callback);
     }
 

@@ -62,7 +62,7 @@ public class ThriftProtocolAgentRule extends AgentRule {
   public static class WriteMessageBegin {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
-      if (isEnabled(ThriftProtocolAgentRule.class, origin))
+      if (isEnabled("ThriftProtocolAgentRule", origin))
         ThriftProtocolAgentIntercept.writeMessageBegin(thiz, message);
     }
   }
@@ -70,7 +70,7 @@ public class ThriftProtocolAgentRule extends AgentRule {
   public static class WriteMessageEnd {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(ThriftProtocolAgentRule.class, origin))
+      if (isEnabled("ThriftProtocolAgentRule", origin))
         ThriftProtocolAgentIntercept.writeMessageEnd();
     }
   }
@@ -78,7 +78,7 @@ public class ThriftProtocolAgentRule extends AgentRule {
   public static class WriteFieldStop {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) throws Exception {
-      if (isEnabled(ThriftProtocolAgentRule.class, origin))
+      if (isEnabled("ThriftProtocolAgentRule", origin))
         ThriftProtocolAgentIntercept.writeFieldStop(thiz);
     }
   }
@@ -86,7 +86,7 @@ public class ThriftProtocolAgentRule extends AgentRule {
   public static class ReadMessageBegin {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(ThriftProtocolAgentRule.class, origin) && thrown != null)
+      if (isEnabled("ThriftProtocolAgentRule", origin) && thrown != null)
         ThriftProtocolAgentIntercept.readMessageBegin(thrown);
     }
   }
@@ -94,7 +94,7 @@ public class ThriftProtocolAgentRule extends AgentRule {
   public static class ReadMessageEnd {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(ThriftProtocolAgentRule.class, origin))
+      if (isEnabled("ThriftProtocolAgentRule", origin))
         ThriftProtocolAgentIntercept.readMessageEnd();
     }
   }

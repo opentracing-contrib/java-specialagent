@@ -51,7 +51,7 @@ public class Jms2AgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(Jms2AgentRule.class, origin) && !WrapperProxy.isWrapper(returned))
+      if (isEnabled("Jms2AgentRule", origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Jms2AgentIntercept.createProducer(returned));
     }
   }
@@ -59,7 +59,7 @@ public class Jms2AgentRule extends AgentRule {
   public static class Consumer {
     @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(Jms2AgentRule.class, origin) && !WrapperProxy.isWrapper(returned))
+      if (isEnabled("Jms2AgentRule", origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Jms2AgentIntercept.createConsumer(returned));
     }
   }

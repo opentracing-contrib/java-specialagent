@@ -42,7 +42,7 @@ public class Neo4jDriverAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(Neo4jDriverAgentRule.class, origin))
+    if (isEnabled("Neo4jDriverAgentRule", origin))
       returned = Neo4jDriverAgentIntercept.exit(returned);
   }
 }

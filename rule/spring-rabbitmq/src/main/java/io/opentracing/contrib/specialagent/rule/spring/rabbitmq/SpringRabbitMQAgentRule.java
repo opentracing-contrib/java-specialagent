@@ -40,13 +40,13 @@ public class SpringRabbitMQAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
-    if (isEnabled(SpringRabbitMQAgentRule.class, origin))
+    if (isEnabled("SpringRabbitMQAgentRule", origin))
       SpringRabbitMQAgentIntercept.onMessageEnter(message);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(SpringRabbitMQAgentRule.class, origin))
+    if (isEnabled("SpringRabbitMQAgentRule", origin))
       SpringRabbitMQAgentIntercept.onMessageExit(thrown);
   }
 }

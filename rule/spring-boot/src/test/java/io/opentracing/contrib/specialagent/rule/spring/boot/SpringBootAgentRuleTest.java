@@ -34,8 +34,8 @@ import io.opentracing.contrib.specialagent.Level;
 public class SpringBootAgentRuleTest {
   @Test
   public void test() {
-    assertFalse(AgentRule.isEnabled(AgentRule.class, null));
+    assertFalse(AgentRule.isEnabled("AgentRule", null));
     SpringApplication.run(SpringBootAgentRuleTest.class);
-    assertTrue(AgentRule.isEnabled(AgentRule.class, null));
+    assertTrue(AgentRule.isEnabled("AgentRule", null));
   }
 }

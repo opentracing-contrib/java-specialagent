@@ -52,7 +52,7 @@ public class ThreadMutexAgent extends AgentRule {
     if (AgentRuleUtil.tracerClassLoader == null)
       return;
 
-    if (!isEnabled(ThreadMutexAgent.class, origin)) {
+    if (!isEnabled("ThreadMutexAgent", origin)) {
       tracerThreadIds.add(thiz.getId());
       return;
     }

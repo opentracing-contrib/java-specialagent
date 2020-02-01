@@ -61,15 +61,15 @@ public abstract class AgentRule {
 
   public static final Latch latch = new Latch();
 
-  public static boolean isEnabled(final Class<? extends AgentRule> agentRuleClass, final String origin) {
+  public static boolean isEnabled(final String agentRuleClass, final String origin) {
     final Thread thread = Thread.currentThread();
     final boolean enabled = initialized && latch.get() == 0 && !tracerThreadIds.contains(thread.getId());
     if (enabled) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("-------> Intercept [" + agentRuleClass.getSimpleName() + "@" + thread.getName() + "]: " + origin);
+        logger.finer("-------> Intercept [" + agentRuleClass + "@" + thread.getName() + "]: " + origin);
     }
     else if (logger.isLoggable(Level.FINEST)) {
-      logger.finest("-------> Intercept [" + agentRuleClass.getSimpleName() + "@" + thread.getName() + "] DROP: " + origin);
+      logger.finest("-------> Intercept [" + agentRuleClass + "@" + thread.getName() + "] DROP: " + origin);
     }
 
     return enabled;

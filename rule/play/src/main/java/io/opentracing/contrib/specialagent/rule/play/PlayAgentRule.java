@@ -41,13 +41,13 @@ public class PlayAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0) {
-    if (isEnabled(PlayAgentRule.class, origin))
+    if (isEnabled("PlayAgentRule", origin))
       PlayAgentIntercept.applyStart(arg0);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(PlayAgentRule.class, origin))
+    if (isEnabled("PlayAgentRule", origin))
       PlayAgentIntercept.applyEnd(thiz, returned, thrown);
   }
 }

@@ -41,7 +41,7 @@ public class ZuulAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 0) Object arg) {
-    if (isEnabled(ZuulAgentRule.class, origin))
+    if (isEnabled("ZuulAgentRule", origin))
       ZuulAgentIntercept.exit(returned, arg);
   }
 }

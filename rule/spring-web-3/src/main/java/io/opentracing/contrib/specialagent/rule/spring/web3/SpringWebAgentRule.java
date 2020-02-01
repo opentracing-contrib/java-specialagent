@@ -42,13 +42,13 @@ public class SpringWebAgentRule extends AgentRule {
   public static class RestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(SpringWebAgentRule.class, origin))
+      if (isEnabled("SpringWebAgentRule", origin))
         SpringWebAgentIntercept.enter(thiz);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.Return Object response) {
-      if (isEnabled(SpringWebAgentRule.class, origin))
+      if (isEnabled("SpringWebAgentRule", origin))
         SpringWebAgentIntercept.exit(response, thrown);
     }
   }

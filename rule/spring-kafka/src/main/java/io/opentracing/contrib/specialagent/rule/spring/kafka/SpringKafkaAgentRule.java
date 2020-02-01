@@ -41,13 +41,13 @@ public class SpringKafkaAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record) {
-    if (isEnabled(SpringKafkaAgentRule.class, origin))
+    if (isEnabled("SpringKafkaAgentRule", origin))
       SpringKafkaAgentIntercept.onMessageEnter(record);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(SpringKafkaAgentRule.class, origin))
+    if (isEnabled("SpringKafkaAgentRule", origin))
       SpringKafkaAgentIntercept.onMessageExit(thrown);
   }
 }
