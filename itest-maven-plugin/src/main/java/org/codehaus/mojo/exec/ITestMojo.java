@@ -17,6 +17,7 @@ package org.codehaus.mojo.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.maven.artifact.Artifact;
@@ -51,36 +53,84 @@ public final class ITestMojo extends ExecMojo {
     super.collectProjectArtifactsAndClasspath(artifacts, theClasspathFiles);
   }
 
+  private static String[] clone(final String[] array, final int len) {
+    final String[] args = new String[len];
+    System.arraycopy(array, 0, args, 0, array.length);
+    return args;
+  }
+
   @Override
   CommandLine getExecutablePath(final Map<String,String> enviro, final File dir) {
-    final CommandLine cli = super.getExecutablePath(enviro, dir);
-    return new CommandLine(cli) {
+    return new CommandLine(super.getExecutablePath(enviro, dir)) {
+      private boolean mod1, mod2;
 
       @Override
       public String[] getArguments() {
-        final String[] arguments = super.getArguments();
-        for (int i = 0, len = arguments.length; i < len; ++i) {
-          if (!"-cp".equals(arguments[i]) && !"-classpath".equals(arguments[i]))
-            continue;
+        String[] superArgs = super.getArguments();
+        for (int i = 0, len = superArgs.length; i < len; ++i) {
+          if (superArgs[i].startsWith("%") && superArgs[i].endsWith("%")) {
+            if (superArgs[i].length() == 2) {
+              if (mod1)
+                throw new IllegalStateException();
 
-          if (++i < len)
-            arguments[i] = arguments[i] + File.pathSeparator + Exec.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+              try {
+                final Field field = CommandLine.class.getDeclaredField("arguments");
+                field.setAccessible(true);
+                final Vector<?> vector = (Vector<?>)field.get(this);
+                vector.remove(i);
+              }
+              catch (final IllegalAccessException | NoSuchFieldException e) {
+                throw new IllegalStateException(e);
+              }
 
-          break;
+              final String[] temp = new String[superArgs.length - 1];
+              System.arraycopy(superArgs, 0, temp, 0, i);
+              System.arraycopy(superArgs, i + 1, temp, i, superArgs.length - i - 1);
+              superArgs = temp;
+              --i;
+              --len;
+            }
+            else {
+              final String[] parts = superArgs[i].substring(1, superArgs[i].length() - 1).split(" ");
+              final String[] temp = new String[superArgs.length + parts.length - 1];
+              if (!mod1) {
+                for (int j = 0; j < temp.length - 1; ++j)
+                  super.addArgument("");
+              }
+
+              System.arraycopy(superArgs, 0, temp, 0, i);
+              System.arraycopy(parts, 0, temp, i, parts.length);
+              System.arraycopy(superArgs, i + 1, temp, i + parts.length, superArgs.length - i - 1);
+              superArgs = temp;
+              i += parts.length - 1;
+            }
+          }
+          else if ("-cp".equals(superArgs[i]) || "-classpath".equals(superArgs[i]) && ++i < len) {
+            superArgs[i] = superArgs[i] + File.pathSeparator + Exec.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+          }
         }
 
-        super.addArgument(Exec.class.getName());
-        super.addArgument(mainClass);
-        return arguments;
+        mod1 = true;
+        return superArgs;
       }
 
       @Override
       public CommandLine addArguments(final String[] addArguments, final boolean handleQuoting) {
         final CommandLine cli = super.addArguments(addArguments, handleQuoting);
-        super.addArgument(Exec.class.getName());
-        super.addArgument(mainClass);
+        if (!mod2) {
+          mod2 = true;
+          super.addArgument(Exec.class.getName());
+          super.addArgument(mainClass);
+        }
+
         getLog().info(cli.toString().replace(", ", " "));
         return cli;
+      }
+
+      @Override
+      public String[] toStrings() {
+        getArguments();
+        return super.toStrings();
       }
     };
   }

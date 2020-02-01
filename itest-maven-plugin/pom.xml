@@ -75,6 +75,9 @@
                     <mainClass>io.opentracing.contrib.specialagent.test.*</mainClass>
                   </mainClasses>
                   <arguments>
+                    <argument>-Dsa.tracer=mock</argument>
+                    <argument>%%</argument>
+                    <argument>%-Dsa.instrumentation.plugin.*.disable -Dsa.instrumentation.plugin.servlet.enable%</argument>
                     <argument>-classpath</argument>
                     <classpath/>
                   </arguments>

@@ -129,7 +129,7 @@
                 <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
                 <argument>-Dsa.log.level=${sa.log.level}</argument>
                 <argument>-Dsa.tracer=mock</argument>
-                <argument>${sa.itest.args}</argument>
+                <argument>%${sa.itest.args}%</argument>
                 <argument>-classpath</argument>
                 <classpath/>
               </arguments>
