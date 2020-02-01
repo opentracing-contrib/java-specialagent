@@ -43,6 +43,10 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
   }
 
   public static void doFilter(final Object thiz, final Object req, final Object res, final Object chain) {
+    // `thiz` should never be `TracingFilter`, but issue #391 suggests otherwise
+    if (thiz instanceof TracingFilter)
+      return;
+
     final ServletRequest request = (ServletRequest)req;
     if (servletRequestToState.containsKey(request))
       return;
