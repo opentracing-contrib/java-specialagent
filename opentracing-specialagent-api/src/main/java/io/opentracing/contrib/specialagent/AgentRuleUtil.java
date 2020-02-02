@@ -245,16 +245,36 @@ public final class AgentRuleUtil {
     return false;
   }
 
-  public static boolean hasMethodNamed(TypeDefinition typeDescription, final String methodName) {
+  /**
+   * Tests the specified {@link TypeDefinition typeDefinition} whether it or
+   * its superclasses define a method by the provided {@code methodName}.
+   *
+   * @param typeDefinition The {@link TypeDefinition}.
+   * @param methodName The method name.
+   * @return {@code true} if the specified {@link TypeDefinition
+   *         typeDefinition} or its superclasses define a method by the
+   *         provided {@code methodName}, otherwise {@code false}.
+   */
+  public static boolean hasMethodNamed(TypeDefinition typeDefinition, final String methodName) {
     do {
-      for (final Object method : typeDescription.getDeclaredMethods()) {
+      for (final Object method : typeDefinition.getDeclaredMethods()) {
         if (methodName.equals(((AbstractBase)method).getActualName())) {
           return true;
         }
       }
     }
-    while (typeDescription.getSuperClass() != null && !"java.lang.Object".equals((typeDescription = typeDescription.getSuperClass()).getActualName()));
+    while (typeDefinition.getSuperClass() != null && !"java.lang.Object".equals((typeDefinition = typeDefinition.getSuperClass()).getActualName()));
     return false;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T>T getFieldInBootstrapClass(final Class<?> cls, final String fieldName) {
+    try {
+      return (T)BootProxyClassLoader.INSTANCE.loadClass(cls.getName()).getField(fieldName).get(null);
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+      throw new ExceptionInInitializerError(e);
+    }
   }
 
   private AgentRuleUtil() {

@@ -20,25 +20,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.BootProxyClassLoader;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 
-@SuppressWarnings("unchecked")
 public class ThreadAgentIntercept {
   public static final Map<Long,Span> threadIdToSpan;
-  private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
+  private static final ThreadLocal<Scope> localScope = new ThreadLocal<>();
 
   static {
     if (ThreadAgentIntercept.class.getClassLoader() == null) {
       threadIdToSpan = new ConcurrentHashMap<>();
     }
     else {
-      try {
-        threadIdToSpan = (Map<Long,Span>)BootProxyClassLoader.INSTANCE.loadClass(ThreadAgentIntercept.class.getName()).getField("threadIdToSpan").get(null);
-      }
-      catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-        throw new ExceptionInInitializerError(e);
-      }
+      threadIdToSpan = AgentRuleUtil.getFieldInBootstrapClass(ThreadAgentIntercept.class, "threadIdToSpan");
     }
   }
 
@@ -51,13 +45,13 @@ public class ThreadAgentIntercept {
   public static void runEnter(final Thread thread) {
     final Span span = threadIdToSpan.get(thread.getId());
     if (span != null)
-      scopeHandler.set(GlobalTracer.get().activateSpan(span));
+      localScope.set(GlobalTracer.get().activateSpan(span));
   }
 
   @SuppressWarnings("resource")
   public static void runExit(final Thread thread) {
     threadIdToSpan.remove(thread.getId());
-    final Scope scope = scopeHandler.get();
+    final Scope scope = localScope.get();
     if (scope != null)
       scope.close();
   }
