@@ -43,7 +43,7 @@ public class TracerMutexAgent {
       logger.fine("\n<<<<<<<<<<<<<<<<<<<< Installing MutexAgent >>>>>>>>>>>>>>>>>>>>>\n");
 
     new AgentBuilder.Default()
-      .ignore(none())
+      .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
       .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
