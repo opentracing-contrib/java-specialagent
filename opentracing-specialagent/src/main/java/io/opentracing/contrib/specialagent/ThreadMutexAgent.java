@@ -34,7 +34,9 @@ public class ThreadMutexAgent extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ThreadMutexAgent.class).on(named("start")));
+          return builder
+            .visit(Advice.to(OnConstructor.class).on(isConstructor()))
+            .visit(Advice.to(OnStart.class).on(named("start")));
         }}));
   }
 
@@ -47,22 +49,32 @@ public class ThreadMutexAgent extends AgentRule {
     return result;
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-    if (AgentRuleUtil.tracerClassLoader == null)
-      return;
-
-    if (!isEnabled("ThreadMutexAgent", origin)) {
-      tracerThreadIds.add(thiz.getId());
-      return;
-    }
-
-    final Class<?>[] callStack = AgentRuleUtil.getExecutionStack();
-    for (final Class<?> cls : callStack) {
-      if (isFromClassLoader(cls.getClassLoader(), AgentRuleUtil.tracerClassLoader)) {
+  public static class OnConstructor {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (!isEnabled("ThreadMutexAgent", origin)) {
         tracerThreadIds.add(thiz.getId());
-        break;
+        return;
       }
+
+      if (AgentRuleUtil.tracerClassLoader == null)
+        return;
+
+      final Class<?>[] callStack = AgentRuleUtil.getExecutionStack();
+      for (final Class<?> cls : callStack) {
+        if (isFromClassLoader(cls.getClassLoader(), AgentRuleUtil.tracerClassLoader)) {
+          tracerThreadIds.add(thiz.getId());
+          break;
+        }
+      }
+    }
+  }
+
+  public static class OnStart {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (!tracerThreadIds.contains(thiz.getId()))
+        OnConstructor.enter(origin, thiz);
     }
   }
 }
