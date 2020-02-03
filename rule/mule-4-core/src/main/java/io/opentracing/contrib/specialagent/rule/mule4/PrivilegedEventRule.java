@@ -41,7 +41,7 @@ public class PrivilegedEventRule extends AgentRule {
         public static void exit(final @Advice.Origin String origin,
                                 final @Advice.Thrown(typing = Assigner.Typing.DYNAMIC) Throwable thrown,
                                 final @Advice.Argument(value = 0, typing = Assigner.Typing.DYNAMIC) Object event) {
-            if (!isEnabled(origin))
+            if (!isEnabled(PrivilegedEventRule.class, origin))
                 return;
 
             if (event == null) {

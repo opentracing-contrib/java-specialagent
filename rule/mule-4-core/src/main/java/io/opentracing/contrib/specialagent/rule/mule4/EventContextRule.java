@@ -35,7 +35,7 @@ public class EventContextRule extends AgentRule {
     public static class EventContextIntercept {
         @Advice.OnMethodExit
         public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-            if (!isEnabled(origin))
+            if (!isEnabled(EventContextRule.class, origin))
                 return;
 
             DefaultEventContext eventContext = (DefaultEventContext) thiz;
