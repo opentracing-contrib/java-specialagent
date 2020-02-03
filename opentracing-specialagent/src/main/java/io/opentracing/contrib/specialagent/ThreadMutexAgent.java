@@ -35,7 +35,7 @@ public class ThreadMutexAgent extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-//            .visit(Advice.to(OnConstructor.class).on(isConstructor()))
+            .visit(Advice.to(OnConstructor.class).on(isConstructor()))
             .visit(Advice.to(OnStart.class).on(named("start")));
         }}));
   }
@@ -50,7 +50,7 @@ public class ThreadMutexAgent extends AgentRule {
   }
 
   public static class OnConstructor {
-    @Advice.OnMethodEnter
+    @Advice.OnMethodExit
     public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
       if (!isEnabled("ThreadMutexAgent", origin)) {
         tracerThreadIds.add(thiz.getId());
