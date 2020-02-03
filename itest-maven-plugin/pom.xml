@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <artifactId>itest-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
@@ -75,6 +75,9 @@
                     <mainClass>io.opentracing.contrib.specialagent.test.*</mainClass>
                   </mainClasses>
                   <arguments>
+                    <argument>-Dsa.tracer=mock</argument>
+                    <argument>%%</argument>
+                    <argument>%-Dsa.instrumentation.plugin.*.disable -Dsa.instrumentation.plugin.servlet.enable%</argument>
                     <argument>-classpath</argument>
                     <classpath/>
                   </arguments>

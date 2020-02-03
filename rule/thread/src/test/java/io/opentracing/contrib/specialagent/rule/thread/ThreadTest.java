@@ -29,7 +29,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config
 public class ThreadTest {
   @Before
   public void before(final MockTracer tracer) {

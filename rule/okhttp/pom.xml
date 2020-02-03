@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <artifactId>okhttp</artifactId>
   <name>SpecialAgent Rule for OkHttp</name>
@@ -33,7 +33,7 @@
       <!-- https://github.com/opentracing-contrib/java-okhttp -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
-      <version>2.0.1</version>
+      <version>3.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>io.opentracing.contrib</groupId>

@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.rule</groupId>
   <artifactId>rule</artifactId>
@@ -98,6 +98,7 @@
         <module>neo4j-driver</module>
         <module>netty</module>
         <module>pulsar-client</module>
+        <module>dynamic</module>
       </modules>
       <build>
         <resources>
@@ -203,6 +204,11 @@
         <dependency>
           <groupId>io.opentracing</groupId>
           <artifactId>opentracing-util</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>common</artifactId>
           <scope>provided</scope>
         </dependency>
 

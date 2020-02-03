@@ -52,6 +52,7 @@ import net.bytebuddy.utility.JavaModule;
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class);
   private static final String RULES_FILE = "otarules.mf";
+  private static final ByteBuddy byteBuddy = new ByteBuddy().with(TypeValidation.DISABLED);
 
   private static final AgentBuilder.LocationStrategy bootFallbackLocationStrategy  = new AgentBuilder.LocationStrategy() {
     @Override
@@ -62,14 +63,13 @@ public class ByteBuddyManager extends Manager {
 
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
-    AgentBuilder agentBuilder = new Default(new ByteBuddy().with(TypeValidation.DISABLED))
-      .disableClassFormatChanges()
-      .ignore(none());
-
+    AgentBuilder agentBuilder = new Default(byteBuddy);
     if (AgentRuleUtil.tracerClassLoader != null)
       agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
 
     return agentBuilder
+      .ignore(none())
+      .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
@@ -136,7 +136,6 @@ public class ByteBuddyManager extends Manager {
               continue;
             }
 
-            System.err.println(line);
             final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
             if (!AgentRule.class.isAssignableFrom(agentClass)) {
               logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
@@ -194,8 +193,12 @@ public class ByteBuddyManager extends Manager {
       agentRule = new ClassLoaderAgentRule();
       loadAgentRule(agentRule, newBuilder(), -1, events);
 
+      // Load ClassLoader Agent
+      agentRule = new ThreadMutexAgent();
+      loadAgentRule(agentRule, newBuilder(), -1, events);
+
       // Load the Mutex Agent
-      MutexAgent.premain(inst);
+      TracerMutexAgent.premain(inst);
 
       for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
         agentRule = entry.getKey();

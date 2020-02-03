@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <artifactId>jaxrs</artifactId>
   <name>SpecialAgent Rule for JAX-RS Client</name>
@@ -41,7 +41,7 @@
       <!-- https://github.com/opentracing-contrib/java-jaxrs -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jaxrs2</artifactId>
-      <version>0.5.0</version>
+      <version>1.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>io.opentracing.contrib</groupId>

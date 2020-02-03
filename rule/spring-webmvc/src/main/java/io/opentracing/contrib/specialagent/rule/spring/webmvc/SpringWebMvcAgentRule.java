@@ -37,13 +37,7 @@ public class SpringWebMvcAgentRule extends AgentRule {
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
     try {
-      Class.forName("org.springframework.web.servlet.HandlerInterceptor", false, ClassLoader.getSystemClassLoader());
-      try {
-        Class.forName("org.springframework.boot.SpringApplication", false, ClassLoader.getSystemClassLoader());
-        return false;
-      }
-      catch (final ClassNotFoundException e) {
-      }
+      Class.forName("org.springframework.web.servlet.FrameworkServlet", false, ClassLoader.getSystemClassLoader());
     }
     catch (final ClassNotFoundException e) {
       return false;
@@ -58,29 +52,25 @@ public class SpringWebMvcAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.context.event.ContextRefreshedEvent")))
+      .type(hasSuperType(named("org.springframework.web.servlet.FrameworkServlet")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringWebMvcAgentRule.class).on(isConstructor()));
+          return builder.visit(Advice.to(SpringWebMvcAgentRule.class).on(named("initServletBean")));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.This Object thiz) throws ReflectiveOperationException {
+  public static void exit() {
     if (initialized)
       return;
 
-    final Object applicationContext = thiz.getClass().getMethod("getSource").invoke(thiz);
-    final Object parent = applicationContext.getClass().getMethod("getParent").invoke(applicationContext);
-    if (parent == null) {
-      initialized = true;
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("\n<<<<<<<<<<<<<<< Invoking SpringWebMvcAgentRule >>>>>>>>>>>>>>>>\n");
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<< Invoking SpringWebMvcAgentRule >>>>>>>>>>>>>>>>\n");
 
-      AgentRule.initialize();
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("\n<<<<<<<<<<<<<<<< Invoked SpringWebMvcAgentRule >>>>>>>>>>>>>>>>\n");
-    }
+    initialized = true;
+    AgentRule.initialize();
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n>>>>>>>>>>>>>>>> Invoked SpringWebMvcAgentRule <<<<<<<<<<<<<<<<\n");
   }
 }

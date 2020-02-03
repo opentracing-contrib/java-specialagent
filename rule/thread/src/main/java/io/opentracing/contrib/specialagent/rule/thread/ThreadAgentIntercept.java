@@ -20,47 +20,38 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.BootProxyClassLoader;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 
-@SuppressWarnings("unchecked")
 public class ThreadAgentIntercept {
-  public static final Map<Long,Span> cache;
-  private static final ThreadLocal<Scope> scopeHandler = new ThreadLocal<>();
+  public static final Map<Long,Span> threadIdToSpan;
+  private static final ThreadLocal<Scope> localScope = new ThreadLocal<>();
 
   static {
     if (ThreadAgentIntercept.class.getClassLoader() == null) {
-      cache = new ConcurrentHashMap<>();
+      threadIdToSpan = new ConcurrentHashMap<>();
     }
     else {
-      try {
-        cache = (Map<Long,Span>)BootProxyClassLoader.INSTANCE.loadClass(ThreadAgentIntercept.class.getName()).getField("cache").get(null);
-      }
-      catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-        throw new ExceptionInInitializerError(e);
-      }
+      threadIdToSpan = AgentRuleUtil.getFieldInBootstrapClass(ThreadAgentIntercept.class, "threadIdToSpan");
     }
   }
 
-  public static void start(final Object thiz) {
+  public static void start(final Thread thread) {
     final Span span = GlobalTracer.get().activeSpan();
     if (span != null)
-      cache.put(((Thread)thiz).getId(), span);
+      threadIdToSpan.put(thread.getId(), span);
   }
 
-  public static void runEnter(final Object thiz) {
-    final Thread thread = (Thread)thiz;
-    final Span span = cache.get(thread.getId());
-    if (span != null) {
-      final Scope scope = GlobalTracer.get().activateSpan(span);
-      scopeHandler.set(scope);
-    }
+  public static void runEnter(final Thread thread) {
+    final Span span = threadIdToSpan.get(thread.getId());
+    if (span != null)
+      localScope.set(GlobalTracer.get().activateSpan(span));
   }
 
   @SuppressWarnings("resource")
-  public static void runExit(final Object thiz) {
-    cache.remove(((Thread)thiz).getId());
-    final Scope scope = scopeHandler.get();
+  public static void runExit(final Thread thread) {
+    threadIdToSpan.remove(thread.getId());
+    final Scope scope = localScope.get();
     if (scope != null)
       scope.close();
   }

@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarFile;
 
@@ -353,7 +354,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (logger.isLoggable(Level.FINEST))
         logger.finest("rulePaths of runner will be:\n" + AssembleUtil.toIndentedString(rulePaths));
 
-      System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), ":"));
+      System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), File.pathSeparator));
     }
 
     if (!isMain) {
@@ -395,7 +396,11 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
     super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
     this.config = testClass.getAnnotation(Config.class);
-    this.pluginManifest = PluginManifest.getPluginManifest(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
+    String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
+    if (path.endsWith("/test-classes/"))
+      path = path.substring(0, path.length() - 13) + "classes/";
+
+    this.pluginManifest = Objects.requireNonNull(PluginManifest.getPluginManifest(new File(path)));
     final Event[] events;
     final boolean isStaticDeferredAttach;
     if (config == null) {
@@ -456,6 +461,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         System.setProperty(SpecialAgent.LOG_EVENTS_PROPERTY, builder.toString());
       }
     }
+
+    System.setProperty("sa.config.instrumentation.plugin.method",
+            "io.opentracing.contrib.specialagent.rule.method.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.rule.method.ExampleMethodClass#test2");
 
     try {
       SpecialAgent.premain(null, inst);

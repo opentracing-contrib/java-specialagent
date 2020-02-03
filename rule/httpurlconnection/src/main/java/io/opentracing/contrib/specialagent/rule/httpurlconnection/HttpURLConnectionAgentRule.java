@@ -31,7 +31,7 @@ public class HttpURLConnectionAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(not(isInterface()).and(isPublic()).and(hasSuperType(named("java.net.HttpURLConnection"))).and(not(named("sun.net.www.protocol.https.HttpsURLConnectionImpl"))))
+      .type(isPublic().and(hasSuperType(named("java.net.HttpURLConnection"))).and(not(named("sun.net.www.protocol.https.HttpsURLConnectionImpl"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -41,13 +41,13 @@ public class HttpURLConnectionAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.FieldValue("connected") final boolean connected) {
-    if (isEnabled(origin))
+    if (isEnabled("HttpURLConnectionAgentRule", origin))
       HttpURLConnectionAgentIntercept.enter(thiz, connected);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
-    if (isEnabled(origin))
+    if (isEnabled("HttpURLConnectionAgentRule", origin))
       HttpURLConnectionAgentIntercept.exit(thrown, responseCode);
   }
 }

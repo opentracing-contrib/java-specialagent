@@ -26,7 +26,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.DynamicProxy;
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -79,10 +79,10 @@ public class HttpClientAgentIntercept {
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request));
     context.span = span;
     if (arg1 instanceof ResponseHandler)
-      return new Object[] {DynamicProxy.wrap(arg1, new TracingResponseHandler<>((ResponseHandler<?>)arg1, span))};
+      return new Object[] {WrapperProxy.wrap(arg1, new TracingResponseHandler<>((ResponseHandler<?>)arg1, span))};
 
     if (arg2 instanceof ResponseHandler)
-      return new Object[] {null, DynamicProxy.wrap(arg2, new TracingResponseHandler<>((ResponseHandler<?>)arg2, span))};
+      return new Object[] {null, WrapperProxy.wrap(arg2, new TracingResponseHandler<>((ResponseHandler<?>)arg2, span))};
 
     return null;
   }

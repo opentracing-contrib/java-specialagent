@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <artifactId>opentracing-specialagent</artifactId>
   <name>OpenTracing SpecialAgent</name>
@@ -442,6 +442,12 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>dynamic</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
@@ -533,6 +539,11 @@
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-noop</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>common</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>

@@ -17,7 +17,9 @@ package io.opentracing.contrib.specialagent;
 
 import java.lang.instrument.Instrumentation;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 
@@ -35,9 +37,7 @@ public abstract class AgentRule {
   static Runnable init;
 
   /**
-   * Initialize all {@link AgentRule}s. This method is called in either Static
-   * Attach mode by SpecialAgent, or in Static Deferred Attach mode by
-   * implementers of the {@link DeferredAttach} interface.
+   * Initialize all {@link AgentRule}s.
    *
    * @return Whether initialization was run.
    */
@@ -50,21 +50,26 @@ public abstract class AgentRule {
     return true;
   }
 
-  public static final ThreadLocal<Integer> latch = new ThreadLocal<Integer>() {
+  public static final Set<Long> tracerThreadIds = new HashSet<>();
+
+  public static class Latch extends ThreadLocal<Integer> {
     @Override
     protected Integer initialValue() {
       return 0;
     }
-  };
+  }
 
-  public static boolean isEnabled(final String origin) {
-    final boolean enabled = initialized && latch.get() == 0;
+  public static final Latch latch = new Latch();
+
+  public static boolean isEnabled(final String agentRuleClass, final String origin) {
+    final Thread thread = Thread.currentThread();
+    final boolean enabled = initialized && latch.get() == 0 && !tracerThreadIds.contains(thread.getId());
     if (enabled) {
       if (logger.isLoggable(Level.FINER))
-        logger.finer("-------> Intercept [" + Thread.currentThread().getName() + "] from: " + origin);
+        logger.finer("-------> Intercept [" + agentRuleClass + "@" + thread.getName() + "]: " + origin);
     }
     else if (logger.isLoggable(Level.FINEST)) {
-      logger.finest("-------> Intercept [" + Thread.currentThread().getName() + "] DROP: " + origin);
+      logger.finest("-------> Intercept [" + agentRuleClass + "@" + thread.getName() + "] DROP: " + origin);
     }
 
     return enabled;

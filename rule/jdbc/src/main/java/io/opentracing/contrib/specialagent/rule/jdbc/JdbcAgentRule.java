@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Properties;
 
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.specialagent.AgentRule;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
@@ -68,7 +68,7 @@ public class JdbcAgentRule extends AgentRule {
   public static class DriverManagerEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Class<?> caller) throws Exception {
-      if (isEnabled(origin))
+      if (isEnabled("JdbcAgentRule", origin))
         JdbcAgentIntercept.isDriverAllowed(caller);
     }
   }
@@ -87,7 +87,7 @@ public class JdbcAgentRule extends AgentRule {
   public static class DriverEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) String url, final @Advice.Argument(value = 1) Properties info) throws Exception {
-      if (!isEnabled(origin))
+      if (!isEnabled("JdbcAgentRule", origin))
         return;
 
       final Connection connection = JdbcAgentIntercept.connect(url, info);
@@ -100,7 +100,7 @@ public class JdbcAgentRule extends AgentRule {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) Throwable thrown) throws Exception {
       if (thrown instanceof EarlyReturnException) {
-        returned = DynamicProxy.wrap(returned, ((EarlyReturnException)thrown).getReturnValue());
+        returned = WrapperProxy.wrap(returned, ((EarlyReturnException)thrown).getReturnValue());
         thrown = null;
       }
     }

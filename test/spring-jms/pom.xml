@@ -21,12 +21,15 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test</groupId>
     <artifactId>test</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test.spring-jms</groupId>
   <artifactId>spring-jms</artifactId>
   <packaging>pom</packaging>
   <name>SpecialAgent Tests for Spring JMS</name>
+  <properties>
+    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
+  </properties>
   <modules>
     <module>spring-jms-5.0.0</module>
     <module>spring-jms-5.2.2</module>

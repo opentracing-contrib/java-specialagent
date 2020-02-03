@@ -70,7 +70,7 @@ public class FilterAgentRule extends AgentRule {
   public static class ServletInitAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object servletConfig) {
-      if (isEnabled(origin))
+      if (isEnabled("FilterAgentRule", origin))
         ServletAgentIntercept.init(thiz, servletConfig);
     }
   }
@@ -78,15 +78,21 @@ public class FilterAgentRule extends AgentRule {
   public static class ServletServiceAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response) {
-      if (isEnabled(origin))
-        ServletAgentIntercept.service(thiz, request, response);
+      if (isEnabled("FilterAgentRule", origin))
+        ServletAgentIntercept.serviceEnter(thiz, request, response);
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled("FilterAgentRule", origin))
+        ServletAgentIntercept.serviceExit(request, response, thrown);
     }
   }
 
   public static class HttpServletResponseAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) int status) {
-      if (isEnabled(origin))
+      if (isEnabled("FilterAgentRule", origin))
         FilterAgentIntercept.setStatusCode(thiz, status);
     }
   }
@@ -94,7 +100,7 @@ public class FilterAgentRule extends AgentRule {
   public static class FilterInitAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object filterConfig) {
-      if (isEnabled(origin))
+      if (isEnabled("FilterAgentRule", origin))
         FilterAgentIntercept.init(thiz, filterConfig);
     }
   }
@@ -102,7 +108,7 @@ public class FilterAgentRule extends AgentRule {
   public static class DoFilterEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object request, final @Advice.Argument(value = 1) Object response, final @Advice.Argument(value = 2) Object chain) {
-      if (!ServletContextAgentRule.filterAdded && isEnabled(origin))
+      if (!ServletContextAgentRule.filterAdded && isEnabled("FilterAgentRule", origin))
         FilterAgentIntercept.doFilter(thiz, request, response, chain);
     }
   }

@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -41,6 +41,7 @@
     <module>cassandra-driver</module>
     <module>concurrent</module>
     <module>couchbase-client</module>
+    <module>dynamic</module>
     <module>elasticsearch-client</module>
     <module>feign</module>
     <module>google-http-client</module>
@@ -65,11 +66,13 @@
     <module>play</module>
     <module>pulsar-client</module>
     <module>rabbitmq-client</module>
+    <module>ratpack</module>
     <module>reactor</module>
     <module>redisson</module>
     <module>rxjava</module>
     <module>servlet-jetty</module>
     <module>servlet-tomcat</module>
+    <module>sparkjava</module>
     <module>spring-boot</module>
     <module>spring-jms</module>
     <module>spring-kafka</module>
@@ -82,6 +85,7 @@
     <module>spring-websocket</module>
     <module>spymemcached</module>
     <module>thrift</module>
+    <module>twilio</module>
     <module>zuul</module>
   </modules>
   <profiles>
@@ -125,7 +129,7 @@
                 <argument>-javaagent:${settings.localRepository}/io/opentracing/contrib/specialagent/opentracing-specialagent/${project.version}/opentracing-specialagent-${project.version}.jar</argument>
                 <argument>-Dsa.log.level=${sa.log.level}</argument>
                 <argument>-Dsa.tracer=mock</argument>
-                <argument>${sa.itest.args}</argument>
+                <argument>%${sa.itest.args}%</argument>
                 <argument>-classpath</argument>
                 <classpath/>
               </arguments>

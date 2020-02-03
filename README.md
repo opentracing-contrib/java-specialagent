@@ -70,7 +70,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is stable -- any exception that 
 
 ### 2.1 Installation
 
-The Maven build of the [<ins>SpecialAgent</ins>](#41-specialagent) project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from [Maven's Central Repository](http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/).
+The Maven build of the [<ins>SpecialAgent</ins>](#41-specialagent) project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by cloning this repository and following the [Development Instructions](#212-for-development), or downloading directly from [Maven's Central Repository](https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7/).
 
 #### 2.1.1 In Application
 
@@ -82,40 +82,40 @@ The artifact JAR can be provided to an application with the `-javaagent:${SPECIA
 
 ##### 2.1.1.1 Stable
 
-The latest stable release is: [1.5.6][main-release]
+The latest stable release is: [1.5.7][main-release]
 
 ```bash
-wget -O opentracing-specialagent-1.5.6.jar "http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar"
+wget -O opentracing-specialagent-1.5.7.jar "https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7/opentracing-specialagent-1.5.7.jar"
 ```
 
 ##### 2.1.1.2 Development
 
-The latest development release is: [1.5.7-SNAPSHOT][main-snapshot]
+The latest development release is: [1.5.8-SNAPSHOT][main-snapshot]
 
 ```bash
-wget -O opentracing-specialagent-1.5.7-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.5.8-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 **Note**: Sometimes the web service call (in the line above) to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command (for Linux and Mac OS):
 
 ```bash
-wget -O opentracing-specialagent-1.5.7-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+wget -O opentracing-specialagent-1.5.8-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.8-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
 
 #### 2.1.2 For Development
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely on different profiles:
 
-1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.6.jar`][main-release]
+1. The `default` profile is used for development of [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule). It builds and runs tests for each rule, but _does not bundle the rules_ into [`opentracing-specialagent-1.5.7.jar`][main-release]
 
     To run this profile:
     ```bash
     mvn clean install
     ```
 
-1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.6.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.6.jar`][main-release] will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.7.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.7.jar`][main-release] will contain the built rules inside it.
 
-    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.6.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)!_
+    _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.7.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)!_
 
     _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile._
 
@@ -138,13 +138,13 @@ For development of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plug
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent-api</artifactId>
-  <version>1.5.6</version> <!--version>1.5.7-SNAPSHOT<version-->
+  <version>1.5.7</version> <!--version>1.5.8-SNAPSHOT<version-->
   <scope>provided</scope>
 </dependency>
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.5.6</version> <!--version>1.5.7-SNAPSHOT<version-->
+  <version>1.5.7</version> <!--version>1.5.8-SNAPSHOT<version-->
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -200,7 +200,7 @@ With [<ins>Static Attach</ins>](#221-static-attach), the application is executed
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.5.6.jar -jar MyApp.jar
+java -javaagent:opentracing-specialagent-1.5.7.jar -jar MyApp.jar
 ```
 
 This command statically attaches [<ins>SpecialAgent</ins>](#41-specialagent) into the application in `MyApp.jar`.
@@ -219,12 +219,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 1. To attach to the target `PID`:
    * For jdk1.8
      ```bash
-     java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.6.jar <PID>
+     java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.5.7.jar <PID>
      ```
 
    * For jdk9+
      ```bash
-     java -jar opentracing-specialagent-1.5.6.jar <PID>
+     java -jar opentracing-specialagent-1.5.7.jar <PID>
      ```
 
 **Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
@@ -249,7 +249,7 @@ If the above supported application environment is detected, <ins>Static Deferred
 The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.5.6.jar -Dsa.init.defer=false -jar MySpringBootApp.jar
+java -javaagent:opentracing-specialagent-1.5.7.jar -Dsa.init.defer=false -jar MySpringBootApp.jar
 ```
 
 ## 3 Configuration
@@ -358,16 +358,17 @@ sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable
 
 The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) ("SpecialAgent Rule" column). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
-1. `lettuce:5.?`<br>Matches all Lettuce plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
-1. `spring:web:*`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
-1. `spring:web*`<br>Matches all Spring Web and WebMVC plugins, including `spring:web:3`, `spring:web:5`, `spring:webmvc:3`, and `spring:webmvc:5`.
+1. `lettuce:5.?`<br>Matches all <ins>Lettuce</ins> rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
+1. `spring:web:*`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
+1. `spring:web*`<br>Matches all <ins>Spring Web</ins> and <ins>Spring WebMVC</ins> rules, including `spring:web:3`, `spring:web:5`, `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
+1. `spring:webmvc`<br>Matches all <ins>Spring WebMVC</ins> rules, including `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
 
 If the _version part_ of the `${RULE_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
 
-1. `lettuce:5`<br>Matches all Lettuce v5 plugins, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
-1. `spring:web`<br>Matches all Spring Web plugins, including `spring:web:3` and `spring:web:5`.
-1. `spring`<br>Matches all Spring plugins.
-1. `spring:w`<br>Does not match any plugins.
+1. `lettuce:5`<br>Matches all <ins>Lettuce</ins> v5 rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
+1. `spring:web`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
+1. `spring`<br>Matches all <ins>Spring</ins> rules.
+1. `spring:w`<br>Does not match any rules.
 
 #### 3.4.3 Disabling `AgentRule`s of an Instrumentation Plugin
 
@@ -475,7 +476,7 @@ Examples:
 
 ### 5.2 Non-Goals
 
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) is not designed to modify application code, beyond the installation of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin). For example, there is no facility for dynamically tracing arbitrary code.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) is not designed to modify application code, beyond the installation of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin). For example, there is no facility for dynamically augmenting arbitrary code.
 
 ## 6 Supported Plugins
 
@@ -498,6 +499,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | 4.2.0 |
 | Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
+| Dynamic | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\*** | **\*** |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>&nbsp; | 7.3.1<br>&nbsp; |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | 10.4.0 |
 | Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | 1.33.0 |
@@ -565,10 +567,13 @@ Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support 
 
 The following libraries are instrumented by existing [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule).
 
-1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
-1. [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)
 1. [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
+1. [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)
+1. [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty)
+1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
+1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
+1. [Twilio](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient)
 
 ## 7 Credits
 
@@ -622,6 +627,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-4
 [concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent
 [couchbase-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/couchbase-client
+[dynamic]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/dynamic
 [elasticsearch-7-rest-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-rest-client
 [elasticsearch-7-transport-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-transport-client
 [feign]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/feign
@@ -680,5 +686,5 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 [travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
 
-[main-release]: http://central.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.6/opentracing-specialagent-1.5.6.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7-SNAPSHOT
+[main-release]: https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.7/opentracing-specialagent-1.5.7.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.5.8-SNAPSHOT

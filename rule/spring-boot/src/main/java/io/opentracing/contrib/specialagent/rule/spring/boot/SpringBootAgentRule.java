@@ -33,6 +33,7 @@ import net.bytebuddy.utility.JavaModule;
 public class SpringBootAgentRule extends AgentRule {
   public static final Logger logger = Logger.getLogger(SpringBootAgentRule.class);
   private static final String[] testClasses = {"org.springframework.boot.loader.Launcher", "org.springframework.boot.SpringApplication"};
+  public static boolean initialized;
 
   @Override
   public boolean isDeferrable(final Instrumentation inst) {
@@ -58,15 +59,19 @@ public class SpringBootAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringBootAgentRule.class).on(isConstructor()));
+          return builder.visit(Advice.to(SpringBootAgentRule.class).on(named("logStarted")));
         }}));
   }
 
-  @Advice.OnMethodExit
+  @Advice.OnMethodEnter
   public static void exit() {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>> Invoking SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
+    if (initialized)
+      return;
 
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<< Invoking SpringBootAgentRule >>>>>>>>>>>>>>>>>\n");
+
+    initialized = true;
     AgentRule.initialize();
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n>>>>>>>>>>>>>>>>> Invoked SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");

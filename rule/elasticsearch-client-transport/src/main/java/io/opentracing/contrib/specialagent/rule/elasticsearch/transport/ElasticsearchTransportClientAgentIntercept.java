@@ -19,8 +19,8 @@ import org.elasticsearch.action.ActionListener;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.elasticsearch.common.SpanDecorator;
-import io.opentracing.contrib.specialagent.DynamicProxy;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -33,6 +33,6 @@ public class ElasticsearchTransportClientAgentIntercept {
 
     final Span span = spanBuilder.start();
     SpanDecorator.onRequest(span);
-    return DynamicProxy.wrap(listener, new TracingResponseListener<>((ActionListener)listener, span));
+    return WrapperProxy.wrap(listener, new TracingResponseListener<>((ActionListener)listener, span));
   }
 }

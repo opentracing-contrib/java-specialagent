@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-webmvc</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
   </parent>
   <artifactId>spring-webmvc-1.0</artifactId>
   <name>SpecialAgent Test for Spring Web MVC 1.0</name>
@@ -34,12 +34,6 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${version.spring}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-web-servlet-filter</artifactId>
-      <version>0.4.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

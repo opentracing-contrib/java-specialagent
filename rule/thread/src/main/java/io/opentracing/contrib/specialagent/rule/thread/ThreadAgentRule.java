@@ -31,7 +31,7 @@ public class ThreadAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(hasSuperType(named("java.lang.Thread")))
+      .type(isSubTypeOf(Thread.class))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -44,30 +44,30 @@ public class ThreadAgentRule extends AgentRule {
 
   public static class Start {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(origin))
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (isEnabled("ThreadAgentRule", origin))
         ThreadAgentIntercept.start(thiz);
     }
   }
 
   public static class Run {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(origin))
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (isEnabled("ThreadAgentRule", origin))
         ThreadAgentIntercept.runEnter(thiz);
     }
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(origin))
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (isEnabled("ThreadAgentRule", origin))
         ThreadAgentIntercept.runExit(thiz);
     }
   }
 
   public static class RunError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(origin) && thrown != null)
+    public static void exit(final @Advice.Origin String origin, final @Advice.This Thread thiz, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled("ThreadAgentRule", origin) && thrown != null)
         ThreadAgentIntercept.runExit(thiz);
     }
   }

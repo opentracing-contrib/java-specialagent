@@ -30,6 +30,10 @@ import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
 
 public class JettySyncITest {
+  static {
+    System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
+  }
+
   public static void main(final String[] args) throws Exception {
     final Server server = new Server(8080);
     final WebAppContext context = new WebAppContext();
