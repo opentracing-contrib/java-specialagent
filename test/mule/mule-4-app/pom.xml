@@ -6,7 +6,7 @@
 
     <groupId>io.opentracing.contrib.specialagent.test.mule</groupId>
     <artifactId>mule-4-app</artifactId>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
 
     <packaging>mule-application</packaging>
     <name>SpecialAgent Test mule-application for Mule 4</name>

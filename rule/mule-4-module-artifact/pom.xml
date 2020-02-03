@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.opentracing.contrib.specialagent.rule</groupId>
         <artifactId>rule</artifactId>
-        <version>1.5.7-SNAPSHOT</version>
+        <version>1.5.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>mule-4-module-artifact</artifactId>
