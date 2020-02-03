@@ -35,7 +35,7 @@ public class ThreadMutexAgent extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(Advice.to(OnConstructor.class).on(isConstructor()))
+//            .visit(Advice.to(OnConstructor.class).on(isConstructor()))
             .visit(Advice.to(OnStart.class).on(named("start")));
         }}));
   }
