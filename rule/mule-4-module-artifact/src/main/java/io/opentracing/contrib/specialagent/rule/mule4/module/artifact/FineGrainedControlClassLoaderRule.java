@@ -36,7 +36,7 @@ public class FineGrainedControlClassLoaderRule extends AgentRule {
         public static void exit(final @Origin String origin, final @This Object thiz,
                                 @Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned,
                                 final @Argument(value = 0, typing = Assigner.Typing.DYNAMIC) Object resObj) {
-            if (isEnabled(FineGrainedControlClassLoaderRule.class, origin))
+            if (isEnabled("FineGrainedControlClassLoaderRule", origin))
                 returned = FineGrainedControlAgentIntercept.exit(thiz, returned, resObj);
         }
     }
