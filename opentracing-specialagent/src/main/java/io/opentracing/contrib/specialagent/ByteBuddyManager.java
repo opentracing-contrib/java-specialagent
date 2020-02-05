@@ -36,14 +36,12 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Default;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Listener;
-import net.bytebuddy.agent.builder.AgentBuilder.RawMatcher;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
-import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
 
 /**
@@ -187,21 +185,29 @@ public class ByteBuddyManager extends Manager {
     return deferrers;
   }
 
+  private boolean loadedCoreRules;
+
+  private void loadCoreRules(final Event[] events) throws Exception {
+    if (loadedCoreRules)
+      return;
+
+    loadedCoreRules = true;
+
+    // Load ClassLoaderAgentRule
+    loadAgentRule(new ClassLoaderAgentRule(), newBuilder(), -1, events);
+
+    // Load ThreadMutexAgent
+//    loadAgentRule(new ThreadMutexAgent(), newBuilder(), -1, events);
+
+    // Load the Mutex Agent
+    MutexAgent.premain(inst);
+  }
+
   @Override
   void loadRules(final Map<AgentRule,Integer> agentRules, final Event[] events) {
     AgentRule agentRule = null;
     try {
-      // Load ClassLoader Agent
-      agentRule = new ClassLoaderAgentRule();
-      loadAgentRule(agentRule, newBuilder(), -1, events);
-
-      // Load ClassLoader Agent
-      agentRule = new ThreadMutexAgent();
-      loadAgentRule(agentRule, newBuilder(), -1, events);
-
-      // Load the Mutex Agent
-      TracerMutexAgent.premain(inst);
-
+      loadCoreRules(events);
       for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
         agentRule = entry.getKey();
         loadAgentRule(agentRule, newBuilder(), entry.getValue(), events);

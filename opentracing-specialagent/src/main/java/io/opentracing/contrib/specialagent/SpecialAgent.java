@@ -552,6 +552,7 @@ public class SpecialAgent extends SpecialAgentBase {
             logger.info("  " + deferrer.getClass().getName());
 
           if (attachMode == AttachMode.STATIC_DEFERRED) {
+            // Just load the deferrers
             manager.loadRules(deferrers, events);
             return;
           }

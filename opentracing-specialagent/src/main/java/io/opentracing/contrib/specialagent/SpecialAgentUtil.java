@@ -253,13 +253,13 @@ public final class SpecialAgentUtil {
   }
 
   /**
-   * Returns an array of {@code URL} objects representing each path entry in the
-   * specified {@code classpath}.
+   * Returns an array of {@link File} objects representing each path entry in
+   * the specified {@code classpath}.
    *
-   * @param classpath The classpath which to convert to an array of {@code URL}
+   * @param classpath The classpath which to convert to an array of {@link File}
    *          objects.
-   * @return An array of {@code URL} objects representing each path entry in the
-   *         specified {@code classpath}.
+   * @return An array of {@link File} objects representing each path entry in
+   *         the specified {@code classpath}.
    */
   public static File[] classPathToFiles(final String classpath) {
     if (classpath == null)

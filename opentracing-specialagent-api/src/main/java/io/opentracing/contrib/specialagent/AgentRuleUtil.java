@@ -15,7 +15,10 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import net.bytebuddy.description.method.MethodDescription.AbstractBase;
 import net.bytebuddy.description.type.TypeDefinition;
@@ -274,6 +277,62 @@ public final class AgentRuleUtil {
     }
     catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
       throw new ExceptionInInitializerError(e);
+    }
+  }
+
+  /**
+   * Tests whether the specified execution {@code callStack} stems from a class
+   * belonging to the provided {@link ClassLoader classLoader}.
+   *
+   * @param callStack The call stack, as provided by
+   *          {@link SecurityManager#getClassContext}.
+   * @param classLoader The {@link ClassLoader}.
+   * @return {@code true} if the specified execution {@code callStack} stems
+   *         from a class belonging to the provided {@link ClassLoader
+   *         classLoader}, otherwise {@code false}.
+   */
+  public static boolean isFromClassLoader(final Class<?>[] callStack, final ClassLoader classLoader) {
+    ClassLoader parent;
+    for (final Class<?> cls : callStack) {
+      parent = cls.getClassLoader();
+      do {
+        if (parent == classLoader)
+          return true;
+
+        if (parent == null)
+          break;
+
+        parent = parent.getParent();
+      }
+      while (true);
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns an array of {@code URL} objects representing each path entry in the
+   * specified {@code classpath}.
+   *
+   * @param classpath The classpath which to convert to an array of {@code URL}
+   *          objects.
+   * @return An array of {@code URL} objects representing each path entry in the
+   *         specified {@code classpath}.
+   */
+  public static URL[] classPathToURLs(final String classpath) {
+    if (classpath == null)
+      return null;
+
+    try {
+      final String[] paths = classpath.split(File.pathSeparator);
+      final URL[] files = new URL[paths.length];
+      for (int i = 0; i < paths.length; ++i)
+        files[i] = new URL("file", "", paths[i].endsWith(".jar") || paths[i].endsWith("/") ? paths[i] : paths[i] + "/");
+
+      return files;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
     }
   }
 
