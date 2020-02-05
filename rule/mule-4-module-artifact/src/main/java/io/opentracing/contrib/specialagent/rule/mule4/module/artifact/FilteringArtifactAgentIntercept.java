@@ -30,7 +30,7 @@ public class FilteringArtifactAgentIntercept {
 
         // if it's a class that wasn't found then we continue
         if (returned != null || !resName.endsWith(CLS_SFX))
-            return null;
+            return returned;
 
         String clazzName = resName.substring(0, resName.length() - CLS_SFX.length()).replace('/', '.');
 
