@@ -26,6 +26,7 @@ public class ThreadLineageTest {
   private static final Class<?>[] systemClasses = {ThreadLineageTest.class, TestThread.class, AgentRule.class, AgentRuleUtil.class};
 
   static {
+    AgentRule.loadThreadInstrumentable();
     AgentRule.initialized = true;
     // Mock a tracer class loader, as if the classes in `systemClasses` belong to a parent class loader
     // All classes other than the ones in `systemClasses` should be loaded by the tracer class loader

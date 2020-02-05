@@ -44,7 +44,11 @@ public abstract class AgentRule {
     }
   };
 
-  static {
+  /**
+   * This method should be called before tracer classes are loaded, in order to
+   * load the class and initialize {@link AgentRule#isThreadInstrumentable}.
+   */
+  static void loadThreadInstrumentable() {
     // "main" thread is instrumentable
     isThreadInstrumentable.set(Boolean.TRUE);
   }

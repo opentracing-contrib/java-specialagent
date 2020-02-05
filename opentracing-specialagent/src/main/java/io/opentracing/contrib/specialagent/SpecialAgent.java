@@ -347,6 +347,7 @@ public class SpecialAgent extends SpecialAgentBase {
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
+    AgentRule.loadThreadInstrumentable();
     deferredTracer = loadTracer();
     loadRules(manager);
   }
