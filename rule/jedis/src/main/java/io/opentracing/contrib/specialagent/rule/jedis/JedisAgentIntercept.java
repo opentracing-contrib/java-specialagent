@@ -15,16 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.jedis;
 
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
+import redis.clients.jedis.Protocol.Command;
+
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-
-import io.opentracing.Span;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
-import redis.clients.jedis.Protocol.Command;
 
 public class JedisAgentIntercept {
   private static final ThreadLocal<Queue<Span>> spanHolder = new ThreadLocal<Queue<Span>>() {
@@ -79,9 +79,10 @@ public class JedisAgentIntercept {
       return;
 
     final Span span = spans.poll();
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (throwable != null)
+    if (throwable != null) {
+      Tags.ERROR.set(span, Boolean.TRUE);
       span.log(errorLogs(throwable));
+    }
 
     span.finish();
   }
