@@ -16,7 +16,6 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.instrument.Instrumentation;
-import java.util.HashMap;
 import java.util.Map;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -27,16 +26,74 @@ import net.bytebuddy.agent.builder.AgentBuilder;
  * @author Seva Safris
  */
 public abstract class AgentRule {
-  private static final Logger logger = Logger.getLogger(AgentRule.class);
+  public static class $Access {
+    private static Runnable initializer;
 
-  static final Map<String,String> classNameToName = new HashMap<>();
-  static volatile boolean initialized = false;
+    /**
+     * Load the {@link AgentRule} class and initialize
+     * {@link AgentRule#isThreadInstrumentable}.
+     * <p>
+     * <b>Note:</b> This method must be called before tracer classes are loaded,
+     * in order to capture lineage of threads started by the tracer.
+     */
+    static void load() {
+      // "main" thread is instrumentable
+      isThreadInstrumentable.set(Boolean.TRUE);
+    }
 
-  static Runnable init;
+    /**
+     * Configures the {@link AgentRule} for initialization with the specified
+     * {@code initializer} and {@code classNameToName} map.
+     *
+     * @param initializer The initializer {@link Runnable} for initializing
+     *          {@link AgentRule} instances.
+     * @param classNameToName A {@link Map} of class names to plugin names.
+     */
+    static void configure(final Runnable initializer, final Map<String,String> classNameToName) {
+      $Access.initializer = initializer;
+      AgentRule.classNameToName = classNameToName;
+    }
 
-  static final InheritableThreadLocal<Boolean> isThreadInstrumentable = new InheritableThreadLocal<Boolean>() {
+    /**
+     * Run the {@link $Access#initializer} {@link Runnable} previously set via
+     * {@link $Access#configure(Runnable,Map)}.
+     *
+     * @return Whether an {@link $Access#initializer} was run.
+     */
+    public static boolean init() {
+      if (initialized)
+        return false;
+
+      initialized = true;
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("AgentRule.$Access.init(): initializer " + (initializer == null ? "=" : "!") + "= null");
+
+      if (initializer == null)
+        return false;
+
+      initializer.run();
+      initializer = null;
+      return true;
+    }
+
+    /**
+     * @return The {@link MutexLatch} instance from {@link AgentRule}.
+     */
+    static MutexLatch mutexLatch() {
+      return mutexLatch;
+    }
+  }
+
+  private static boolean initialized;
+
+  private static final InheritableThreadLocal<Boolean> isThreadInstrumentable = new InheritableThreadLocal<Boolean>() {
     @Override
-    protected Boolean childValue(final Boolean parentValue) {
+    protected Boolean childValue(Boolean parentValue) {
+      if (parentValue == null) {
+        logger.warning("Unknown instrumentable state for parent of thread: " + Thread.currentThread().getName());
+        parentValue = Boolean.TRUE;
+      }
+
       if (!parentValue || AgentRuleUtil.tracerClassLoader == null)
         return parentValue;
 
@@ -45,50 +102,22 @@ public abstract class AgentRule {
 
     @Override
     public Boolean get() {
-      final Boolean state = super.get();
+      Boolean state = super.get();
       if (state == null) {
         logger.warning("Unknown instrumentable state for thread: " + Thread.currentThread().getName());
-        return Boolean.TRUE;
+        set(state = Boolean.TRUE);
       }
 
       return state;
     }
   };
 
-  /**
-   * This method should be called before tracer classes are loaded, in order to
-   * load the class and initialize {@link AgentRule#isThreadInstrumentable}.
-   */
-  static void loadThreadInstrumentable() {
-    // "main" thread is instrumentable
-    isThreadInstrumentable.set(Boolean.TRUE);
-  }
-
-  /**
-   * Initialize all {@link AgentRule}s.
-   *
-   * @return Whether initialization was run.
-   */
-  public static boolean initialize() {
-    if (init == null)
-      return false;
-
-    init.run();
-    init = null;
-    return true;
-  }
-
-  public static class Latch extends ThreadLocal<Integer> {
-    @Override
-    protected Integer initialValue() {
-      return 0;
-    }
-  }
-
-  public static final Latch latch = new Latch();
+  private static final Logger logger = Logger.getLogger(AgentRule.class);
+  private static final MutexLatch mutexLatch = new MutexLatch();
+  private static Map<String,String> classNameToName;
 
   public static boolean isEnabled(final String agentRuleClass, final String origin) {
-    final boolean enabled = initialized && latch.get() == 0 && isThreadInstrumentable.get();
+    final boolean enabled = initialized && mutexLatch.get() == 0 && isThreadInstrumentable.get();
 
     if (enabled) {
       if (logger.isLoggable(Level.FINER))
@@ -107,7 +136,7 @@ public abstract class AgentRule {
 
     final String pluginName = classNameToName.get(agentRuleClass.getName());
     if (pluginName == null)
-      throw new IllegalStateException("Plugin name should not be null");
+      throw new IllegalStateException("Plugin name must not be null");
 
     final String pluginVerboseProperty = System.getProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
     final boolean pluginVerbose = pluginVerboseProperty != null && !"false".equals(pluginVerboseProperty);
@@ -117,9 +146,9 @@ public abstract class AgentRule {
   /**
    * @param inst The {@code Instrumentation}.
    * @return If this method returns {@code true} for any enabled
-   *         {@link AgentRule}s, the SpecialAgent will delegate the invocation
-   *         of the {@code init} {@link Runnable} to the first {@link AgentRule}
-   *         that triggers the deferred initialization. If this method returns
+   *         {@link AgentRule}s, the SpecialAgent will delegate the loading of {@link AgentRule} instances
+   *         of the {@code loader} {@link Runnable}, which will be invoked by the first deferrable {@link AgentRule}
+   *         that triggers the deferred loading. If this method returns
    *         {@code false} for all {@link AgentRule}s, the SpecialAgent will
    *         invoke {@code init} immediately.
    */

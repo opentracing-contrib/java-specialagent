@@ -17,13 +17,33 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import net.bytebuddy.dynamic.ClassFileLocator;
 
+/**
+ * An implementation of {@link ClassFileLocator} that calls
+ * {@link ClassFileLocator#locate(String) classFileLocator.locate(String)}
+ * during construction, caching
+ * {@link net.bytebuddy.dynamic.ClassFileLocator.Resolution Resolution}s for
+ * later retrieval via {@link ClassFileLocator#locate(String)
+ * this.locate(String)}.
+ *
+ * @author Seva Safris
+ */
 public class CachedClassFileLocator implements ClassFileLocator {
-  private final Map<String,Resolution> map = new HashMap<>();
+  private final HashMap<String,Resolution> map = new HashMap<>();
 
+  /**
+   * Creates a new {@link CachedClassFileLocator} with the specified
+   * {@link ClassFileLocator classFileLocator} from which to locate the provided
+   * {@code classes}.
+   *
+   * @param classFileLocator The {@link ClassFileLocator} from which to locate
+   *          the provided {@code classes}.
+   * @param classes The {@code classes} that should be located and cached from
+   *          the specified {@link ClassFileLocator}
+   * @throws IOException If an I/O error has occurred.
+   */
   public CachedClassFileLocator(final ClassFileLocator classFileLocator, final Class<?> ... classes) throws IOException {
     if (classes == null)
       return;

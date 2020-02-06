@@ -29,8 +29,8 @@ import io.opentracing.util.GlobalTracer;
  */
 public class AgentRunnerUtil {
   private static final Logger logger = Logger.getLogger(AgentRunnerUtil.class);
-  private static Tracer tracer = null;
   private static final Object tracerMutex = new Object();
+  private static volatile Tracer tracer;
 
   /**
    * Returns the OpenTracing {@link Tracer} to be used for the duration of the
