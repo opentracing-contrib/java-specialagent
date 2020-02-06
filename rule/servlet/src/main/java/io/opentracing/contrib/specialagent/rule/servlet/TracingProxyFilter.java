@@ -28,7 +28,7 @@ public class TracingProxyFilter extends TracingFilter implements FilterConfig {
   private final ServletContext context;
 
   public TracingProxyFilter(final Tracer tracer, final ServletContext context) throws ServletException {
-    super(tracer);
+    super(tracer, InterceptUtil.getSpanDecorators(), InterceptUtil.getSkipPattern());
     this.context = context;
     init(this);
   }

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -42,7 +41,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   }
 
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-  private static final List<ServletFilterSpanDecorator> spanDecorators = Collections.singletonList(ServletFilterSpanDecorator.STANDARD_TAGS);
+  private static final List<ServletFilterSpanDecorator> spanDecorators = InterceptUtil.getSpanDecorators();
 
   public static void init(final Object thiz, final Object servletConfig) {
     filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());
@@ -84,6 +83,10 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       final HttpServletRequest httpServletRequest = (HttpServletRequest)req;
+      final HttpServletResponse httpServletResponse = (HttpServletResponse)res;
+      if(!InterceptUtil.isTraced(httpServletRequest, httpServletResponse))
+    	return;
+      
       if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 
