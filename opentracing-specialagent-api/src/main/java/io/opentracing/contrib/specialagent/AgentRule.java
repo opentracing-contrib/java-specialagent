@@ -42,6 +42,17 @@ public abstract class AgentRule {
 
       return !AgentRuleUtil.isFromClassLoader(AgentRuleUtil.getExecutionStack(), AgentRuleUtil.tracerClassLoader);
     }
+
+    @Override
+    public Boolean get() {
+      final Boolean state = super.get();
+      if (state == null) {
+        logger.warning("Unknown instrumentable state for thread: " + Thread.currentThread().getName());
+        return Boolean.TRUE;
+      }
+
+      return state;
+    }
   };
 
   /**
