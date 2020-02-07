@@ -54,7 +54,7 @@ public class SpecialAgentAgent {
    */
   public static void premain(final String agentArgs, final Instrumentation inst) {
     final Narrowable builder = new AgentBuilder.Default()
-      .ignore(none())
+      .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
       .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)

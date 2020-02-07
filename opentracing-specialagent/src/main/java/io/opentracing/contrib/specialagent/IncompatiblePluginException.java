@@ -15,9 +15,21 @@
 
 package io.opentracing.contrib.specialagent;
 
+/**
+ * Thrown to indicate a particular class name representing an Instrumentation
+ * Rule and Plugin is not compatible with the application runtime.
+ *
+ * @author Seva Safris
+ */
 public class IncompatiblePluginException extends IllegalStateException {
   private static final long serialVersionUID = -85760513192900860L;
 
+  /**
+   * Constructs a new {@link IncompatiblePluginException} with the specified
+   * class name.
+   *
+   * @param className The class name.
+   */
   public IncompatiblePluginException(final String className) {
     super(className);
   }

@@ -22,6 +22,8 @@ import java.util.NoSuchElementException;
  * An enumeration that contains a single element.
  *
  * @param <T> The type parameter of the contained element.
+ *
+ * @author Seva Safris
  */
 public class SingletonEnumeration<T> implements Enumeration<T> {
   private final T element;

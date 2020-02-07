@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Set;
 
@@ -70,5 +71,10 @@ class PluginsClassLoader extends URLClassLoader {
    */
   public boolean containsPath(final File file) {
     return set.contains(file);
+  }
+
+  @Override
+  public String toString() {
+    return Arrays.toString(array);
   }
 }

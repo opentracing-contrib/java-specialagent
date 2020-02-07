@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.IdentityHashMap;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -65,8 +65,8 @@ class RuleClassLoader extends URLClassLoader {
     }
   };
 
-  private final IdentityHashMap<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-  private final IdentityHashMap<ClassLoader,Boolean> preLoaded = new IdentityHashMap<>();
+  private final ClassLoaderMap<Boolean> compatibility = new ClassLoaderMap<>();
+  private final ClassLoaderMap<Boolean> injected = new ClassLoaderMap<>();
   private final PluginManifest pluginManifest;
   private final IsoClassLoader isoClassLoader;
 
@@ -85,41 +85,49 @@ class RuleClassLoader extends URLClassLoader {
     this.pluginManifest = pluginManifest;
     this.isoClassLoader = isoClassLoader;
     if (parent == null || parent == ClassLoader.getSystemClassLoader())
-      preLoaded.put(parent, Boolean.TRUE);
+      injected.put(parent, Boolean.TRUE);
   }
 
   /**
-   * Preloads classes in the {@code RuleClassLoader} by calling
-   * {@link Class#forName(String)} on all classes in this class loader. A
-   * side-effect of this procedure is that is will load all dependent classes
-   * that are also needed to be loaded, which may belong to a different class
-   * loader (i.e. the parent, or parent's parent, and so on).
+   * Injects classes of the {@code RuleClassLoader} into the specified
+   * {@link ClassLoader classLoader} by calling
+   * {@link Class#forName(String,boolean,ClassLoader)} on all classes belonging
+   * to this class loader to be attempted to be found by the specified
+   * {@link ClassLoader classLoader}. A side-effect of this procedure is that is
+   * will load all dependent classes that are also needed to be loaded, which
+   * may belong to a different class loader (i.e. the parent, or parent's
+   * parent, and so on).
    *
-   * @param classLoader The {@code ClassLoader}.
+   * @param classLoader The target {@code ClassLoader} of the injection.
    */
-  void preLoad(final ClassLoader classLoader) {
-    if (preLoaded.containsKey(classLoader))
+  void inject(final ClassLoader classLoader) {
+    if (injected.containsKey(classLoader))
       return;
 
-    preLoaded.put(classLoader, Boolean.FALSE);
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(" + AssembleUtil.getNameId(classLoader) + ")");
+    synchronized (classLoader) {
+      if (injected.containsKey(classLoader))
+        return;
 
-    // Call Class.forName(...) for each class in ruleClassLoader to load in
-    // the caller's class loader.
-    try {
-      AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
-    }
-    catch (final IOException e) {
-      throw new IllegalStateException(e);
-    }
-    finally {
-      preLoaded.put(classLoader, Boolean.TRUE);
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">.inject(" + AssembleUtil.getNameId(classLoader) + ")");
+
+      // Call Class.forName(...) for each class in ruleClassLoader to load in
+      // the caller's class loader.
+      try {
+        injected.put(classLoader, Boolean.FALSE);
+        AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+      finally {
+        injected.put(classLoader, Boolean.TRUE);
+      }
     }
   }
 
   boolean isClosed(final ClassLoader classLoader) {
-    final Boolean preLoaded = this.preLoaded.get(classLoader);
+    final Boolean preLoaded = injected.get(classLoader);
     return preLoaded != null && preLoaded;
   }
 
@@ -132,8 +140,8 @@ class RuleClassLoader extends URLClassLoader {
    * compatibility via "fingerprinting".
    * <p>
    * Once "fingerprinting" has been performed, the resulting value is associated
-   * with the specified {@code ClassLoader} in the {@link #compatibility} map as
-   * a cache.
+   * with the specified {@code ClassLoader} in the {@link #compatibility}
+   * map as a cache.
    *
    * @param classLoader The {@code ClassLoader} for which the instrumentation
    *          rule represented by this {@code RuleClassLoader} is to be checked
@@ -151,15 +159,22 @@ class RuleClassLoader extends URLClassLoader {
     if (compatible != null)
       return compatible;
 
-    try {
-      if (!(compatible = isFingerprintCompatible(classLoader)))
-        close();
+    synchronized (classLoader) {
+      compatible = compatibility.get(classLoader);
+      if (compatible != null)
+        return compatible;
 
-      compatibility.put(classLoader, compatible);
-      return compatible;
-    }
-    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
-      throw new IllegalStateException(e);
+      try {
+        compatible = isFingerprintCompatible(classLoader);
+        if (!compatible)
+          close();
+
+        compatibility.put(classLoader, compatible);
+        return compatible;
+      }
+      catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
+        throw new IllegalStateException(e);
+      }
     }
   }
 
@@ -168,7 +183,6 @@ class RuleClassLoader extends URLClassLoader {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"-D" + SKIP_FINGERPRINT + "=true\"");
 
-      compatibility.put(classLoader, true);
       return true;
     }
 
@@ -182,7 +196,6 @@ class RuleClassLoader extends URLClassLoader {
         if (logger.isLoggable(Level.FINE))
           logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + "\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
-        compatibility.put(classLoader, false);
         return false;
       }
 
@@ -196,5 +209,10 @@ class RuleClassLoader extends URLClassLoader {
       logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return Arrays.toString(getURLs());
   }
 }

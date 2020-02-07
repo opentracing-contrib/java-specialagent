@@ -45,42 +45,12 @@ import net.bytebuddy.utility.JavaModule;
  *
  * @author Seva Safris
  */
-public class ClassLoaderAgentRule extends AgentRule {
-  public enum LocalLevel {
-    SEVERE,
-    FINE,
-    FINEST
-  }
-
-  public static Logger logger;
+public class ClassLoaderAgentRule extends DefaultAgentRule {
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
-  public static Boolean isAgentRunner;
-
-  public static void log(final String message, final Throwable thrown, final LocalLevel level) {
-    if (isAgentRunner == null ? isAgentRunner = SpecialAgent.isAgentRunner() : isAgentRunner) {
-      final String logLevel = System.getProperty("sa.log.level");
-      if (level == LocalLevel.SEVERE || logLevel != null && logLevel.startsWith("FINE")) {
-        System.err.println(message);
-        if (thrown != null)
-          thrown.printStackTrace(System.err);
-      }
-    }
-    else {
-      if (logger == null)
-        logger = Logger.getLogger(ClassLoaderAgentRule.class);
-
-      if (level == LocalLevel.SEVERE)
-        logger.log(Level.SEVERE, message, thrown);
-      else if (level == LocalLevel.FINE && logger.isLoggable(Level.FINE))
-        logger.log(Level.FINE, message, thrown);
-      else if (level == LocalLevel.FINEST && logger.isLoggable(Level.FINEST))
-        logger.log(Level.FINEST, message, thrown);
-    }
-  }
 
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, LocalLevel.FINE);
+    log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
 //    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(nameStartsWith(RuleClassLoader.class.getName()))).and(not(nameStartsWith(PluginsClassLoader.class.getName()))));
     final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class));
@@ -95,7 +65,7 @@ public class ClassLoaderAgentRule extends AgentRule {
             .visit((locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class)).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }}));
 
-    log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, LocalLevel.FINE);
+    log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
     return builders;
   }
 
@@ -108,7 +78,7 @@ public class ClassLoaderAgentRule extends AgentRule {
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz) {
       if (!isExcluded(thiz))
-        SpecialAgent.preLoad(thiz);
+        SpecialAgent.inject(thiz);
     }
   }
 
@@ -129,7 +99,7 @@ public class ClassLoaderAgentRule extends AgentRule {
       try {
         final Class<?> bootstrapClass = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
         if (bootstrapClass != null) {
-          log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, LocalLevel.FINEST);
+          log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, DefaultLevel.FINEST);
 
           returned = bootstrapClass;
           thrown = null;
@@ -140,7 +110,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         if (bytecode == null)
           return;
 
-        log("<<<<<<<< defineClass(\"" + name + "\")", null, LocalLevel.FINEST);
+        log("<<<<<<<< defineClass(\"" + name + "\")", null, DefaultLevel.FINEST);
 
         if (defineClass == null)
           defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
@@ -149,7 +119,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         thrown = null;
       }
       catch (final Throwable t) {
-        log("<><><><> ClassLoaderAgent.LoadClass#exit(\"" + name + "\")", t, LocalLevel.SEVERE);
+        log("<><><><> ClassLoaderAgent.LoadClass#exit(\"" + name + "\")", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(name);
@@ -175,7 +145,7 @@ public class ClassLoaderAgentRule extends AgentRule {
           returned = resource;
       }
       catch (final Throwable t) {
-        log("<><><><> ClassLoaderAgent.FindResource#exit", t, LocalLevel.SEVERE);
+        log("<><><><> ClassLoaderAgent.FindResource#exit", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(name);
@@ -203,7 +173,7 @@ public class ClassLoaderAgentRule extends AgentRule {
         returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
-        log("<><><><> ClassLoaderAgent.FindResources#exit", t, LocalLevel.SEVERE);
+        log("<><><><> ClassLoaderAgent.FindResources#exit", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(name);
