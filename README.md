@@ -529,6 +529,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | Play Framework | [`play`][play] | 2.6.0 | 2.7.3 |
 | Play WS | [`play:ws`][play-ws] | 2.0.0 | 2.0.7 |
 | Pulsar Client | [`pulsar:client`][pulsar-client] | 2.2.0 | 2.4.2 |
+| Pulsar Functions | [`pulsar:functions`][pulsar-functions] | 2.2.0 | 2.4.2 |
 | [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | 5.7.3 |
 | [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | **3.2.3.RELEASE** |
 | [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.11.0 | 3.11.5 |
@@ -653,6 +654,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [play-ws]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play-ws
 [play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [pulsar-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/pulsar-client
+[pulsar-functions]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/pulsar-functions
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
 [reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
 [redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson

@@ -98,6 +98,7 @@
         <module>neo4j-driver</module>
         <module>netty</module>
         <module>pulsar-client</module>
+        <module>pulsar-functions</module>
         <module>dynamic</module>
       </modules>
       <build>
