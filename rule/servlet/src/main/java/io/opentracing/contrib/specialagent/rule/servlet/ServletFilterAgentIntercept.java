@@ -47,7 +47,7 @@ public abstract class ServletFilterAgentIntercept {
       if (filter != null)
         return filter;
 
-      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get()));
+      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get(), InterceptUtil.getSpanDecorators(), InterceptUtil.getSkipPattern()));
       return filter;
     }
   }
