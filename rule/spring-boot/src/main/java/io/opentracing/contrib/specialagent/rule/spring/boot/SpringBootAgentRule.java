@@ -72,7 +72,7 @@ public class SpringBootAgentRule extends AgentRule {
       logger.fine("\n<<<<<<<<<<<<<<<< Invoking SpringBootAgentRule >>>>>>>>>>>>>>>>>\n");
 
     initialized = true;
-    AgentRule.initialize();
+    AgentRule.$Access.init();
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n>>>>>>>>>>>>>>>>> Invoked SpringBootAgentRule <<<<<<<<<<<<<<<<<\n");
   }

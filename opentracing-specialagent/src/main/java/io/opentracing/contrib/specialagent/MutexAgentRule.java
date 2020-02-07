@@ -17,7 +17,8 @@ package io.opentracing.contrib.specialagent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.lang.instrument.Instrumentation;
+import java.util.Arrays;
+import java.util.List;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -26,28 +27,21 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
-import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
-import net.bytebuddy.agent.builder.AgentBuilder.TypeStrategy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class MutexAgent {
-  private static final Logger logger = Logger.getLogger(MutexAgent.class);
+public class MutexAgentRule extends DefaultAgentRule {
+  public static final MutexLatch latch = AgentRule.$Access.mutexLatch();
 
-  public static void premain(final Instrumentation inst) {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<<<< Installing MutexAgent >>>>>>>>>>>>>>>>>>>>>\n");
+  @Override
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
+    log("\n<<<<<<<<<<<<<<<<<< Installing MutexAgentRule >>>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
-    new AgentBuilder.Default()
-      .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
-      .disableClassFormatChanges()
-      .with(RedefinitionStrategy.RETRANSFORMATION)
-      .with(InitializationStrategy.NoOp.INSTANCE)
-      .with(TypeStrategy.Default.REDEFINE)
+    final List<Extendable> builders = Arrays.asList(builder
       .type(isSubTypeOf(Tracer.class)
         .or(isSubTypeOf(Scope.class))
         .or(isSubTypeOf(ScopeManager.class))
@@ -57,23 +51,20 @@ public class MutexAgent {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(MutexAgent.class).on(isPublic().and(any())));
-        }})
-      .installOn(inst);
+          return builder.visit(Advice.to(MutexAgentRule.class).on(isPublic().and(any())));
+        }}));
 
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Installed MutexAgent <<<<<<<<<<<<<<<<<<<<<\n");
+    log("\n>>>>>>>>>>>>>>>>>>> Installed MutexAgentRule <<<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
+    return builders;
   }
 
   @Advice.OnMethodEnter
   public static void enter() {
-    final ThreadLocal<Integer> latch = AgentRule.latch;
     latch.set(latch.get() + 1);
   }
 
   @Advice.OnMethodExit
   public static void exit() {
-    final ThreadLocal<Integer> latch = AgentRule.latch;
     latch.set(latch.get() - 1);
   }
 }

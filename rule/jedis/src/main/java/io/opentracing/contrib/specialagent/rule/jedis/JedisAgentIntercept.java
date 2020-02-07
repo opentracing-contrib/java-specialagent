@@ -79,9 +79,10 @@ public class JedisAgentIntercept {
       return;
 
     final Span span = spans.poll();
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (throwable != null)
+    if (throwable != null) {
+      Tags.ERROR.set(span, Boolean.TRUE);
       span.log(errorLogs(throwable));
+    }
 
     span.finish();
   }

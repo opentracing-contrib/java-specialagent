@@ -40,7 +40,7 @@
   </licenses>
   <developers>
     <developer>
-      <id>SevaSafris</id>
+      <id>safris</id>
       <name>Seva Safris</name>
       <email>seva@safris.org</email>
     </developer>
@@ -62,7 +62,7 @@
     <profile>
       <id>tools.jar</id>
       <activation>
-        <jdk>(,1.8]</jdk>
+        <jdk>(,9)</jdk>
       </activation>
       <dependencyManagement>
         <dependencies>

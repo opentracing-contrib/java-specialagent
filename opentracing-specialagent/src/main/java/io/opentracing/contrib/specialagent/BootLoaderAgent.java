@@ -15,7 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
-import static io.opentracing.contrib.specialagent.ClassLoaderAgentRule.*;
+import static io.opentracing.contrib.specialagent.DefaultAgentRule.*;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import io.opentracing.contrib.specialagent.ClassLoaderAgentRule.LocalLevel;
+import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -158,7 +158,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        log("<><><><> BootLoaderAgent.FindBootstrapResource#exit", t, LocalLevel.SEVERE);
+        log("<><><><> BootLoaderAgent.FindBootstrapResource#exit", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -200,7 +200,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        log("<><><><> BootLoaderAgent.FindBootstrapResources#exit", t, LocalLevel.SEVERE);
+        log("<><><><> BootLoaderAgent.FindBootstrapResources#exit", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -215,7 +215,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        log("<><><><> BootLoaderAgent.AppendToBootstrap#exit", t, LocalLevel.SEVERE);
+        log("<><><><> BootLoaderAgent.AppendToBootstrap#exit", t, DefaultLevel.SEVERE);
       }
     }
   }

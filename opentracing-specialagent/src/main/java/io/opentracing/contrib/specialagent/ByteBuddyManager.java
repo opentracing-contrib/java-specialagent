@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -51,10 +52,9 @@ import net.bytebuddy.utility.JavaModule;
  */
 public class ByteBuddyManager extends Manager {
   private static final Logger logger = Logger.getLogger(ByteBuddyManager.class);
-  private static final String RULES_FILE = "otarules.mf";
   private static final ByteBuddy byteBuddy = new ByteBuddy().with(TypeValidation.DISABLED);
 
-  private static final AgentBuilder.LocationStrategy bootFallbackLocationStrategy  = new AgentBuilder.LocationStrategy() {
+  private static final AgentBuilder.LocationStrategy bootFallbackLocationStrategy = new AgentBuilder.LocationStrategy() {
     @Override
     public ClassFileLocator classFileLocator(final ClassLoader classLoader, final JavaModule module) {
       return new ClassFileLocator.Compound(ClassFileLocator.ForClassLoader.of(classLoader), ClassFileLocator.ForClassLoader.ofBootLoader());
@@ -104,13 +104,13 @@ public class ByteBuddyManager extends Manager {
   }
 
   ByteBuddyManager() {
-    super(RULES_FILE);
+    super("otarules.mf");
   }
 
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  LinkedHashMap<AgentRule,Integer> initRules(final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
+  LinkedHashMap<AgentRule,Integer> scanRules(final Instrumentation inst, final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
     LinkedHashMap<AgentRule,Integer> deferrers = null;
     AgentRule agentRule = null;
     try {
@@ -156,6 +156,7 @@ public class ByteBuddyManager extends Manager {
               if (logger.isLoggable(Level.FINE))
                 logger.fine("Installing new rule: " + line);
 
+              classNameToName.put(agentClass.getName(), pluginManifest.name);
               agentRule = (AgentRule)agentClass.getConstructor().newInstance();
               if (agentRule.isDeferrable(inst)) {
                 if (deferrers == null)
@@ -164,7 +165,6 @@ public class ByteBuddyManager extends Manager {
                 deferrers.put(agentRule, index);
               }
               else {
-                AgentRule.classNameToName.put(agentClass.getName(), pluginManifest.name);
                 agentRules.put(agentRule, index);
               }
             }
@@ -185,55 +185,56 @@ public class ByteBuddyManager extends Manager {
     return deferrers;
   }
 
-  private boolean loadedCoreRules;
+  private boolean loadedDefaultRules;
 
-  private void loadCoreRules(final Event[] events) throws Exception {
-    if (loadedCoreRules)
+  private void loadDefaultRules(final Instrumentation inst, final Event[] events) {
+    if (loadedDefaultRules)
       return;
 
-    loadedCoreRules = true;
+    loadedDefaultRules = true;
 
     // Load ClassLoaderAgentRule
-    loadAgentRule(new ClassLoaderAgentRule(), newBuilder(), -1, events);
+    loadAgentRule(inst, new ClassLoaderAgentRule(), newBuilder(), -1, events);
 
-    // Load ThreadMutexAgent
-//    loadAgentRule(new ThreadMutexAgent(), newBuilder(), -1, events);
-
-    // Load the Mutex Agent
-    MutexAgent.premain(inst);
+    // Load MutexAgentRule
+    loadAgentRule(inst, new MutexAgentRule(), newBuilder(), -1, events);
   }
 
   @Override
-  void loadRules(final Map<AgentRule,Integer> agentRules, final Event[] events) {
-    AgentRule agentRule = null;
-    try {
-      loadCoreRules(events);
-      for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
-        agentRule = entry.getKey();
-        loadAgentRule(agentRule, newBuilder(), entry.getValue(), events);
-        loadedRules.add(agentRule.getClass().getName());
-      }
-    }
-    catch (final Exception e) {
-      logger.log(Level.SEVERE, "Error invoking " + agentRule + "#buildAgent(AgentBuilder) was not found", e);
+  void loadRules(final Instrumentation inst, final Map<AgentRule,Integer> agentRules, final Event[] events) {
+    // Ensure default rules are loaded
+    loadDefaultRules(inst, events);
+
+    // Load the rest of the specified rules
+    for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
+      final AgentRule agentRule = entry.getKey();
+      loadAgentRule(inst, agentRule, newBuilder(), entry.getValue(), events);
+      loadedRules.add(agentRule.getClass().getName());
     }
   }
 
-  private void loadAgentRule(final AgentRule agentRule, final AgentBuilder agentBuilder, final int index, final Event[] events) throws Exception {
-    final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
-    if (builders != null) {
-      for (final AgentBuilder builder : builders) {
-//        assertParent(agentBuilder, builder);
-        builder.with(new TransformationListener(index, events)).installOn(inst);
+  private void loadAgentRule(final Instrumentation inst, final AgentRule agentRule, final AgentBuilder agentBuilder, final int index, final Event[] events) {
+    try {
+      final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
+      if (builders != null) {
+        for (final AgentBuilder builder : builders) {
+//          assertParent(agentBuilder, builder);
+          builder.with(new TransformationListener(inst, index, events)).installOn(inst);
+        }
       }
+    }
+    catch (final Exception e) {
+      logger.log(Level.SEVERE, "Error invoking " + agentRule.getClass().getName() + "#buildAgent(AgentBuilder)", e);
     }
   }
 
   class TransformationListener implements Listener {
+    private final Instrumentation inst;
     private final int index;
     private final Event[] events;
 
-    TransformationListener(final int index, final Event[] events) {
+    TransformationListener(final Instrumentation inst, final int index, final Event[] events) {
+      this.inst = inst;
       this.index = index;
       this.events = events;
     }
@@ -261,10 +262,10 @@ public class ByteBuddyManager extends Manager {
               logger.finest("Added module reads: " + module + " -> " + unnamedModule);
           }
         }
-        catch (final IllegalAccessException | InvocationTargetException e) {
-          throw new IllegalStateException(e);
-        }
         catch (final NoSuchMethodException e) {
+        }
+        catch (final Throwable t) {
+          logger.log(Level.SEVERE, t.getMessage(), t);
         }
       }
     }
