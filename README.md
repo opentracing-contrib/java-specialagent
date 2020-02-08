@@ -499,7 +499,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | 4.2.0 |
 | Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
-| Dynamic | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\*** | **\*** |
+| Dynamic<br>&nbsp; | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\***<br>&nbsp; | **\***<br>&nbsp; |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>&nbsp; | 7.3.1<br>&nbsp; |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | 10.4.0 |
 | Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | 1.33.0 |
@@ -511,7 +511,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
 | [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1 | 1.1 |
 | | [`jms:2`][jms-2] | 2.0 | 2.0a |
-| [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | [`servlet`][servlet] | 2.3 | 3.1 |
+| [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter)<br>&nbsp; | [`servlet`<br><sup>(configurable)</sup>][servlet] | 2.3<br>&nbsp; | 3.1<br>&nbsp; |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
 | Java Thread [`java.lang.Thread`] | [`thread`][thread] | 1.0 | 11 |
