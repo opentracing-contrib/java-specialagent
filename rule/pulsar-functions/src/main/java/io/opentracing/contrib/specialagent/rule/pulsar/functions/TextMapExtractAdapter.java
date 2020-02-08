@@ -15,10 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
-import io.opentracing.propagation.TextMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.opentracing.propagation.TextMap;
 
 public final class TextMapExtractAdapter implements TextMap {
   final Map<String,String> map;

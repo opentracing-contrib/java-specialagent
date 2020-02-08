@@ -15,6 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
+import java.util.HashMap;
+
+import org.apache.pulsar.functions.api.Record;
+import org.apache.pulsar.functions.instance.JavaExecutionResult;
+
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -24,10 +29,6 @@ import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.pulsar.functions.api.Record;
-import org.apache.pulsar.functions.instance.JavaExecutionResult;
 
 public class PulsarFunctionsAgentIntercept {
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
@@ -38,20 +39,18 @@ public class PulsarFunctionsAgentIntercept {
     private Span span;
   }
 
-  public static void handleMessageEnter(Object function, Object contextArg, Object arg0) {
+  public static void handleMessageEnter(final Object function, final Object contextArg, final Object arg0) {
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder spanBuilder = tracer
-        .buildSpan(getFunctionName(function, contextArg))
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
+      .buildSpan(getFunctionName(function, contextArg))
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
 
     if (arg0 != null) {
-      Record<?> record = (Record<?>) arg0;
-      final SpanContext spanContext = tracer
-          .extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(record.getProperties()));
-      if (spanContext != null) {
+      final Record<?> record = (Record<?>)arg0;
+      final SpanContext spanContext = tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(record.getProperties()));
+      if (spanContext != null)
         spanBuilder.addReference(References.FOLLOWS_FROM, spanContext);
-      }
     }
 
     final Span span = spanBuilder.start();
@@ -63,25 +62,24 @@ public class PulsarFunctionsAgentIntercept {
     context.span = span;
   }
 
-  private static String getFunctionName(Object function, Object contextArg) {
+  private static String getFunctionName(final Object function, final Object contextArg) {
     if (contextArg != null) {
-      final org.apache.pulsar.functions.api.Context contextImpl = (org.apache.pulsar.functions.api.Context) contextArg;
-      if (contextImpl.getFunctionName() != null) {
+      final org.apache.pulsar.functions.api.Context contextImpl = (org.apache.pulsar.functions.api.Context)contextArg;
+      if (contextImpl.getFunctionName() != null)
         return contextImpl.getFunctionName();
-      }
     }
+
     final String simpleName = function.getClass().getSimpleName();
-    if(simpleName.length() == 0) {
+    if (simpleName.length() == 0)
       return function.getClass().getName();
-    }
+
     return simpleName;
   }
 
-  public static void handleMessageEnd(Object returned, Throwable thrown) {
+  public static void handleMessageEnd(final Object returned, final Throwable thrown) {
     final Context context = contextHolder.get();
-    if (context == null) {
+    if (context == null)
       return;
-    }
 
     context.scope.close();
     final Span span = context.span;
@@ -93,25 +91,23 @@ public class PulsarFunctionsAgentIntercept {
       return;
     }
 
-    JavaExecutionResult result = (JavaExecutionResult) returned;
-    if (result.getSystemException() != null) {
+    final JavaExecutionResult result = (JavaExecutionResult)returned;
+    if (result.getSystemException() != null)
       onError(result.getSystemException(), span);
-    } else if (result.getUserException() != null) {
+    else if (result.getUserException() != null)
       onError(result.getUserException(), span);
-    }
 
     span.finish();
   }
 
   private static void onError(final Throwable t, final Span span) {
     Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null) {
+    if (t != null)
       span.log(errorLogs(t));
-    }
   }
 
-  private static Map<String, Object> errorLogs(final Throwable t) {
-    final Map<String, Object> errorLogs = new HashMap<>(2);
+  private static HashMap<String,Object> errorLogs(final Throwable t) {
+    final HashMap<String,Object> errorLogs = new HashMap<>(2);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", t);
     return errorLogs;
