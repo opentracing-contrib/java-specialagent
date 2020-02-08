@@ -6,14 +6,14 @@ Following properties are supported by the Servlet Rule.
 
 ### Properties
 
-* `-Dsa.instrumentation.plugin.servlet.skipPattern`
+* `-Dsa.instrumentation.plugin.servlet.skipPattern=PATTERN`
 
-  Skip tracing on the url matching specified pattern.
+  Skip tracing on the url matching specified regex `PATTERN`.
 
   **Example:** `/health`
 
 * `-Dsa.instrumentation.plugin.servlet.spanDecorators`
 
-  Override default servlet span decorator, with specified customized decorator class name, multiple classes separated by ",". A customized decorator should be a class implements `io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator`
+  Override default servlet span decorator, with customized decorator class names, comma separated. The customized decorators must be subclasses of `io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator`.
 
   **Example:** `com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2`.

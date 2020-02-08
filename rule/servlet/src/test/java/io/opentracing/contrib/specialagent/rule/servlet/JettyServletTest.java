@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletResponse;
@@ -55,10 +54,10 @@ public class JettyServletTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-	System.setProperty(InterceptUtil.SPAN_DECORATORS, "io.opentracing.contrib.specialagent.rule.servlet.MockSpanDecorator");
-	System.setProperty(InterceptUtil.SKIP_PATTERN, "/skipit");
+    System.setProperty(InterceptUtil.SPAN_DECORATORS, "io.opentracing.contrib.specialagent.rule.servlet.MockSpanDecorator");
+    System.setProperty(InterceptUtil.SKIP_PATTERN, "/skipit");
 
-	server = new Server(0);
+    server = new Server(0);
 
     final ServletHandler servletHandler = new ServletHandler();
     servletHandler.addServletWithMapping(MockServlet.class, "/hello");
