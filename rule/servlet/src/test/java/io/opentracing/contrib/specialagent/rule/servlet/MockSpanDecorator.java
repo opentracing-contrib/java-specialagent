@@ -22,29 +22,26 @@ import io.opentracing.Span;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 
 public class MockSpanDecorator implements ServletFilterSpanDecorator {
-	
-	public static String MOCK_TAG_KEY = "mock-tag-key";
-	public static String MOCK_TAG_VALUE = "mock-tag-value";
+  public static final String MOCK_TAG_KEY = "mock-tag-key";
+  public static final String MOCK_TAG_VALUE = "mock-tag-value";
 
-	@Override
-	public void onRequest(HttpServletRequest httpServletRequest, Span span) {
-		span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
-	}
+  @Override
+  public void onRequest(final HttpServletRequest httpServletRequest, final Span span) {
+    span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
+  }
 
-	@Override
-	public void onResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Span span) {
-		span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
-	}
+  @Override
+  public void onResponse(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse, final Span span) {
+    span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
+  }
 
-	@Override
-	public void onError(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-			Throwable exception, Span span) {
-		span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
-	}
+  @Override
+  public void onError(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse, final Throwable exception, final Span span) {
+    span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
+  }
 
-	@Override
-	public void onTimeout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, long timeout,
-			Span span) {
-		span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
-	}
+  @Override
+  public void onTimeout(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse, final long timeout, final Span span) {
+    span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
+  }
 }

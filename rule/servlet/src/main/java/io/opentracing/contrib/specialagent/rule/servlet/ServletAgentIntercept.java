@@ -83,10 +83,9 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       final HttpServletRequest httpServletRequest = (HttpServletRequest)req;
-      final HttpServletResponse httpServletResponse = (HttpServletResponse)res;
-      if(!InterceptUtil.isTraced(httpServletRequest, httpServletResponse))
-    	return;
-      
+      if (!InterceptUtil.isTraced(httpServletRequest))
+        return;
+
       if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 

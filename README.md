@@ -499,7 +499,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | 4.2.0 |
 | Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
-| Dynamic | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\*** | **\*** |
+| Dynamic<br>&nbsp; | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\***<br>&nbsp; | **\***<br>&nbsp; |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>&nbsp; | 7.3.1<br>&nbsp; |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | 10.4.0 |
 | Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | 1.33.0 |
@@ -511,7 +511,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
 | [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1 | 1.1 |
 | | [`jms:2`][jms-2] | 2.0 | 2.0a |
-| [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter) | [`servlet`][servlet] | 2.3 | 3.1 |
+| [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter)<br>&nbsp; | [`servlet`<br><sup>(configurable)</sup>][servlet] | 2.3<br>&nbsp; | 3.1<br>&nbsp; |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
 | Java Thread [`java.lang.Thread`] | [`thread`][thread] | 1.0 | 11 |
@@ -529,6 +529,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | Play Framework | [`play`][play] | 2.6.0 | 2.7.3 |
 | Play WS | [`play:ws`][play-ws] | 2.0.0 | 2.0.7 |
 | Pulsar Client | [`pulsar:client`][pulsar-client] | 2.2.0 | 2.4.2 |
+| Pulsar Functions | [`pulsar:functions`][pulsar-functions] | 2.2.0 | 2.4.2 |
 | [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | 5.7.3 |
 | [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | **3.2.3.RELEASE** |
 | [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.11.0 | 3.11.5 |
@@ -653,6 +654,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [play-ws]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play-ws
 [play]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/play
 [pulsar-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/pulsar-client
+[pulsar-functions]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/pulsar-functions
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
 [reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
 [redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson

@@ -163,13 +163,7 @@ public class TracingFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-        if (ServletFilterAgentIntercept.servletRequestToState.containsKey(servletRequest)) {
-            chain.doFilter(httpRequest, httpResponse);
-            return;
-        }
-        ServletFilterAgentIntercept.servletRequestToState.put(servletRequest, Boolean.TRUE);
-
-        if (!isTraced(httpRequest, httpResponse)) {
+        if (ServletFilterAgentIntercept.servletRequestToState.put(servletRequest, Boolean.TRUE) != null || !isTraced(httpRequest, httpResponse)) {
             chain.doFilter(httpRequest, httpResponse);
             return;
         }
@@ -233,8 +227,7 @@ public class TracingFilter implements Filter {
         // skip URLs matching skip pattern
         // e.g. pattern is defined as '/health|/status' then URL 'http://localhost:5000/context/health' won't be traced
         if (skipPattern != null) {
-        	int contextLength = httpServletRequest.getContextPath() == null ? 0 : httpServletRequest.getContextPath().length();
-            String url = httpServletRequest.getRequestURI().substring(contextLength);
+            String url = httpServletRequest.getRequestURI().substring(httpServletRequest.getContextPath() == null ? 0 : httpServletRequest.getContextPath().length());
             return !skipPattern.matcher(url).matches();
         }
 
