@@ -227,7 +227,9 @@ Dynamically attaching to a Java application involves the use of a running applic
      java -jar opentracing-specialagent-1.5.7.jar <PID>
      ```
 
-**Note:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
+**Note:** Properties that are provided in the command to dynamically attach will be absorbed by the target application. This applies to properties specific to SpecialAgent, such as `-Dsa.log.level=FINER`, as well as other properties such as `-Djava.util.logging.config.file=out.log`.
+
+**Troubleshooting:** If you encounter an exception stating `Unable to open socket file`, make sure the attaching VM is executed with the same permissions as the target VM.
 
 #### 2.2.3 <ins>Static Deferred Attach</ins>
 
