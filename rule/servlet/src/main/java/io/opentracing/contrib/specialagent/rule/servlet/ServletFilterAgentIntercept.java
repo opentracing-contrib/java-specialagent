@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
 import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
@@ -47,7 +48,7 @@ public abstract class ServletFilterAgentIntercept {
       if (filter != null)
         return filter;
 
-      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get(), InterceptUtil.getSpanDecorators(), InterceptUtil.getSkipPattern()));
+      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get(), InterceptUtil.spanDecorators, InterceptUtil.skipPattern));
       return filter;
     }
   }

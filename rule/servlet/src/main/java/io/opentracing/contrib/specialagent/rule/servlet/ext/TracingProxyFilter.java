@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.servlet;
+package io.opentracing.contrib.specialagent.rule.servlet.ext;
 
 import java.util.Enumeration;
 
@@ -22,13 +22,14 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.rule.servlet.InterceptUtil;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public class TracingProxyFilter extends TracingFilter implements FilterConfig {
   private final ServletContext context;
 
   public TracingProxyFilter(final Tracer tracer, final ServletContext context) throws ServletException {
-    super(tracer, InterceptUtil.getSpanDecorators(), InterceptUtil.getSkipPattern());
+    super(tracer, InterceptUtil.spanDecorators, InterceptUtil.skipPattern);
     this.context = context;
     init(this);
   }

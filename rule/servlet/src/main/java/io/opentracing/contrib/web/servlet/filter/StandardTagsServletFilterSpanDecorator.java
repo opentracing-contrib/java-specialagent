@@ -1,15 +1,19 @@
 package io.opentracing.contrib.web.servlet.filter;
 
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.rule.servlet.FilterAgentIntercept;
-import io.opentracing.tag.Tags;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.rule.servlet.FilterAgentIntercept;
+import io.opentracing.tag.Tags;
 
 /**
  * Adds standard tags to span. {@link Tags#HTTP_URL}, {@link Tags#HTTP_STATUS}, {@link Tags#HTTP_METHOD} and

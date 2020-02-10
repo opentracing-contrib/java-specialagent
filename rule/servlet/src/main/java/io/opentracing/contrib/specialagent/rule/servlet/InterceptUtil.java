@@ -15,16 +15,17 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import io.opentracing.contrib.specialagent.Level;
-import io.opentracing.contrib.specialagent.Logger;
-import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
-import io.opentracing.contrib.web.servlet.filter.decorator.HttpHeaderTagParser;
-import io.opentracing.contrib.web.servlet.filter.decorator.HttpHeaderServletFilterSpanDecorator;
-
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.contrib.specialagent.rule.servlet.ext.HttpHeaderTagParser;
+import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
+import io.opentracing.contrib.web.servlet.filter.decorator.ServletFilterHeaderSpanDecorator;
 
 public class InterceptUtil {
   public static final Logger logger = Logger.getLogger(InterceptUtil.class);
@@ -32,16 +33,8 @@ public class InterceptUtil {
   public static final String SKIP_PATTERN = "sa.instrumentation.plugin.servlet.skipPattern";
   public static final String DECORATOR_SEPARATOR = ",";
 
-  private static List<ServletFilterSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));
-  private static Pattern skipPattern = parseSkipPattern(System.getProperty(SKIP_PATTERN));
-
-  public static List<ServletFilterSpanDecorator> getSpanDecorators() {
-    return spanDecorators;
-  }
-
-  public static Pattern getSkipPattern() {
-    return skipPattern;
-  }
+  public static final List<ServletFilterSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));
+  public static final Pattern skipPattern = parseSkipPattern(System.getProperty(SKIP_PATTERN));
 
   public static boolean isTraced(final HttpServletRequest httpServletRequest) {
     if (skipPattern == null)
@@ -52,8 +45,8 @@ public class InterceptUtil {
     return !skipPattern.matcher(url).matches();
   }
 
-  static List<ServletFilterSpanDecorator> parseSpanDecorators(String spanDecoratorsArgs) {
-    List<ServletFilterSpanDecorator> result = new ArrayList<>();
+  static List<ServletFilterSpanDecorator> parseSpanDecorators(final String spanDecoratorsArgs) {
+    final List<ServletFilterSpanDecorator> result = new ArrayList<>();
     if (spanDecoratorsArgs != null) {
       final String[] parts = spanDecoratorsArgs.split(DECORATOR_SEPARATOR);
       for (final String part : parts) {
@@ -63,28 +56,26 @@ public class InterceptUtil {
       }
     }
 
-    if (result.isEmpty()) {
+    if (result.isEmpty())
       result.add(ServletFilterSpanDecorator.STANDARD_TAGS);
-    }
-    result.add(new HttpHeaderServletFilterSpanDecorator(HttpHeaderTagParser.parse(), null));
+
+    result.add(new ServletFilterHeaderSpanDecorator(HttpHeaderTagParser.parse(), null));
     return result;
   }
 
-  static Pattern parseSkipPattern(String skipPatternArgs) {
-    if (skipPatternArgs != null) {
-      return Pattern.compile(skipPatternArgs);
-    }
-    return null;
+  static Pattern parseSkipPattern(final String skipPatternArgs) {
+    return skipPatternArgs == null ? null : Pattern.compile(skipPatternArgs);
   }
 
   private static ServletFilterSpanDecorator newSpanDecoratorInstance(final String className) {
     try {
       final Class<?> decoratorClass = Class.forName(className);
       if (ServletFilterSpanDecorator.class.isAssignableFrom(decoratorClass))
-        return (ServletFilterSpanDecorator) decoratorClass.newInstance();
+        return (ServletFilterSpanDecorator)decoratorClass.newInstance();
 
       logger.log(Level.WARNING, className + " is not a subclass of " + ServletFilterSpanDecorator.class.getName());
-    } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
     }
 

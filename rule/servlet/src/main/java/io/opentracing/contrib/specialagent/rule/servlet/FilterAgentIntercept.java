@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 

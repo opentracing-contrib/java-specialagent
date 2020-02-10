@@ -13,13 +13,13 @@
  */
 package io.opentracing.contrib.web.servlet.filter;
 
-import io.opentracing.Span;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.opentracing.Span;
 
 /**
  * SpanDecorator to decorate span at different stages in filter processing (before filterChain.doFilter(), after and
@@ -74,5 +74,4 @@ public interface ServletFilterSpanDecorator {
                  long timeout, Span span);
 
     ServletFilterSpanDecorator STANDARD_TAGS = new StandardTagsServletFilterSpanDecorator();
-
-}
+  }

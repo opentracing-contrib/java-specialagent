@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 public abstract class ContextAgentIntercept extends ServletFilterAgentIntercept {

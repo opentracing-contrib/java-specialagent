@@ -2,6 +2,8 @@ package io.opentracing.contrib.web.servlet.filter.decorator;
 
 import org.junit.Test;
 
+import io.opentracing.contrib.specialagent.rule.servlet.ext.HttpHeaderTagParser;
+
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -13,7 +15,7 @@ public class HttpHeaderTagParserTest {
     System.setProperty(HttpHeaderTagParser.HTTP_HEADER_TAGS, "a,b=c=d");
 
     try {
-      List<HttpHeaderServletFilterSpanDecorator.HeaderEntry> entries = HttpHeaderTagParser.parse();
+      List<ServletFilterHeaderSpanDecorator.HeaderEntry> entries = HttpHeaderTagParser.parse();
       assertEquals(2, entries.size());
       assertEntry(entries.get(0), "a", "http.header.a");
       assertEntry(entries.get(1), "b", "c=d");
@@ -22,7 +24,7 @@ public class HttpHeaderTagParserTest {
     }
   }
 
-  public void assertEntry(HttpHeaderServletFilterSpanDecorator.HeaderEntry entry, String header, String tag) {
+  public void assertEntry(ServletFilterHeaderSpanDecorator.HeaderEntry entry, String header, String tag) {
     assertEquals("header", header, entry.getHeader());
     assertEquals("tag", tag, entry.getTag());
   }

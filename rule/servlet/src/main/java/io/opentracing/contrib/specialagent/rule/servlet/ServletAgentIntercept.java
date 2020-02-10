@@ -29,9 +29,10 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingFilterUtil;
+import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
-import io.opentracing.contrib.web.servlet.filter.TracingFilterUtil;
 import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
@@ -41,7 +42,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   }
 
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-  private static final List<ServletFilterSpanDecorator> spanDecorators = InterceptUtil.getSpanDecorators();
+  private static final List<ServletFilterSpanDecorator> spanDecorators = InterceptUtil.spanDecorators;
 
   public static void init(final Object thiz, final Object servletConfig) {
     filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());

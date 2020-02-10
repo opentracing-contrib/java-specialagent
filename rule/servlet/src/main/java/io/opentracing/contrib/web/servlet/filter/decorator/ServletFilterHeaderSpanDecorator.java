@@ -15,7 +15,7 @@ import java.util.List;
  * they will be added as {@link StringTag}.
  * The tag format will be a concatenation of {@link #prefix} and {@link HeaderEntry#tag}
  */
-public class HttpHeaderServletFilterSpanDecorator implements ServletFilterSpanDecorator {
+public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecorator {
 
     public static final String DEFAULT_TAG_PREFIX = "http.header.";
     private final String prefix;
@@ -25,7 +25,7 @@ public class HttpHeaderServletFilterSpanDecorator implements ServletFilterSpanDe
      * Constructor of ServletFilterHeaderSpanDecorator with a default prefix of "http.header."
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
      */
-    public HttpHeaderServletFilterSpanDecorator(List<HeaderEntry> allowedHeaders) {
+    public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders) {
         this(allowedHeaders, DEFAULT_TAG_PREFIX);
     }
 
@@ -34,7 +34,7 @@ public class HttpHeaderServletFilterSpanDecorator implements ServletFilterSpanDe
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
      * @param prefix the prefix to prepend on each @{@link StringTag}. Can be null is not prefix is desired
      */
-    public HttpHeaderServletFilterSpanDecorator(List<HeaderEntry> allowedHeaders, String prefix) {
+    public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders, String prefix) {
         this.allowedHeaders = new ArrayList<>(allowedHeaders);
         this.prefix = (prefix != null && !prefix.isEmpty()) ? prefix : null;
     }
@@ -80,7 +80,7 @@ public class HttpHeaderServletFilterSpanDecorator implements ServletFilterSpanDe
     }
 
     /**
-     * HeaderEntry is used to configure {@link HttpHeaderServletFilterSpanDecorator}
+     * HeaderEntry is used to configure {@link ServletFilterHeaderSpanDecorator}
      * {@link #header} is used to check if the header exists using {@link HttpServletRequest#getHeader(String)}
      * {@link #tag} will be used as a {@link StringTag} if {@link #header} is found on the incoming request
      */
