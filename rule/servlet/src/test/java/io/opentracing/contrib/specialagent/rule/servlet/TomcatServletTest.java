@@ -17,16 +17,13 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.http.HttpServletResponse;
-
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
@@ -38,20 +35,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Logger;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author gbrown
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false, disable="okhttp")
+@AgentRunner.Config(isolateClassLoader=false, disable="okhttp", properties = "sa.httpHeaderTags=key")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
   private static final int serverPort = 9786;
@@ -103,7 +101,7 @@ public class TomcatServletTest {
     MockServlet.count = 0;
 
     final OkHttpClient client = new OkHttpClient();
-    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").build();
+    final Request request = new Request.Builder().url("http://localhost:" + serverPort + "/hello").addHeader("key", "val").build();
     final Response response = client.newCall(request).execute();
 
     assertEquals("MockServlet response", HttpServletResponse.SC_ACCEPTED, response.code());
@@ -112,6 +110,7 @@ public class TomcatServletTest {
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals("MockTracer spans: " + spans, 1, spans.size());
+    assertEquals("val", spans.get(0).tags().get("http.header.key"));
   }
 
   @AfterClass

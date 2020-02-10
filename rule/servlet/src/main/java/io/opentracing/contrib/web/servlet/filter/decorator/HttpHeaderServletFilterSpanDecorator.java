@@ -3,10 +3,11 @@ package io.opentracing.contrib.web.servlet.filter.decorator;
 import io.opentracing.Span;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 import io.opentracing.tag.StringTag;
-import java.util.ArrayList;
-import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ServletFilterHeaderSpanDecorator will decorate the span based on incoming HTTP headers.
@@ -14,8 +15,9 @@ import javax.servlet.http.HttpServletResponse;
  * they will be added as {@link StringTag}.
  * The tag format will be a concatenation of {@link #prefix} and {@link HeaderEntry#tag}
  */
-public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecorator {
+public class HttpHeaderServletFilterSpanDecorator implements ServletFilterSpanDecorator {
 
+    public static final String DEFAULT_TAG_PREFIX = "http.header.";
     private final String prefix;
     private final List<HeaderEntry> allowedHeaders;
 
@@ -23,8 +25,8 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
      * Constructor of ServletFilterHeaderSpanDecorator with a default prefix of "http.header."
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
      */
-    public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders) {
-        this(allowedHeaders, "http.header.");
+    public HttpHeaderServletFilterSpanDecorator(List<HeaderEntry> allowedHeaders) {
+        this(allowedHeaders, DEFAULT_TAG_PREFIX);
     }
 
     /**
@@ -32,7 +34,7 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
      * @param prefix the prefix to prepend on each @{@link StringTag}. Can be null is not prefix is desired
      */
-    public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders, String prefix) {
+    public HttpHeaderServletFilterSpanDecorator(List<HeaderEntry> allowedHeaders, String prefix) {
         this.allowedHeaders = new ArrayList<>(allowedHeaders);
         this.prefix = (prefix != null && !prefix.isEmpty()) ? prefix : null;
     }
@@ -78,7 +80,7 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
     }
 
     /**
-     * HeaderEntry is used to configure {@link ServletFilterHeaderSpanDecorator}
+     * HeaderEntry is used to configure {@link HttpHeaderServletFilterSpanDecorator}
      * {@link #header} is used to check if the header exists using {@link HttpServletRequest#getHeader(String)}
      * {@link #tag} will be used as a {@link StringTag} if {@link #header} is found on the incoming request
      */
