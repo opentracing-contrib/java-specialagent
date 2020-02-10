@@ -15,15 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
+import io.opentracing.contrib.web.servlet.filter.decorator.HttpHeaderTagParser;
+import io.opentracing.contrib.web.servlet.filter.decorator.HttpHeaderServletFilterSpanDecorator;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class InterceptUtil {
   public static final Logger logger = Logger.getLogger(InterceptUtil.class);
@@ -31,13 +32,8 @@ public class InterceptUtil {
   public static final String SKIP_PATTERN = "sa.instrumentation.plugin.servlet.skipPattern";
   public static final String DECORATOR_SEPARATOR = ",";
 
-  private static List<ServletFilterSpanDecorator> spanDecorators = new ArrayList<>();
-  private static Pattern skipPattern;
-
-  static {
-    initSpanDecorators();
-    initSkipPattern();
-  }
+  private static List<ServletFilterSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));
+  private static Pattern skipPattern = parseSkipPattern(System.getProperty(SKIP_PATTERN));
 
   public static List<ServletFilterSpanDecorator> getSpanDecorators() {
     return spanDecorators;
@@ -56,36 +52,39 @@ public class InterceptUtil {
     return !skipPattern.matcher(url).matches();
   }
 
-  private static void initSpanDecorators() {
-    final String spanDecoratorsArgs = System.getProperty(SPAN_DECORATORS);
+  static List<ServletFilterSpanDecorator> parseSpanDecorators(String spanDecoratorsArgs) {
+    List<ServletFilterSpanDecorator> result = new ArrayList<>();
     if (spanDecoratorsArgs != null) {
       final String[] parts = spanDecoratorsArgs.split(DECORATOR_SEPARATOR);
       for (final String part : parts) {
         final ServletFilterSpanDecorator decorator = newSpanDecoratorInstance(part);
         if (decorator != null)
-          spanDecorators.add(decorator);
+          result.add(decorator);
       }
     }
 
-    if (spanDecorators.isEmpty())
-      spanDecorators.add(ServletFilterSpanDecorator.STANDARD_TAGS);
+    if (result.isEmpty()) {
+      result.add(ServletFilterSpanDecorator.STANDARD_TAGS);
+    }
+    result.add(new HttpHeaderServletFilterSpanDecorator(HttpHeaderTagParser.parse(), null));
+    return result;
   }
 
-  private static void initSkipPattern() {
-    final String skipPatternArgs = System.getProperty(SKIP_PATTERN);
-    if (skipPatternArgs != null)
-      skipPattern = Pattern.compile(skipPatternArgs);
+  static Pattern parseSkipPattern(String skipPatternArgs) {
+    if (skipPatternArgs != null) {
+      return Pattern.compile(skipPatternArgs);
+    }
+    return null;
   }
 
   private static ServletFilterSpanDecorator newSpanDecoratorInstance(final String className) {
     try {
       final Class<?> decoratorClass = Class.forName(className);
       if (ServletFilterSpanDecorator.class.isAssignableFrom(decoratorClass))
-        return (ServletFilterSpanDecorator)decoratorClass.newInstance();
+        return (ServletFilterSpanDecorator) decoratorClass.newInstance();
 
       logger.log(Level.WARNING, className + " is not a subclass of " + ServletFilterSpanDecorator.class.getName());
-    }
-    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+    } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
     }
 
