@@ -228,8 +228,9 @@ public class TracingFilter implements Filter {
         // skip URLs matching skip pattern
         // e.g. pattern is defined as '/health|/status' then URL 'http://localhost:5000/context/health' won't be traced
         if (skipPattern != null) {
-            String url = httpServletRequest.getRequestURI().substring(httpServletRequest.getContextPath() == null ? 0 : httpServletRequest.getContextPath().length());
-            return !skipPattern.matcher(url).matches();
+          int contextLength = httpServletRequest.getContextPath() == null ? 0 : httpServletRequest.getContextPath().length();
+          String url = httpServletRequest.getRequestURI().substring(contextLength);
+          return !skipPattern.matcher(url).matches();
         }
 
         return true;
