@@ -679,7 +679,7 @@ public class SpecialAgent extends SpecialAgentBase {
       if (logger.isLoggable(Level.FINER)) {
         final File pluginFile = pluginsClassLoader.getFiles()[index];
         final PluginManifest pluginManifest = pluginManifestDirectory.get(pluginFile);
-        logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
+        logger.finer("SpecialAgent.linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
       }
 
       return true;
@@ -689,7 +689,7 @@ public class SpecialAgent extends SpecialAgentBase {
     final File pluginFile = pluginsClassLoader.getFiles()[index];
     final PluginManifest pluginManifest = pluginManifestDirectory.get(pluginFile);
     if (logger.isLoggable(Level.FINER))
-      logger.finer("SpecialAgent#linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + ", RulePath: " + pluginFile);
+      logger.finer("SpecialAgent.linkRule(\"" + pluginManifest.name + "\"[" + index + "], " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + ", RulePath: " + pluginFile);
 
     // Now find all the paths that pluginFile depends on, by reading dependencies.tgf
     final File[] pluginDependencyFiles = pluginFileToDependencies.get(pluginFile);
