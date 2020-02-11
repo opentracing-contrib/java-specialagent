@@ -131,6 +131,9 @@ public final class ITestMojo extends ExecMojo {
 
   @Override
   public void execute() throws MojoExecutionException {
+    if (isSkip())
+      return;
+
     setExecutable("java");
     classpathScope = "test";
 
