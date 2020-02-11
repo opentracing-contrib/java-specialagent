@@ -18,23 +18,23 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.opentracing.contrib.specialagent.test.mule</groupId>
+  <parent>
+    <groupId>io.opentracing.contrib.specialagent.test.mule</groupId>
+    <artifactId>mule</artifactId>
+    <version>1.5.8-SNAPSHOT</version>
+  </parent>
   <artifactId>mule-4-app</artifactId>
-  <version>1.5.8-SNAPSHOT</version>
   <packaging>mule-application</packaging>
-  <name>SpecialAgent Test mule-application for Mule 4</name>
+  <name>SpecialAgent Test App for Mule 4</name>
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <app.runtime>4.2.2</app.runtime>
-    <mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
+    <exec.skip>true</exec.skip>
   </properties>
   <build>
     <plugins>
       <plugin>
         <groupId>org.mule.tools.maven</groupId>
         <artifactId>mule-maven-plugin</artifactId>
-        <version>${mule.maven.plugin.version}</version>
+        <version>3.3.5</version>
         <extensions>true</extensions>
         <configuration>
           <sharedLibraries>
