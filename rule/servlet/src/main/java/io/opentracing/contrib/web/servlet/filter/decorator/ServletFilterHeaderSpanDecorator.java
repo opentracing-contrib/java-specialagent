@@ -3,10 +3,11 @@ package io.opentracing.contrib.web.servlet.filter.decorator;
 import io.opentracing.Span;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 import io.opentracing.tag.StringTag;
-import java.util.ArrayList;
-import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ServletFilterHeaderSpanDecorator will decorate the span based on incoming HTTP headers.
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecorator {
 
+    public static final String DEFAULT_TAG_PREFIX = "http.header.";
     private final String prefix;
     private final List<HeaderEntry> allowedHeaders;
 
@@ -24,7 +26,7 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
      */
     public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders) {
-        this(allowedHeaders, "http.header.");
+        this(allowedHeaders, DEFAULT_TAG_PREFIX);
     }
 
     /**
