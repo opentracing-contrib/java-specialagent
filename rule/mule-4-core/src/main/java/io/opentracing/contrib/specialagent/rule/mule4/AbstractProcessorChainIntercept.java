@@ -1,24 +1,38 @@
+/* Copyright 2020 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent.rule.mule4;
+
+import java.util.List;
 
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.internal.processor.interceptor.ReactiveAroundInterceptorAdapter;
 
-import java.util.List;
-
 public class AbstractProcessorChainIntercept {
-
-    @SuppressWarnings("unchecked")
-    public static Object exit(Object muleContext, Object interceptors) {
-        ReactiveAroundInterceptorAdapter adapter = new ReactiveAroundInterceptorAdapter(SpanManagerInterceptor::new);
-        try {
-            ((MuleContext) muleContext).getInjector().inject(adapter);
-        } catch (MuleException e) {
-            throw new MuleRuntimeException(e);
-        }
-        ((List) interceptors).add(0, adapter);
-
-        return interceptors;
+  @SuppressWarnings("unchecked")
+  public static Object exit(final Object muleContext, final Object interceptors) {
+    try {
+      final ReactiveAroundInterceptorAdapter adapter = new ReactiveAroundInterceptorAdapter(SpanManagerInterceptor::new);
+      ((MuleContext)muleContext).getInjector().inject(adapter);
+      ((List)interceptors).add(0, adapter);
+      return interceptors;
     }
+    catch (final MuleException e) {
+      throw new MuleRuntimeException(e);
+    }
+  }
 }

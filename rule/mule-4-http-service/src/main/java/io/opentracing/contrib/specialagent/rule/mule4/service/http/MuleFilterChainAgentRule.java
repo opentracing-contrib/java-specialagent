@@ -32,21 +32,21 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 public class MuleFilterChainAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(
-      builder
-        .type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(OnEnter.class).on(named("build")));
-          }}),
-      builder
-        .type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(OnExit.class).on(named("build")));
-          }}));
+    return Arrays.asList(builder
+      .type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(OnEnter.class).on(named("build")));
+        }
+      }), builder
+      .type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(OnExit.class).on(named("build")));
+        }
+      }));
   }
 
   public static class OnEnter {

@@ -15,16 +15,17 @@
 
 package io.opentracing.contrib.specialagent.rule.mule4.service.http;
 
+import org.glassfish.grizzly.filterchain.FilterChainBuilder;
+
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.asm.Advice;
-import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 
 public class MuleFilterChainAgentIntercept {
-    public static Object enter(final @Advice.This Object thiz) {
-        if (AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.grizzly.http.server.TracedFilterChainBuilder.build"))
-            return null;
+  public static Object enter(final @Advice.This Object thiz) {
+    if (AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.grizzly.http.server.TracedFilterChainBuilder.build"))
+      return null;
 
-        return new TracedMuleFilterChainBuilder((FilterChainBuilder) thiz, GlobalTracer.get()).build();
-    }
+    return new TracedMuleFilterChainBuilder((FilterChainBuilder)thiz, GlobalTracer.get()).build();
+  }
 }
