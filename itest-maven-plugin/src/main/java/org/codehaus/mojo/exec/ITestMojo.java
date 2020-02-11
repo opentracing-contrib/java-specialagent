@@ -53,12 +53,6 @@ public final class ITestMojo extends ExecMojo {
     super.collectProjectArtifactsAndClasspath(artifacts, theClasspathFiles);
   }
 
-  private static String[] clone(final String[] array, final int len) {
-    final String[] args = new String[len];
-    System.arraycopy(array, 0, args, 0, array.length);
-    return args;
-  }
-
   @Override
   CommandLine getExecutablePath(final Map<String,String> enviro, final File dir) {
     return new CommandLine(super.getExecutablePath(enviro, dir)) {
