@@ -48,7 +48,7 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
       return;
 
     final ServletRequest request = (ServletRequest)req;
-    if (servletRequestToState.containsKey(request))
+    if (request.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
       return;
 
     try {

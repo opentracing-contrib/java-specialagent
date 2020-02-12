@@ -42,6 +42,7 @@ import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.rule.servlet.ServletFilterAgentIntercept;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingFilterUtil;
+import io.opentracing.noop.NoopSpan;
 import io.opentracing.util.GlobalTracer;
 
 /**
@@ -164,13 +165,14 @@ public class TracingFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-        if (ServletFilterAgentIntercept.servletRequestToState.put(servletRequest, Boolean.TRUE) != null || !isTraced(httpRequest, httpResponse)) {
-            chain.doFilter(httpRequest, httpResponse);
+        if (!isTraced(httpRequest, httpResponse)) {
+            servletRequest.setAttribute(SERVER_SPAN_CONTEXT, NoopSpan.INSTANCE.context());
+            chain.doFilter(servletRequest, servletResponse);
             return;
         }
 
         if (ServletFilterAgentIntercept.logger.isLoggable(Level.FINER))
-          ServletFilterAgentIntercept.logger.finer(">> " + getClass().getSimpleName() + "#doFilter(" + AgentRuleUtil.getSimpleNameId(servletRequest) + "," + AgentRuleUtil.getSimpleNameId(servletResponse) + "," + AgentRuleUtil.getSimpleNameId(chain) + ")");
+          ServletFilterAgentIntercept.logger.finer(">> " + getClass().getSimpleName() + ".doFilter(" + AgentRuleUtil.getSimpleNameId(servletRequest) + "," + AgentRuleUtil.getSimpleNameId(servletResponse) + "," + AgentRuleUtil.getSimpleNameId(chain) + ")");
 
         /**
          * If request is traced then do not start new span.
@@ -206,8 +208,6 @@ public class TracingFilter implements Filter {
                     // asynchronously until after the scope has already been started.
                     span.finish();
                 }
-
-                ServletFilterAgentIntercept.servletRequestToState.remove(servletRequest);
             }
         }
     }
