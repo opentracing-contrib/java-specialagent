@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 
 public class JdbcAgentIntercept {
@@ -56,9 +57,7 @@ public class JdbcAgentIntercept {
 
   private static void initTracingDriver() {
     TracingDriver.setInterceptorMode(true);
-
-    final String withActiveSpanOnly = System.getProperty(WITH_ACTIVE_SPAN_ONLY);
-    TracingDriver.setInterceptorProperty(withActiveSpanOnly != null && !"false".equals(withActiveSpanOnly));
+    TracingDriver.setInterceptorProperty(AssembleUtil.isSystemProperty(WITH_ACTIVE_SPAN_ONLY));
 
     // multi-statement separated by the separator specified by a system property
     // "@@" is default separator if the system property not present

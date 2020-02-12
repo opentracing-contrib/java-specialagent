@@ -873,6 +873,19 @@ public final class AssembleUtil {
     return resource.substring(0, resource.length() - 6).replace('/', '.');
   }
 
+  /**
+   * Returns {@code true} if and only if the system property named by the
+   * argument exists and is not equal to the string {@code "false"}.
+   *
+   * @param key The name of the system property.
+   * @return {@code true} if and only if the system property named by the
+   *         argument exists and is not equal to the string {@code "false"}.
+   */
+  public static boolean isSystemProperty(final String key) {
+    final String value = System.getProperty(key);
+    return value != null && !"false".equals(value);
+  }
+
   private AssembleUtil() {
   }
 }
