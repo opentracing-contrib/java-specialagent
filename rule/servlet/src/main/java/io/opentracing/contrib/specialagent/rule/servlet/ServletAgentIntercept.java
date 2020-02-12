@@ -42,7 +42,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   }
 
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-  private static final List<ServletFilterSpanDecorator> spanDecorators = InterceptUtil.spanDecorators;
+  private static final List<ServletFilterSpanDecorator> spanDecorators = Configuration.spanDecorators;
 
   public static void init(final Object thiz, final Object servletConfig) {
     filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());
@@ -84,7 +84,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       final HttpServletRequest httpServletRequest = (HttpServletRequest)req;
-      if (!InterceptUtil.isTraced(httpServletRequest))
+      if (!Configuration.isTraced(httpServletRequest))
         return;
 
       if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)

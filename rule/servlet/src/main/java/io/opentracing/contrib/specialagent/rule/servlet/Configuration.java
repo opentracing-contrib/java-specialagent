@@ -27,8 +27,8 @@ import io.opentracing.contrib.specialagent.rule.servlet.ext.HttpHeaderTagParser;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 import io.opentracing.contrib.web.servlet.filter.decorator.ServletFilterHeaderSpanDecorator;
 
-public class InterceptUtil {
-  public static final Logger logger = Logger.getLogger(InterceptUtil.class);
+public class Configuration {
+  public static final Logger logger = Logger.getLogger(Configuration.class);
   public static final String SPAN_DECORATORS = "sa.instrumentation.plugin.servlet.spanDecorators";
   public static final String SKIP_PATTERN = "sa.instrumentation.plugin.servlet.skipPattern";
   public static final String DECORATOR_SEPARATOR = ",";
