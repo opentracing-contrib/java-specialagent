@@ -22,6 +22,14 @@ Following properties are supported by the Servlet Rule.
 
   `com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2,io.opentracing.contrib.web.servlet.filter.StandardTagsServletFilterSpanDecorator`
 
+* `-Dsa.instrumentation.plugin.servlet.spanDecorators.jars`
+
+  Indicate the paths of jars contain the customized decorator classes specified by `sa.instrumentation.plugin.servlet.spanDecorators`.
+
+  **Example:**
+
+  `/path/to/your/lib/myspandecorators1.jar,/path/to/your/lib/myspandecorators1.jar`
+
 * `-Dsa.httpHeaderTags=a,b=c`
 
   Creates the following tags from HTTP headers:
