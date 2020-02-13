@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
@@ -34,7 +33,6 @@ import io.opentracing.util.GlobalTracer;
 public abstract class ServletFilterAgentIntercept {
   public static final Logger logger = Logger.getLogger(ServletAgentIntercept.class);
   public static final Map<Object,ServletContext> filterOrServletToServletContext = new HashMap<>();
-  public static final Map<ServletRequest,Boolean> servletRequestToState = new HashMap<>();
   public static final Map<ServletContext,TracingFilter> servletContextToFilter = new ConcurrentHashMap<>();
 
   public static TracingFilter getFilter(final ServletContext context, final boolean proxy) throws ServletException {
@@ -48,7 +46,7 @@ public abstract class ServletFilterAgentIntercept {
       if (filter != null)
         return filter;
 
-      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get(), InterceptUtil.spanDecorators, InterceptUtil.skipPattern));
+      servletContextToFilter.put(context, filter = proxy ? new TracingProxyFilter(GlobalTracer.get(), context) : new TracingFilter(GlobalTracer.get(), Configuration.spanDecorators, Configuration.skipPattern));
       return filter;
     }
   }

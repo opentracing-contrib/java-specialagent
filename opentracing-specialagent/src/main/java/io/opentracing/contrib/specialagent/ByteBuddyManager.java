@@ -144,8 +144,7 @@ public class ByteBuddyManager extends Manager {
 
             final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
             final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
-            final String disableRuleClass = System.getProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable");
-            if (disableRuleClass != null && !"false".equals(disableRuleClass)) {
+            if (AssembleUtil.isSystemProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable")) {
               if (logger.isLoggable(Level.FINE))
                 logger.fine("Skipping disabled rule: " + line);
 

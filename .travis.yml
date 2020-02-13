@@ -347,6 +347,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry mvn -B -P test -pl test/mongo-driver -amd install
+  - name: "Mule 4 [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry mvn -B -P test -pl test/mule -amd install
+#  - name: "Mule 4 [openjdk11]" # This is commented out, because Mule 4 tests does not run on the openjdk11 ver on travis
+#    stage: test
+#    jdk: openjdk11
+#    install: true
+#    script: travis_retry mvn -B -P test -pl test/mule -amd install
   - name: "Neo4j Driver [openjdk8]"
     stage: test
     jdk: openjdk8

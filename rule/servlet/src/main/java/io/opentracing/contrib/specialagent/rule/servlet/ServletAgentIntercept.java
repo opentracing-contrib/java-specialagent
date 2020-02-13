@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +41,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   }
 
   private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-  private static final List<ServletFilterSpanDecorator> spanDecorators = InterceptUtil.spanDecorators;
+  private static final List<ServletFilterSpanDecorator> spanDecorators = Configuration.spanDecorators;
 
   public static void init(final Object thiz, final Object servletConfig) {
     filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());
@@ -76,25 +75,22 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
       // If `servletRequestToState` contains the request key, then this request
       // has been handled by doFilter
-      if (servletRequestToState.remove((ServletRequest)req) != null)
+      final HttpServletRequest request = (HttpServletRequest)req;
+      if (request.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 
       Context spanContext = contextHolder.get();
       if (spanContext != null)
         return;
 
-      final HttpServletRequest httpServletRequest = (HttpServletRequest)req;
-      if (!InterceptUtil.isTraced(httpServletRequest))
-        return;
-
-      if (httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
+      if (!Configuration.isTraced(request))
         return;
 
       final Tracer tracer = GlobalTracer.get();
       spanContext = new Context();
       contextHolder.set(spanContext);
 
-      final Span span = TracingFilterUtil.buildSpan(httpServletRequest, tracer, spanDecorators);
+      final Span span = TracingFilterUtil.buildSpan(request, tracer, spanDecorators);
       spanContext.span = span;
       spanContext.scope = tracer.activateSpan(span);
       if (logger.isLoggable(Level.FINER))

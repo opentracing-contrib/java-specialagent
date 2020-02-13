@@ -46,7 +46,7 @@ public class InterceptUtilTest {
   }
 
   private static void testDecorators(final String spanDecoratorsArgs, final Class<?> ... expecteds) {
-    final List<ServletFilterSpanDecorator> decorators = InterceptUtil.parseSpanDecorators(spanDecoratorsArgs);
+    final List<ServletFilterSpanDecorator> decorators = Configuration.parseSpanDecorators(spanDecoratorsArgs);
     assertEquals(expecteds.length, decorators.size());
     final List<Class<?>> list = Arrays.asList(expecteds);
     for (final ServletFilterSpanDecorator decorator : decorators)

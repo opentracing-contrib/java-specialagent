@@ -46,12 +46,12 @@ public class TracingFilterUtil {
   }
 
   public static void onResponse(final HttpServletRequest httpRequest, final HttpServletResponse httpResponse, final Span span, final List<ServletFilterSpanDecorator> spanDecorators) {
-    for (ServletFilterSpanDecorator spanDecorator : spanDecorators)
+    for (final ServletFilterSpanDecorator spanDecorator : spanDecorators)
       spanDecorator.onResponse(httpRequest, httpResponse, span);
   }
 
   public static void onError(final HttpServletRequest httpRequest, final HttpServletResponse httpResponse, final Throwable t, final Span span, final List<ServletFilterSpanDecorator> spanDecorators) {
-    for (ServletFilterSpanDecorator spanDecorator : spanDecorators)
+    for (final ServletFilterSpanDecorator spanDecorator : spanDecorators)
       spanDecorator.onError(httpRequest, httpResponse, t, span);
   }
 }

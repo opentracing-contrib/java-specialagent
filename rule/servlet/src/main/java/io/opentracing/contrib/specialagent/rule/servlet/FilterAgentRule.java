@@ -46,9 +46,11 @@ public class FilterAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("setStatus").and(takesArguments(1)).and(takesArguments(Integer.class))))
-            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError").and(takesArguments(2)).and(takesArguments(Integer.class, String.class))))
-            .visit(Advice.to(HttpServletResponseAdvice.class).on(named("sendError").and(takesArguments(1)).and(takesArguments(Integer.class))));
+            .visit(Advice.to(StatusAdvice.class).on(named("setStatus").and(takesArguments(1)).and(takesArguments(Integer.class))))
+            .visit(Advice.to(StatusAdvice.class).on(named("sendError").and(takesArguments(2)).and(takesArguments(Integer.class, String.class))))
+            .visit(Advice.to(StatusAdvice.class).on(named("sendError").and(takesArguments(1)).and(takesArguments(Integer.class))))
+            .visit(Advice.to(ResetAdvice.class).on(named("reset")))
+            .visit(Advice.to(SendRedirectAdvice.class).on(named("sendRedirect").and(takesArguments(1)).and(takesArgument(0, String.class))));
         }})
       .type(not(isInterface()).and(hasSuperType(named("javax.servlet.Filter")).and(not(named("io.opentracing.contrib.web.servlet.filter.TracingFilter")))))
       .transform(new Transformer() {
@@ -89,11 +91,27 @@ public class FilterAgentRule extends AgentRule {
     }
   }
 
-  public static class HttpServletResponseAdvice {
+  public static class StatusAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) int status) {
       if (isEnabled("FilterAgentRule", origin))
         FilterAgentIntercept.setStatusCode(thiz, status);
+    }
+  }
+
+  public static class ResetAdvice {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled("FilterAgentRule", origin))
+        FilterAgentIntercept.setStatusCode(thiz, 200);
+    }
+  }
+
+  public static class SendRedirectAdvice {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled("FilterAgentRule", origin))
+        FilterAgentIntercept.setStatusCode(thiz, 302);
     }
   }
 

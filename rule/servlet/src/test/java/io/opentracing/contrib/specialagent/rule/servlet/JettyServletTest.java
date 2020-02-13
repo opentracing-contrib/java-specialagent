@@ -52,8 +52,8 @@ public class JettyServletTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    System.setProperty(InterceptUtil.SPAN_DECORATORS, "io.opentracing.contrib.specialagent.rule.servlet.MockSpanDecorator");
-    System.setProperty(InterceptUtil.SKIP_PATTERN, "/skipit");
+    System.setProperty(Configuration.SPAN_DECORATORS, "io.opentracing.contrib.specialagent.rule.servlet.MockSpanDecorator");
+    System.setProperty(Configuration.SKIP_PATTERN, "/skipit");
 
     server = new Server(0);
 
