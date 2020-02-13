@@ -39,5 +39,11 @@
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.pulsar</groupId>
+      <artifactId>pulsar-broker</artifactId>
+      <version>${version.pulsar}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

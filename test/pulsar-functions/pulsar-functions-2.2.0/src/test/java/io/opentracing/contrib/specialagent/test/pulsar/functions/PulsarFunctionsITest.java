@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.pulsar.functions;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -108,12 +107,6 @@ public class PulsarFunctionsITest {
 
         ClientBuilder clientBuilder = PulsarClient.builder()
             .serviceUrl(workerConfig.getPulsarServiceUrl());
-        if (isNotBlank(workerConfig.getClientAuthenticationPlugin())
-            && isNotBlank(workerConfig.getClientAuthenticationParameters())) {
-          clientBuilder.allowTlsInsecureConnection(workerConfig.isTlsAllowInsecureConnection());
-          clientBuilder.authentication(workerConfig.getClientAuthenticationPlugin(),
-              workerConfig.getClientAuthenticationParameters());
-        }
         try (PulsarClient pulsarClient = clientBuilder.build()) {
           TenantInfo propAdmin = new TenantInfo();
           propAdmin.getAdminRoles().add("superUser");
@@ -167,8 +160,6 @@ public class PulsarFunctionsITest {
     final String replNamespace = tenant + "/" + namespacePortion;
     final String sourceTopic = "persistent://" + replNamespace + "/my-topic1";
     final String sinkTopic = "persistent://" + replNamespace + "/output";
-    final String propertyKey = "key";
-    final String propertyValue = "value";
     final String functionName = "PulsarSink-test";
     final String subscriptionName = "test-sub";
     admin.namespaces().createNamespace(replNamespace);
@@ -195,7 +186,7 @@ public class PulsarFunctionsITest {
         }
 
         TestUtil.resetTracer();
-        producer.newMessage().property(propertyKey, propertyValue).value("my-message".getBytes())
+        producer.newMessage().value("my-message".getBytes())
             .send();
         consumer.receive(15, TimeUnit.SECONDS);
       }
