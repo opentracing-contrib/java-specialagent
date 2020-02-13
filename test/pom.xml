@@ -66,6 +66,7 @@
     <module>play-ws</module>
     <module>play</module>
     <module>pulsar-client</module>
+    <module>pulsar-functions</module>
     <module>rabbitmq-client</module>
     <module>ratpack</module>
     <module>reactor</module>

@@ -427,6 +427,16 @@ jobs:
 #    jdk: openjdk11
 #    install: true
 #    script: travis_retry mvn -B -P test -pl test/pulsar-client -amd install
+  - name: "Pulsar Functions [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry mvn -B -P test -pl test/pulsar-functions -amd install
+#  - name: "Pulsar Functions [openjdk11]" # This is commented out, because Pulsar does not run ok jdk11
+#    stage: test
+#    jdk: openjdk11
+#    install: true
+#    script: travis_retry mvn -B -P test -pl test/pulsar-functions -amd install
   - name: "RabbitMQ Client [openjdk8]"
     stage: test
     jdk: openjdk8

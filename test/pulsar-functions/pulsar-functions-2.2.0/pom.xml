@@ -19,31 +19,30 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-    <artifactId>rule</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.test.pulsar-functions</groupId>
+    <artifactId>pulsar-functions</artifactId>
     <version>1.5.8-SNAPSHOT</version>
   </parent>
-  <artifactId>pulsar-functions</artifactId>
-  <name>SpecialAgent Rule for Apache Pulsar Functions</name>
+  <artifactId>pulsar-functions-2.2.0</artifactId>
+  <name>SpecialAgent Test for Pulsar Functions 2.2.0</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.pulsar>2.2.0</version.pulsar>
-    <sa.plugin.name>pulsar:functions</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.pulsar</groupId>
-      <artifactId>pulsar-functions-instance</artifactId>
+      <artifactId>pulsar-client-original</artifactId>
       <version>${version.pulsar}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.pulsar</groupId>
       <artifactId>pulsar-broker</artifactId>
       <version>${version.pulsar}</version>
-      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.0.2</version>
     </dependency>
   </dependencies>
 </project>

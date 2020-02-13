@@ -19,31 +19,21 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-    <artifactId>rule</artifactId>
+    <groupId>io.opentracing.contrib.specialagent.test</groupId>
+    <artifactId>test</artifactId>
     <version>1.5.8-SNAPSHOT</version>
   </parent>
+  <groupId>io.opentracing.contrib.specialagent.test.pulsar-functions</groupId>
   <artifactId>pulsar-functions</artifactId>
-  <name>SpecialAgent Rule for Apache Pulsar Functions</name>
+  <packaging>pom</packaging>
+  <name>SpecialAgent Tests for Pulsar Functions</name>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.pulsar>2.2.0</version.pulsar>
-    <sa.plugin.name>pulsar:functions</sa.plugin.name>
+    <sa.itest.args>-Dsa.instrumentation.plugin.*.disable -Dsa.instrumentation.plugin.pulsar:*.enable</sa.itest.args>
   </properties>
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.pulsar</groupId>
-      <artifactId>pulsar-functions-instance</artifactId>
-      <version>${version.pulsar}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.pulsar</groupId>
-      <artifactId>pulsar-broker</artifactId>
-      <version>${version.pulsar}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>pulsar-functions-2.2.0</module>
+    <module>pulsar-functions-2.4.2</module>
+  </modules>
 </project>
