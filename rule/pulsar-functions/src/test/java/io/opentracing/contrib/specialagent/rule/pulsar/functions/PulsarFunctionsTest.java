@@ -102,11 +102,11 @@ public class PulsarFunctionsTest {
     bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
     bkEnsemble.start();
 
-    String brokerServiceUrl = "http://127.0.0.1:" + brokerWebServicePort;
+    final String brokerServiceUrl = "http://127.0.0.1:" + brokerWebServicePort;
 
     final ServiceConfiguration config = new ServiceConfiguration();
     config.setClusterName(CLUSTER_NAME);
-    Set<String> superUsers = Sets.newHashSet("superUser");
+    final Set<String> superUsers = Sets.newHashSet("superUser");
     config.setSuperUserRoles(superUsers);
 
     config.setZookeeperServers("127.0.0.1" + ":" + ZOOKEEPER_PORT);
@@ -120,8 +120,8 @@ public class PulsarFunctionsTest {
     config.setAdvertisedAddress("localhost");
 
     functionsWorkerService = createPulsarFunctionWorker(config);
-    URL urlTls = new URL(brokerServiceUrl);
-    Optional<WorkerService> functionWorkerService = Optional.of(functionsWorkerService);
+    final URL urlTls = new URL(brokerServiceUrl);
+    final Optional<WorkerService> functionWorkerService = Optional.of(functionsWorkerService);
 
     pulsarService = new PulsarService(config, functionWorkerService);
     pulsarService.start();
@@ -129,14 +129,14 @@ public class PulsarFunctionsTest {
     admin = PulsarAdmin.builder().serviceHttpUrl(brokerServiceUrl).allowTlsInsecureConnection(true).build();
 
     // update cluster metadata
-    ClusterData clusterData = new ClusterData(urlTls.toString());
+    final ClusterData clusterData = new ClusterData(urlTls.toString());
     admin.clusters().updateCluster(config.getClusterName(), clusterData);
 
-    ClientBuilder clientBuilder = PulsarClient.builder().serviceUrl(workerConfig.getPulsarServiceUrl());
+    final ClientBuilder clientBuilder = PulsarClient.builder().serviceUrl(workerConfig.getPulsarServiceUrl());
 
     pulsarClient = clientBuilder.build();
 
-    TenantInfo propAdmin = new TenantInfo();
+    final TenantInfo propAdmin = new TenantInfo();
     propAdmin.getAdminRoles().add("superUser");
     propAdmin.setAllowedClusters(Sets.newHashSet(CLUSTER_NAME));
     admin.tenants().updateTenant(tenant, propAdmin);
@@ -144,13 +144,13 @@ public class PulsarFunctionsTest {
     final String functionName = "PulsarSink-test";
     final String subscriptionName = "test-sub";
     admin.namespaces().createNamespace(replNamespace);
-    Set<String> clusters = Sets.newHashSet(CLUSTER_NAME);
+    final Set<String> clusters = Sets.newHashSet(CLUSTER_NAME);
     admin.namespaces().setNamespaceReplicationClusters(replNamespace, clusters);
 
     consumer = pulsarClient.newConsumer().topic(sinkTopic).subscriptionName("sub").subscribe();
     producer = pulsarClient.newProducer().topic(sourceTopic).create();
 
-    String jarFilePathUrl = Utils.FILE + ":" + PulsarSink.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    final String jarFilePathUrl = Utils.FILE + ":" + PulsarSink.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     FunctionDetails functionDetails = createSinkConfig(jarFilePathUrl, namespacePortion, functionName, "my.*", sinkTopic, subscriptionName);
     admin.functions().createFunctionWithUrl(functionDetails, jarFilePathUrl);
 
@@ -159,7 +159,6 @@ public class PulsarFunctionsTest {
     // validate pulsar sink consumer has started on the topic
     if (admin.topics().getStats(sourceTopic).subscriptions.size() != 1)
       throw new AssertionError("Pulsar sink consumer has not started on the topic");
-
   }
 
   @AfterClass
@@ -204,7 +203,7 @@ public class PulsarFunctionsTest {
     verify(tracer);
   }
 
-  private static WorkerService createPulsarFunctionWorker(ServiceConfiguration config) {
+  private static WorkerService createPulsarFunctionWorker(final ServiceConfiguration config) {
     workerConfig = new WorkerConfig();
     workerConfig.setPulsarFunctionsNamespace(pulsarFunctionsNamespace);
     workerConfig.setSchedulerClassName(org.apache.pulsar.functions.worker.scheduler.RoundRobinScheduler.class.getName());
@@ -221,8 +220,8 @@ public class PulsarFunctionsTest {
     workerConfig.setWorkerPort(workerServicePort);
 
     workerConfig.setPulsarFunctionsCluster(config.getClusterName());
-    String hostname = "localhost";
-    String workerId = "c-" + config.getClusterName() + "-fw-" + hostname + "-";
+    final String hostname = "localhost";
+    final String workerId = "c-" + config.getClusterName() + "-fw-" + hostname + "-";
     workerConfig.setWorkerHostname(hostname);
     workerConfig.setWorkerId(workerId);
 
@@ -235,17 +234,19 @@ public class PulsarFunctionsTest {
     return new WorkerService(workerConfig);
   }
 
-  private static FunctionDetails createSinkConfig(String jarFile, String namespace, String functionName, String sourceTopic, String sinkTopic, String subscriptionName) {
-    File file = new File(jarFile);
+  private static FunctionDetails createSinkConfig(final String jarFile, final String namespace, final String functionName, final String sourceTopic, final String sinkTopic, final String subscriptionName) {
+    final File file = new File(jarFile);
     try {
       Reflections.loadJar(file);
-    } catch (MalformedURLException e) {
+    }
+    catch (final MalformedURLException e) {
       throw new RuntimeException("Failed to load user jar " + file, e);
     }
-    String sourceTopicPattern = String.format("persistent://%s/%s/%s", tenant, namespace, sourceTopic);
-    Class<?> typeArg = byte[].class;
 
-    FunctionDetails.Builder functionDetailsBuilder = FunctionDetails.newBuilder();
+    final String sourceTopicPattern = String.format("persistent://%s/%s/%s", tenant, namespace, sourceTopic);
+    final Class<?> typeArg = byte[].class;
+
+    final FunctionDetails.Builder functionDetailsBuilder = FunctionDetails.newBuilder();
     functionDetailsBuilder.setTenant(tenant);
     functionDetailsBuilder.setNamespace(namespace);
     functionDetailsBuilder.setName(functionName);
@@ -255,8 +256,9 @@ public class PulsarFunctionsTest {
     functionDetailsBuilder.setProcessingGuarantees(ProcessingGuarantees.EFFECTIVELY_ONCE);
 
     // set source spec
-    // source spec classname should be empty so that the default pulsar source will be used
-    SourceSpec.Builder sourceSpecBuilder = SourceSpec.newBuilder();
+    // source spec classname should be empty so that the default pulsar source
+    // will be used
+    final SourceSpec.Builder sourceSpecBuilder = SourceSpec.newBuilder();
     sourceSpecBuilder.setSubscriptionType(Function.SubscriptionType.FAILOVER);
     sourceSpecBuilder.setTypeClassName(typeArg.getName());
     sourceSpecBuilder.setTopicsPattern(sourceTopicPattern);
@@ -269,7 +271,7 @@ public class PulsarFunctionsTest {
     SinkSpec.Builder sinkSpecBuilder = SinkSpec.newBuilder();
     // sinkSpecBuilder.setClassName(PulsarSink.class.getName());
     sinkSpecBuilder.setTopic(sinkTopic);
-    Map<String, Object> sinkConfigMap = Maps.newHashMap();
+    final Map<String,Object> sinkConfigMap = Maps.newHashMap();
     sinkSpecBuilder.setConfigs(new Gson().toJson(sinkConfigMap));
     sinkSpecBuilder.setTypeClassName(typeArg.getName());
     functionDetailsBuilder.setSink(sinkSpecBuilder);
@@ -303,7 +305,7 @@ public class PulsarFunctionsTest {
     }
   }
 
-  private static void verify(MockTracer tracer) {
+  private static void verify(final MockTracer tracer) {
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());
     assertNull(tracer.activeSpan());

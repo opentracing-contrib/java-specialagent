@@ -15,19 +15,18 @@
 
 package io.opentracing.contrib.specialagent.test.pulsar.functions;
 
-import static org.apache.pulsar.functions.utils.functioncache.FunctionCacheEntry.JAVA_INSTANCE_JAR_PROPERTY;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.spy;
+import static org.apache.pulsar.functions.utils.functioncache.FunctionCacheEntry.*;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.mockito.Mockito.*;
 
-import com.google.common.collect.Sets;
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
@@ -48,42 +47,46 @@ import org.apache.pulsar.functions.worker.WorkerConfig;
 import org.apache.pulsar.functions.worker.WorkerService;
 import org.apache.pulsar.zookeeper.LocalBookkeeperEnsemble;
 
+import com.google.common.collect.Sets;
+
+import io.opentracing.contrib.specialagent.TestUtil;
+
 public class PulsarFunctionsITest {
   private static final String CLUSTER_NAME = "use";
   private static final int ZOOKEEPER_PORT = 8880;
   private static final AtomicInteger port = new AtomicInteger(ZOOKEEPER_PORT);
+  private static final String tenant = "external-repl-prop";
   private static final int brokerWebServicePort = 8885;
   private static final int brokerServicePort = 8886;
   private static final int workerServicePort = 9999;
   private static WorkerConfig workerConfig;
-  private static final String tenant = "external-repl-prop";
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
+    clean();
     start();
     shutdown();
   }
 
-  static void start() throws Exception {
+  static void clean() {
     // delete all function temp files
-    File dir = new File(System.getProperty("java.io.tmpdir"));
-    File[] foundFiles = dir.listFiles((dir1, name) -> name.startsWith("function"));
+    final File dir = new File(System.getProperty("java.io.tmpdir"));
+    final File[] foundFiles = dir.listFiles((dir1, name) -> name.startsWith("function"));
 
-    if (foundFiles != null) {
-      for (File file : foundFiles) {
+    if (foundFiles != null)
+      for (final File file : foundFiles)
         FileUtils.deleteQuietly(file);
-      }
-    }
+  }
 
+  static void start() throws Exception {
     // Start local bookkeeper ensemble
-    LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT,
-        port::incrementAndGet);
+    final LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
     bkEnsemble.start();
 
-    String brokerServiceUrl = "http://127.0.0.1:" + brokerWebServicePort;
+    final String brokerServiceUrl = "http://127.0.0.1:" + brokerWebServicePort;
 
-    ServiceConfiguration config = spy(new ServiceConfiguration());
+    final ServiceConfiguration config = spy(new ServiceConfiguration());
     config.setClusterName(CLUSTER_NAME);
-    Set<String> superUsers = Sets.newHashSet("superUser");
+    final Set<String> superUsers = Sets.newHashSet("superUser");
     config.setSuperUserRoles(superUsers);
     config.setWebServicePort(Optional.of(brokerWebServicePort));
     config.setZookeeperServers("127.0.0.1" + ":" + ZOOKEEPER_PORT);
@@ -98,40 +101,32 @@ public class PulsarFunctionsITest {
     config.setBrokerClientTlsEnabled(false);
     config.setAllowAutoTopicCreationType("non-partitioned");
 
-    WorkerService functionsWorkerService = createPulsarFunctionWorker(config);
-    URL urlTls = new URL(brokerServiceUrl);
-    Optional<WorkerService> functionWorkerService = Optional.of(functionsWorkerService);
-    PulsarService pulsar = new PulsarService(config, functionWorkerService);
-    pulsar.start();
+    final WorkerService functionsWorkerService = createPulsarFunctionWorker(config);
+    final URL urlTls = new URL(brokerServiceUrl);
+    final Optional<WorkerService> functionWorkerService = Optional.of(functionsWorkerService);
+    try (final PulsarService pulsar = new PulsarService(config, functionWorkerService)) {
+      pulsar.start();
+      try (final PulsarAdmin admin = PulsarAdmin.builder().serviceHttpUrl(brokerServiceUrl).allowTlsInsecureConnection(true).build()) {
+        // update cluster metadata
+        final ClusterData clusterData = new ClusterData(urlTls.toString());
+        admin.clusters().updateCluster(config.getClusterName(), clusterData);
 
-    try (PulsarAdmin admin =
-        PulsarAdmin.builder().serviceHttpUrl(brokerServiceUrl)
-            .allowTlsInsecureConnection(true).build()) {
+        final TenantInfo propAdmin = new TenantInfo();
+        propAdmin.getAdminRoles().add("superUser");
+        propAdmin.setAllowedClusters(Sets.newHashSet(CLUSTER_NAME));
+        admin.tenants().updateTenant(tenant, propAdmin);
 
-      // update cluster metadata
-      ClusterData clusterData = new ClusterData(urlTls.toString());
-      admin.clusters().updateCluster(config.getClusterName(), clusterData);
+        final String jarFilePathUrl = Utils.FILE + ":" + ExclamationFunction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
-      TenantInfo propAdmin = new TenantInfo();
-      propAdmin.getAdminRoles().add("superUser");
-      propAdmin.setAllowedClusters(Sets.newHashSet(CLUSTER_NAME));
-      admin.tenants().updateTenant(tenant, propAdmin);
-
-      String jarFilePathUrl = Utils.FILE + ":"
-          + ExclamationFunction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-
-      ClientBuilder clientBuilder = PulsarClient.builder()
-          .serviceUrl(workerConfig.getPulsarServiceUrl());
-      try (PulsarClient pulsarClient = clientBuilder.build()) {
-        testE2EPulsarFunction(jarFilePathUrl, admin, pulsarClient);
+        final ClientBuilder clientBuilder = PulsarClient.builder().serviceUrl(workerConfig.getPulsarServiceUrl());
+        try (final PulsarClient pulsarClient = clientBuilder.build()) {
+          testE2EPulsarFunction(jarFilePathUrl, admin, pulsarClient);
+        }
       }
     }
-
   }
 
-  private static void testE2EPulsarFunction(String jarFilePathUrl, PulsarAdmin admin,
-      PulsarClient pulsarClient) throws Exception {
-
+  private static void testE2EPulsarFunction(final String jarFilePathUrl, final PulsarAdmin admin, final PulsarClient pulsarClient) throws Exception {
     final String namespacePortion = "io";
     final String replNamespace = tenant + "/" + namespacePortion;
     final String sourceTopic = "persistent://" + replNamespace + "/my-topic1";
@@ -140,32 +135,24 @@ public class PulsarFunctionsITest {
     final String functionName = "PulsarFunction-test";
     final String subscriptionName = "test-sub";
     admin.namespaces().createNamespace(replNamespace);
-    Set<String> clusters = Sets.newHashSet(CLUSTER_NAME);
+    final Set<String> clusters = Sets.newHashSet(CLUSTER_NAME);
     admin.namespaces().setNamespaceReplicationClusters(replNamespace, clusters);
 
     // create a producer that creates a topic at broker
-    try (Producer<String> producer = pulsarClient.newProducer(Schema.STRING).topic(sourceTopic)
-        .create();
-        Consumer<String> consumer = pulsarClient.newConsumer(Schema.STRING).topic(sinkTopic2)
-            .subscriptionName("sub").subscribe()) {
-
-      FunctionConfig functionConfig = createFunctionConfig(namespacePortion, functionName,
-          "my.*", sinkTopic, subscriptionName);
+    try (final Producer<String> producer = pulsarClient.newProducer(Schema.STRING).topic(sourceTopic).create(); Consumer<String> consumer = pulsarClient.newConsumer(Schema.STRING).topic(sinkTopic2).subscriptionName("sub").subscribe()) {
+      final FunctionConfig functionConfig = createFunctionConfig(namespacePortion, functionName, "my.*", sinkTopic, subscriptionName);
       functionConfig.setProcessingGuarantees(FunctionConfig.ProcessingGuarantees.ATLEAST_ONCE);
       functionConfig.setParallelism(1);
       functionConfig.setOutput(sinkTopic2);
 
       admin.functions().createFunctionWithUrl(functionConfig, jarFilePathUrl);
 
-      await().atMost(15, TimeUnit.SECONDS).until(
-          () -> admin.topics().getStats(sourceTopic).subscriptions.size(), equalTo(1));
+      await().atMost(15, TimeUnit.SECONDS).until(() -> admin.topics().getStats(sourceTopic).subscriptions.size(), equalTo(1));
 
       TestUtil.resetTracer();
       producer.newMessage().value("my-message").send();
 
-      await().atMost(15, TimeUnit.SECONDS).until(
-          () -> admin.topics().getStats(sourceTopic).subscriptions
-              .get(subscriptionName).unackedMessages, equalTo(0L));
+      await().atMost(15, TimeUnit.SECONDS).until(() -> admin.topics().getStats(sourceTopic).subscriptions.get(subscriptionName).unackedMessages, equalTo(0L));
 
       consumer.receive(15, TimeUnit.SECONDS);
     }
@@ -173,13 +160,10 @@ public class PulsarFunctionsITest {
     TestUtil.checkSpan("java-pulsar-functions", 5);
   }
 
-  private static FunctionConfig createFunctionConfig(String namespace,
-      String functionName, String sourceTopic, String sinkTopic, String subscriptionName) {
+  private static FunctionConfig createFunctionConfig(final String namespace, final String functionName, final String sourceTopic, final String sinkTopic, final String subscriptionName) {
+    final String sourceTopicPattern = String.format("persistent://%s/%s/%s", tenant, namespace, sourceTopic);
 
-    String sourceTopicPattern = String
-        .format("persistent://%s/%s/%s", tenant, namespace, sourceTopic);
-
-    FunctionConfig functionConfig = new FunctionConfig();
+    final FunctionConfig functionConfig = new FunctionConfig();
     functionConfig.setTenant(tenant);
     functionConfig.setNamespace(namespace);
     functionConfig.setName(functionName);
@@ -195,18 +179,14 @@ public class PulsarFunctionsITest {
     return functionConfig;
   }
 
-  private static WorkerService createPulsarFunctionWorker(ServiceConfiguration config) {
-
-    System.setProperty(JAVA_INSTANCE_JAR_PROPERTY,
-        FutureUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+  private static WorkerService createPulsarFunctionWorker(final ServiceConfiguration config) {
+    System.setProperty(JAVA_INSTANCE_JAR_PROPERTY, FutureUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 
     workerConfig = new WorkerConfig();
     String pulsarFunctionsNamespace = tenant + "/pulsar-function-admin";
     workerConfig.setPulsarFunctionsNamespace(pulsarFunctionsNamespace);
-    workerConfig.setSchedulerClassName(
-        org.apache.pulsar.functions.worker.scheduler.RoundRobinScheduler.class.getName());
-    workerConfig.setThreadContainerFactory(
-        new WorkerConfig.ThreadContainerFactory().setThreadGroupName("use"));
+    workerConfig.setSchedulerClassName(org.apache.pulsar.functions.worker.scheduler.RoundRobinScheduler.class.getName());
+    workerConfig.setThreadContainerFactory(new WorkerConfig.ThreadContainerFactory().setThreadGroupName("use"));
     // worker talks to local broker
     workerConfig.setPulsarServiceUrl("pulsar://127.0.0.1:" + brokerServicePort);
     workerConfig.setPulsarWebServiceUrl("http://127.0.0.1:" + brokerWebServicePort);
@@ -218,9 +198,8 @@ public class PulsarFunctionsITest {
     workerConfig.setInstanceLivenessCheckFreqMs(10000);
     workerConfig.setWorkerPort(workerServicePort);
     workerConfig.setPulsarFunctionsCluster(config.getClusterName());
-    String hostname = "localhost";
-    String workerId =
-        "c-" + config.getClusterName() + "-fw-" + hostname + "-" + workerConfig.getWorkerPort();
+    final String hostname = "localhost";
+    final String workerId = "c-" + config.getClusterName() + "-fw-" + hostname + "-" + workerConfig.getWorkerPort();
     workerConfig.setWorkerHostname(hostname);
     workerConfig.setWorkerId(workerId);
 
@@ -236,5 +215,4 @@ public class PulsarFunctionsITest {
     // Embedded Zookeeper processes may not exit
     System.exit(0);
   }
-
 }
