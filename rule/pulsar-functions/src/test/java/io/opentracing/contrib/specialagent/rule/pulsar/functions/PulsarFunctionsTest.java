@@ -193,6 +193,9 @@ public class PulsarFunctionsTest {
 
   @Test
   public void testDeployedFunction(final MockTracer tracer) throws PulsarClientException {
+    if (!isJdkSupported)
+      return;
+
     producer.newMessage().value("my-message".getBytes()).send();
     consumer.receive(15, TimeUnit.SECONDS);
 
