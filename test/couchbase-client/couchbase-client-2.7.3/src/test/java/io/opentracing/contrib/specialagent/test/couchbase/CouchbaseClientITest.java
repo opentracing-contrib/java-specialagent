@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.couchbase;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +30,7 @@ import com.couchbase.mock.BucketConfiguration;
 import com.couchbase.mock.CouchbaseMock;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class CouchbaseClientITest {
   private static final String bucketName = "test";

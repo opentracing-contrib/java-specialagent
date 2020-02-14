@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.test.akka.actor;
 import static akka.pattern.Patterns.*;
 import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import akka.actor.AbstractActor;
@@ -29,6 +28,7 @@ import akka.actor.Props;
 import akka.util.Timeout;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.opentracing.util.GlobalTracer;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
