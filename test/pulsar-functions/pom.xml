@@ -30,7 +30,6 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.itest.args>-Dsa.instrumentation.plugin.*.disable -Dsa.instrumentation.plugin.pulsar:*.enable</sa.itest.args>
   </properties>
   <modules>
     <module>pulsar-functions-2.2.0</module>
