@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.test.akka.actor;
 import static akka.pattern.Patterns.*;
 import static org.junit.Assert.*;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import akka.actor.AbstractActor;
@@ -52,7 +53,7 @@ public class AkkaActorITest {
     final Future<Object> future = ask(actorRef, "ask", new Timeout(getDefaultDuration()));
     final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
-    TestUtil.checkSpan("java-akka", 2, latch, true);
+    TestUtil.checkSpan(latch, new ComponentSpanCount("java-akka", 2, true));
   }
 
   private static void testTell(final ActorSystem system) throws Exception {
@@ -64,7 +65,7 @@ public class AkkaActorITest {
     final ActorSelection actorSelection = system.actorSelection(actorRef.path());
     actorSelection.tell("tell-selection", ActorRef.noSender());
 
-    TestUtil.checkSpan("java-akka", 4, latch);
+    TestUtil.checkSpan(latch, new ComponentSpanCount("java-akka", 4));
   }
 
   private static void testForward(final ActorSystem system) throws Exception {
@@ -75,7 +76,7 @@ public class AkkaActorITest {
     final Boolean isSpanNull = (Boolean)Await.result(future, getDefaultDuration());
     assertFalse(isSpanNull);
 
-    TestUtil.checkSpan("java-akka", 2, latch, true);
+    TestUtil.checkSpan(latch, new ComponentSpanCount("java-akka", 2, true));
   }
 
   private static FiniteDuration getDefaultDuration() {

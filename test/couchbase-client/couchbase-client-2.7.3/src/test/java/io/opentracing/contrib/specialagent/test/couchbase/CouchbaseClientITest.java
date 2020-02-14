@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.couchbase;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -60,6 +61,6 @@ public class CouchbaseClientITest {
     cluster.disconnect(60, TimeUnit.SECONDS);
     couchbaseMock.stop();
 
-    TestUtil.checkSpan("couchbase-java-client.*", 6);
+    TestUtil.checkSpan(new ComponentSpanCount("couchbase-java-client.*", 2));
   }
 }
