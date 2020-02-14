@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -40,6 +39,7 @@ public class Configuration {
   public static final String FILE_SCHEME = "file:";
 
   public static final List<ServletFilterSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));
+  public static final URLClassLoader decoratorClassLoader = new URLClassLoader(parseSpanDecoratorsJars(), ServletFilterSpanDecorator.class.getClassLoader());
   public static final Pattern skipPattern = parseSkipPattern(System.getProperty(SKIP_PATTERN));
 
   public static boolean isTraced(final HttpServletRequest httpServletRequest) {
@@ -74,15 +74,14 @@ public class Configuration {
   }
 
   private static ServletFilterSpanDecorator newSpanDecoratorInstance(final String className) {
-    try (final URLClassLoader decoratorClassLoader = new URLClassLoader(parseSpanDecoratorsJars(),
-    		ServletFilterSpanDecorator.class.getClassLoader());) {
+    try {
       final Class<?> decoratorClass = decoratorClassLoader.loadClass(className);
       if (ServletFilterSpanDecorator.class.isAssignableFrom(decoratorClass))
         return (ServletFilterSpanDecorator)decoratorClass.newInstance();
 
       logger.log(Level.WARNING, className + " is not a subclass of " + ServletFilterSpanDecorator.class.getName());
     }
-    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | IOException e) {
+    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
     }
 
