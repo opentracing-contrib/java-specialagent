@@ -1,0 +1,23 @@
+{
+  "scenario": "logEvent",
+  "rules": [
+    {
+      "type": "log",
+      "output": [
+        {
+          "type": "log"
+        }
+      ]
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "logs": [
+        {
+          "event": "event"
+        }
+      ]
+    }
+  ]
+}

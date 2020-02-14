@@ -1,0 +1,24 @@
+{
+  "scenario": "logFieldsNumber",
+  "rules": [
+    {
+      "type": "log",
+      "key": "key",
+      "value": 1
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation"
+    },
+    {
+      "operationName": "operation"
+    },
+    {
+      "operationName": "operation"
+    },
+    {
+      "operationName": "operation"
+    }
+  ]
+}

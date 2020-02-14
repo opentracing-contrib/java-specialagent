@@ -1,0 +1,14 @@
+{
+  "scenario": "operationNameLate",
+  "rules": [
+    {
+      "type": "operationName",
+      "value": "strange"
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation"
+    }
+  ]
+}

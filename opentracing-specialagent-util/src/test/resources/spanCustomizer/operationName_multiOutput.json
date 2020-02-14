@@ -1,0 +1,50 @@
+{
+  "scenario": "operationName2Spans",
+  "rules": [
+    {
+      "type": "operationName",
+      "value": "newOperation",
+      "output": [
+        {
+          "type": "log",
+          "key": "lop"
+        },
+        {
+          "type": "operationName"
+        },
+        {
+          "type": "tag",
+          "key": "top"
+        }
+      ]
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "newOperation",
+      "tags": {
+        "top": "newOperation"
+      },
+      "logs": [
+        {
+          "fields": {
+            "lop": "newOperation"
+          }
+        }
+      ]
+    },
+    {
+      "operationName": "newOperation",
+      "tags": {
+        "top": "newOperation"
+      },
+      "logs": [
+        {
+          "fields": {
+            "lop": "newOperation"
+          }
+        }
+      ]
+    }
+  ]
+}

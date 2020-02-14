@@ -1,0 +1,24 @@
+{
+  "scenario": "tag",
+  "rules": [
+    {
+      "type": "tag",
+      "key": "key",
+      "valueRegex": "(va.?)ue",
+      "output": [
+        {
+          "type": "tag",
+          "value": "$1?"
+        }
+      ]
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "tags": {
+        "key": "val?"
+      }
+    }
+  ]
+}

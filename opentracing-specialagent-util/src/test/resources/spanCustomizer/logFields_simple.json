@@ -1,0 +1,26 @@
+{
+  "scenario": "logFields",
+  "rules": [
+    {
+      "type": "log",
+      "key": "key",
+      "output": [
+        {
+          "type": "log"
+        }
+      ]
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "logs": [
+        {
+          "fields": {
+            "key": "value"
+          }
+        }
+      ]
+    }
+  ]
+}
