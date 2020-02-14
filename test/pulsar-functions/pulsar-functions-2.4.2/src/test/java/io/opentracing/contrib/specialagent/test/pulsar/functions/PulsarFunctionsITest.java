@@ -157,7 +157,7 @@ public class PulsarFunctionsITest {
       consumer.receive(15, TimeUnit.SECONDS);
     }
 
-    TestUtil.checkSpan("java-pulsar-functions", 5);
+    TestUtil.checkSpan("java-pulsar-functions", 15);
   }
 
   private static FunctionConfig createFunctionConfig(final String namespace, final String functionName, final String sourceTopic, final String sinkTopic, final String subscriptionName) {
