@@ -39,8 +39,8 @@ public class Configuration {
   public static final String FILE_SCHEME = "file:";
 
   public static final List<ServletFilterSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));
-  public static final URLClassLoader decoratorClassLoader = new URLClassLoader(parseSpanDecoratorsJars(), ServletFilterSpanDecorator.class.getClassLoader());
   public static final Pattern skipPattern = parseSkipPattern(System.getProperty(SKIP_PATTERN));
+  private static URLClassLoader decoratorClassLoader;
 
   public static boolean isTraced(final HttpServletRequest httpServletRequest) {
     if (skipPattern == null)
@@ -75,7 +75,7 @@ public class Configuration {
 
   private static ServletFilterSpanDecorator newSpanDecoratorInstance(final String className) {
     try {
-      final Class<?> decoratorClass = decoratorClassLoader.loadClass(className);
+      final Class<?> decoratorClass = getDecoratorClassLoader().loadClass(className);
       if (ServletFilterSpanDecorator.class.isAssignableFrom(decoratorClass))
         return (ServletFilterSpanDecorator)decoratorClass.newInstance();
 
@@ -86,6 +86,13 @@ public class Configuration {
     }
 
     return null;
+  }
+
+  private static ClassLoader getDecoratorClassLoader() {
+	if(decoratorClassLoader == null)
+	 decoratorClassLoader = new URLClassLoader(parseSpanDecoratorsJars(), ServletFilterSpanDecorator.class.getClassLoader());
+
+	return decoratorClassLoader;
   }
 
   private static URL[] parseSpanDecoratorsJars() {
