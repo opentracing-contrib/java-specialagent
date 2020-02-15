@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.grizzly-http-client</groupId>
     <artifactId>grizzly-http-client</artifactId>
-    <version>1.5.8-SNAPSHOT</version>
+    <version>1.5.8</version>
   </parent>
   <artifactId>grizzly-http-client-1.15</artifactId>
   <name>SpecialAgent Test for Grizzly Async Http Client 1.15</name>

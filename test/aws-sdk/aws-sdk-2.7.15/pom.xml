@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.aws-sdk</groupId>
     <artifactId>aws-sdk</artifactId>
-    <version>1.5.8-SNAPSHOT</version>
+    <version>1.5.8</version>
   </parent>
   <artifactId>aws-sdk-2.7.15</artifactId>
   <name>SpecialAgent Test for AWS SDK 2.7.15</name>

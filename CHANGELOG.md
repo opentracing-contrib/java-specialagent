@@ -1,5 +1,20 @@
 # Changes by Version
 
+## v1.5.8 (2020-02-14)
+* New instrumentation plugins: Mule 4 (#324), Pulsar Functions (#398)
+* New integration tests: Pulsar Functions (#408 #411 #412)
+* Mechanism to load customized span decorators externally (#410)
+* Mechanism in `TestUtil` to check span count by component name (#413 #414)
+* Rebase `servlet` rule with current implementation of `java-web-servlet-filter` (#400)
+* Modify `servlet` rule to add `skipPattern` and `spanDecorators` (#399)
+* Modify `servlet` rule to allow creation of tags from HTTP headers (#402)
+* Solution to prevent tracers getting instrumented by SpecialAgent (#381)
+* Fix Static Deferred Attach not executing hook for Spring Boot apps (#382)
+* Fix to stack-overflow in `FilterAgentIntercept` (#391)
+* Fix to memory leak in `servlet` rule with Jetty 9.4 and Spring 5 (#395)
+* Fix error tag for `jedis` (#396)
+* Cleanup and refactor patterns (#397)
+
 ## v1.5.7 (2020-02-01)
 * Improve intercept logging (#385)
 * Improve test coverage for init patterns (#342)

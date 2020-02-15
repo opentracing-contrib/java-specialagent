@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-web</groupId>
     <artifactId>spring-web</artifactId>
-    <version>1.5.8-SNAPSHOT</version>
+    <version>1.5.8</version>
   </parent>
   <artifactId>spring-web-5.0.0</artifactId>
   <name>SpecialAgent Test for Spring Web 5.0.0</name>
