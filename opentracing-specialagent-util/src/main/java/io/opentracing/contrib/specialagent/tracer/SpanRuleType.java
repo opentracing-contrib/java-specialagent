@@ -63,9 +63,11 @@ public enum SpanRuleType {
 
   void validate(final SpanRule rule, final String subject) {
     validateRule(rule, subject);
-    for (int i = 0, size = rule.outputs.size(); i < size; ++i) {
-      final SpanRuleOutput output = rule.outputs.get(i);
-      output.type.validateOutputKey(rule.type, rule.key, output.key, subject + "output " + i + ": ");
+    if (rule.outputs != null) {
+      for (int i = 0; i < rule.outputs.length; ++i) {
+        final SpanRuleOutput output = rule.outputs[i];
+        output.type.validateOutputKey(rule.type, rule.key, output.key, subject + "output " + i + ": ");
+      }
     }
   }
 

@@ -22,7 +22,7 @@ public class SpanRuleParserTest {
   @Test
   public void completeInvalidJson() {
     try {
-      assertEquals(0, SpanRuleParser.parseRules(new ByteArrayInputStream("invalid".getBytes())).size());
+      SpanRuleParser.parseRules(new ByteArrayInputStream("invalid".getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {
@@ -33,7 +33,7 @@ public class SpanRuleParserTest {
   public void oneRuleInvalidJson() {
     final String json = "{\"invalid\": 1, \"jedis\": []}";
     try {
-      assertEquals(1, SpanRuleParser.parseRules(new ByteArrayInputStream(json.getBytes())).size());
+      SpanRuleParser.parseRules(new ByteArrayInputStream(json.getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {

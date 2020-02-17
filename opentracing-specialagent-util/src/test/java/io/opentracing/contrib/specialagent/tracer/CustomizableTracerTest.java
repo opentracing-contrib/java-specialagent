@@ -58,13 +58,11 @@ public class CustomizableTracerTest {
     if (expectedError != null) {
       try {
         parseRules(jsonRules);
+        Assert.fail("no exception thrown");
       }
       catch (final IllegalStateException e) {
         assertEquals(expectedError, e.getMessage());
-        return;
       }
-
-      Assert.fail("no exception thrown");
     }
     else {
       playScenario(root, parseRules(jsonRules));

@@ -1,9 +1,8 @@
 package io.opentracing.contrib.specialagent.tracer;
 
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -16,7 +15,7 @@ import com.grack.nanojson.JsonParserException;
 public final class SpanRuleParser {
   public static Map<String,SpanRules> parseRules(final InputStream inputStream) {
     try {
-      final Map<String,SpanRules> result = new LinkedHashMap<>();
+      Map<String,SpanRules> result = null;
       final JsonObject root = JsonParser.object().from(inputStream);
       for (final String key : root.keySet()) {
         final String subject = key + ": ";
@@ -24,22 +23,26 @@ public final class SpanRuleParser {
         if (ruleEntry == null)
           throw new IllegalArgumentException("\"" + key + "\" is not an array");
 
+        if (result == null)
+          result = new LinkedHashMap<>();
+
         result.put(key, new SpanRules(parseRules(ruleEntry, subject)));
       }
 
-      return result;
+      return result != null ? result : Collections.EMPTY_MAP;
     }
     catch (final JsonParserException e) {
       throw new IllegalArgumentException(e);
     }
   }
 
-  static List<SpanRule> parseRules(final JsonArray jsonRules, final String subject) {
-    final List<SpanRule> rules = new ArrayList<>();
-    for (int i = 0, size = jsonRules.size(); i < size; ++i) {
+  static SpanRule[] parseRules(final JsonArray jsonRules, final String subject) {
+    final int size = jsonRules.size();
+    final SpanRule[] rules = new SpanRule[size];
+    for (int i = 0; i < size; ++i) {
       final String ruleSubject = subject + "rule " + i + ": ";
       final JsonObject jsonRule = Objects.requireNonNull(jsonRules.getObject(i), ruleSubject + "not an object");
-      rules.add(parseRule(jsonRule, ruleSubject));
+      rules[i] = parseRule(jsonRule, ruleSubject);
     }
 
     return rules;
@@ -49,11 +52,14 @@ public final class SpanRuleParser {
     final SpanRuleType type = parseType(jsonRule.getString("type"), subject);
     final String key = jsonRule.getString("key");
 
-    final List<SpanRuleOutput> outputs = new ArrayList<>();
     final JsonArray jsonOutputs = jsonRule.getArray("output");
-    if (jsonOutputs != null)
-      for (int i = 0, size = jsonOutputs.size(); i < size; ++i)
-        outputs.add(parseOutput(jsonOutputs, i, subject + "output " + i + ": "));
+    SpanRuleOutput[] outputs = null;
+    if (jsonOutputs != null) {
+      final int size = jsonOutputs.size();
+      outputs = new SpanRuleOutput[size];
+      for (int i = 0; i < size; ++i)
+        outputs[i] = parseOutput(jsonOutputs, i, subject + "output " + i + ": ");
+    }
 
     final SpanRule rule = new SpanRule(parseMatcher(jsonRule), type, key, outputs);
     rule.type.validate(rule, subject);

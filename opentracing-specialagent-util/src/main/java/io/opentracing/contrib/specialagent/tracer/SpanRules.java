@@ -11,7 +11,7 @@ import io.opentracing.contrib.specialagent.Function;
 public class SpanRules {
   private final Map<String,List<SpanRule>> keyToRules = new LinkedHashMap<>();
 
-  public SpanRules(final List<SpanRule> rules) {
+  public SpanRules(final SpanRule[] rules) {
     for (final SpanRule rule : rules) {
       final String key = rule.key;
       List<SpanRule> list = keyToRules.get(key);
@@ -92,10 +92,12 @@ public class SpanRules {
   }
 
   private static void processMatch(final SpanRule rule, final Function<Object,Object> match, final SpanCustomizer customizer) {
-    for (final SpanRuleOutput output : rule.outputs) {
-      final Object outputValue = match.apply(output.value);
-      final String key = output.key != null ? output.key : rule.key;
-      output.type.apply(customizer, key, outputValue);
+    if (rule.outputs != null) {
+      for (final SpanRuleOutput output : rule.outputs) {
+        final Object outputValue = match.apply(output.value);
+        final String key = output.key != null ? output.key : rule.key;
+        output.type.apply(customizer, key, outputValue);
+      }
     }
   }
 }
