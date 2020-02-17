@@ -1,43 +1,58 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
 
-import static org.junit.Assert.assertEquals;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(Parameterized.class)
 public class CustomizableTracerTest {
-  private final File file;
+  private static List<URL> getResourceFiles(final String path) throws IOException {
+    final List<URL> resources = new ArrayList<>();
+    final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+    try (final BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(path)))) {
+      for (String fileName; (fileName = reader.readLine()) != null;)
+        resources.add(classLoader.getResource(path + "/" + fileName));
+    }
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Object[] data() {
-    return new File("src/test/resources/spanCustomizer").listFiles();
+    return resources;
   }
 
-  public CustomizableTracerTest(final File file) {
-    this.file = file;
+  @Parameterized.Parameters(name = "{0}")
+  public static URL[] data() throws IOException {
+    return getResourceFiles("spanCustomizer").toArray(new URL[0]);
+  }
+
+  private final JsonObject root;
+
+  public CustomizableTracerTest(final URL resource) throws IOException, JsonParserException {
+    try (final InputStream in = resource.openStream()) {
+      root = JsonParser.object().from(in);
+    }
   }
 
   @Test
-  public void test() throws Exception {
-    JsonObject root;
-    try (final FileInputStream stream = new FileInputStream(file)) {
-      root = JsonParser.object().from(stream);
-    }
-
+  public void test() {
     final JsonArray jsonRules = Objects.requireNonNull(root.getArray("rules"));
     final String expectedError = root.getString("expectedError");
     if (expectedError != null) {

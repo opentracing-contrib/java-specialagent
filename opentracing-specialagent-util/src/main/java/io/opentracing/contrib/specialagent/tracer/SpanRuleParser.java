@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import com.grack.nanojson.JsonArray;
 import com.grack.nanojson.JsonObject;
@@ -55,7 +56,7 @@ public final class SpanRuleParser {
         outputs.add(parseOutput(jsonOutputs, i, subject + "output " + i + ": "));
 
     final SpanRule rule = new SpanRule(parseMatcher(jsonRule), type, key, outputs);
-    rule.getType().validate(rule, subject);
+    rule.type.validate(rule, subject);
     return rule;
   }
 
@@ -64,9 +65,9 @@ public final class SpanRuleParser {
     return new SpanRuleOutput(parseType(jsonOutput.getString("type"), subject), jsonOutput.getString("key"), jsonOutput.get("value"));
   }
 
-  private static SpanRuleMatcher parseMatcher(final JsonObject jsonRule) {
+  private static Object parseMatcher(final JsonObject jsonRule) {
     final String valueRegex = jsonRule.getString("valueRegex");
-    return valueRegex != null ? new RegexSpanRuleMatcher(valueRegex) : new PlainSpanRuleMatcher(jsonRule.get("value"));
+    return valueRegex != null ? Pattern.compile(valueRegex) : jsonRule.get("value");
   }
 
   private static SpanRuleType parseType(final String type, final String subject) {

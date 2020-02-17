@@ -2,7 +2,7 @@ package io.opentracing.contrib.specialagent.tracer;
 
 import io.opentracing.Span;
 
-public class LogEventCustomizer implements SpanCustomizer {
+public class LogEventCustomizer extends SpanCustomizer {
   private final long timestampMicroseconds;
   private final Span target;
   private final SpanCustomizer base;
@@ -13,26 +13,25 @@ public class LogEventCustomizer implements SpanCustomizer {
     this.target = target;
   }
 
+  void log(final Object value) {
+    if (timestampMicroseconds > 0)
+      target.log(timestampMicroseconds, value.toString());
+    else
+      target.log(value.toString());
+  }
+
   @Override
-  public void addLogField(final String key, final Object value) {
+  void addLogField(final String key, final Object value) {
     log(value);
   }
 
-  public void log(final Object value) {
-    if (timestampMicroseconds > 0) {
-      target.log(timestampMicroseconds, value.toString());
-    } else {
-      target.log(value.toString());
-    }
-  }
-
   @Override
-  public void setTag(final String key, final Object value) {
+  void setTag(final String key, final Object value) {
     base.setTag(key, value);
   }
 
   @Override
-  public void setOperationName(final String name) {
+  void setOperationName(final String name) {
     base.setOperationName(name);
   }
 }

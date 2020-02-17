@@ -8,9 +8,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
 
 public class CustomizableSpan implements Span {
-  private final Span target;
-  private final SpanRules rules;
-  private SpanCustomizer customizer = new SpanCustomizer() {
+  private final SpanCustomizer customizer = new SpanCustomizer() {
     @Override
     public void addLogField(final String key, final Object value) {
       target.log(Collections.singletonMap(key, value));
@@ -33,6 +31,9 @@ public class CustomizableSpan implements Span {
       target.setOperationName(name);
     }
   };
+
+  private final Span target;
+  private final SpanRules rules;
 
   public CustomizableSpan(final Span target, final SpanRules rules) {
     this.target = target;
@@ -63,7 +64,7 @@ public class CustomizableSpan implements Span {
   }
 
   @Override
-  public <T> Span setTag(final Tag<T> tag, final T value) {
+  public <T>Span setTag(final Tag<T> tag, final T value) {
     rules.setTag(tag.getKey(), value, customizer);
     return this;
   }

@@ -12,11 +12,7 @@ import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
 public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
-  private final Tracer.SpanBuilder target;
-  private final SpanRules rules;
-  private List<Map<String,Object>> log;
-  private String operationName;
-  private SpanCustomizer customizer = new SpanCustomizer() {
+  private final SpanCustomizer customizer = new SpanCustomizer() {
     @Override
     public void setTag(final String key, final Object value) {
       if (value == null)
@@ -42,6 +38,11 @@ public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
       log.add(Collections.singletonMap(key, value));
     }
   };
+
+  private final Tracer.SpanBuilder target;
+  private final SpanRules rules;
+  private List<Map<String,Object>> log;
+  private String operationName;
 
   public CustomizableSpanBuilder(final Tracer.SpanBuilder target, final SpanRules rules, final Map<String,Object> tags, final List<Map<String,Object>> log) {
     this.target = target;
