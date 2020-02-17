@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.rabbitmq;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import org.springframework.amqp.core.Binding;
@@ -122,7 +123,7 @@ public class SpringRabbitMQITest {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
 
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringRabbitMQITest.class, args)) {
-      TestUtil.checkSpan("spring-rabbitmq", 6, latch);
+      TestUtil.checkSpan(latch, new ComponentSpanCount("spring-rabbitmq", 2), new ComponentSpanCount("java-rabbitmq", 4));
     }
 
     broker.shutdown();

@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webflux;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,7 +29,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 public class SpringWebFluxITest {
   public static void main(final String[] args) {
     SpringApplication.run(SpringWebFluxITest.class, args).close();
-    TestUtil.checkSpan("java-spring-webclient", 4, true);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-spring-webclient", 1), new ComponentSpanCount("java-spring-webflux", 1), new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("netty", 1));
   }
 
   @Bean

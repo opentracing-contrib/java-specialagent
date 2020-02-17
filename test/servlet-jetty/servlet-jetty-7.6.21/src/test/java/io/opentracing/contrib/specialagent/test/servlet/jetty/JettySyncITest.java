@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.servlet.jetty;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +57,7 @@ public class JettySyncITest {
       server.join();
     }
 
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 
   static File installWebApp() throws IOException {

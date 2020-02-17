@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spymemcached;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +33,6 @@ public class SpymemcachedITest {
       throw new AssertionError("ERROR: failed to get value");
 
     client.shutdown();
-    TestUtil.checkSpan("java-memcached", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("java-memcached", 2));
   }
 }

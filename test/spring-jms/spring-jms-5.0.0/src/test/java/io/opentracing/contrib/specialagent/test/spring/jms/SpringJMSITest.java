@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.jms;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.ConnectionFactory;
@@ -44,7 +45,7 @@ public class SpringJMSITest {
   public static void main(final String[] args) throws Exception {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(3);
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringJMSITest.class, args)) {
-      TestUtil.checkSpan("java-jms", 3, latch);
+      TestUtil.checkSpan(true, latch, new ComponentSpanCount("java-jms", 2, true), new ComponentSpanCount("spring-jms", 1));
     }
   }
 

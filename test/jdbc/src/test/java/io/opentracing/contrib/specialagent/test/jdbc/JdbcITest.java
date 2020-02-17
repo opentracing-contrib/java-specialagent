@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.jdbc;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -52,6 +53,6 @@ public class JdbcITest {
       statement.executeQuery("SELECT 4 FROM dual");
     }
 
-    TestUtil.checkSpan("java-jdbc", 6);
+    TestUtil.checkSpan(new ComponentSpanCount("java-jdbc", 6));
   }
 }

@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.elasticsearch.client;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -72,7 +73,7 @@ public class ElasticsearchITest {
       runTransportClient();
     }
 
-    TestUtil.checkSpan("java-elasticsearch", 6);
+    TestUtil.checkSpan(new ComponentSpanCount("java-elasticsearch", 4));
   }
 
   private static void runRestClient() throws IOException, InterruptedException {

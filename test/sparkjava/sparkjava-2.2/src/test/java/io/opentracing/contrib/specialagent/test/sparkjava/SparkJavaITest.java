@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.sparkjava;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -46,7 +47,7 @@ public class SparkJavaITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("java-web-servlet", 2, true);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
 
     Spark.stop();
   }

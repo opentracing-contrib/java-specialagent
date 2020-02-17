@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.apache.httpclient;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -31,6 +32,6 @@ public class ApacheHttpClientITest {
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
-    TestUtil.checkSpan("java-httpclient", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("java-httpclient", 1));
   }
 }
