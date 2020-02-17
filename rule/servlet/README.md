@@ -22,13 +22,13 @@ Following properties are supported by the Servlet Rule.
 
   `com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2,io.opentracing.contrib.web.servlet.filter.StandardTagsServletFilterSpanDecorator`
 
-* `-Dsa.instrumentation.plugin.servlet.spanDecorators.jars`
+* `-Dsa.instrumentation.plugin.servlet.spanDecorators.classpath`
 
-  Indicate the paths of jars contain the customized decorator classes specified by `sa.instrumentation.plugin.servlet.spanDecorators`.
+  Indicate the casspath of JARs or directories containing customized decorator classes specified by `sa.instrumentation.plugin.servlet.spanDecorators`, delimited by `File.pathSeparatorChar`.
 
   **Example:**
 
-  `/path/to/your/lib/myspandecorators1.jar,/path/to/your/lib/myspandecorators1.jar`
+  `/path/to/your/lib/myspandecorators1.jar:/path/to/your/lib/myspandecorators1.jar`
 
 * `-Dsa.httpHeaderTags=a,b=c`
 

@@ -30,6 +30,7 @@ import com.couchbase.mock.BucketConfiguration;
 import com.couchbase.mock.CouchbaseMock;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class CouchbaseClientITest {
   private static final String bucketName = "test";
@@ -60,6 +61,6 @@ public class CouchbaseClientITest {
     cluster.disconnect(60, TimeUnit.SECONDS);
     couchbaseMock.stop();
 
-    TestUtil.checkSpan("couchbase-java-client.*", 6);
+    TestUtil.checkSpan(new ComponentSpanCount("couchbase-java-client.*", 2));
   }
 }

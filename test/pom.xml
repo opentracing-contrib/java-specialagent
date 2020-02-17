@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.5.8-SNAPSHOT</version>
+    <version>1.5.9-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -66,6 +66,7 @@
     <module>play-ws</module>
     <module>play</module>
     <module>pulsar-client</module>
+    <module>pulsar-functions</module>
     <module>rabbitmq-client</module>
     <module>ratpack</module>
     <module>reactor</module>

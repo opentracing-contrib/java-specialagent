@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.8-SNAPSHOT</version>
+    <version>1.5.9-SNAPSHOT</version>
   </parent>
   <artifactId>pulsar-functions</artifactId>
   <name>SpecialAgent Rule for Apache Pulsar Functions</name>
@@ -38,6 +38,12 @@
       <version>${version.pulsar}</version>
       <optional>true</optional>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pulsar</groupId>
+      <artifactId>pulsar-broker</artifactId>
+      <version>${version.pulsar}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
