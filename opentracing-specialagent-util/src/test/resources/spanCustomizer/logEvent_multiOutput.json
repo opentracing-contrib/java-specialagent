@@ -1,0 +1,34 @@
+{
+  "scenario": "logEventTimestamp",
+  "rules": [
+    {
+      "type": "log",
+      "output": [
+        {
+          "type": "log"
+        },
+        {
+          "type": "operationName"
+        },
+        {
+          "type": "tag",
+          "key": "key"
+        }
+      ]
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "event",
+      "tags": {
+        "key": "event"
+      },
+      "logs": [
+        {
+          "event": "event",
+          "timestampMicros": 1
+        }
+      ]
+    }
+  ]
+}

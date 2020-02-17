@@ -1,0 +1,16 @@
+{
+  "jedis": [
+    {
+      "type": "tag",
+      "key": "db.statement",
+      "valueRegex": "(select).*",
+      "output": [
+        {
+          "type": "log",
+          "key": "sql",
+          "value": "$1"
+        }
+      ]
+    }
+  ]
+}

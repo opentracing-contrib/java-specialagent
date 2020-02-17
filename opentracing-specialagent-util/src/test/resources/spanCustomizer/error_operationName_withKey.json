@@ -1,0 +1,9 @@
+{
+  "expectedError": "test: rule 0: key for operationName must be null",
+  "rules": [
+    {
+      "type": "operationName",
+      "key": "k1"
+    }
+  ]
+}

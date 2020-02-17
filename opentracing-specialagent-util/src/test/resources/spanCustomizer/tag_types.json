@@ -1,0 +1,55 @@
+{
+  "scenario": "tagTypes",
+  "rules": [
+    {
+      "type": "tag",
+      "key": "k1",
+      "value": "v1",
+      "output": [
+        {
+          "type": "tag",
+          "value": "new"
+        }
+      ]
+    },
+    {
+      "type": "tag",
+      "key": "k2",
+      "value": 1,
+      "output": [
+        {
+          "type": "tag",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "type": "tag",
+      "key": "k3",
+      "output": [
+        {
+          "type": "tag",
+          "value": true
+        }
+      ]
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "tags": {
+        "k1": "new",
+        "k2": 2,
+        "k3": true
+      }
+    },
+    {
+      "operationName": "operation",
+      "tags": {
+        "k1": "new",
+        "k2": 2,
+        "k3": true
+      }
+    }
+  ]
+}

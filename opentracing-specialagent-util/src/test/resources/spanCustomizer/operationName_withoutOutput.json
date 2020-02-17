@@ -1,0 +1,13 @@
+{
+  "scenario": "operationName",
+  "rules": [
+    {
+      "type": "operationName"
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation"
+    }
+  ]
+}
