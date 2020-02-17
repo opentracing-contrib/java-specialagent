@@ -8,7 +8,7 @@ public class SpanRule {
   private final SpanRuleMatcher matcher;
   private final List<SpanRuleOutput> outputs;
 
-  public SpanRule(SpanRuleMatcher matcher, SpanRuleType type, String key, List<SpanRuleOutput> outputs) {
+  public SpanRule(final SpanRuleMatcher matcher, final SpanRuleType type, final String key, final List<SpanRuleOutput> outputs) {
     this.matcher = matcher;
     this.type = type;
     this.key = key;

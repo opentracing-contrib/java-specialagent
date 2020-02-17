@@ -1,24 +1,83 @@
 package io.opentracing.contrib.specialagent.tracer;
 
 public enum SpanRuleType {
-  log {
+  LOG("log") {
     @Override
-    void apply(SpanCustomizer customizer, String key, Object value) {
+    void apply(final SpanCustomizer customizer, final String key, final Object value) {
       customizer.addLogField(key, value);
     }
-  },
-  operationName {
+
     @Override
-    void apply(SpanCustomizer customizer, String key, Object value) {
-      customizer.setOperationName(value.toString());
+    void validateRule(final SpanRule rule, final String subject) {
+    }
+
+    @Override
+    void validateOutputKey(final SpanRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+      final boolean matchLogEvent = matchType == SpanRuleType.LOG && matchKey == null;
+      if (!matchLogEvent && matchKey == null && outputKey == null)
+        throw new IllegalStateException(subject + "missing output key for log fields");
     }
   },
-  tag {
+  OPERATION_NAME("operationName") {
     @Override
-    void apply(SpanCustomizer customizer, String key, Object value) {
+    void apply(final SpanCustomizer customizer, final String key, final Object value) {
+      customizer.setOperationName(value.toString());
+    }
+
+    @Override
+    void validateRule(final SpanRule rule, final String subject) {
+      if (rule.getKey() != null)
+        throw new IllegalStateException(subject + "key for operationName must be null");
+    }
+
+    @Override
+    void validateOutputKey(final SpanRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+      if (outputKey != null)
+        throw new IllegalStateException(subject + "operationName cannot have output key");
+    }
+  },
+  TAG("tag") {
+    @Override
+    void apply(final SpanCustomizer customizer, final String key, final Object value) {
       customizer.setTag(key, value);
+    }
+
+    @Override
+    void validateRule(final SpanRule rule, final String subject) {
+      if (rule.getKey() == null)
+        throw new IllegalStateException(subject + "tag without a key is not allowed");
+    }
+
+    @Override
+    void validateOutputKey(final SpanRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+      if (matchKey == null && outputKey == null)
+        throw new IllegalStateException(subject + "missing output key for tag");
     }
   };
 
+  private final String tagName;
+
+  private SpanRuleType(final String tagName) {
+    this.tagName = tagName;
+  }
+
+  void validate(final SpanRule rule, final String subject) {
+    validateRule(rule, subject);
+    for (int i = 0, size = rule.getOutputs().size(); i < size; ++i) {
+      final SpanRuleOutput output = rule.getOutputs().get(i);
+      output.getType().validateOutputKey(rule.getType(), rule.getKey(), output.getKey(), subject + "output " + i + ": ");
+    }
+  }
+
   abstract void apply(SpanCustomizer customizer, String key, Object value);
+  abstract void validateOutputKey(SpanRuleType matchType, String matchKey, String outputKey, String subject);
+  abstract void validateRule(SpanRule rule, String subject);
+
+  public static SpanRuleType fromString(final String str) {
+    for (final SpanRuleType value : values())
+      if (value.tagName.equals(str))
+        return value;
+
+    return null;
+  }
 }

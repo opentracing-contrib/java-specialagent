@@ -5,7 +5,7 @@ public class SpanRuleOutput {
   private final String key;
   private final Object value;
 
-  public SpanRuleOutput(SpanRuleType type, String key, Object value) {
+  public SpanRuleOutput(final SpanRuleType type, final String key, final Object value) {
     this.type = type;
     this.key = key;
     this.value = value;

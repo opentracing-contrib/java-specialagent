@@ -11,7 +11,7 @@ public class CustomizableTracer implements Tracer {
   private final Tracer target;
   private final SpanRules rules;
 
-  public CustomizableTracer(Tracer target, SpanRules rules) {
+  public CustomizableTracer(final Tracer target, final SpanRules rules) {
     this.target = target;
     this.rules = rules;
   }
@@ -27,22 +27,22 @@ public class CustomizableTracer implements Tracer {
   }
 
   @Override
-  public Scope activateSpan(Span span) {
+  public Scope activateSpan(final Span span) {
     return target.activateSpan(span);
   }
 
   @Override
-  public SpanBuilder buildSpan(String operationName) {
+  public SpanBuilder buildSpan(final String operationName) {
     return new OperationNameCustomizer(operationName).buildSpan(target, rules);
   }
 
   @Override
-  public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
+  public <C> void inject(final SpanContext spanContext, final Format<C> format, final C carrier) {
     target.inject(spanContext, format, carrier);
   }
 
   @Override
-  public <C> SpanContext extract(Format<C> format, C carrier) {
+  public <C> SpanContext extract(final Format<C> format, final C carrier) {
     return target.extract(format, carrier);
   }
 
@@ -51,4 +51,3 @@ public class CustomizableTracer implements Tracer {
     target.close();
   }
 }
-

@@ -1,33 +1,43 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class SpanRuleParserTest {
-
-  private SpanRuleParser parser = new SpanRuleParser();
-
   @Test
-  public void parseRules() throws FileNotFoundException {
-    Map<String, SpanRules> rules = parser.parseRules(new FileInputStream("src/test/resources/spanRules.json"));
-    assertEquals(1, rules.size());
-    assertEquals("jedis", rules.keySet().iterator().next());
+  public void parseRules() throws IOException {
+    try (final InputStream in = new FileInputStream("src/test/resources/spanRules.json")) {
+      final Map<String,SpanRules> rules = SpanRuleParser.parseRules(in);
+      assertEquals(1, rules.size());
+      assertEquals("jedis", rules.keySet().iterator().next());
+    }
   }
 
   @Test
   public void completeInvalidJson() {
-    assertEquals(0, parser.parseRules(new ByteArrayInputStream("invalid".getBytes())).size());
+    try {
+      assertEquals(0, SpanRuleParser.parseRules(new ByteArrayInputStream("invalid".getBytes())).size());
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
   }
 
   @Test
   public void oneRuleInvalidJson() {
-    String json = "{\"invalid\": 1, \"jedis\": []}";
-    assertEquals(1, parser.parseRules(new ByteArrayInputStream(json.getBytes())).size());
+    final String json = "{\"invalid\": 1, \"jedis\": []}";
+    try {
+      assertEquals(1, SpanRuleParser.parseRules(new ByteArrayInputStream(json.getBytes())).size());
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
   }
 }

@@ -7,18 +7,18 @@ public class LogEventCustomizer implements SpanCustomizer {
   private final Span target;
   private final SpanCustomizer base;
 
-  public LogEventCustomizer(long timestampMicroseconds, SpanCustomizer customizer, Span target) {
+  public LogEventCustomizer(final long timestampMicroseconds, final SpanCustomizer customizer, final Span target) {
     this.base = customizer;
     this.timestampMicroseconds = timestampMicroseconds;
     this.target = target;
   }
 
   @Override
-  public void addLogField(String key, Object value) {
+  public void addLogField(final String key, final Object value) {
     log(value);
   }
 
-  public void log(Object value) {
+  public void log(final Object value) {
     if (timestampMicroseconds > 0) {
       target.log(timestampMicroseconds, value.toString());
     } else {
@@ -27,12 +27,12 @@ public class LogEventCustomizer implements SpanCustomizer {
   }
 
   @Override
-  public void setTag(String key, Object value) {
+  public void setTag(final String key, final Object value) {
     base.setTag(key, value);
   }
 
   @Override
-  public void setOperationName(String name) {
+  public void setOperationName(final String name) {
     base.setOperationName(name);
   }
 }

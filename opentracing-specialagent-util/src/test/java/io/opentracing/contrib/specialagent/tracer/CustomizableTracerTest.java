@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class CustomizableTracerTest {
-
   private final File file;
 
   @Parameterized.Parameters(name = "{0}")
@@ -28,50 +27,52 @@ public class CustomizableTracerTest {
     return new File("src/test/resources/spanCustomizer").listFiles();
   }
 
-  public CustomizableTracerTest(File file) {
+  public CustomizableTracerTest(final File file) {
     this.file = file;
   }
 
   @Test
   public void test() throws Exception {
     JsonObject root;
-    try (FileInputStream stream = new FileInputStream(file)) {
+    try (final FileInputStream stream = new FileInputStream(file)) {
       root = JsonParser.object().from(stream);
     }
 
-    JsonArray jsonRules = Objects.requireNonNull(root.getArray("rules"));
-
-    String expectedError = root.getString("expectedError");
+    final JsonArray jsonRules = Objects.requireNonNull(root.getArray("rules"));
+    final String expectedError = root.getString("expectedError");
     if (expectedError != null) {
       try {
         parseRules(jsonRules);
-      } catch (IllegalStateException e) {
+      }
+      catch (final IllegalStateException e) {
         assertEquals(expectedError, e.getMessage());
         return;
       }
+
       Assert.fail("no exception thrown");
-    } else {
+    }
+    else {
       playScenario(root, parseRules(jsonRules));
     }
   }
 
-  private SpanRules parseRules(JsonArray jsonRules) {
-    return new SpanRules(new SpanRuleParser().parseRules(jsonRules, "test: "));
+  private static SpanRules parseRules(final JsonArray jsonRules) {
+    return new SpanRules(SpanRuleParser.parseRules(jsonRules, "test: "));
   }
 
-  private void playScenario(JsonObject root, SpanRules rules) {
-    MockTracer mockTracer = new MockTracer();
-    CustomizableTracerScenario scenario = CustomizableTracerScenario.valueOf(root.getString("scenario"));
+  private static void playScenario(final JsonObject root, final SpanRules rules) {
+    final MockTracer mockTracer = new MockTracer();
+    final CustomizableTracerScenario scenario = CustomizableTracerScenario.fromString(root.getString("scenario"));
     scenario.play(new CustomizableTracer(mockTracer, rules));
 
-    JsonArray expectedSpans = Objects.requireNonNull(root.getArray("expectedSpans"));
+    final JsonArray expectedSpans = Objects.requireNonNull(root.getArray("expectedSpans"));
 
-    List<MockSpan> spans = mockTracer.finishedSpans();
+    final List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(expectedSpans.size(), spans.size());
-    for (int i = 0; i < spans.size(); i++) {
-      MockSpan span = spans.get(i);
-      String message = "span " + i;
-      JsonObject expectedSpan = Objects.requireNonNull(expectedSpans.getObject(i), message);
+    for (int i = 0; i < spans.size(); ++i) {
+      final MockSpan span = spans.get(i);
+      final String message = "span " + i;
+      final JsonObject expectedSpan = Objects.requireNonNull(expectedSpans.getObject(i), message);
 
       assertEquals(message, Objects.requireNonNull(expectedSpan.getString("operationName")), span.operationName());
       assertTags(expectedSpan, span, message);
@@ -79,66 +80,64 @@ public class CustomizableTracerTest {
     }
   }
 
-  private void assertTags(JsonObject expectedSpan, MockSpan span, String message) {
-    JsonObject expectedTags = expectedSpan.getObject("tags");
-    Map<String, Object> tags = span.tags();
-
+  private static void assertTags(final JsonObject expectedSpan, final MockSpan span, final String message) {
+    final JsonObject expectedTags = expectedSpan.getObject("tags");
+    final Map<String,Object> tags = span.tags();
     if (expectedTags == null) {
       assertEquals(message, 0, tags.size());
       return;
     }
 
-    for (Map.Entry<String, Object> entry : expectedTags.entrySet()) {
-      String key = entry.getKey();
+    for (final Map.Entry<String,Object> entry : expectedTags.entrySet()) {
+      final String key = entry.getKey();
       assertEquals(message + " tag " + key, entry.getValue(), tags.get(key));
     }
+
     assertEquals(message, expectedTags.size(), tags.size());
   }
 
-  private void assertLogs(JsonObject expectedSpan, MockSpan span, String message) {
-    JsonArray expectedLogs = expectedSpan.getArray("logs");
-    List<MockSpan.LogEntry> logEntries = span.logEntries();
-
+  private static void assertLogs(final JsonObject expectedSpan, final MockSpan span, final String message) {
+    final JsonArray expectedLogs = expectedSpan.getArray("logs");
+    final List<MockSpan.LogEntry> logEntries = span.logEntries();
     if (expectedLogs == null) {
       assertEquals(0, logEntries.size());
       return;
     }
-    
-    assertEquals(message, expectedLogs.size(), logEntries.size());
 
-    for (int i = 0; i < expectedLogs.size(); i++) {
-      JsonObject expectedLog = Objects.requireNonNull(expectedLogs.getObject(i));
+    assertEquals(message, expectedLogs.size(), logEntries.size());
+    for (int i = 0; i < expectedLogs.size(); ++i) {
+      final JsonObject expectedLog = Objects.requireNonNull(expectedLogs.getObject(i));
       assertLog(expectedLog, logEntries.get(i), message + " log " + i);
     }
   }
 
-  private void assertLog(JsonObject expectedLog, MockSpan.LogEntry logEntry, String message) {
-    Map<String, ?> fields = logEntry.fields();
+  private static void assertLog(final JsonObject expectedLog, final MockSpan.LogEntry logEntry, final String message) {
+    final Map<String,?> fields = logEntry.fields();
 
-    String expectedEvent = expectedLog.getString("event");
-    JsonObject expectedFields = expectedLog.getObject("fields");
+    final String expectedEvent = expectedLog.getString("event");
+    final JsonObject expectedFields = expectedLog.getObject("fields");
 
-    Number number = expectedLog.getNumber("timestampMicros");
-    if (number != null) {
+    final Number number = expectedLog.getNumber("timestampMicros");
+    if (number != null)
       assertEquals(message, number.longValue(), logEntry.timestampMicros());
-    }
 
     int given = 0;
     if (expectedEvent != null) {
-      given++;
+      ++given;
 
       assertEquals(message, 1, fields.size());
       assertEquals(message, expectedEvent, fields.get("event"));
     }
-    if (expectedFields != null) {
-      given++;
 
+    if (expectedFields != null) {
+      ++given;
       assertEquals(message, expectedFields.size(), fields.size());
-      for (Map.Entry<String, Object> entry : expectedFields.entrySet()) {
-        String key = entry.getKey();
+      for (final Map.Entry<String,Object> entry : expectedFields.entrySet()) {
+        final String key = entry.getKey();
         assertEquals(message + " key " + key, entry.getValue(), fields.get(key));
       }
     }
+
     assertEquals(message, 1, given);
   }
 }

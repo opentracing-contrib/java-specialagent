@@ -7,49 +7,44 @@ import java.util.List;
 import java.util.Map;
 
 public class SpanRules {
-  private Map<String, List<SpanRule>> rulesByKey = new LinkedHashMap<>();
+  private final Map<String,List<SpanRule>> rulesByKey = new LinkedHashMap<>();
 
-  public SpanRules(List<SpanRule> rules) {
-    for (SpanRule rule : rules) {
-      String key = rule.getKey();
+  public SpanRules(final List<SpanRule> rules) {
+    for (final SpanRule rule : rules) {
+      final String key = rule.getKey();
       List<SpanRule> list = rulesByKey.get(key);
-      if (list == null) {
-        list = new ArrayList<>();
-        rulesByKey.put(key, list);
-      }
+      if (list == null)
+        rulesByKey.put(key, list = new ArrayList<>());
+
       list.add(rule);
     }
   }
 
-  public void processOperationName(String operationName, SpanCustomizer customizer) {
-    if (!processRules(SpanRuleType.operationName, null, operationName, customizer)) {
+  public void processOperationName(final String operationName, final SpanCustomizer customizer) {
+    if (!processRules(SpanRuleType.OPERATION_NAME, null, operationName, customizer))
       customizer.setOperationName(operationName);
-    }
   }
 
-  public void setTag(String key, Object value, SpanCustomizer customizer) {
-    if (!processRules(SpanRuleType.tag, key, value, customizer)) {
+  public void setTag(final String key, final Object value, final SpanCustomizer customizer) {
+    if (!processRules(SpanRuleType.TAG, key, value, customizer))
       customizer.setTag(key, value);
-    }
   }
 
-  public void log(String event, LogEventCustomizer builder) {
-    if (!processRules(SpanRuleType.log, null, event, builder)) {
+  public void log(final String event, final LogEventCustomizer builder) {
+    if (!processRules(SpanRuleType.LOG, null, event, builder))
       builder.log(event);
-    }
   }
 
-  public void log(Map<String, ?> fields, LogFieldCustomizer builder) {
-    for (Map.Entry<String, ?> entry : fields.entrySet()) {
-      String key = entry.getKey();
-      Object value = entry.getValue();
+  public void log(final Map<String,?> fields, final LogFieldCustomizer builder) {
+    for (final Map.Entry<String,?> entry : fields.entrySet()) {
+      final String key = entry.getKey();
+      final Object value = entry.getValue();
 
-      for (SpanRule rule : getSpanRules(key)) {
-        if (rule.getType() != SpanRuleType.log) {
+      for (final SpanRule rule : getSpanRules(key)) {
+        if (rule.getType() != SpanRuleType.LOG)
           continue;
-        }
 
-        SpanRuleMatch match = rule.getMatcher().match(value);
+        final SpanRuleMatch match = rule.getMatcher().match(value);
         if (match != null) {
           replaceLog(fields, rule, match, builder);
           return;
@@ -57,57 +52,48 @@ public class SpanRules {
       }
     }
 
-    //nothing matched
+    // nothing matched
     builder.log(fields);
   }
 
-  private List<SpanRule> getSpanRules(String key) {
-    List<SpanRule> rules = rulesByKey.get(key);
-    if (rules == null) {
-      return Collections.emptyList();
-    }
-    return rules;
+  private List<SpanRule> getSpanRules(final String key) {
+    final List<SpanRule> rules = rulesByKey.get(key);
+    return rules != null ? rules : Collections.<SpanRule>emptyList();
   }
 
-  private void replaceLog(Map<String, ?> fields, SpanRule matchedRule, SpanRuleMatch match, LogFieldCustomizer builder) {
-
-    for (Map.Entry<String, ?> entry : fields.entrySet()) {
-      String key = entry.getKey();
-      Object value = entry.getValue();
-
-      if (key.equals(matchedRule.getKey())) {
+  private void replaceLog(final Map<String,?> fields, final SpanRule matchedRule, final SpanRuleMatch match, final LogFieldCustomizer builder) {
+    for (final Map.Entry<String,?> entry : fields.entrySet()) {
+      final String key = entry.getKey();
+      final Object value = entry.getValue();
+      if (key.equals(matchedRule.getKey()))
         processMatch(matchedRule, match, builder);
-      } else {
-        if (!processRules(SpanRuleType.log, key, value, builder)) {
-          builder.addLogField(key, value);
-        }
-      }
+      else if (!processRules(SpanRuleType.LOG, key, value, builder))
+        builder.addLogField(key, value);
     }
 
     builder.finish();
   }
 
-  private boolean processRules(SpanRuleType type, String key, Object value, SpanCustomizer customizer) {
-    for (SpanRule rule : getSpanRules(key)) {
-      if (rule.getType() != type) {
+  private boolean processRules(final SpanRuleType type, final String key, final Object value, final SpanCustomizer customizer) {
+    for (final SpanRule rule : getSpanRules(key)) {
+      if (rule.getType() != type)
         continue;
-      }
 
-      SpanRuleMatch match = rule.getMatcher().match(value);
+      final SpanRuleMatch match = rule.getMatcher().match(value);
       if (match != null) {
         processMatch(rule, match, customizer);
         return true;
       }
     }
+
     return false;
   }
 
-  private void processMatch(SpanRule rule, SpanRuleMatch match, SpanCustomizer customizer) {
-    for (SpanRuleOutput output : rule.getOutputs()) {
-      Object outputValue = match.getValue(output.getValue());
-      String key = output.getKey() != null ? output.getKey() : rule.getKey();
+  private static void processMatch(final SpanRule rule, final SpanRuleMatch match, final SpanCustomizer customizer) {
+    for (final SpanRuleOutput output : rule.getOutputs()) {
+      final Object outputValue = match.getValue(output.getValue());
+      final String key = output.getKey() != null ? output.getKey() : rule.getKey();
       output.getType().apply(customizer, key, outputValue);
     }
   }
-
 }

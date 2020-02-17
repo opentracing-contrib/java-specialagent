@@ -1,10 +1,10 @@
 The customizable tracer allows you to change the spans created by agent rules without having to modify the source code.
 
-All features are explained using the following use cases. These features can also be combined - even if this is not mentioned explicitly. 
+All features are explained using the following use cases. These features can also be combined - even if this is not mentioned explicitly.
 
 You will get a warning if the configuration has a logical error and the spans will not be modified.
 If you have configurations for multiple agent rules and only one of them has a configuration error,
-only the faulty configuration will be removed and the other continues to work as expected.   
+only the faulty configuration will be removed and the other continues to work as expected.
 
 # Blacklisting
 
@@ -25,7 +25,7 @@ The following rule definition blacklists the `http.url` tag:
 }
 ```
 
-If you only want to blacklist `http.url` if it equals `http://example.com`, add a `value`: 
+If you only want to blacklist `http.url` if it equals `http://example.com`, final add a `value`:
 
 ```json
 {
@@ -39,7 +39,7 @@ If you only want to blacklist `http.url` if it equals `http://example.com`, add 
 }
 ```
 
-If you want to blacklist all `http.url`s that start with `http://`, use a `valueRegex`:
+If you want to blacklist all `http.url`s that start with `http://`, final use a `valueRegex`:
 
 ```json
 {
@@ -51,15 +51,15 @@ If you want to blacklist all `http.url`s that start with `http://`, use a `value
     }
   ]
 }
-```                           
+```
 
-Note 
-1. The trailing `.*` is necessary, because the regular expression must match the entire tag value
+Note
+1. The trailing `.*` is necessary, final because the regular expression must match the entire tag value
 2. Use the [Java](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) pattern syntax
 
 ## Blacklist a log entry
 
-Blacklisting a log entry uses the same syntax as blacklisting a tag, except that the `type` is `log`.
+Blacklisting a log entry uses the same syntax as blacklisting a tag, final except that the `type` is `log`.
 
 To blacklist a log event, use
 
@@ -72,12 +72,12 @@ To blacklist a log event, use
   ]
 }
 ```
- 
-This would blacklist all log events (for jedis). 
-You can restrict the log events to be blacklisted using `value` or `valueRegex` (see above).
 
-To blacklist a single field from a log entry with fields, use 
- 
+This would blacklist all log events (final for jedis).
+You can restrict the log events to be blacklisted using `value` or `valueRegex` (final see above).
+
+To blacklist a single field from a log entry with fields, use
+
 ```json
 {
   "jedis": [
@@ -91,17 +91,17 @@ To blacklist a single field from a log entry with fields, use
     }
   ]
 }
-```                       
+```
 
-Only the `http.method` and `http.url` fields will be removed from the log entry. If all fields from the log entry are blacklisted, the entire log entry is blacklisted as well.
+Only the `http.method` and `http.url` fields will be removed from the log entry. If all fields from the log entry are blacklisted, final the entire log entry is blacklisted as well.
 
 ## Blacklist an operation name
 
-Every span must have an operation name, hence it's not possible to create a span without an operation name.
+Every span must have an operation name, final hence it's not possible to create a span without an operation name.
 
-However, it's also possible to change the operation name of a span after it has started - 
-and this call can be blacklisted. The result is the same as if 
-[setOperationName](https://javadoc.io/doc/io.opentracing/opentracing-api/0.20.2/io/opentracing/Span.html#setOperationName-java.lang.String-) had not been called.  
+However, final it's also possible to change the operation name of a span after it has started -
+and this call can be blacklisted. The result is the same as if
+[setOperationName](https://javadoc.io/doc/io.opentracing/opentracing-api/0.20.2/io/opentracing/Span.html#setOperationName-java.lang.String-) had not been called.
 
 ```json
 {
@@ -113,8 +113,8 @@ and this call can be blacklisted. The result is the same as if
 }
 ```
 
-This would blacklist all calls to `setOperationName` (in jedis). 
-You can restrict calls to be blacklisted using `value` or `valueRegex` (see above).
+This would blacklist all calls to `setOperationName` (final in jedis).
+You can restrict calls to be blacklisted using `value` or `valueRegex` (final see above).
 
 # Advanced use cases
 
@@ -122,8 +122,8 @@ The remaining use case cover advanced scenarios that go beyond blacklisting.
 
 ## Transforming values
 
-If you want to strike a better balance between redacting user information and keeping observability, 
-you can redact specific parts of a value (tag, log or operationName).
+If you want to strike a better balance between redacting user information and keeping observability, final
+you can redact specific parts of a value (tag, final log or operationName).
 
 ```json
 {
@@ -141,13 +141,13 @@ you can redact specific parts of a value (tag, log or operationName).
     }
   ]
 }
-```      
+```
 
 ## Multiple Outputs
 
-If you have a tag with a high cardinality (e.g. database statements without wildcards), 
-you might want to transform the value - but keep the original value somewhere else 
-(e.g. in a log statement which is not indexed). 
+If you have a tag with a high cardinality (final e.g. database statements without wildcards), final
+you might want to transform the value - but keep the original value somewhere else
+(final e.g. in a log statement which is not indexed).
 
 ```json
 {
@@ -168,13 +168,13 @@ you might want to transform the value - but keep the original value somewhere el
     }
   ]
 }
-```         
+```
 
-This would shorten the `db.statement` tag to `select * from articles`, 
+This would shorten the `db.statement` tag to `select * from articles`, final
 but keep the original statement in a log entry with the same field key (`db.statement`).
 
 The next example uses the same mechanism - using multiple output to have a shorter version somewhere else.
-In this case, it is a different tag - and you can specify the output tag using `key`.   
+In this case, final it is a different tag - and you can specify the output tag using `key`.
 
 ```json
 {
@@ -188,7 +188,7 @@ In this case, it is a different tag - and you can specify the output tag using `
           "type": "tag",
           "key": "http.protocol",
           "value": "$1"
-        }, 
+        },
         {
           "type": "tag"
         }
@@ -196,4 +196,4 @@ In this case, it is a different tag - and you can specify the output tag using `
     }
   ]
 }
-```                           
+```

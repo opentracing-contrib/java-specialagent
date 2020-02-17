@@ -2,7 +2,10 @@ package io.opentracing.contrib.specialagent.tracer;
 
 public interface SpanRuleMatcher {
   /**
-   * returns {@code null} if not matched
+   * Returns the {@link SpanRuleMatch}, or {@code null} if not matched.
+   *
+   * @param value The value to match.
+   * @return The {@link SpanRuleMatch}, or {@code null} if not matched.
    */
-  SpanRuleMatch match(Object value);
+  SpanRuleMatch match(final Object value);
 }
