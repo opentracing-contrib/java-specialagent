@@ -82,10 +82,14 @@ public class SpanRuleParser {
   private SpanRuleMatcher parseMatcher(JsonObject jsonRule) {
     String valueRegex = jsonRule.getString("valueRegex");
     if (valueRegex != null) {
-      return new RegexSpanRuleMatcher(valueRegex);
+      return regexSpanRuleMatcher(valueRegex);
     } else {
       return new PlainSpanRuleMatcher(jsonRule.get("value"));
     }
+  }
+
+  protected RegexSpanRuleMatcher regexSpanRuleMatcher(String valueRegex) {
+    return new RegexSpanRuleMatcher(valueRegex);
   }
 
   private SpanRuleType parseType(String type, String subject) {

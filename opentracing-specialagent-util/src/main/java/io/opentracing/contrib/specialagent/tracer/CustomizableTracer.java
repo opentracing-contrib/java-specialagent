@@ -33,7 +33,11 @@ public class CustomizableTracer implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    return new OperationNameCustomizer(operationName).buildSpan(target, rules);
+    return operationNameCustomizer(operationName).buildSpan(target, rules);
+  }
+
+  OperationNameCustomizer operationNameCustomizer(String operationName) {
+    return new OperationNameCustomizer(operationName);
   }
 
   @Override

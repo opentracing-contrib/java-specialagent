@@ -72,14 +72,18 @@ public class CustomizableSpan implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    rules.log(fields, new LogFieldCustomizer(0,customizer, target));
+    rules.log(fields, logFieldCustomizer(0));
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    rules.log(fields, new LogFieldCustomizer(timestampMicroseconds,customizer, target));
+    rules.log(fields, logFieldCustomizer(timestampMicroseconds));
     return this;
+  }
+
+  LogFieldCustomizer logFieldCustomizer(long timestampMicroseconds) {
+    return new LogFieldCustomizer(timestampMicroseconds, customizer, target);
   }
 
   @Override

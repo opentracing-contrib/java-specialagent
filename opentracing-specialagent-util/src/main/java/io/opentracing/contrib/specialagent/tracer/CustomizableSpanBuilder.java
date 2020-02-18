@@ -14,41 +14,13 @@ import java.util.Map;
 public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
   private final Tracer.SpanBuilder target;
   private final SpanRules rules;
-  private List<Map<String, Object>> log;
-  private String operationName;
-  private SpanCustomizer customizer = new SpanCustomizer() {
-    @Override
-    public void setTag(String key, Object value) {
-      if (value == null) {
-        target.withTag(key, (String) null);
-      } else if (value instanceof Number) {
-        target.withTag(key, (Number) value);
-      } else if (value instanceof Boolean) {
-        target.withTag(key, (Boolean) value);
-      } else {
-        target.withTag(key, value.toString());
-      }
-    }
-
-    @Override
-    public void setOperationName(String name) {
-      operationName = name;
-    }
-
-    @Override
-    public void addLogField(String key, Object value) {
-      if (log == null) {
-        log = new ArrayList<>();
-      }
-      log.add(Collections.singletonMap(key, value));
-    }
-  };
+  BuilderSpanCustomizer customizer = new BuilderSpanCustomizer();
 
   public CustomizableSpanBuilder(Tracer.SpanBuilder target, SpanRules rules,
                                  Map<String, Object> tags, List<Map<String, Object>> log) {
     this.target = target;
     this.rules = rules;
-    this.log = log;
+    customizer.log = log;
 
     if (tags != null) {
       for (Map.Entry<String, Object> entry : tags.entrySet()) {
@@ -120,13 +92,13 @@ public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
   @Override
   public Span start() {
     Span span = target.start();
-    if (log != null) {
-      for (Map<String, Object> fields : log) {
+    if (customizer.log != null) {
+      for (Map<String, Object> fields : customizer.log) {
         span.log(fields);
       }
     }
-    if (operationName != null) {
-      span.setOperationName(operationName);
+    if (customizer.operationName != null) {
+      span.setOperationName(customizer.operationName);
     }
     return new CustomizableSpan(span, rules);
   }
@@ -135,5 +107,36 @@ public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
   @Deprecated
   public Scope startActive(boolean finishSpanOnClose) {
     return target.startActive(finishSpanOnClose);
+  }
+
+  class BuilderSpanCustomizer implements SpanCustomizer {
+    List<Map<String, Object>> log;
+    String operationName;
+
+    @Override
+    public void setTag(String key, Object value) {
+      if (value == null) {
+        target.withTag(key, (String) null);
+      } else if (value instanceof Number) {
+        target.withTag(key, (Number) value);
+      } else if (value instanceof Boolean) {
+        target.withTag(key, (Boolean) value);
+      } else {
+        target.withTag(key, value.toString());
+      }
+    }
+
+    @Override
+    public void setOperationName(String name) {
+      operationName = name;
+    }
+
+    @Override
+    public void addLogField(String key, Object value) {
+      if (log == null) {
+        log = new ArrayList<>();
+      }
+      log.add(Collections.singletonMap(key, value));
+    }
   }
 }

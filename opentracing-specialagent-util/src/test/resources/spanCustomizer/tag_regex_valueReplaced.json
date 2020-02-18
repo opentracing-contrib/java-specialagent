@@ -13,6 +13,7 @@
       ]
     }
   ],
+  "expectedRegexMatches": 1,
   "expectedSpans": [
     {
       "operationName": "operation",

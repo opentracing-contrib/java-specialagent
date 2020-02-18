@@ -9,7 +9,7 @@ public class LogFieldCustomizer implements SpanCustomizer {
   private final long timestampMicroseconds;
   private final Span target;
   private final SpanCustomizer base;
-  private Map<String, Object> fields;
+  Map<String, Object> fields;
 
   public LogFieldCustomizer(long timestampMicroseconds, SpanCustomizer customizer, Span target) {
     this.base = customizer;

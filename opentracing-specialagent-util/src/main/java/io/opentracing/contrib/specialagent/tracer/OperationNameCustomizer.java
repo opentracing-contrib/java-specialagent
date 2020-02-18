@@ -11,7 +11,7 @@ import java.util.Map;
 public class OperationNameCustomizer implements SpanCustomizer {
 
   private List<Map<String, Object>> log;
-  private Map<String, Object> tags;
+  Map<String, Object> tags;
   private String operationName;
 
   public OperationNameCustomizer(String operationName) {

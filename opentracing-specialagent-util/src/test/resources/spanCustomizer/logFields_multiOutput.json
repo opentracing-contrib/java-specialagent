@@ -17,6 +17,7 @@
       ]
     }
   ],
+  "expectedMapAllocations": 1,
   "expectedSpans": [
     {
       "operationName": "value",
