@@ -22,11 +22,11 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
       @Override
       public void setTag(final String key, final Object value) {
         if (value == null)
-          CustomizableSpanBuilder.this.target.withTag(key, (String)null);
+          CustomizableSpanBuilder.this.target.withTag(key, (String) null);
         else if (value instanceof Number)
-          CustomizableSpanBuilder.this.target.withTag(key, (Number)value);
+          CustomizableSpanBuilder.this.target.withTag(key, (Number) value);
         else if (value instanceof Boolean)
-          CustomizableSpanBuilder.this.target.withTag(key, (Boolean)value);
+          CustomizableSpanBuilder.this.target.withTag(key, (Boolean) value);
         else
           CustomizableSpanBuilder.this.target.withTag(key, value.toString());
       }
@@ -122,6 +122,10 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
     if (operationName != null)
       span.setOperationName(operationName);
 
+    return getCustomizableSpan(span);
+  }
+
+  protected CustomizableSpan getCustomizableSpan(final Span span) {
     return new CustomizableSpan(span, rules);
   }
 
@@ -132,8 +136,8 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
   }
 
   private String operationName;
-  List<Map<String,Object>> log;
-  Map<String,Object> tags;
+  private List<Map<String,Object>> log;
+  private Map<String,Object> tags;
 
   @Override
   void setTag(final String key, final Object value) {
@@ -154,5 +158,13 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
   @Override
   void setOperationName(final String name) {
     this.operationName = name;
+  }
+
+  List<Map<String, Object>> getLog() {
+    return log;
+  }
+
+  Map<String, Object> getTags() {
+    return tags;
   }
 }

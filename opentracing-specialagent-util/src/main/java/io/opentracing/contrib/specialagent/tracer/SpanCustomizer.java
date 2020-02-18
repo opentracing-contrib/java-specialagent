@@ -3,7 +3,7 @@ package io.opentracing.contrib.specialagent.tracer;
 import io.opentracing.contrib.specialagent.Function;
 
 abstract class SpanCustomizer {
-  final SpanRules rules;
+  protected final SpanRules rules;
   private boolean operationNameProcessed = false;
 
   SpanCustomizer(final SpanRules rules) {

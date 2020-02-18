@@ -17,8 +17,8 @@ public class SpanRuleMatcher {
   }
 
   static Function<Object,Object> match(final Object predicate, final Object value) {
-    if (predicate instanceof SpanRulePattern) {
-      final Matcher matcher = ((SpanRulePattern)predicate).matcher(value.toString());
+    if (predicate instanceof Function) {
+      final Matcher matcher = ((Function<String, Matcher>)predicate).apply(value.toString());
       if (!matcher.matches())
         return null;
 

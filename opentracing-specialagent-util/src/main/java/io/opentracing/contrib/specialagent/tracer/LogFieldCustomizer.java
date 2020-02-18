@@ -10,7 +10,7 @@ public class LogFieldCustomizer extends SpanCustomizer {
   private final SpanCustomizer customizer;
   private final Span target;
 
-  Map<String,Object> fields;
+  private Map<String,Object> fields;
 
   public LogFieldCustomizer(final SpanRules rules, final SpanCustomizer source, final Span target) {
     super(rules);
@@ -79,5 +79,9 @@ public class LogFieldCustomizer extends SpanCustomizer {
   @Override
   void setOperationName(final String name) {
     customizer.setOperationName(name);
+  }
+
+  Map<String, Object> getFields() {
+    return fields;
   }
 }
