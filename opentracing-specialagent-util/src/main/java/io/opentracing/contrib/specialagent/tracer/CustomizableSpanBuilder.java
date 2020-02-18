@@ -1,16 +1,16 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.SpanBuilder {
   private final SpanCustomizer customizer;
@@ -132,8 +132,8 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
   }
 
   private String operationName;
-  private List<Map<String,Object>> log;
-  private Map<String,Object> tags;
+  List<Map<String,Object>> log;
+  Map<String,Object> tags;
 
   @Override
   void setTag(final String key, final Object value) {

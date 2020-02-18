@@ -1,6 +1,20 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import static org.junit.Assert.*;
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,19 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class CustomizableTracerTest {
@@ -44,6 +48,9 @@ public class CustomizableTracerTest {
   }
 
   private final JsonObject root;
+  private final List<CustomizableSpanBuilder> spanBuilders = new ArrayList<>();
+  private final List<LogFieldCustomizer> logFieldCustomizers = new ArrayList<>();
+  private int regexMatches = 0;
 
   public CustomizableTracerTest(final URL resource) throws IOException, JsonParserException {
     try (final InputStream in = resource.openStream()) {
@@ -69,14 +76,32 @@ public class CustomizableTracerTest {
     }
   }
 
-  private static SpanRules parseRules(final JsonArray jsonRules) {
-    return new SpanRules(SpanRuleParser.parseRules(jsonRules, "test: "));
+  private SpanRules parseRules(final JsonArray jsonRules) {
+    SpanRule[] rules = SpanRuleParser.parseRules(jsonRules, "test: ");
+    for (int i = 0; i < rules.length; i++) {
+      SpanRule rule = rules[i];
+      if (rule.predicate instanceof SpanRulePattern) {
+        SpanRulePattern predicate = (SpanRulePattern) rule.predicate;
+        SpanRulePattern pattern = Mockito.spy(predicate);
+        Mockito.doAnswer(new Answer<Matcher>() {
+          @Override
+          public Matcher answer(InvocationOnMock invocationOnMock) throws Throwable {
+            regexMatches++;
+            return (Matcher) invocationOnMock.callRealMethod();
+          }
+        }).when(pattern).matcher(Mockito.any(String.class));
+
+        rules[i] = new SpanRule(pattern, rule.type, rule.key, rule.outputs);
+      }
+    }
+    return new SpanRules(rules);
   }
 
-  private static void playScenario(final JsonObject root, final SpanRules rules) {
+  private void playScenario(final JsonObject root, final SpanRules rules) {
     final MockTracer mockTracer = new MockTracer();
+
     final CustomizableTracerScenario scenario = CustomizableTracerScenario.fromString(root.getString("scenario"));
-    scenario.play(new CustomizableTracer(mockTracer, rules));
+    scenario.play(spyTracer(new CustomizableTracer(mockTracer, rules)));
 
     final JsonArray expectedSpans = Objects.requireNonNull(root.getArray("expectedSpans"));
 
@@ -91,6 +116,48 @@ public class CustomizableTracerTest {
       assertTags(expectedSpan, span, message);
       assertLogs(expectedSpan, span, message);
     }
+
+    assertAllocations(root);
+  }
+
+  private CustomizableTracer spyTracer(final CustomizableTracer tracer) {
+    CustomizableTracer spy = Mockito.spy(tracer);
+
+    Mockito.doAnswer(new Answer<Tracer.SpanBuilder>() {
+      @Override
+      public Tracer.SpanBuilder answer(InvocationOnMock invocationOnMock) throws Throwable {
+        return spyBuilder((CustomizableSpanBuilder) invocationOnMock.callRealMethod());
+      }
+    }).when(spy).buildSpan(Mockito.anyString());
+    return spy;
+  }
+
+  private Tracer.SpanBuilder spyBuilder(final CustomizableSpanBuilder builder) {
+    CustomizableSpanBuilder spy = Mockito.spy(builder);
+    spanBuilders.add(spy);
+    Mockito.doAnswer(new Answer<Span>() {
+      @Override
+      public Span answer(InvocationOnMock invocationOnMock) throws Throwable {
+        return spySpan((CustomizableSpan) invocationOnMock.callRealMethod());
+      }
+    }).when(spy).start();
+
+    return spy;
+  }
+
+  private Span spySpan(final CustomizableSpan span) {
+    CustomizableSpan spy = Mockito.spy(span);
+
+    Mockito.doAnswer(new Answer<LogFieldCustomizer>() {
+      @Override
+      public LogFieldCustomizer answer(InvocationOnMock invocationOnMock) throws Throwable {
+        LogFieldCustomizer customizer = (LogFieldCustomizer) invocationOnMock.callRealMethod();
+        logFieldCustomizers.add(customizer);
+        return customizer;
+      }
+    }).when(spy).logFieldCustomizer();
+
+    return spy;
   }
 
   private static void assertTags(final JsonObject expectedSpan, final MockSpan span, final String message) {
@@ -152,5 +219,28 @@ public class CustomizableTracerTest {
     }
 
     assertEquals(message, 1, given);
+  }
+
+  private void assertAllocations(final JsonObject root) {
+    int listAllocations = 0;
+    int mapAllocations = 0;
+
+    for (CustomizableSpanBuilder builder : spanBuilders) {
+      if (builder.log != null) {
+        listAllocations++;
+      }
+      if (builder.tags != null) {
+        mapAllocations++;
+      }
+    }
+    for (LogFieldCustomizer customizer : logFieldCustomizers) {
+      if (customizer.fields != null) {
+        mapAllocations++;
+      }
+    }
+
+    assertEquals(root.getNumber("expectedListAllocations", 0), listAllocations);
+    assertEquals(root.getNumber("expectedMapAllocations", 0), mapAllocations);
+    assertEquals(root.getNumber("expectedRegexMatches", 0), regexMatches);
   }
 }

@@ -1,11 +1,11 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import io.opentracing.contrib.specialagent.Function;
 
-class SpanRuleMatcher {
+import java.util.regex.Matcher;
+
+public class SpanRuleMatcher {
+
   private static boolean matchesSimpleValue(final Object predicate, final Object value) {
     if (predicate == null)
       return true;
@@ -17,8 +17,8 @@ class SpanRuleMatcher {
   }
 
   static Function<Object,Object> match(final Object predicate, final Object value) {
-    if (predicate instanceof Pattern) {
-      final Matcher matcher = ((Pattern)predicate).matcher(value.toString());
+    if (predicate instanceof SpanRulePattern) {
+      final Matcher matcher = ((SpanRulePattern)predicate).matcher(value.toString());
       if (!matcher.matches())
         return null;
 

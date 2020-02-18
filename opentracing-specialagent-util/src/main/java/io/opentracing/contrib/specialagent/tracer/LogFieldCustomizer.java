@@ -1,16 +1,16 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.Function;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class LogFieldCustomizer extends SpanCustomizer {
   private final SpanCustomizer customizer;
   private final Span target;
 
-  private Map<String,Object> fields;
+  Map<String,Object> fields;
 
   public LogFieldCustomizer(final SpanRules rules, final SpanCustomizer source, final Span target) {
     super(rules);

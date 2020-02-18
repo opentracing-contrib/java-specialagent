@@ -10,6 +10,7 @@
       "key": "k2"
     }
   ],
+  "expectedMapAllocations": 1,
   "expectedSpans": [
     {
       "operationName": "operation",
