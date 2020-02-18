@@ -2,6 +2,7 @@ package io.opentracing.contrib.specialagent.tracer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,43 +12,41 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
-public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
-  private final SpanCustomizer customizer = new SpanCustomizer() {
-    @Override
-    public void setTag(final String key, final Object value) {
-      if (value == null)
-        target.withTag(key, (String)null);
-      else if (value instanceof Number)
-        target.withTag(key, (Number)value);
-      else if (value instanceof Boolean)
-        target.withTag(key, (Boolean)value);
-      else
-        target.withTag(key, value.toString());
-    }
-
-    @Override
-    public void setOperationName(final String name) {
-      operationName = name;
-    }
-
-    @Override
-    public void addLogField(final String key, final Object value) {
-      if (log == null)
-        log = new ArrayList<>();
-
-      log.add(Collections.singletonMap(key, value));
-    }
-  };
-
+public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.SpanBuilder {
+  private final SpanCustomizer customizer;
   private final Tracer.SpanBuilder target;
-  private final SpanRules rules;
-  private List<Map<String,Object>> log;
-  private String operationName;
 
-  public CustomizableSpanBuilder(final Tracer.SpanBuilder target, final SpanRules rules, final Map<String,Object> tags, final List<Map<String,Object>> log) {
-    this.target = target;
-    this.rules = rules;
-    this.log = log;
+  public CustomizableSpanBuilder(final String operationName, final Tracer target, final SpanRules rules) {
+    super(rules);
+    this.customizer = new SpanCustomizer(rules) {
+      @Override
+      public void setTag(final String key, final Object value) {
+        if (value == null)
+          CustomizableSpanBuilder.this.target.withTag(key, (String)null);
+        else if (value instanceof Number)
+          CustomizableSpanBuilder.this.target.withTag(key, (Number)value);
+        else if (value instanceof Boolean)
+          CustomizableSpanBuilder.this.target.withTag(key, (Boolean)value);
+        else
+          CustomizableSpanBuilder.this.target.withTag(key, value.toString());
+      }
+
+      @Override
+      public void setOperationName(final String name) {
+        CustomizableSpanBuilder.this.operationName = name;
+      }
+
+      @Override
+      public void addLogField(final String key, final Object value) {
+        if (log == null)
+          log = new ArrayList<>();
+
+        log.add(Collections.singletonMap(key, value));
+      }
+    };
+
+    processOperationName(operationName);
+    this.target = target.buildSpan(operationName);
     if (tags != null)
       for (Map.Entry<String,Object> entry : tags.entrySet())
         customizer.setTag(entry.getKey(), entry.getValue());
@@ -79,25 +78,25 @@ public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final String value) {
-    rules.setTag(key, value, customizer);
+    customizer.processTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final boolean value) {
-    rules.setTag(key, value, customizer);
+    customizer.processTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final Number value) {
-    rules.setTag(key, value, customizer);
+    customizer.processTag(key, value);
     return this;
   }
 
   @Override
   public <T> Tracer.SpanBuilder withTag(final Tag<T> tag, final T value) {
-    rules.setTag(tag.getKey(), value, customizer);
+    customizer.processTag(tag.getKey(), value);
     return this;
   }
 
@@ -130,5 +129,30 @@ public class CustomizableSpanBuilder implements Tracer.SpanBuilder {
   @Deprecated
   public Scope startActive(final boolean finishSpanOnClose) {
     return target.startActive(finishSpanOnClose);
+  }
+
+  private String operationName;
+  private List<Map<String,Object>> log;
+  private Map<String,Object> tags;
+
+  @Override
+  void setTag(final String key, final Object value) {
+    if (tags == null)
+      tags = new LinkedHashMap<>();
+
+    tags.put(key, value);
+  }
+
+  @Override
+  void addLogField(final String key, final Object value) {
+    if (log == null)
+      log = new ArrayList<>();
+
+    log.add(Collections.singletonMap(key, value));
+  }
+
+  @Override
+  void setOperationName(final String name) {
+    this.operationName = name;
   }
 }

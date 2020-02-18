@@ -1,11 +1,5 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -13,7 +7,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 
-public class CustomizableTracer extends SpanCustomizer implements Tracer {
+public class CustomizableTracer implements Tracer {
   private final Tracer target;
   private final SpanRules rules;
 
@@ -39,14 +33,7 @@ public class CustomizableTracer extends SpanCustomizer implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(final String operationName) {
-    if (log != null)
-      log.clear();
-
-    if (tags != null)
-      tags.clear();
-
-    rules.processOperationName(operationName, this);
-    return new CustomizableSpanBuilder(target.buildSpan(operationName), rules, tags, log);
+    return new CustomizableSpanBuilder(operationName, target, rules);
   }
 
   @Override
@@ -62,28 +49,5 @@ public class CustomizableTracer extends SpanCustomizer implements Tracer {
   @Override
   public void close() {
     target.close();
-  }
-
-  private List<Map<String,Object>> log;
-  private Map<String,Object> tags;
-
-  @Override
-  void setTag(final String key, final Object value) {
-    if (tags == null)
-      tags = new LinkedHashMap<>();
-
-    tags.put(key, value);
-  }
-
-  @Override
-  void addLogField(final String key, final Object value) {
-    if (log == null)
-      log = new ArrayList<>();
-
-    log.add(Collections.singletonMap(key, value));
-  }
-
-  @Override
-  void setOperationName(final String name) {
   }
 }

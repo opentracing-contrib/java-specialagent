@@ -7,19 +7,16 @@ import io.opentracing.Span;
 
 public class LogFieldCustomizer extends SpanCustomizer {
   private final long timestampMicroseconds;
+  private final SpanCustomizer customizer;
   private final Span target;
-  private final SpanCustomizer base;
+
   private Map<String,Object> fields;
 
-  public LogFieldCustomizer(final long timestampMicroseconds, final SpanCustomizer customizer, final Span target) {
-    this.base = customizer;
+  public LogFieldCustomizer(final long timestampMicroseconds, final SpanCustomizer customizer, final Span target, final SpanRules rules) {
+    super(rules);
     this.timestampMicroseconds = timestampMicroseconds;
+    this.customizer = customizer;
     this.target = target;
-  }
-
-  void log() {
-    if (fields != null)
-      log(fields);
   }
 
   void log(final Map<String,?> fields) {
@@ -27,6 +24,11 @@ public class LogFieldCustomizer extends SpanCustomizer {
       target.log(timestampMicroseconds, fields);
     else
       target.log(fields);
+  }
+
+  void log() {
+    if (fields != null)
+      log(fields);
   }
 
   @Override
@@ -39,11 +41,11 @@ public class LogFieldCustomizer extends SpanCustomizer {
 
   @Override
   void setTag(final String key, final Object value) {
-    base.setTag(key, value);
+    customizer.setTag(key, value);
   }
 
   @Override
   void setOperationName(final String name) {
-    base.setOperationName(name);
+    customizer.setOperationName(name);
   }
 }

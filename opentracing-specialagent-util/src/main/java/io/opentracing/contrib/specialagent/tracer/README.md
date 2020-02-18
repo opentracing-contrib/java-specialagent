@@ -25,7 +25,7 @@ The following rule definition blacklists the `http.url` tag:
 }
 ```
 
-If you only want to blacklist `http.url` if it equals `http://example.com`, final add a `value`:
+If you only want to blacklist `http.url` if it equals `http://example.com`, add a `value`:
 
 ```json
 {
@@ -39,7 +39,7 @@ If you only want to blacklist `http.url` if it equals `http://example.com`, fina
 }
 ```
 
-If you want to blacklist all `http.url`s that start with `http://`, final use a `valueRegex`:
+If you want to blacklist all `http.url`s that start with `http://`, use a `valueRegex`:
 
 ```json
 {
@@ -54,12 +54,12 @@ If you want to blacklist all `http.url`s that start with `http://`, final use a 
 ```
 
 Note
-1. The trailing `.*` is necessary, final because the regular expression must match the entire tag value
+1. The trailing `.*` is necessary, because the regular expression must match the entire tag value
 2. Use the [Java](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) pattern syntax
 
 ## Blacklist a log entry
 
-Blacklisting a log entry uses the same syntax as blacklisting a tag, final except that the `type` is `log`.
+Blacklisting a log entry uses the same syntax as blacklisting a tag, except that the `type` is `log`.
 
 To blacklist a log event, use
 
@@ -73,8 +73,8 @@ To blacklist a log event, use
 }
 ```
 
-This would blacklist all log events (final for jedis).
-You can restrict the log events to be blacklisted using `value` or `valueRegex` (final see above).
+This would blacklist all log events (for jedis).
+You can restrict the log events to be blacklisted using `value` or `valueRegex` (see above).
 
 To blacklist a single field from a log entry with fields, use
 
@@ -93,13 +93,13 @@ To blacklist a single field from a log entry with fields, use
 }
 ```
 
-Only the `http.method` and `http.url` fields will be removed from the log entry. If all fields from the log entry are blacklisted, final the entire log entry is blacklisted as well.
+Only the `http.method` and `http.url` fields will be removed from the log entry. If all fields from the log entry are blacklisted, the entire log entry is blacklisted as well.
 
 ## Blacklist an operation name
 
-Every span must have an operation name, final hence it's not possible to create a span without an operation name.
+Every span must have an operation name, hence it's not possible to create a span without an operation name.
 
-However, final it's also possible to change the operation name of a span after it has started -
+However, it's also possible to change the operation name of a span after it has started -
 and this call can be blacklisted. The result is the same as if
 [setOperationName](https://javadoc.io/doc/io.opentracing/opentracing-api/0.20.2/io/opentracing/Span.html#setOperationName-java.lang.String-) had not been called.
 
@@ -113,8 +113,8 @@ and this call can be blacklisted. The result is the same as if
 }
 ```
 
-This would blacklist all calls to `setOperationName` (final in jedis).
-You can restrict calls to be blacklisted using `value` or `valueRegex` (final see above).
+This would blacklist all calls to `setOperationName` (in jedis).
+You can restrict calls to be blacklisted using `value` or `valueRegex` (see above).
 
 # Advanced use cases
 
@@ -123,7 +123,7 @@ The remaining use case cover advanced scenarios that go beyond blacklisting.
 ## Transforming values
 
 If you want to strike a better balance between redacting user information and keeping observability, final
-you can redact specific parts of a value (tag, final log or operationName).
+you can redact specific parts of a value (tag, log or operationName).
 
 ```json
 {
@@ -145,9 +145,9 @@ you can redact specific parts of a value (tag, final log or operationName).
 
 ## Multiple Outputs
 
-If you have a tag with a high cardinality (final e.g. database statements without wildcards), final
+If you have a tag with a high cardinality (e.g. database statements without wildcards), final
 you might want to transform the value - but keep the original value somewhere else
-(final e.g. in a log statement which is not indexed).
+(e.g. in a log statement which is not indexed).
 
 ```json
 {
@@ -174,7 +174,7 @@ This would shorten the `db.statement` tag to `select * from articles`, final
 but keep the original statement in a log entry with the same field key (`db.statement`).
 
 The next example uses the same mechanism - using multiple output to have a shorter version somewhere else.
-In this case, final it is a different tag - and you can specify the output tag using `key`.
+In this case, it is a different tag - and you can specify the output tag using `key`.
 
 ```json
 {

@@ -8,34 +8,36 @@ import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
 
 public class CustomizableSpan implements Span {
-  private final SpanCustomizer customizer = new SpanCustomizer() {
-    @Override
-    public void addLogField(final String key, final Object value) {
-      target.log(Collections.singletonMap(key, value));
-    }
-
-    @Override
-    public void setTag(final String key, final Object value) {
-      if (value == null)
-        target.setTag(key, (String)null);
-      else if (value instanceof Number)
-        target.setTag(key, (Number)value);
-      else if (value instanceof Boolean)
-        target.setTag(key, (Boolean)value);
-      else
-        target.setTag(key, value.toString());
-    }
-
-    @Override
-    public void setOperationName(final String name) {
-      target.setOperationName(name);
-    }
-  };
+  private final SpanCustomizer customizer;
 
   private final Span target;
   private final SpanRules rules;
 
   public CustomizableSpan(final Span target, final SpanRules rules) {
+    this.customizer = new SpanCustomizer(rules) {
+      @Override
+      public void addLogField(final String key, final Object value) {
+        target.log(Collections.singletonMap(key, value));
+      }
+
+      @Override
+      public void setTag(final String key, final Object value) {
+        if (value == null)
+          target.setTag(key, (String)null);
+        else if (value instanceof Number)
+          target.setTag(key, (Number)value);
+        else if (value instanceof Boolean)
+          target.setTag(key, (Boolean)value);
+        else
+          target.setTag(key, value.toString());
+      }
+
+      @Override
+      public void setOperationName(final String name) {
+        target.setOperationName(name);
+      }
+    };
+
     this.target = target;
     this.rules = rules;
   }
@@ -47,49 +49,49 @@ public class CustomizableSpan implements Span {
 
   @Override
   public Span setTag(final String key, final String value) {
-    rules.setTag(key, value, customizer);
+    customizer.processTag(key, value);
     return this;
   }
 
   @Override
   public Span setTag(final String key, final boolean value) {
-    rules.setTag(key, value, customizer);
+    customizer.processTag(key, value);
     return this;
   }
 
   @Override
   public Span setTag(final String key, final Number value) {
-    rules.setTag(key, value, customizer);
+    customizer.processTag(key, value);
     return this;
   }
 
   @Override
   public <T>Span setTag(final Tag<T> tag, final T value) {
-    rules.setTag(tag.getKey(), value, customizer);
+    customizer.processTag(tag.getKey(), value);
     return this;
   }
 
   @Override
   public Span log(Map<String,?> fields) {
-    rules.log(fields, new LogFieldCustomizer(0, customizer, target));
+    customizer.log(fields, new LogFieldCustomizer(0, customizer, target, rules));
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final Map<String,?> fields) {
-    rules.log(fields, new LogFieldCustomizer(timestampMicroseconds, customizer, target));
+    customizer.log(fields, new LogFieldCustomizer(timestampMicroseconds, customizer, target, rules));
     return this;
   }
 
   @Override
   public Span log(final String event) {
-    rules.log(event, new LogEventCustomizer(0, customizer, target));
+    customizer.processLog(event, new LogEventCustomizer(0, customizer, target, rules));
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final String event) {
-    rules.log(event, new LogEventCustomizer(timestampMicroseconds, customizer, target));
+    customizer.processLog(event, new LogEventCustomizer(timestampMicroseconds, customizer, target, rules));
     return this;
   }
 
@@ -106,7 +108,7 @@ public class CustomizableSpan implements Span {
 
   @Override
   public Span setOperationName(final String operationName) {
-    rules.processOperationName(operationName, customizer);
+    customizer.processOperationName(operationName);
     return this;
   }
 
