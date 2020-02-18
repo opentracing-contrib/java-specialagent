@@ -12,6 +12,7 @@ public class CustomizableSpan implements Span {
 
   private final Span target;
   private final SpanRules rules;
+  private final LogFieldCustomizer logFieldCustomizer;
 
   public CustomizableSpan(final Span target, final SpanRules rules) {
     this.customizer = new SpanCustomizer(rules) {
@@ -40,6 +41,7 @@ public class CustomizableSpan implements Span {
 
     this.target = target;
     this.rules = rules;
+    this.logFieldCustomizer = new LogFieldCustomizer(rules, customizer, target);
   }
 
   @Override
@@ -72,26 +74,26 @@ public class CustomizableSpan implements Span {
   }
 
   @Override
-  public Span log(Map<String,?> fields) {
-    customizer.log(fields, new LogFieldCustomizer(0, customizer, target, rules));
+  public Span log(final Map<String,?> fields) {
+    logFieldCustomizer.processLog(0, fields);
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final Map<String,?> fields) {
-    customizer.log(fields, new LogFieldCustomizer(timestampMicroseconds, customizer, target, rules));
+    logFieldCustomizer.processLog(timestampMicroseconds, fields);
     return this;
   }
 
   @Override
   public Span log(final String event) {
-    customizer.processLog(event, new LogEventCustomizer(0, customizer, target, rules));
+    new LogEventCustomizer(rules, 0, customizer, target).processLog(event);
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final String event) {
-    customizer.processLog(event, new LogEventCustomizer(timestampMicroseconds, customizer, target, rules));
+    new LogEventCustomizer(rules, timestampMicroseconds, customizer, target).processLog(event);
     return this;
   }
 

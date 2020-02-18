@@ -5,13 +5,18 @@ import io.opentracing.Span;
 public class LogEventCustomizer extends SpanCustomizer {
   private final long timestampMicroseconds;
   private final Span target;
-  private final SpanCustomizer customized;
+  private final SpanCustomizer source;
 
-  public LogEventCustomizer(final long timestampMicroseconds, final SpanCustomizer customizer, final Span target, final SpanRules rules) {
+  public LogEventCustomizer(final SpanRules rules, final long timestampMicroseconds, final SpanCustomizer source, final Span target) {
     super(rules);
     this.timestampMicroseconds = timestampMicroseconds;
-    this.customized = customizer;
+    this.source = source;
     this.target = target;
+  }
+
+  final void processLog(final String event) {
+    if (!processRules(SpanRuleType.LOG, null, event))
+      log(event);
   }
 
   void log(final Object value) {
@@ -28,11 +33,11 @@ public class LogEventCustomizer extends SpanCustomizer {
 
   @Override
   void setTag(final String key, final Object value) {
-    customized.setTag(key, value);
+    source.setTag(key, value);
   }
 
   @Override
   void setOperationName(final String name) {
-    customized.setOperationName(name);
+    source.setOperationName(name);
   }
 }
