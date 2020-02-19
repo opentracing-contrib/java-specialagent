@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.twilio;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.lang.reflect.Method;
 import java.net.URI;
 
@@ -28,6 +27,7 @@ import com.twilio.type.Endpoint;
 import com.twilio.type.PhoneNumber;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class TwilioITest {
   private static final String ACCOUNT_SID = "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
@@ -35,7 +35,6 @@ public class TwilioITest {
 
   public static void main(final String[] args) throws Exception {
     Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-
     try {
       Message.creator(new PhoneNumber("+1 555 1234567"), new PhoneNumber("+1 555 7654321"), "Test").create();
     }

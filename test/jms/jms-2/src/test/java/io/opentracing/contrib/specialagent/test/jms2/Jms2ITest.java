@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.jms2;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.util.HashSet;
 
@@ -36,6 +35,7 @@ import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Jms2ITest {
   public static void main(final String[] args) throws Exception {
@@ -75,9 +75,10 @@ public class Jms2ITest {
         System.out.println("RECEIVED: " + received.getText());
       }
     }
-
-    server.stop(true);
-    TestUtil.checkSpan(new ComponentSpanCount("java-jms", 2, true));
-    System.exit(0);
+    finally {
+      server.stop(true);
+      TestUtil.checkSpan(new ComponentSpanCount("java-jms", 2, true));
+      System.exit(0);
+    }
   }
 }

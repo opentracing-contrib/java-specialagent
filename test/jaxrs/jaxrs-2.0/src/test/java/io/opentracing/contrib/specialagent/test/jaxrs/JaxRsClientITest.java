@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.test.jaxrs;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JaxRsClientITest {
   public static void main(final String[] args) throws Exception {

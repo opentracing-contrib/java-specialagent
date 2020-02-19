@@ -15,10 +15,10 @@
 
 package io.opentracing.contrib.specialagent.test.okhttp;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -44,8 +44,9 @@ public class OkHttpITest {
     try (final Response response = client.newCall(request).execute()) {
       System.out.println(response.code());
     }
-
-    client.dispatcher().executorService().shutdown();
-    client.connectionPool().evictAll();
+    finally {
+      client.dispatcher().executorService().shutdown();
+      client.connectionPool().evictAll();
+    }
   }
 }

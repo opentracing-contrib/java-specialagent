@@ -15,10 +15,10 @@
 
 package io.opentracing.contrib.specialagent.test.spring.web;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class SpringWebITest {
   public static void main(final String[] args) throws Exception {

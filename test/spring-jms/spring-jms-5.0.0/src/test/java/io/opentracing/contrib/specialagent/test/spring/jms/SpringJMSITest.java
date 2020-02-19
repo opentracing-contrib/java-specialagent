@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.spring.jms;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.ConnectionFactory;
@@ -38,6 +37,7 @@ import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 @EnableJms

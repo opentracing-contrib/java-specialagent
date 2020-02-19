@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.thrift;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.thrift.TProcessorFactory;
@@ -30,6 +29,7 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.opentracing.contrib.specialagent.test.thrift.generated.CustomService;
 
 public class ThriftITest {

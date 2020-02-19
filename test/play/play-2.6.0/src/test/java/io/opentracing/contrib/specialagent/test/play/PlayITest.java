@@ -17,12 +17,12 @@ package io.opentracing.contrib.specialagent.test.play;
 
 import static play.mvc.Results.*;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import play.routing.RoutingDsl;
 import play.server.Server;
 

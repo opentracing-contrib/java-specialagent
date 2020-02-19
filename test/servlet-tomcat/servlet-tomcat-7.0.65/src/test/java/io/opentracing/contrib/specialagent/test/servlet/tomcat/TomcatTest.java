@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.servlet.tomcat;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -36,6 +35,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public abstract class TomcatTest {
   private static final Logger logger = Logger.getLogger(TomcatAsyncITest.class.getName());

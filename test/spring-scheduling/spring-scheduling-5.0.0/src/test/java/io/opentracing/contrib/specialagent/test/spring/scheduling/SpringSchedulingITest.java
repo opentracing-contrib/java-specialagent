@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.test.spring.scheduling;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class SpringSchedulingITest {
   public static void main(final String[] args) throws Exception {

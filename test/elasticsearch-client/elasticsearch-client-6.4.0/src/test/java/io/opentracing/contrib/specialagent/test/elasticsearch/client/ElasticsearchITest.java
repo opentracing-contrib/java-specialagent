@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.elasticsearch.client;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -46,6 +45,7 @@ import org.elasticsearch.transport.Netty4Plugin;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class ElasticsearchITest {
   private static final int HTTP_PORT = 9205;

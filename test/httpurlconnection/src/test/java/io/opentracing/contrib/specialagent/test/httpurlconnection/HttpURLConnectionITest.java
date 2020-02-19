@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent.test.httpurlconnection;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class HttpURLConnectionITest {
   public static void main(final String[] args) throws IOException {

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.mongo.driver;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +35,7 @@ import com.mongodb.connection.ClusterSettings.Builder;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SuppressWarnings("deprecation")
 public class MongoAsyncITest {

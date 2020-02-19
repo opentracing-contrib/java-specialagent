@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.cassandra.driver;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.net.InetSocketAddress;
 
@@ -26,6 +25,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Cassandra4ITest {
   public static void main(final String[] args) throws Exception {
@@ -49,11 +49,11 @@ public class Cassandra4ITest {
       .build()) {
       final ResultSet resultSet = session.execute("SELECT * FROM system.compaction_history");
       System.out.println("Rows: " + resultSet.all().size());
+      TestUtil.checkSpan(new ComponentSpanCount("java-cassandra", 1));
     }
-
-    TestUtil.checkSpan(new ComponentSpanCount("java-cassandra", 1));
-
-    EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    System.exit(0);
+    finally {
+      EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+      System.exit(0);
+    }
   }
 }

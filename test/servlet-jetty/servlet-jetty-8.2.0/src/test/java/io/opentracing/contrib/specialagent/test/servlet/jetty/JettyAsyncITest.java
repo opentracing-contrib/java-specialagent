@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.servlet.jetty;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -25,6 +24,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JettyAsyncITest {
   static {

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.grpc;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -29,6 +28,7 @@ import io.opentracing.contrib.grpc.gen.GreeterGrpc.GreeterBlockingStub;
 import io.opentracing.contrib.grpc.gen.HelloReply;
 import io.opentracing.contrib.grpc.gen.HelloRequest;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class GrpcITest {
   public static void main(final String[] args) throws InterruptedException, IOException {

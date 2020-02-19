@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.spring.rabbitmq;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import org.springframework.amqp.core.Binding;
@@ -39,6 +38,7 @@ import org.springframework.context.annotation.Bean;
 import com.rabbitmq.client.Channel;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringRabbitMQITest {

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.grizzlyhttpclient;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
@@ -24,6 +23,7 @@ import com.ning.http.client.Response;
 import com.ning.http.client.SimpleAsyncHttpClient;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class GrizzlyHttpClientITest {
   public static void main(final String[] args) throws InterruptedException, IOException, ExecutionException {

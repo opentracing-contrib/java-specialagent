@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.kafka.client;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -34,6 +33,7 @@ import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class KafkaClientITest {
   private static final int MESSAGE_COUNT = 5;

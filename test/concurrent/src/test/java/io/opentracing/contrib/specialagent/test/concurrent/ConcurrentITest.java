@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.concurrent;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +30,7 @@ import java.util.stream.IntStream;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.aws.sdk1;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.amazonaws.ClientConfiguration;
@@ -33,6 +32,7 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Aws1ITest {
   public static void main(final String[] args) throws Exception {

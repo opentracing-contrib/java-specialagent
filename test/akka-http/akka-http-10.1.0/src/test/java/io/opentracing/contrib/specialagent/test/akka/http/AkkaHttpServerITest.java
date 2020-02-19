@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.test.akka.http;
 
 import static io.opentracing.contrib.specialagent.test.akka.http.AkkaHttpClientITest.*;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +32,7 @@ import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.util.ByteString;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 

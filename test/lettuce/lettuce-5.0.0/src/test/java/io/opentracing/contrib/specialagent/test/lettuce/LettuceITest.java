@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.test.lettuce;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.lang.reflect.Method;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import redis.embedded.RedisServer;
 
 public class LettuceITest {

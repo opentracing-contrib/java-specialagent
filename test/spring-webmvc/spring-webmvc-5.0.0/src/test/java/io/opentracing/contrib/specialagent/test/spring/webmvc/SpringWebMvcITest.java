@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webmvc;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -26,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringWebMvcITest {

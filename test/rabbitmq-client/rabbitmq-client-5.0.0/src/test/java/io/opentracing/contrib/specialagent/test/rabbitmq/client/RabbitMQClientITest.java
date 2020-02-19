@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.rabbitmq.client;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import com.rabbitmq.client.CancelCallback;
@@ -26,6 +25,7 @@ import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class RabbitMQClientITest {
   private static final String QUEUE_NAME = "queue";

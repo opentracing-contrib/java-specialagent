@@ -79,7 +79,7 @@ public class JedisTest {
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(2, spans.size());
     checkSpans(spans);
-    for (MockSpan span : spans) {
+    for (final MockSpan span : spans) {
       assertNull(span.tags().get(Tags.ERROR.getKey()));
     }
   }

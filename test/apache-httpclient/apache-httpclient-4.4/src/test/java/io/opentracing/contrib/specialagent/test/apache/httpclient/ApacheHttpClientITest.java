@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.test.apache.httpclient;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class ApacheHttpClientITest {
   public static void main(final String[] args) throws Exception {

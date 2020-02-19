@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.neo4j.driver;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Query;
@@ -25,6 +24,7 @@ import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Neo4jDriverITest {
   public static void main(final String[] args) {

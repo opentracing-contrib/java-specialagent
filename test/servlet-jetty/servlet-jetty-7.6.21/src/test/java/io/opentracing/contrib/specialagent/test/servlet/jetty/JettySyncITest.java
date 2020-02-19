@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.servlet.jetty;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +28,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JettySyncITest {
   static {
@@ -61,10 +61,11 @@ public class JettySyncITest {
   }
 
   static File installWebApp() throws IOException {
-    final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("web.xml");
-    final File webapp = new File("target/webapp/WEB-INF/web.xml");
-    webapp.getParentFile().mkdirs();
-    Files.copy(in, webapp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-    return webapp.getParentFile().getParentFile();
+    try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("web.xml")) {
+      final File webapp = new File("target/webapp/WEB-INF/web.xml");
+      webapp.getParentFile().mkdirs();
+      Files.copy(in, webapp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      return webapp.getParentFile().getParentFile();
+    }
   }
 }

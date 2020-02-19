@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.feign;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.TimeUnit;
 
 import feign.Feign;
@@ -24,6 +23,7 @@ import feign.RequestLine;
 import feign.Retryer;
 import feign.Target;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class FeignITest {
   public static void main(final String[] args) {

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webmvc;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +27,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class SpringWebMvcITest {
   public static void main(final String[] args) throws Exception {

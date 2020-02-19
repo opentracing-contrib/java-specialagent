@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.jms1;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
@@ -32,6 +31,7 @@ import javax.jms.TextMessage;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Jms1ITest {
   private static final int threadCount = 4;
@@ -137,7 +137,7 @@ public class Jms1ITest {
 
     @Override
     public synchronized void onException(final JMSException e) {
-      System.out.println("JMS Exception occured.  Shutting down client.");
+      System.out.println("JMS Exception occured. Shutting down client.");
     }
   }
 }

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.asynchttpclient;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.TimeUnit;
 
 import org.asynchttpclient.AsyncCompletionHandler;
@@ -27,6 +26,7 @@ import org.asynchttpclient.Response;
 import org.asynchttpclient.util.HttpConstants;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class AsyncHttpClientITest {
   public static void main(final String[] args) throws Exception {

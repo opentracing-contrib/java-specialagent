@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.test.ratpack;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import ratpack.exec.ExecResult;
 import ratpack.exec.Execution;
 import ratpack.exec.Promise;

@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.jdbc;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -23,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JdbcITest {
   public static void main(final String[] args) throws SQLException, ClassNotFoundException {
