@@ -28,10 +28,10 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class GrizzlyHttpServerITest {
   public static void main(final String[] args) throws IOException {
-
     final HttpServer server = new HttpServer();
     final NetworkListener listener = new NetworkListener("grizzly", DEFAULT_NETWORK_HOST, 18906);
     server.addListener(listener);
@@ -45,17 +45,21 @@ public class GrizzlyHttpServerITest {
       }
     });
 
-    final URL url = new URL("http://localhost:18906/");
-    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-    connection.setRequestMethod("GET");
-    final int responseCode = connection.getResponseCode();
-    connection.disconnect();
+    int responseCode = -1;
+    try {
+      final URL url = new URL("http://localhost:18906/");
+      final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+      connection.setRequestMethod("GET");
+      responseCode = connection.getResponseCode();
+      connection.disconnect();
+    }
+    finally {
+      server.shutdownNow();
 
-    server.shutdownNow();
+      if (200 != responseCode)
+        throw new AssertionError("ERROR: response: " + responseCode);
 
-    if (200 != responseCode)
-      throw new AssertionError("ERROR: response: " + responseCode);
-
-    TestUtil.checkSpan("java-grizzly-http-server", 2);
+      TestUtil.checkSpan(true, new ComponentSpanCount("java-grizzly-http-server", 1), new ComponentSpanCount("http-url-connection", 1));
+    }
   }
 }

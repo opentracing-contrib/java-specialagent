@@ -21,6 +21,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import redis.embedded.RedisServer;
 
 public class RedissonITest {
@@ -33,22 +34,25 @@ public class RedissonITest {
       }
     }, 10);
 
-    final Config config = new Config();
-    config.useSingleServer().setAddress("redis://127.0.0.1:6379");
-    final RedissonClient redissonClient = Redisson.create(config);
-    final RMap<String,String> map = redissonClient.getMap("map");
-
-    map.put("key", "value");
-
-    if (!"value".equals(map.get("key")))
-      throw new AssertionError("ERROR: failed to get key value");
-
-    redissonClient.shutdown();
-    redisServer.stop();
-
-    TestUtil.checkSpan("java-redis", 2);
-
-    // RedisServer process doesn't exit on 'stop' therefore call System.exit
-    System.exit(0);
+    try {
+      final Config config = new Config();
+      config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+      final RedissonClient redissonClient = Redisson.create(config);
+      try {
+        final RMap<String,String> map = redissonClient.getMap("map");
+        map.put("key", "value");
+        if (!"value".equals(map.get("key")))
+          throw new AssertionError("ERROR: failed to get key value");
+      }
+      finally {
+        redissonClient.shutdown();
+      }
+    }
+    finally {
+      redisServer.stop();
+      TestUtil.checkSpan(new ComponentSpanCount("java-redis", 2));
+      // RedisServer process doesn't exit on 'stop' therefore call System.exit
+      System.exit(0);
+    }
   }
 }

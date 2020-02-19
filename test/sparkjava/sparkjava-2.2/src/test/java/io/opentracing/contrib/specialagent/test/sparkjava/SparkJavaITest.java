@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -36,18 +37,20 @@ public class SparkJavaITest {
         return "Hello";
       }
     });
+
     Spark.awaitInitialization();
+    try {
+      final URL url = new URL("http://localhost:" + port);
+      final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+      connection.setRequestMethod("GET");
+      final int responseCode = connection.getResponseCode();
 
-    final URL url = new URL("http://localhost:" + port);
-    final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-    connection.setRequestMethod("GET");
-    final int responseCode = connection.getResponseCode();
-
-    if (200 != responseCode)
-      throw new AssertionError("ERROR: response: " + responseCode);
-
-    TestUtil.checkSpan("java-web-servlet", 2, true);
-
-    Spark.stop();
+      if (200 != responseCode)
+        throw new AssertionError("ERROR: response: " + responseCode);
+    }
+    finally {
+      TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
+      Spark.stop();
+    }
   }
 }

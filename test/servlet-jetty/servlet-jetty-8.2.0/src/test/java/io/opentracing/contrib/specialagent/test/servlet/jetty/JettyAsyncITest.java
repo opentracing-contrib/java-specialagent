@@ -24,6 +24,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JettyAsyncITest {
   static {
@@ -62,6 +63,6 @@ public class JettyAsyncITest {
       server.join();
     }
 
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 }

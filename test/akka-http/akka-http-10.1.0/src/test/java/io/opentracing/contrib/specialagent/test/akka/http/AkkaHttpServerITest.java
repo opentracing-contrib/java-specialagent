@@ -32,6 +32,7 @@ import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.util.ByteString;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
@@ -69,6 +70,6 @@ public class AkkaHttpServerITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("akka-http-server", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("akka-http-server", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 }

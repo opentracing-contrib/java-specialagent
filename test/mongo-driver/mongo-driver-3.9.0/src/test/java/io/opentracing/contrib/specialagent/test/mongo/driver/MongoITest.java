@@ -32,6 +32,7 @@ import com.mongodb.connection.ClusterSettings.Builder;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class MongoITest {
   public static void main(final String[] args) throws Exception {
@@ -57,8 +58,9 @@ public class MongoITest {
       collection.insertOne(document);
       collection.find().first();
     }
-
-    server.shutdownNow();
-    TestUtil.checkSpan("java-mongo", 2);
+    finally {
+      server.shutdownNow();
+      TestUtil.checkSpan(new ComponentSpanCount("java-mongo", 2));
+    }
   }
 }

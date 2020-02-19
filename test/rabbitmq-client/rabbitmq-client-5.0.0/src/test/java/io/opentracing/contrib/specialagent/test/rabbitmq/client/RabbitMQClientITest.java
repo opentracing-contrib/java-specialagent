@@ -25,6 +25,7 @@ import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class RabbitMQClientITest {
   private static final String QUEUE_NAME = "queue";
@@ -60,7 +61,7 @@ public class RabbitMQClientITest {
         }
       });
 
-      TestUtil.checkSpan("java-rabbitmq", 2, latch);
+      TestUtil.checkSpan(latch, new ComponentSpanCount("java-rabbitmq", 2));
     }
 
     broker.shutdown();

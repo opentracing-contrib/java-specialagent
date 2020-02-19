@@ -36,6 +36,7 @@ import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringMessagingITest {
@@ -101,7 +102,7 @@ public class SpringMessagingITest {
 
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(5);
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringMessagingITest.class, args)) {
-      TestUtil.checkSpan("spring-messaging", 5, latch);
+      TestUtil.checkSpan(true, latch, new ComponentSpanCount("spring-messaging", 2, true), new ComponentSpanCount("java-kafka", 2, true), new ComponentSpanCount("spring-kafka", 1));
     }
     catch (final Throwable t) {
       t.printStackTrace(System.err);

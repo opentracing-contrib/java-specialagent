@@ -24,6 +24,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Cassandra3ITest {
   public static void main(final String[] args) throws Exception {
@@ -50,11 +51,11 @@ public class Cassandra3ITest {
     ) {
       final ResultSet resultSet = session.execute("SELECT * FROM system.compaction_history");
       System.out.println("Rows: " + resultSet.all().size());
+      TestUtil.checkSpan(new ComponentSpanCount("java-cassandra", 1));
     }
-
-    TestUtil.checkSpan("java-cassandra", 1);
-
-    EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    System.exit(0);
+    finally {
+      EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+      System.exit(0);
+    }
   }
 }

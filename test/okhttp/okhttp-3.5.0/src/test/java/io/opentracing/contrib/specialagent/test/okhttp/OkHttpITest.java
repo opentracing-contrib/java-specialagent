@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.test.okhttp;
 import java.io.IOException;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -30,12 +31,12 @@ public class OkHttpITest {
 
   private static void testBuilder() throws IOException {
     test(new OkHttpClient.Builder().build());
-    TestUtil.checkSpan("okhttp", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("okhttp", 2, true));
   }
 
   private static void testClient() throws IOException {
     test(new OkHttpClient());
-    TestUtil.checkSpan("okhttp", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("okhttp", 2, true));
   }
 
   private static void test(final OkHttpClient client) throws IOException {
@@ -43,8 +44,9 @@ public class OkHttpITest {
     try (final Response response = client.newCall(request).execute()) {
       System.out.println(response.code());
     }
-
-    client.dispatcher().executorService().shutdown();
-    client.connectionPool().evictAll();
+    finally {
+      client.dispatcher().executorService().shutdown();
+      client.connectionPool().evictAll();
+    }
   }
 }

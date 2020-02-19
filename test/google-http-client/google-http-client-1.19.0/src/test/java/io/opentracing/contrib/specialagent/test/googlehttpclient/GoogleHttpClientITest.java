@@ -21,6 +21,7 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class GoogleHttpClientITest {
   public static void main(final String[] args) throws Exception {
@@ -30,6 +31,6 @@ public class GoogleHttpClientITest {
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
-    TestUtil.checkSpan("google-http-client", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("google-http-client", 1));
   }
 }

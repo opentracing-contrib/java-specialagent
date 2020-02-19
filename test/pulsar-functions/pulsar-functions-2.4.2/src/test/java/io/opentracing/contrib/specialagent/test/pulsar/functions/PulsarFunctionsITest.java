@@ -20,7 +20,6 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.mockito.Mockito.*;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.net.URL;
 import java.util.Optional;
@@ -51,6 +50,7 @@ import org.apache.pulsar.zookeeper.LocalBookkeeperEnsemble;
 import com.google.common.collect.Sets;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class PulsarFunctionsITest {
   private static final String CLUSTER_NAME = "use";

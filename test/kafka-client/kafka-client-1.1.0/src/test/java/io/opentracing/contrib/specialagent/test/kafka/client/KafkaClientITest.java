@@ -33,6 +33,7 @@ import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class KafkaClientITest {
   private static final int MESSAGE_COUNT = 5;
@@ -69,7 +70,7 @@ public class KafkaClientITest {
       createConsumer(embeddedKafkaRule, latch);
       latch.await(15, TimeUnit.SECONDS);
 
-      TestUtil.checkSpan("java-kafka", 10);
+      TestUtil.checkSpan(new ComponentSpanCount("java-kafka", 10));
     }
     catch (final Throwable t) {
       t.printStackTrace(System.err);
