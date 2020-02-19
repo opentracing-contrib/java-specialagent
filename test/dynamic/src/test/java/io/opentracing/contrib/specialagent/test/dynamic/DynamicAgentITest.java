@@ -18,6 +18,7 @@ package io.opentracing.contrib.specialagent.test.dynamic;
 import static org.junit.Assert.*;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class DynamicAgentITest {
   public static void main(final String[] args) {
@@ -28,11 +29,11 @@ public class DynamicAgentITest {
     catch (final Exception ignored) {
     }
 
-    TestUtil.checkSpan("dynamic", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("dynamic", 1));
 
     final ExampleMethodClass exampleMethodClass = new ExampleMethodClass();
     exampleMethodClass.test2("test");
 
-    TestUtil.checkSpan("dynamic", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("dynamic", 1));
   }
 }

@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.web;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +33,7 @@ public class SpringWebITest {
     final RestTemplate restTemplate = new RestTemplate();
     restTemplate.getForObject("http://www.google.com", String.class);
 
-    TestUtil.checkSpan("java-spring-rest-template", 3);
+    TestUtil.checkSpan(new ComponentSpanCount("java-spring-rest-template", 3));
   }
 
   private static boolean makeAsyncCall() throws Exception {

@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.redisson;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.redisson.Redisson;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
@@ -46,7 +47,7 @@ public class RedissonITest {
     redissonClient.shutdown();
     redisServer.stop();
 
-    TestUtil.checkSpan("java-redis", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("java-redis", 2));
 
     // RedisServer process doesn't exit on 'stop' therefore call System.exit
     System.exit(0);

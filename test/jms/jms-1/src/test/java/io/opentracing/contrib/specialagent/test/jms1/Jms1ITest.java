@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.jms1;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
@@ -45,7 +46,7 @@ public class Jms1ITest {
       new Thread(new HelloWorldProducer(connection)).start();
 
     latch.await();
-    TestUtil.checkSpan("java-jms", 4);
+    TestUtil.checkSpan(new ComponentSpanCount("java-jms", 4));
     connection.close();
   }
 

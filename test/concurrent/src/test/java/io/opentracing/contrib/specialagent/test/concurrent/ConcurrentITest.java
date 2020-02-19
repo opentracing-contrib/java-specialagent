@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.concurrent;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +48,7 @@ public class ConcurrentITest {
     testForkJoinPool(parent);
 
     parent.finish();
-    TestUtil.checkSpan("parent", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("parent", 1));
   }
 
   private static void run() {

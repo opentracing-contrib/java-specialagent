@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.scheduling;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +31,7 @@ public class SpringSchedulingITest {
       if (!"async".equals(response))
         throw new AssertionError("ERROR: wrong async res: " + response);
 
-      TestUtil.checkSpan("spring-scheduled", 2, latch);
+      TestUtil.checkSpan(latch, new ComponentSpanCount("spring-scheduled", 1), new ComponentSpanCount("spring-async", 1));
     }
   }
 }

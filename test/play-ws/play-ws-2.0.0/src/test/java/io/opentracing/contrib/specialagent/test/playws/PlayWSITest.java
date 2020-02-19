@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.playws;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.TimeUnit;
 
 import akka.actor.ActorSystem;
@@ -50,6 +51,6 @@ public class PlayWSITest {
     }
 
     system.terminate();
-    TestUtil.checkSpan("play-ws", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("play-ws", 1));
   }
 }

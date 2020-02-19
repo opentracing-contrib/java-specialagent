@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.ratpack;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -82,6 +83,6 @@ public class RatpackITest {
     }
 
     server.stop();
-    TestUtil.checkSpan("netty", 2, true);
+    TestUtil.checkSpan(new ComponentSpanCount("netty", 2, true));
   }
 }

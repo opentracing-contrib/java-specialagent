@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.webmvc;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -30,7 +31,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 public class SpringWebMvcITest {
   public static void main(final String[] args) {
     SpringApplication.run(SpringWebMvcITest.class, args).close();
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 
   @Bean

@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.test.akka.http;
 
 import static io.opentracing.contrib.specialagent.test.akka.http.AkkaHttpClientITest.*;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
@@ -69,6 +70,6 @@ public class AkkaHttpServerITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("akka-http-server", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("akka-http-server", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 }

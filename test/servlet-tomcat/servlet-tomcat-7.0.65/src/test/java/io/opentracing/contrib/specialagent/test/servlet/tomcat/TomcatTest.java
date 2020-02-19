@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.servlet.tomcat;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -54,7 +55,7 @@ public abstract class TomcatTest {
 
     tomcatServer.stop();
     tomcatServer.destroy();
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 
   protected static void run(final Servlet servlet, final boolean async) throws IllegalAccessException, InvocationTargetException, IOException, LifecycleException, ServletException {

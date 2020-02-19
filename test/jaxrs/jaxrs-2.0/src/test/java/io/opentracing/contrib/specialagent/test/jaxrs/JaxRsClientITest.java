@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.jaxrs;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -31,6 +32,6 @@ public class JaxRsClientITest {
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
-    TestUtil.checkSpan("jaxrs", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("jaxrs", 1));
   }
 }

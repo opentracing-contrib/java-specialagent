@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.akka.http;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -45,7 +46,7 @@ public class AkkaHttpClientITest {
     }).toCompletableFuture().get().entity().getDataBytes().runForeach(param -> {}, materializer);
 
     stage.thenRun(system::terminate).toCompletableFuture().get();
-    TestUtil.checkSpan("akka-http-client", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("akka-http-client", 1));
   }
 
   static Http getHttp(final ActorSystem system) throws IllegalAccessException, InvocationTargetException {

@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.reactor;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.opentracing.Scope;
@@ -38,6 +39,6 @@ public class ReactorITest {
     if (!spanInSubscriberContext.get().equals(initSpan.context().toSpanId()))
       throw new AssertionError("ERROR: not equal span id");
 
-    TestUtil.checkSpan("parent-reactor", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("parent-reactor", 1));
   }
 }

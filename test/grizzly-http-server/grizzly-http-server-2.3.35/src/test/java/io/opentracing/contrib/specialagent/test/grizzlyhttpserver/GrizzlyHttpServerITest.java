@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.test.grizzlyhttpserver;
 
 import static org.glassfish.grizzly.http.server.NetworkListener.*;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -56,6 +57,6 @@ public class GrizzlyHttpServerITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("java-grizzly-http-server", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-grizzly-http-server", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 }

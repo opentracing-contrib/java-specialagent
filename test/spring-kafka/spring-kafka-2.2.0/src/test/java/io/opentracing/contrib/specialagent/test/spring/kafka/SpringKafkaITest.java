@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.spring.kafka;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -64,7 +65,7 @@ public class SpringKafkaITest {
 
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringKafkaITest.class, args)) {
-      TestUtil.checkSpan("java-kafka", 6, latch);
+      TestUtil.checkSpan(true, latch, new ComponentSpanCount("java-kafka", 4, true), new ComponentSpanCount("spring-kafka", 2, true));
     }
     catch (final Throwable t) {
       t.printStackTrace(System.err);
