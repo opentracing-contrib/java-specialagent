@@ -40,7 +40,7 @@ jobs:
       else
         travis_retry mvn -B install &&
         travis_retry mvn -B -Dassemble install;
-      fi'
+      fi || rm -rf ~/.m2/repository/*'
     before_cache: find . -name target -exec rsync -R -r '{}' $BUILD_PATH \;
   - stage: install
     jdk: openjdk11
