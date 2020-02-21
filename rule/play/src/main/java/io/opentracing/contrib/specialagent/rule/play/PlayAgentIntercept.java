@@ -15,10 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.play;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -34,18 +34,12 @@ import scala.concurrent.Future;
 import scala.util.Try;
 
 public class PlayAgentIntercept {
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
+  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "play";
-
-  private static class Context {
-    private Span span;
-    private Scope scope;
-    private int counter = 1;
-  }
 
   public static void applyStart(final Object arg0) {
     if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+      contextHolder.get().increment();
       return;
     }
 
@@ -61,25 +55,22 @@ public class PlayAgentIntercept {
     if (parent != null)
       spanBuilder.asChildOf(parent);
 
-    final Context context = new Context();
-    contextHolder.set(context);
-
     final Span span = spanBuilder.start();
-    context.span = span;
-    context.scope = tracer.activateSpan(span);
+    final LocalSpanContext context = new LocalSpanContext(span, tracer.activateSpan(span));
+    contextHolder.set(context);
   }
 
   @SuppressWarnings("unchecked")
   public static void applyEnd(final Object thiz, final Object returned, final Throwable thrown) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = contextHolder.get();
     if (context == null)
       return;
 
-    if (--context.counter != 0)
+    if (context.decrementAndGet() != 0)
       return;
 
-    final Span span = context.span;
-    context.scope.close();
+    final Span span = context.getSpan();
+    context.closeScope();
     contextHolder.remove();
 
     if (thrown != null) {

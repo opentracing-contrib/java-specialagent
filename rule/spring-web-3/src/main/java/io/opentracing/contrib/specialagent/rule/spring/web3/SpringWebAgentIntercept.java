@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.web3;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,12 +31,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringWebAgentIntercept {
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-
-  private static class Context {
-    private Scope scope;
-    private Span span;
-  }
+  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void enter(final Object thiz) {
     final ClientHttpRequest request = (ClientHttpRequest)thiz;
@@ -51,31 +47,28 @@ public class SpringWebAgentIntercept {
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersCarrier(request.getHeaders()));
 
     final Scope scope = tracer.activateSpan(span);
-    final Context context = new Context();
+    final LocalSpanContext context = new LocalSpanContext(span, scope);
     contextHolder.set(context);
-    context.scope = scope;
-    context.span = span;
   }
 
   public static void exit(final Object response, final Throwable thrown) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = contextHolder.get();
     if (context == null)
       return;
 
     if (thrown != null) {
-      captureException(context.span, thrown);
+      captureException(context.getSpan(), thrown);
     }
     else {
       try {
         final ClientHttpResponse httpResponse = (ClientHttpResponse)response;
-        Tags.HTTP_STATUS.set(context.span, httpResponse.getStatusCode().value());
+        Tags.HTTP_STATUS.set(context.getSpan(), httpResponse.getStatusCode().value());
       }
       catch (final Exception ignore) {
       }
     }
 
-    context.scope.close();
-    context.span.finish();
+    context.closeAndFinish();
     contextHolder.remove();
   }
 

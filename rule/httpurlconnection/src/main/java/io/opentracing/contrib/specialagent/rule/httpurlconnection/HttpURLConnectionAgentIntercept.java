@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,18 +31,12 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class HttpURLConnectionAgentIntercept {
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
+  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "http-url-connection";
-
-  private static class Context {
-    private Span span;
-    private Scope scope;
-    private int counter = 1;
-  }
 
   public static void enter(final Object thiz, final boolean connected) {
     if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+      contextHolder.get().increment();
       return;
     }
 
@@ -65,27 +60,24 @@ public class HttpURLConnectionAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpURLConnectionInjectAdapter(connection));
 
-    final Context context = new Context();
+    final LocalSpanContext context = new LocalSpanContext(span, scope);
     contextHolder.set(context);
-    context.span = span;
-    context.scope = scope;
   }
 
   public static void exit(final Throwable thrown, int responseCode) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = contextHolder.get();
     if (context == null)
       return;
 
-    if (--context.counter != 0)
+    if (context.decrementAndGet() != 0)
       return;
 
     if (thrown != null)
-      onError(thrown, context.span);
+      onError(thrown, context.getSpan());
     else
-      context.span.setTag(Tags.HTTP_STATUS, responseCode);
+      context.getSpan().setTag(Tags.HTTP_STATUS, responseCode);
 
-    context.scope.close();
-    context.span.finish();
+    context.closeAndFinish();
     contextHolder.remove();
   }
 

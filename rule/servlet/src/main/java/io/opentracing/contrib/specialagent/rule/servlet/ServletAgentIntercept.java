@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -23,7 +24,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
@@ -35,12 +35,8 @@ import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
-  private static class Context {
-    private Scope scope;
-    private Span span;
-  }
 
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
+  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   private static final List<ServletFilterSpanDecorator> spanDecorators = Configuration.spanDecorators;
 
   public static void init(final Object thiz, final Object servletConfig) {
@@ -79,7 +75,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (request.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 
-      Context spanContext = contextHolder.get();
+      LocalSpanContext spanContext = contextHolder.get();
       if (spanContext != null)
         return;
 
@@ -87,12 +83,9 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       final Tracer tracer = GlobalTracer.get();
-      spanContext = new Context();
-      contextHolder.set(spanContext);
-
       final Span span = TracingFilterUtil.buildSpan(request, tracer, spanDecorators);
-      spanContext.span = span;
-      spanContext.scope = tracer.activateSpan(span);
+      spanContext = new LocalSpanContext(span,  tracer.activateSpan(span));
+      contextHolder.set(spanContext);
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
@@ -103,7 +96,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
   public static void serviceExit(final Object request, final Object response, final Throwable thrown) {
     try {
-      final Context spanContext = contextHolder.get();
+      final LocalSpanContext spanContext = contextHolder.get();
       if (spanContext == null)
         return;
 
@@ -111,12 +104,11 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       final HttpServletResponse httpResponse = (HttpServletResponse)response;
 
       if (thrown != null)
-        TracingFilterUtil.onError(httpRequest, httpResponse, thrown, spanContext.span, spanDecorators);
+        TracingFilterUtil.onError(httpRequest, httpResponse, thrown, spanContext.getSpan(), spanDecorators);
       else
-        TracingFilterUtil.onResponse(httpRequest, httpResponse, spanContext.span, spanDecorators);
+        TracingFilterUtil.onResponse(httpRequest, httpResponse, spanContext.getSpan(), spanDecorators);
 
-      spanContext.scope.close();
-      spanContext.span.finish();
+      spanContext.closeAndFinish();
       contextHolder.remove();
     }
     catch (final Exception e) {

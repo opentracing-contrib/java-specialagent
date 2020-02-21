@@ -15,13 +15,13 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.jms;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Message;
 
 import io.opentracing.References;
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -32,21 +32,14 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringJmsAgentIntercept {
-  private static class Context {
-    private int counter = 1;
-    private Scope scope;
-    private Span span;
-  }
 
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
+  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void onMessageEnter(final Object msg) {
     if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+      contextHolder.get().increment();
       return;
     }
-
-    contextHolder.set(new Context());
 
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder builder = tracer
@@ -71,24 +64,21 @@ public class SpringJmsAgentIntercept {
     }
 
     final Span span = builder.start();
-    contextHolder.get().span = span;
-    contextHolder.get().scope = tracer.activateSpan(span);
+    contextHolder.set(new LocalSpanContext(span, tracer.activateSpan(span)));
   }
 
   public static void onMessageExit(final Throwable thrown) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = contextHolder.get();
     if (context == null)
       return;
 
-    --context.counter;
-    if (context.counter != 0)
+    if (context.decrementAndGet() != 0)
       return;
 
     if (thrown != null)
-      captureException(context.span, thrown);
+      captureException(context.getSpan(), thrown);
 
-    context.scope.close();
-    context.span.finish();
+    context.closeAndFinish();
     contextHolder.remove();
   }
 
