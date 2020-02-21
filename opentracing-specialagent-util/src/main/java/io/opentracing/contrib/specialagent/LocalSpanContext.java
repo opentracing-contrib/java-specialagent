@@ -21,11 +21,11 @@ import io.opentracing.Span;
  * Holder for Span, Scope and counter to control stack of calls
  */
 public class LocalSpanContext {
-  private Span span;
-  private Scope scope;
+  private final Span span;
+  private final Scope scope;
   private int counter = 1;
 
-  public LocalSpanContext(Span span, Scope scope) {
+  public LocalSpanContext(final Span span, final Scope scope) {
     this.span = span;
     this.scope = scope;
   }
