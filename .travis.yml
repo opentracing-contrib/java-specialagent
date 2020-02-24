@@ -34,13 +34,13 @@ jobs:
     script:
     - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        travis_retry mvn -B -P report install &&
+        travis_retry bash -c "mvn -B -P report install || (rm -rf ~/.m2/repository/* && false)" &&
         travis_retry mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
         travis_retry mvn -B -Dassemble install;
       else
-        travis_retry mvn -B install &&
+        travis_retry bash -c "mvn -B install || (rm -rf ~/.m2/repository/* && false)" &&
         travis_retry mvn -B -Dassemble install;
-      fi || rm -rf ~/.m2/repository/*'
+      fi'
     before_cache: find . -name target -exec rsync -R -r '{}' $BUILD_PATH \;
   - stage: install
     jdk: openjdk11
