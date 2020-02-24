@@ -18,7 +18,7 @@ cache:
   directories:
   - ~/.m2
 before_install:
-- 'export BUILD_PATH="$HOME/.m2/build/$(git rev-parse HEAD)" &&
+- 'export BUILD_PATH="$HOME/.m2/build/$TRAVIS_BUILD_ID" && mkdir -p $BUILD_PATH &&
    export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
    cp settings.xml $HOME/.m2/settings.xml;'
 sudo: required
@@ -34,11 +34,11 @@ jobs:
     script:
     - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        travis_retry mvn -B -P report install &&
+        travis_retry bash -c "mvn -B -P report install || (rm -rf ~/.m2/repository/* && false)" &&
         travis_retry mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
         travis_retry mvn -B -Dassemble install;
       else
-        travis_retry mvn -B install &&
+        travis_retry bash -c "mvn -B install || (rm -rf ~/.m2/repository/* && false)" &&
         travis_retry mvn -B -Dassemble install;
       fi'
     before_cache: find . -name target -exec rsync -R -r '{}' $BUILD_PATH \;
