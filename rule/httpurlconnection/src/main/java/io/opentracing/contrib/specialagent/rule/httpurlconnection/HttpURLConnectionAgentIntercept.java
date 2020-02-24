@@ -16,9 +16,8 @@
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import java.net.HttpURLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -73,7 +72,7 @@ public class HttpURLConnectionAgentIntercept {
       return;
 
     if (thrown != null)
-      onError(thrown, context.getSpan());
+      SpanUtil.onError(thrown, context.getSpan());
     else
       context.getSpan().setTag(Tags.HTTP_STATUS, responseCode);
 
@@ -92,16 +91,4 @@ public class HttpURLConnectionAgentIntercept {
     return 80;
   }
 
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
-  }
 }

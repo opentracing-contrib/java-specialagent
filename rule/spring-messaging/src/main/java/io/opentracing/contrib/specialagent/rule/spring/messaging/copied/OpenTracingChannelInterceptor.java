@@ -19,6 +19,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import org.apache.commons.logging.Log;
@@ -144,8 +145,7 @@ public class OpenTracingChannelInterceptor extends ChannelInterceptorAdapter imp
    */
   protected void handleException(Exception ex, Span span) {
     if (ex != null) {
-      Tags.ERROR.set(span, true);
-      // TODO add exception logs
+      SpanUtil.onError(ex, span);
     }
   }
 

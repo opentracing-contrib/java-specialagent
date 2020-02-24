@@ -14,6 +14,7 @@
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.method.HandlerMethod;
@@ -24,7 +25,6 @@ import java.net.Inet6Address;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 
 /**
  * SpanDecorator to decorate span at different stages in WebFlux processing (at subscription, after error or completion).
@@ -96,16 +96,9 @@ public interface WebFluxSpanDecorator {
 
     @Override
     public void onError(final ServerWebExchange exchange, final Throwable exception, final Span span) {
-      Tags.ERROR.set(span, Boolean.TRUE);
-      span.log(logsForException(exception));
+      SpanUtil.onError(exception, span);
     }
 
-    private Map<String, Object> logsForException(final Throwable throwable) {
-      final Map<String, Object> errorLogs = new HashMap<>(2);
-      errorLogs.put("event", throwable instanceof TimeoutException ? "timed out" : Tags.ERROR.getKey());
-      errorLogs.put("error.object", throwable);
-      return errorLogs;
-    }
   }
 
   /**

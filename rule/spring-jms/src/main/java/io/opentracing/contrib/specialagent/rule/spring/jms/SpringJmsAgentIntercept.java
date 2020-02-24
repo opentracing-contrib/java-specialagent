@@ -16,8 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.spring.jms;
 
 import io.opentracing.contrib.specialagent.LocalSpanContext;
-import java.util.HashMap;
-import java.util.Map;
+import io.opentracing.contrib.specialagent.SpanUtil;
 
 import javax.jms.Message;
 
@@ -43,15 +42,15 @@ public class SpringJmsAgentIntercept {
 
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder builder = tracer
-      .buildSpan("onMessage")
-      .withTag(Tags.COMPONENT, "spring-jms")
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
+        .buildSpan("onMessage")
+        .withTag(Tags.COMPONENT, "spring-jms")
+        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
 
-    final Message message = (Message)msg;
+    final Message message = (Message) msg;
 
     SpanContext spanContext = null;
     if (message instanceof SpanContextContainer) {
-      SpanContextContainer spanContextContainer = (SpanContextContainer)message;
+      SpanContextContainer spanContextContainer = (SpanContextContainer) message;
       spanContext = spanContextContainer.getSpanContext();
     }
 
@@ -76,17 +75,10 @@ public class SpringJmsAgentIntercept {
       return;
 
     if (thrown != null)
-      captureException(context.getSpan(), thrown);
+      SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
     contextHolder.remove();
   }
 
-  private static void captureException(final Span span, final Throwable t) {
-    final Map<String,Object> exceptionLogs = new HashMap<>();
-    exceptionLogs.put("event", Tags.ERROR.getKey());
-    exceptionLogs.put("error.object", t);
-    span.log(exceptionLogs);
-    Tags.ERROR.set(span, true);
-  }
 }

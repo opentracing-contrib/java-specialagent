@@ -15,8 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.zuul;
 
-import java.util.HashMap;
-import java.util.Map;
+import io.opentracing.contrib.specialagent.SpanUtil;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
@@ -75,15 +74,7 @@ public class TracePostZuulFilter extends ZuulFilter {
   }
 
   private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
+    SpanUtil.onError(t, span);
   }
 
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
-  }
 }

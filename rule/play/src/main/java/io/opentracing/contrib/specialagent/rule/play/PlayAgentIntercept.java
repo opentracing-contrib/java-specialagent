@@ -16,8 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.play;
 
 import io.opentracing.contrib.specialagent.LocalSpanContext;
-import java.util.HashMap;
-import java.util.Map;
+import io.opentracing.contrib.specialagent.SpanUtil;
 
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -74,7 +73,7 @@ public class PlayAgentIntercept {
     contextHolder.remove();
 
     if (thrown != null) {
-      onError(thrown, span);
+      SpanUtil.onError(thrown, span);
       span.finish();
       return;
     }
@@ -83,7 +82,7 @@ public class PlayAgentIntercept {
       @Override
       public Object apply(final Try<Result> response) {
         if (response.isFailure()) {
-          onError(response.failed().get(), span);
+          SpanUtil.onError(response.failed().get(), span);
         }
         else {
           span.setTag(Tags.HTTP_STATUS, response.get().header().status());
@@ -95,16 +94,4 @@ public class PlayAgentIntercept {
     }, ((Action<?>)thiz).executionContext());
   }
 
-  static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
-  }
 }

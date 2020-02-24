@@ -16,7 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
 import io.opentracing.contrib.specialagent.LocalSpanContext;
-import java.util.HashMap;
+import io.opentracing.contrib.specialagent.SpanUtil;
 
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.functions.instance.JavaExecutionResult;
@@ -36,16 +36,18 @@ public class PulsarFunctionsAgentIntercept {
   static final String COMPONENT_NAME = "java-pulsar-functions";
 
 
-  public static void handleMessageEnter(final Object function, final Object contextArg, final Object arg0) {
+  public static void handleMessageEnter(final Object function, final Object contextArg,
+      final Object arg0) {
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder spanBuilder = tracer
-      .buildSpan(getFunctionName(function, contextArg))
-      .withTag(Tags.COMPONENT, COMPONENT_NAME)
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
+        .buildSpan(getFunctionName(function, contextArg))
+        .withTag(Tags.COMPONENT, COMPONENT_NAME)
+        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
 
     if (arg0 != null) {
-      final Record<?> record = (Record<?>)arg0;
-      final SpanContext spanContext = tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(record.getProperties()));
+      final Record<?> record = (Record<?>) arg0;
+      final SpanContext spanContext = tracer
+          .extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(record.getProperties()));
       if (spanContext != null)
         spanBuilder.addReference(References.FOLLOWS_FROM, spanContext);
     }
@@ -59,7 +61,7 @@ public class PulsarFunctionsAgentIntercept {
 
   private static String getFunctionName(final Object function, final Object contextArg) {
     if (contextArg != null) {
-      final org.apache.pulsar.functions.api.Context contextImpl = (org.apache.pulsar.functions.api.Context)contextArg;
+      final org.apache.pulsar.functions.api.Context contextImpl = (org.apache.pulsar.functions.api.Context) contextArg;
       if (contextImpl.getFunctionName() != null)
         return contextImpl.getFunctionName();
     }
@@ -81,30 +83,18 @@ public class PulsarFunctionsAgentIntercept {
     contextHolder.remove();
 
     if (thrown != null) {
-      onError(thrown, span);
+      SpanUtil.onError(thrown, span);
       span.finish();
       return;
     }
 
-    final JavaExecutionResult result = (JavaExecutionResult)returned;
+    final JavaExecutionResult result = (JavaExecutionResult) returned;
     if (result.getSystemException() != null)
-      onError(result.getSystemException(), span);
+      SpanUtil.onError(result.getSystemException(), span);
     else if (result.getUserException() != null)
-      onError(result.getUserException(), span);
+      SpanUtil.onError(result.getUserException(), span);
 
     span.finish();
   }
 
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static HashMap<String,Object> errorLogs(final Throwable t) {
-    final HashMap<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
-  }
 }

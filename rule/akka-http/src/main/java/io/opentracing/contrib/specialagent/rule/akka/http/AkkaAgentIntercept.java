@@ -16,8 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
 import io.opentracing.contrib.specialagent.LocalSpanContext;
-import java.util.HashMap;
-import java.util.Map;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -75,7 +74,7 @@ public class AkkaAgentIntercept {
     contextHolder.remove();
 
     if (thrown != null) {
-      onError(thrown, span);
+      SpanUtil.onError(thrown, span);
       span.finish();
       return returned;
     }
@@ -85,7 +84,7 @@ public class AkkaAgentIntercept {
       span.finish();
       return httpResponse;
     }).exceptionally(throwable -> {
-      onError(throwable, span);
+      SpanUtil.onError(throwable, span);
       span.finish();
       return null;
     });
@@ -101,16 +100,4 @@ public class AkkaAgentIntercept {
     return new AkkaHttpAsyncHandler((Function<HttpRequest,CompletableFuture<HttpResponse>>)handler);
   }
 
-  static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
-  }
 }
