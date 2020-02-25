@@ -39,6 +39,7 @@ import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringWebSocketITest {
@@ -78,7 +79,7 @@ public class SpringWebSocketITest {
   public static void main(final String[] args) throws Exception {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringWebSocketITest.class, args)) {
-      TestUtil.checkSpan("websocket", 6, latch);
+      TestUtil.checkSpan(true, latch, new ComponentSpanCount("websocket", 2), new ComponentSpanCount("stomp-session", 1));
     }
   }
 

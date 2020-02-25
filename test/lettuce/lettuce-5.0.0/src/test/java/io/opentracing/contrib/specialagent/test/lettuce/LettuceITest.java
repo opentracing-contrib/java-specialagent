@@ -21,6 +21,7 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import redis.embedded.RedisServer;
 
 public class LettuceITest {
@@ -63,7 +64,7 @@ public class LettuceITest {
         }
       }
 
-      TestUtil.checkSpan("java-redis", expectedSpanCount);
+      TestUtil.checkSpan(new ComponentSpanCount("java-redis", expectedSpanCount));
     }
 
     client.shutdown();

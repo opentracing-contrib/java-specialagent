@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -70,36 +71,25 @@ public final class TestUtil {
 
   public static void checkSpan(final ComponentSpanCount ... componentSpanCounts) {
     try {
-      checkSpan(null, componentSpanCounts);
+      checkSpan(false, null, componentSpanCounts);
     }
     catch (final InterruptedException e) {
     }
   }
 
-  @Deprecated
-  public static void checkSpan(final String component, final int spanCount) {
+  public static void checkSpan(final boolean sameTrace, final ComponentSpanCount ... componentSpanCounts) {
     try {
-      checkSpan(component, spanCount, null, false);
+      checkSpan(sameTrace, null, componentSpanCounts);
     }
     catch (final InterruptedException e) {
     }
-  }
-
-  @Deprecated
-  public static void checkSpan(final String component, final int spanCount, final boolean sameTrace) {
-    try {
-      checkSpan(component, spanCount, null, sameTrace);
-    }
-    catch (final InterruptedException e) {
-    }
-  }
-
-  @Deprecated
-  public static void checkSpan(final String component, final int spanCount, final CountDownLatch latch) throws InterruptedException {
-    checkSpan(component, spanCount, latch, false);
   }
 
   public static void checkSpan(final CountDownLatch latch, final ComponentSpanCount ... componentSpanCounts) throws InterruptedException {
+    checkSpan(false, latch, componentSpanCounts);
+  }
+
+  public static void checkSpan(final boolean sameTrace, final CountDownLatch latch, final ComponentSpanCount ... componentSpanCounts) throws InterruptedException {
     final MockTracer tracer = getTracer();
     if (tracer == null)
       return;
@@ -116,21 +106,30 @@ public final class TestUtil {
       printSpan(span);
       for (final ComponentSpanCount componentSpanCount : componentSpanCounts) {
         final String spanComponent = (String)span.tags().get(Tags.COMPONENT.getKey());
-        if (spanComponent != null && spanComponent.matches(componentSpanCount.componentName)) {
-          if (!spanCountMap.containsKey(componentSpanCount.componentName))
-            spanCountMap.put(componentSpanCount.componentName, 1);
-          else
-            spanCountMap.put(componentSpanCount.componentName, spanCountMap.get(componentSpanCount.componentName) + 1);
+        if (spanComponent == null || !spanComponent.matches(componentSpanCount.componentName))
+          continue;
 
-          if (!componentSpanCount.sameTrace)
-            continue;
+        if (!spanCountMap.containsKey(componentSpanCount.componentName))
+          spanCountMap.put(componentSpanCount.componentName, 1);
+        else
+          spanCountMap.put(componentSpanCount.componentName, spanCountMap.get(componentSpanCount.componentName) + 1);
 
-          if (traceIdMap.containsKey(componentSpanCount.componentName) && !traceIdMap.get(componentSpanCount.componentName).equals(span.context().traceId()))
-            throw new AssertionError("Not the same trace of " + componentSpanCount.componentName);
+        traceIdMap.put(componentSpanCount.componentName, span.context().traceId());
 
-          traceIdMap.put(componentSpanCount.componentName, span.context().traceId());
-        }
+        if (!componentSpanCount.sameTrace)
+          continue;
+
+        if (traceIdMap.containsKey(componentSpanCount.componentName) && !traceIdMap.get(componentSpanCount.componentName).equals(span.context().traceId()))
+          throw new AssertionError("Not the same trace of " + componentSpanCount.componentName);
       }
+    }
+
+    if (sameTrace && traceIdMap.size() > 1) {
+      final Iterator<Long> iterator = traceIdMap.values().iterator();
+      final long traceId = iterator.next();
+      while (iterator.hasNext())
+        if (iterator.next() != traceId)
+          throw new AssertionError("Not the same trace");
     }
 
     for (final ComponentSpanCount componentSpanCount : componentSpanCounts) {
@@ -139,46 +138,6 @@ public final class TestUtil {
 
       if (spanCountMap.get(componentSpanCount.componentName) != componentSpanCount.count)
         throw new AssertionError(spanCountMap.get(componentSpanCount.componentName) + " spans instead of " + componentSpanCount.count + " of " + componentSpanCount.componentName);
-    }
-
-    tracer.reset();
-  }
-
-  @Deprecated
-  public static void checkSpan(final String component, final int spanCount, final CountDownLatch latch, final boolean sameTrace) throws InterruptedException {
-    final MockTracer tracer = getTracer();
-    if (tracer == null)
-      return;
-
-    if (latch != null)
-      latch.await(15, TimeUnit.SECONDS);
-
-    printSpans(tracer);
-
-    boolean found = false;
-    final List<MockSpan> spans = tracer.finishedSpans();
-    for (final MockSpan span : spans) {
-      printSpan(span);
-      final String spanComponent = (String)span.tags().get(Tags.COMPONENT.getKey());
-      if (spanComponent != null && spanComponent.matches(component)) {
-        found = true;
-        System.out.println("Found \"" + component + "\" span");
-      }
-    }
-
-    if (!found)
-      throw new AssertionError("\"" + component + "\" span not found");
-
-    if (spans.size() != spanCount)
-      throw new AssertionError(spans.size() + " spans instead of " + spanCount);
-
-    if (sameTrace && spans.size() > 1) {
-      final long traceId = spans.get(0).context().traceId();
-      for (int i = 1; i < spans.size(); ++i) {
-        if (spans.get(i).context().traceId() != traceId) {
-          throw new AssertionError("Not the same trace");
-        }
-      }
     }
 
     tracer.reset();
@@ -228,7 +187,7 @@ public final class TestUtil {
     }
   }
 
-  public static <T> T retry(final Callable<T> callable, final int maxRetries) throws Exception {
+  public static <T>T retry(final Callable<T> callable, final int maxRetries) throws Exception {
     for (int i = 1; i <= maxRetries; ++i) {
       try {
         return callable.call();

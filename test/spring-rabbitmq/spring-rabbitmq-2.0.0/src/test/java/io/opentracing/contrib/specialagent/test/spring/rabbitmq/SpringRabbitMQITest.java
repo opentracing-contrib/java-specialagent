@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Bean;
 import com.rabbitmq.client.Channel;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringRabbitMQITest {
@@ -122,7 +123,7 @@ public class SpringRabbitMQITest {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(6);
 
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringRabbitMQITest.class, args)) {
-      TestUtil.checkSpan("spring-rabbitmq", 6, latch);
+      TestUtil.checkSpan(latch, new ComponentSpanCount("spring-rabbitmq", 2), new ComponentSpanCount("java-rabbitmq", 4));
     }
 
     broker.shutdown();

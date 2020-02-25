@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class HttpURLConnectionITest {
   public static void main(final String[] args) throws IOException {
@@ -30,6 +31,6 @@ public class HttpURLConnectionITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    TestUtil.checkSpan("http-url-connection", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("http-url-connection", 1));
   }
 }

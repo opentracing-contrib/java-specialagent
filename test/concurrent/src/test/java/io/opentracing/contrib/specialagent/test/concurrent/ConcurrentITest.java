@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -47,7 +48,7 @@ public class ConcurrentITest {
     testForkJoinPool(parent);
 
     parent.finish();
-    TestUtil.checkSpan("parent", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("parent", 1));
   }
 
   private static void run() {

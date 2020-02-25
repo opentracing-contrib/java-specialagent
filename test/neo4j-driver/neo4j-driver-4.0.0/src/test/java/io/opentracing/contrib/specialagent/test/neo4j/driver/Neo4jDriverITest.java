@@ -24,6 +24,7 @@ import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Neo4jDriverITest {
   public static void main(final String[] args) {
@@ -41,6 +42,6 @@ public class Neo4jDriverITest {
       }
     }
 
-    TestUtil.checkSpan("java-neo4j", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("java-neo4j", 2));
   }
 }

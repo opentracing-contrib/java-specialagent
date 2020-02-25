@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JdbcITest {
   public static void main(final String[] args) throws SQLException, ClassNotFoundException {
@@ -52,6 +53,6 @@ public class JdbcITest {
       statement.executeQuery("SELECT 4 FROM dual");
     }
 
-    TestUtil.checkSpan("java-jdbc", 6);
+    TestUtil.checkSpan(new ComponentSpanCount("java-jdbc", 6));
   }
 }

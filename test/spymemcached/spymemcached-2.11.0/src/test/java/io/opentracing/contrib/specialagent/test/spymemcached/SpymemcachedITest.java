@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import net.spy.memcached.MemcachedClient;
 
 public class SpymemcachedITest {
@@ -26,12 +27,12 @@ public class SpymemcachedITest {
     final MemcachedClient client = new MemcachedClient(new InetSocketAddress("localhost", 11211));
     final boolean op = client.set("key", 120, "value").get(15, TimeUnit.SECONDS);
     if (!op)
-      throw new AssertionError("ERROR: failed to set value");
+      throw new AssertionError("Failed to set value");
 
     if (!"value".equals(client.get("key")))
-      throw new AssertionError("ERROR: failed to get value");
+      throw new AssertionError("Failed to get value");
 
     client.shutdown();
-    TestUtil.checkSpan("java-memcached", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("java-memcached", 2));
   }
 }

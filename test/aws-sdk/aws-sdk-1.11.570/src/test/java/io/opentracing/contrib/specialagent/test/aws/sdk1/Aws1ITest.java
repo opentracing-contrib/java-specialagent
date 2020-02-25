@@ -32,6 +32,7 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Aws1ITest {
   public static void main(final String[] args) throws Exception {
@@ -50,7 +51,7 @@ public class Aws1ITest {
 
     server.stop();
     dbClient.shutdown();
-    TestUtil.checkSpan("java-aws-sdk", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("java-aws-sdk", 1));
     System.exit(0);
   }
 

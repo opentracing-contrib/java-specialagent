@@ -35,6 +35,7 @@ import com.mongodb.connection.ClusterSettings.Builder;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SuppressWarnings("deprecation")
 public class MongoAsyncITest {
@@ -69,7 +70,7 @@ public class MongoAsyncITest {
 
     server.shutdownNow();
 
-    TestUtil.checkSpan("java-mongo", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("java-mongo", 1));
   }
 
   private static MongoClient createAsyncClient(final InetSocketAddress serverAddress) {

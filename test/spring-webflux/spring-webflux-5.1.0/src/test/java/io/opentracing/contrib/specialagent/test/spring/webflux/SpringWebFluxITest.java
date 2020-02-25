@@ -23,12 +23,13 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringWebFluxITest {
   public static void main(final String[] args) {
     SpringApplication.run(SpringWebFluxITest.class, args).close();
-    TestUtil.checkSpan("java-spring-webclient", 4, true);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-spring-webclient", 1), new ComponentSpanCount("java-spring-webflux", 1), new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("netty", 1));
   }
 
   @Bean

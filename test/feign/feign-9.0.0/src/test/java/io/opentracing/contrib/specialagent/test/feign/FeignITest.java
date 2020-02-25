@@ -23,12 +23,13 @@ import feign.RequestLine;
 import feign.Retryer;
 import feign.Target;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class FeignITest {
   public static void main(final String[] args) {
     final Feign feign = Feign.builder().retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2)).build();
     feign.newInstance(new Target.HardCodedTarget<>(StringEntityRequest.class, "http://www.google.com")).get();
-    TestUtil.checkSpan("feign", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("feign", 1));
   }
 
   private interface StringEntityRequest {

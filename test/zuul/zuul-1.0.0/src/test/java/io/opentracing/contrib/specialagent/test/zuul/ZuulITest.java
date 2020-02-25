@@ -24,13 +24,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 @EnableZuulProxy
 public class ZuulITest {
   public static void main(final String[] args) {
     SpringApplication.run(ZuulITest.class, args).close();
-    TestUtil.checkSpan("zuul", 4);
+    TestUtil.checkSpan(true, new ComponentSpanCount("zuul", 1), new ComponentSpanCount("java-spring-rest-template", 1), new ComponentSpanCount("java-web-servlet", 1));
   }
 
   @Bean

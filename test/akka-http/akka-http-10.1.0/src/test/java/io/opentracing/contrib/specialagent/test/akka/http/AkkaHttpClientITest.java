@@ -28,6 +28,7 @@ import akka.http.javadsl.model.HttpResponse;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class AkkaHttpClientITest {
   public static void main(final String[] args) throws Exception {
@@ -45,7 +46,7 @@ public class AkkaHttpClientITest {
     }).toCompletableFuture().get().entity().getDataBytes().runForeach(param -> {}, materializer);
 
     stage.thenRun(system::terminate).toCompletableFuture().get();
-    TestUtil.checkSpan("akka-http-client", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("akka-http-client", 1));
   }
 
   static Http getHttp(final ActorSystem system) throws IllegalAccessException, InvocationTargetException {

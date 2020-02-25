@@ -29,6 +29,7 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.opentracing.contrib.specialagent.test.thrift.generated.CustomService;
 
 public class ThriftITest {
@@ -49,7 +50,7 @@ public class ThriftITest {
     if (!"Say one two".equals(res))
       throw new AssertionError("ERROR: wrong result");
 
-    TestUtil.checkSpan("java-thrift", 2, latch);
+    TestUtil.checkSpan(latch, new ComponentSpanCount("java-thrift", 2, true));
 
     server.stop();
     transport.close();

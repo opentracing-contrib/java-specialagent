@@ -37,6 +37,7 @@ import com.mongodb.reactivestreams.client.Success;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class MongoReactiveITest {
   public static void main(final String[] args) throws InterruptedException {
@@ -78,6 +79,6 @@ public class MongoReactiveITest {
     }
 
     server.shutdownNow();
-    TestUtil.checkSpan("java-mongo", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("java-mongo", 1));
   }
 }
