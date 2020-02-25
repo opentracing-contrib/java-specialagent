@@ -8,8 +8,8 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 
 public class CustomizableTracer implements Tracer {
-  private final Tracer target;
-  private final SpanRules rules;
+  protected final Tracer target;
+  protected final SpanRules rules;
 
   public CustomizableTracer(final Tracer target, final SpanRules rules) {
     this.target = target;

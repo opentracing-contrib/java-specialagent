@@ -1,18 +1,17 @@
 package io.opentracing.contrib.specialagent.tracer;
 
-import java.util.Collections;
-import java.util.Map;
-
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class CustomizableSpan implements Span {
   private final SpanCustomizer customizer;
 
   private final Span target;
   private final SpanRules rules;
-  private final LogFieldCustomizer logFieldCustomizer;
 
   public CustomizableSpan(final Span target, final SpanRules rules) {
     this.customizer = new SpanCustomizer(rules) {
@@ -41,7 +40,6 @@ public class CustomizableSpan implements Span {
 
     this.target = target;
     this.rules = rules;
-    this.logFieldCustomizer = new LogFieldCustomizer(rules, customizer, target);
   }
 
   @Override
@@ -75,14 +73,18 @@ public class CustomizableSpan implements Span {
 
   @Override
   public Span log(final Map<String,?> fields) {
-    logFieldCustomizer.processLog(0, fields);
+    logFieldCustomizer().processLog(0, fields);
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final Map<String,?> fields) {
-    logFieldCustomizer.processLog(timestampMicroseconds, fields);
+    logFieldCustomizer().processLog(timestampMicroseconds, fields);
     return this;
+  }
+
+  LogFieldCustomizer logFieldCustomizer() {
+    return new LogFieldCustomizer(rules, customizer, target);
   }
 
   @Override

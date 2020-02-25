@@ -1,16 +1,18 @@
 package io.opentracing.contrib.specialagent.tracer;
 
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+import io.opentracing.contrib.specialagent.Function;
+
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
 
 public final class SpanRuleParser {
   public static Map<String,SpanRules> parseRules(final InputStream inputStream) {
@@ -73,7 +75,17 @@ public final class SpanRuleParser {
 
   private static Object parseMatcher(final JsonObject jsonRule) {
     final String valueRegex = jsonRule.getString("valueRegex");
-    return valueRegex != null ? Pattern.compile(valueRegex) : jsonRule.get("value");
+    return valueRegex != null ? getSpanRulePattern(valueRegex) : jsonRule.get("value");
+  }
+
+  private static Function<String, Matcher> getSpanRulePattern(final String valueRegex) {
+    final Pattern pattern = Pattern.compile(valueRegex);
+    return new Function<String, Matcher>() {
+      @Override
+      public Matcher apply(String s) {
+        return pattern.matcher(s);
+      }
+    };
   }
 
   private static SpanRuleType parseType(final String type, final String subject) {
