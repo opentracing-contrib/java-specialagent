@@ -7,6 +7,11 @@ abstract class Adaptive extends Adapter {
     super(rules);
   }
 
+  final void processServiceName(final String serviceName) {
+    //cannot set the service name, only process it
+    processRules(AdaptionRuleType.SERVICE_NAME, null, serviceName);
+  }
+
   final void processOperationName(final String operationName) {
     if (operationNameProcessed)
       throw new IllegalStateException();

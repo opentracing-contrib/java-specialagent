@@ -1,16 +1,16 @@
 package io.opentracing.contrib.specialagent.adaption;
 
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
 
 public final class AdaptionRuleParser {
   public static Map<String,AdaptionRules> parseRules(final InputStream inputStream) {
@@ -77,7 +77,7 @@ public final class AdaptionRuleParser {
   }
 
   private static AdaptionRuleType parseType(final String type, final String subject) {
-    return AdaptionRuleType.fromString(Objects.requireNonNull(type, subject + "type is null"));
+    return Objects.requireNonNull(AdaptionRuleType.fromString(Objects.requireNonNull(type, subject + "type is null")), subject + "invalid type");
   }
 
   private AdaptionRuleParser() {

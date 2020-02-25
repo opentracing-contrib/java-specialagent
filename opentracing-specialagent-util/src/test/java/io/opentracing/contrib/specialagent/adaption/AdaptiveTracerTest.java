@@ -65,7 +65,7 @@ public class AdaptiveTracerTest {
         parseRules(jsonRules);
         Assert.fail("no exception thrown");
       }
-      catch (final IllegalStateException e) {
+      catch (final IllegalStateException | NullPointerException e) {
         assertEquals(expectedError, e.getMessage());
       }
     }
@@ -119,7 +119,7 @@ public class AdaptiveTracerTest {
     return new AdaptiveTracer(mockTracer, rules) {
       @Override
       public SpanBuilder buildSpan(String operationName) {
-        AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules) {
+        AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules, "serviceName") {
           @Override
           protected AdaptiveSpan getCustomizableSpan(Span span) {
             return new AdaptiveSpan(span, rules) {

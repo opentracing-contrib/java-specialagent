@@ -1,0 +1,13 @@
+{
+  "expectedError": "test: rule 0: output 0: serviceName cannot be used as output",
+  "rules": [
+    {
+      "type": "operationName",
+      "output": [
+        {
+          "type": "serviceName"
+        }
+      ]
+    }
+  ]
+}

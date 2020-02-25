@@ -10,10 +10,12 @@ import io.opentracing.propagation.Format;
 public class AdaptiveTracer implements Tracer {
   final Tracer target;
   final AdaptionRules rules;
+  private final String serviceName;
 
   AdaptiveTracer(final Tracer target, final AdaptionRules rules) {
     this.target = target;
     this.rules = rules;
+    this.serviceName = TracerIntrospector.getServiceName(target);
   }
 
   @Override
@@ -33,7 +35,7 @@ public class AdaptiveTracer implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(final String operationName) {
-    return new AdaptiveSpanBuilder(operationName, target, rules);
+    return new AdaptiveSpanBuilder(operationName, target, rules, serviceName);
   }
 
   @Override

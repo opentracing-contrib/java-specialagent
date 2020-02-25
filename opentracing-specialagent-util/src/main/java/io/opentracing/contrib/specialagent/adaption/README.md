@@ -141,7 +141,9 @@ you can redact specific parts of a value (tag, log or operationName).
     }
   ]
 }
-```
+```       
+
+In this example, `$1?` is the [replacement](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html#replaceAll(java.lang.String) string. If you don't use `valueRegex`, the output `value` would be interpreted as a plain string. 
 
 ## Multiple Outputs
 
@@ -197,3 +199,40 @@ In this case, it is a different tag - and you can specify the output tag using `
   ]
 }
 ```
+
+## Global rules
+
+If you need to apply a rule globally, you can use `all`, e.g. for blacklisting all `http.url` tags:
+
+```json
+{
+  "all": [
+    {
+      "type": "tag",
+      "key": "http.url"
+    }
+  ]
+}
+```      
+
+## ServiceName
+
+You can create a tag from the service name as follows: 
+
+ ```json
+{
+  "jedis": [
+    {
+      "type": "serviceName",
+      "output": [
+        {
+          "type": "tag", 
+          "key": "service"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Note that this feature is only supported for LightStep and Jaeger.
