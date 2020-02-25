@@ -35,7 +35,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class RabbitMQAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void exitGet(final Object response, final Object queue, final Throwable thrown) {
     final Span span = TracingUtils.buildChildSpan(((GetResponse)response).getProps(), (String)queue, GlobalTracer.get());
@@ -55,7 +54,7 @@ public class RabbitMQAgentIntercept {
     final Span span = TracingUtils.buildSpan((String)exchange, (String)routingKey, properties, tracer);
 
     final Scope scope = tracer.activateSpan(span);
-    contextHolder.set(new LocalSpanContext(span, scope));
+    LocalSpanContext.set(span, scope);
 
     return inject(properties, span, tracer);
   }
@@ -65,7 +64,7 @@ public class RabbitMQAgentIntercept {
   }
 
   private static void finish(final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -73,7 +72,6 @@ public class RabbitMQAgentIntercept {
       captureException(context.getSpan(), thrown);
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   private static void captureException(final Span span, final Throwable thrown) {

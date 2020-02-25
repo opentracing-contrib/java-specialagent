@@ -36,7 +36,6 @@ import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   private static final List<ServletFilterSpanDecorator> spanDecorators = Configuration.spanDecorators;
 
   public static void init(final Object thiz, final Object servletConfig) {
@@ -75,8 +74,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (request.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 
-      LocalSpanContext spanContext = contextHolder.get();
-      if (spanContext != null)
+      if (LocalSpanContext.get() != null)
         return;
 
       if (!Configuration.isTraced(request))
@@ -84,8 +82,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
       final Tracer tracer = GlobalTracer.get();
       final Span span = TracingFilterUtil.buildSpan(request, tracer, spanDecorators);
-      spanContext = new LocalSpanContext(span,  tracer.activateSpan(span));
-      contextHolder.set(spanContext);
+      LocalSpanContext.set(span,  tracer.activateSpan(span));
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
@@ -96,7 +93,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
   public static void serviceExit(final Object request, final Object response, final Throwable thrown) {
     try {
-      final LocalSpanContext spanContext = contextHolder.get();
+      final LocalSpanContext spanContext = LocalSpanContext.get();
       if (spanContext == null)
         return;
 
@@ -109,7 +106,6 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
         TracingFilterUtil.onResponse(httpRequest, httpResponse, spanContext.getSpan(), spanDecorators);
 
       spanContext.closeAndFinish();
-      contextHolder.remove();
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);

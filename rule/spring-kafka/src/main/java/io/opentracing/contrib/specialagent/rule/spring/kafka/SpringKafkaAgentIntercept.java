@@ -31,11 +31,10 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringKafkaAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void onMessageEnter(final Object record) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -53,19 +52,17 @@ public class SpringKafkaAgentIntercept {
     }
 
     final Span span = builder.start();
-    final LocalSpanContext context = new LocalSpanContext(span, tracer.activateSpan(span));
-    contextHolder.set(context);
+    LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
   public static void onMessageExit(Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context != null) {
       if (context.decrementAndGet() == 0) {
         if (thrown != null) {
           captureException(context.getSpan(), thrown);
         }
         context.closeAndFinish();
-        contextHolder.remove();
       }
     }
   }

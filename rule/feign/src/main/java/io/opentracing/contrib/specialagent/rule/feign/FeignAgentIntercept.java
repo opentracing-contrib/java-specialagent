@@ -34,7 +34,6 @@ import io.opentracing.util.GlobalTracer;
 
 public class FeignAgentIntercept {
   private static final StandardTags standardTags = new StandardTags();
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
 
   public static Object onRequest(final Object arg1, final Object arg2) {
@@ -50,8 +49,7 @@ public class FeignAgentIntercept {
     request = inject(span.context(), request);
 
     final Scope scope = tracer.activateSpan(span);
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
 
     return request;
   }
@@ -75,10 +73,9 @@ public class FeignAgentIntercept {
   }
 
   private static void finish() {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context != null) {
       context.closeAndFinish();
-      contextHolder.remove();
     }
   }
 }

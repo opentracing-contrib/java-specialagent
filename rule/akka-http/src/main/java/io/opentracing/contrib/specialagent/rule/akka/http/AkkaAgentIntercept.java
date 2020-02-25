@@ -31,13 +31,12 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class AkkaAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME_CLIENT = "akka-http-client";
   static final String COMPONENT_NAME_SERVER = "akka-http-server";
 
   public static Object requestStart(final Object arg0) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return arg0;
     }
 
@@ -55,15 +54,14 @@ public class AkkaAgentIntercept {
     final HttpHeadersInjectAdapter injectAdapter = new HttpHeadersInjectAdapter(request);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, injectAdapter);
 
-    final LocalSpanContext context = new LocalSpanContext(span, tracer.activateSpan(span));
-    contextHolder.set(context);
+    LocalSpanContext.set(span, tracer.activateSpan(span));
 
     return injectAdapter.getHttpRequest();
   }
 
   @SuppressWarnings("unchecked")
   public static Object requestEnd(final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return returned;
 
@@ -72,7 +70,6 @@ public class AkkaAgentIntercept {
 
     final Span span = context.getSpan();
     context.closeScope();
-    contextHolder.remove();
 
     if (thrown != null) {
       onError(thrown, span);

@@ -34,12 +34,11 @@ import scala.concurrent.Future;
 import scala.util.Try;
 
 public class PlayAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "play";
 
   public static void applyStart(final Object arg0) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -56,13 +55,12 @@ public class PlayAgentIntercept {
       spanBuilder.asChildOf(parent);
 
     final Span span = spanBuilder.start();
-    final LocalSpanContext context = new LocalSpanContext(span, tracer.activateSpan(span));
-    contextHolder.set(context);
+    LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
   @SuppressWarnings("unchecked")
   public static void applyEnd(final Object thiz, final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -71,7 +69,6 @@ public class PlayAgentIntercept {
 
     final Span span = context.getSpan();
     context.closeScope();
-    contextHolder.remove();
 
     if (thrown != null) {
       onError(thrown, span);

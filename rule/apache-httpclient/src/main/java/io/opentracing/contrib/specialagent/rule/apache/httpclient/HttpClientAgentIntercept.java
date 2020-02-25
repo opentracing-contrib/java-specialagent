@@ -34,7 +34,6 @@ import io.opentracing.util.GlobalTracer;
 
 public class HttpClientAgentIntercept {
   static final String COMPONENT_NAME = "java-httpclient";
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static Object[] enter(final Object arg0, final Object arg1, final Object arg2) {
     final HttpRequest request = arg0 instanceof HttpRequest ? (HttpRequest)arg0 : arg1 instanceof HttpRequest ? (HttpRequest)arg1 : null;
@@ -47,7 +46,7 @@ public class HttpClientAgentIntercept {
       return null;
     }
 
-    LocalSpanContext context = contextHolder.get();
+    LocalSpanContext context = LocalSpanContext.get();
     if (context != null) {
       context.increment();
       return null;
@@ -60,8 +59,7 @@ public class HttpClientAgentIntercept {
       .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
       .withTag(Tags.HTTP_URL, request.getRequestLine().getUri()).start();
 
-    context = new LocalSpanContext(span, null);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, null);
 
     if (request instanceof HttpUriRequest) {
       final URI uri = ((HttpUriRequest)request).getURI();
@@ -89,7 +87,7 @@ public class HttpClientAgentIntercept {
   }
 
   public static void exit(final Object returned) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -102,11 +100,10 @@ public class HttpClientAgentIntercept {
     }
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   public static void onError(final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -119,6 +116,5 @@ public class HttpClientAgentIntercept {
     context.getSpan().setTag(Tags.ERROR, Boolean.TRUE);
     context.getSpan().log(errorLogs);
     context.closeAndFinish();
-    contextHolder.remove();
   }
 }

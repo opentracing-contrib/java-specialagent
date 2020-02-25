@@ -32,7 +32,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class PulsarFunctionsAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "java-pulsar-functions";
 
 
@@ -53,8 +52,7 @@ public class PulsarFunctionsAgentIntercept {
     final Span span = spanBuilder.start();
     final Scope scope = tracer.activateSpan(span);
 
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
   }
 
   private static String getFunctionName(final Object function, final Object contextArg) {
@@ -72,13 +70,12 @@ public class PulsarFunctionsAgentIntercept {
   }
 
   public static void handleMessageEnd(final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
     context.closeScope();
     final Span span = context.getSpan();
-    contextHolder.remove();
 
     if (thrown != null) {
       onError(thrown, span);

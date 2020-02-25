@@ -31,12 +31,11 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class HttpURLConnectionAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "http-url-connection";
 
   public static void enter(final Object thiz, final boolean connected) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -60,12 +59,11 @@ public class HttpURLConnectionAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpURLConnectionInjectAdapter(connection));
 
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
   }
 
   public static void exit(final Throwable thrown, int responseCode) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -78,7 +76,6 @@ public class HttpURLConnectionAgentIntercept {
       context.getSpan().setTag(Tags.HTTP_STATUS, responseCode);
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   private static Integer getPort(final HttpURLConnection connection) {

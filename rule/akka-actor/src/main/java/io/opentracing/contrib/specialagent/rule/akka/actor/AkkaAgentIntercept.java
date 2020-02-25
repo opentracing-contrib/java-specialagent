@@ -33,12 +33,11 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class AkkaAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "java-akka";
 
   public static Object aroundReceiveStart(final Object thiz, final Object message) {
-    if (!(message instanceof TracedMessage) && contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (!(message instanceof TracedMessage) && LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return message;
     }
 
@@ -62,14 +61,13 @@ public class AkkaAgentIntercept {
     final Span span = spanBuilder.start();
     final Scope scope = tracer.activateSpan(span);
 
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
 
     return tracedMessage != null ? tracedMessage.getMessage() : message;
   }
 
   public static void aroundReceiveEnd(final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -80,7 +78,6 @@ public class AkkaAgentIntercept {
       onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   public static Object askStart(final Object arg0, final Object message, final String method, final Object sender) {
@@ -119,8 +116,7 @@ public class AkkaAgentIntercept {
 
     final Scope scope = tracer.activateSpan(span);
 
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
 
     return new TracedMessage<>(message, headers);
   }
@@ -129,7 +125,7 @@ public class AkkaAgentIntercept {
     if (sender instanceof PromiseActorRef || arg0 instanceof PromiseActorRef || !(message instanceof TracedMessage))
       return;
 
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -137,7 +133,6 @@ public class AkkaAgentIntercept {
       onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   private static void onError(final Throwable t, final Span span) {
