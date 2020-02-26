@@ -1,12 +1,12 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public enum AdaptiveTracerScenario {
   COMPLEX("complex") {
@@ -87,6 +87,7 @@ public enum AdaptiveTracerScenario {
       final Span late = tracer.buildSpan("operation").start();
       // and it's even possible to ignore setOperationName completely
       late.setOperationName("strange");
+      late.setOperationName("strange2");
       late.finish();
     }
   },

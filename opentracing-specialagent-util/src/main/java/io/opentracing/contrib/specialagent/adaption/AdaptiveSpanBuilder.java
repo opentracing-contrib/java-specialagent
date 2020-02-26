@@ -1,22 +1,22 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder {
   private final Adaptive adaptive;
   private final Tracer.SpanBuilder target;
 
-  AdaptiveSpanBuilder(final String operationName, final Tracer target, final AdaptionRules rules) {
+  AdaptiveSpanBuilder(final String operationName, final Tracer target, final AdaptionRules rules, String serviceName) {
     super(rules);
     this.adaptive = new Adaptive(rules) {
       @Override
@@ -46,6 +46,8 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
     };
 
     processOperationName(operationName);
+    if (serviceName != null)
+      processServiceName(serviceName);
     this.target = target.buildSpan(operationName);
     if (tags != null)
       for (Map.Entry<String,Object> entry : tags.entrySet())

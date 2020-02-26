@@ -1,0 +1,9 @@
+{
+  "expectedError": "test: rule 0: key for serviceName must be null",
+  "rules": [
+    {
+      "type": "serviceName",
+      "key": "k1"
+    }
+  ]
+}

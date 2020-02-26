@@ -1,0 +1,8 @@
+{
+  "expectedError": "test: rule 0: type is not a string",
+  "rules": [
+    {
+      "type": 1
+    }
+  ]
+}

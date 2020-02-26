@@ -18,6 +18,23 @@ public enum AdaptionRuleType {
         throw new IllegalStateException(subject + "missing output key for log fields");
     }
   },
+  SERVICE_NAME("serviceName") {
+    @Override
+    void apply(final Adapter adapter, final String key, final Object value) {
+      throw new IllegalStateException();
+    }
+
+    @Override
+    void validateRule(final AdaptionRule<?> rule, final String subject) {
+      if (rule.key != null)
+        throw new IllegalStateException(subject + "key for serviceName must be null");
+    }
+
+    @Override
+    void validateOutputKey(final AdaptionRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+      throw new IllegalStateException(subject + "serviceName cannot be used as output");
+    }
+  },
   OPERATION_NAME("operationName") {
     @Override
     void apply(final Adapter adapter, final String key, final Object value) {

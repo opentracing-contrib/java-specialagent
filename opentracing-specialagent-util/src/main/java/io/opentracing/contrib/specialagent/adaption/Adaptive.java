@@ -1,17 +1,16 @@
 package io.opentracing.contrib.specialagent.adaption;
 
 abstract class Adaptive extends Adapter {
-  private boolean operationNameProcessed = false;
-
   Adaptive(final AdaptionRules rules) {
     super(rules);
   }
 
-  final void processOperationName(final String operationName) {
-    if (operationNameProcessed)
-      throw new IllegalStateException();
+  final void processServiceName(final String serviceName) {
+    //cannot set the service name, only process it
+    processRules(AdaptionRuleType.SERVICE_NAME, null, serviceName);
+  }
 
-    operationNameProcessed = true;
+  final void processOperationName(final String operationName) {
     if (!processRules(AdaptionRuleType.OPERATION_NAME, null, operationName))
       setOperationName(operationName);
   }
