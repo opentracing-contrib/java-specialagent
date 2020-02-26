@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 
 import org.apache.pulsar.functions.api.Record;
@@ -27,13 +26,13 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class PulsarFunctionsAgentIntercept {
   static final String COMPONENT_NAME = "java-pulsar-functions";
-
 
   public static void handleMessageEnter(final Object function, final Object contextArg, final Object arg0) {
     final Tracer tracer = GlobalTracer.get();

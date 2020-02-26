@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.kafka;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,11 +26,11 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringKafkaAgentIntercept {
-
   public static void onMessageEnter(final Object record) {
     if (LocalSpanContext.get() != null) {
       LocalSpanContext.get().increment();
@@ -55,15 +54,13 @@ public class SpringKafkaAgentIntercept {
     LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
-  public static void onMessageExit(Throwable thrown) {
+  public static void onMessageExit(final Throwable thrown) {
     final LocalSpanContext context = LocalSpanContext.get();
-    if (context != null) {
-      if (context.decrementAndGet() == 0) {
-        if (thrown != null) {
-          captureException(context.getSpan(), thrown);
-        }
-        context.closeAndFinish();
-      }
+    if (context != null && context.decrementAndGet() == 0) {
+      if (thrown != null)
+        captureException(context.getSpan(), thrown);
+
+      context.closeAndFinish();
     }
   }
 

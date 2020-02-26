@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.client;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -32,6 +31,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.tag.Tags;
@@ -81,7 +81,6 @@ public class PulsarClientAgentIntercept {
     final Producer<?> producer = (Producer<?>)thiz;
 
     final Tracer tracer = GlobalTracer.get();
-
     final Span span = tracer
       .buildSpan("send")
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
@@ -95,7 +94,6 @@ public class PulsarClientAgentIntercept {
     tracer.inject(span.context(), Builtin.TEXT_MAP, new PropertiesMapInjectAdapter(message.getMessageBuilder()));
 
     final Scope scope = tracer.activateSpan(span);
-
     LocalSpanContext.set(span, scope);
   }
 

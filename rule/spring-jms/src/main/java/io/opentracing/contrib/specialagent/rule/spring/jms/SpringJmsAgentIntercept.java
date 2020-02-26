@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.jms;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,11 +27,11 @@ import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.jms.common.SpanContextContainer;
 import io.opentracing.contrib.jms.common.TracingMessageUtils;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringJmsAgentIntercept {
-
   public static void onMessageEnter(final Object msg) {
     if (LocalSpanContext.get() != null) {
       LocalSpanContext.get().increment();
@@ -53,13 +52,11 @@ public class SpringJmsAgentIntercept {
       spanContext = spanContextContainer.getSpanContext();
     }
 
-    if (spanContext == null) {
+    if (spanContext == null)
       spanContext = TracingMessageUtils.extract(message, tracer);
-    }
 
-    if (spanContext != null) {
+    if (spanContext != null)
       builder.addReference(References.FOLLOWS_FROM, spanContext);
-    }
 
     final Span span = builder.start();
     LocalSpanContext.set(span, tracer.activateSpan(span));

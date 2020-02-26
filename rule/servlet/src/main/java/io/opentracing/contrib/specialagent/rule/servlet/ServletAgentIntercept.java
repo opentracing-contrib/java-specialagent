@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -28,6 +27,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingFilterUtil;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
@@ -82,7 +82,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
       final Tracer tracer = GlobalTracer.get();
       final Span span = TracingFilterUtil.buildSpan(request, tracer, spanDecorators);
-      LocalSpanContext.set(span,  tracer.activateSpan(span));
+      LocalSpanContext.set(span, tracer.activateSpan(span));
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
@@ -93,19 +93,19 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
   public static void serviceExit(final Object request, final Object response, final Throwable thrown) {
     try {
-      final LocalSpanContext spanContext = LocalSpanContext.get();
-      if (spanContext == null)
+      final LocalSpanContext context = LocalSpanContext.get();
+      if (context == null)
         return;
 
       final HttpServletRequest httpRequest = (HttpServletRequest)request;
       final HttpServletResponse httpResponse = (HttpServletResponse)response;
 
       if (thrown != null)
-        TracingFilterUtil.onError(httpRequest, httpResponse, thrown, spanContext.getSpan(), spanDecorators);
+        TracingFilterUtil.onError(httpRequest, httpResponse, thrown, context.getSpan(), spanDecorators);
       else
-        TracingFilterUtil.onResponse(httpRequest, httpResponse, spanContext.getSpan(), spanDecorators);
+        TracingFilterUtil.onResponse(httpRequest, httpResponse, context.getSpan(), spanDecorators);
 
-      spanContext.closeAndFinish();
+      context.closeAndFinish();
     }
     catch (final Exception e) {
       logger.log(Level.WARNING, e.getMessage(), e);
