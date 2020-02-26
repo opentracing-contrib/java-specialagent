@@ -38,7 +38,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringWebAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void enter(Object thiz) {
     final RestTemplate restTemplate = (RestTemplate)thiz;
@@ -63,21 +62,19 @@ public class SpringWebAgentIntercept {
       .start();
 
     final Scope scope = tracer.activateSpan(span);
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
 
     return WrapperProxy.wrap(requestCallback, new TracingAsyncRequestCallback(requestCallback, span.context()));
   }
 
   public static Object asyncEnd(final Object response, final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return response;
 
     if (thrown != null) {
       captureException(context.getSpan(), thrown);
       context.closeAndFinish();
-      contextHolder.remove();
       return response;
     }
 
@@ -88,7 +85,7 @@ public class SpringWebAgentIntercept {
     catch (final Exception ignore) {
     }
 
-    contextHolder.remove();
+    LocalSpanContext.remove();
     return WrapperProxy.wrap(listenableFuture, new TracingListenableFuture(listenableFuture, context.getSpan()));
   }
 }

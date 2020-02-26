@@ -18,16 +18,29 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 
 /**
- * Holder for Span, Scope and counter to control stack of calls
+ * Thread local holder for Span, Scope and counter to control stack of calls
  */
 public class LocalSpanContext {
+  private static final ThreadLocal<LocalSpanContext> instance = new ThreadLocal<>();
   private final Span span;
   private final Scope scope;
   private int counter = 1;
 
-  public LocalSpanContext(final Span span, final Scope scope) {
+  private LocalSpanContext(final Span span, final Scope scope) {
     this.span = span;
     this.scope = scope;
+  }
+
+  public static LocalSpanContext get() {
+    return instance.get();
+  }
+
+  public static void set(Span span, Scope scope) {
+    instance.set(new LocalSpanContext(span, scope));
+  }
+
+  public static void remove() {
+    instance.remove();
   }
 
   public Span getSpan() {
@@ -50,6 +63,7 @@ public class LocalSpanContext {
   }
 
   public void closeScope() {
+    instance.remove();
     if (scope != null) {
       scope.close();
     }

@@ -37,7 +37,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class PulsarClientAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "java-pulsar";
 
   private static void buildConsumerSpan(final Consumer<?> consumer, final Message<?> message) {
@@ -72,8 +71,8 @@ public class PulsarClientAgentIntercept {
   }
 
   public static void internalSendAsyncEnter(final Object thiz, final Object arg) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -96,13 +95,12 @@ public class PulsarClientAgentIntercept {
 
     final Scope scope = tracer.activateSpan(span);
 
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
   }
 
   @SuppressWarnings("unchecked")
   public static Object internalSendAsyncEnd(final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return returned;
 
@@ -111,7 +109,6 @@ public class PulsarClientAgentIntercept {
 
     context.closeScope();
     final Span span = context.getSpan();
-    contextHolder.remove();
 
     if (thrown != null) {
       SpanUtil.onError(thrown, span);

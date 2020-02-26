@@ -31,11 +31,10 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringRabbitMQAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void onMessageEnter(final Object msg) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -54,11 +53,11 @@ public class SpringRabbitMQAgentIntercept {
     }
 
     final Span span = builder.start();
-    contextHolder.set(new LocalSpanContext(span, tracer.activateSpan(span)));
+    LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
   public static void onMessageExit(Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -69,7 +68,6 @@ public class SpringRabbitMQAgentIntercept {
       SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
 }

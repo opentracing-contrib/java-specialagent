@@ -29,7 +29,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringSchedulingAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
 
   public static void enter(final Object thiz) {
     final ScheduledMethodRunnable runnable = (ScheduledMethodRunnable)thiz;
@@ -42,12 +41,11 @@ public class SpringSchedulingAgentIntercept {
       .start();
 
     final Scope scope = tracer.activateSpan(span);
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
   }
 
   public static void exit(final Throwable thrown) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -55,7 +53,6 @@ public class SpringSchedulingAgentIntercept {
       SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   public static Object invoke(final Object arg) {

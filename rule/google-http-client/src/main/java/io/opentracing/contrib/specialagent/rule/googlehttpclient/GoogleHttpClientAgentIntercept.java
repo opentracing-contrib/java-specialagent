@@ -29,12 +29,11 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class GoogleHttpClientAgentIntercept {
-  private static final ThreadLocal<LocalSpanContext> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "google-http-client";
 
   public static void enter(final Object thiz) {
-    if (contextHolder.get() != null) {
-      contextHolder.get().increment();
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -52,12 +51,11 @@ public class GoogleHttpClientAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request.getHeaders()));
 
-    final LocalSpanContext context = new LocalSpanContext(span, scope);
-    contextHolder.set(context);
+    LocalSpanContext.set(span, scope);
   }
 
   public static void exit(Throwable thrown, Object returned) {
-    final LocalSpanContext context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
@@ -70,7 +68,6 @@ public class GoogleHttpClientAgentIntercept {
       context.getSpan().setTag(Tags.HTTP_STATUS, ((HttpResponse)returned).getStatusCode());
 
     context.closeAndFinish();
-    contextHolder.remove();
   }
 
   private static Integer getPort(final HttpRequest httpRequest) {
