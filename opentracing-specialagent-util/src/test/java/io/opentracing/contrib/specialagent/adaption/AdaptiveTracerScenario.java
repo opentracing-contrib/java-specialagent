@@ -1,12 +1,12 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 
 public enum AdaptiveTracerScenario {
   COMPLEX("complex") {

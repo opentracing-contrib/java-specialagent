@@ -5,18 +5,13 @@ abstract class Adaptive extends Adapter {
     super(rules);
   }
 
-  final void processServiceName(final String serviceName) {
-    //cannot set the service name, only process it
-    processRules(AdaptionRuleType.SERVICE_NAME, null, serviceName);
-  }
-
   final void processOperationName(final String operationName) {
     if (!processRules(AdaptionRuleType.OPERATION_NAME, null, operationName))
-      setOperationName(operationName);
+      adaptOperationName(operationName);
   }
 
   final void processTag(final String key, final Object value) {
     if (!processRules(AdaptionRuleType.TAG, key, value))
-      setTag(key, value);
+      adaptTag(key, value);
   }
 }

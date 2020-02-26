@@ -1,17 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.Function;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +12,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.Function;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(Parameterized.class)
 public class AdaptiveTracerTest {
@@ -122,8 +124,8 @@ public class AdaptiveTracerTest {
           protected AdaptiveSpan getCustomizableSpan(Span span) {
             return new AdaptiveSpan(span, rules) {
               @Override
-              LogFieldAdapter newLogFieldCustomizer() {
-                LogFieldAdapter logFieldCustomizer = super.newLogFieldCustomizer();
+              LogFieldAdapter newLogFieldAdapter() {
+                LogFieldAdapter logFieldCustomizer = super.newLogFieldAdapter();
                 logFieldCustomizers.add(logFieldCustomizer);
                 return logFieldCustomizer;
               }
@@ -200,20 +202,17 @@ public class AdaptiveTracerTest {
   private void assertAllocations(final JsonObject root) {
     int listAllocations = 0;
     int mapAllocations = 0;
+    for (final AdaptiveSpanBuilder builder : spanBuilders) {
+      if (builder.getLog() != null)
+        ++listAllocations;
 
-    for (AdaptiveSpanBuilder builder : spanBuilders) {
-      if (builder.getLog() != null) {
-        listAllocations++;
-      }
-      if (builder.getTags() != null) {
-        mapAllocations++;
-      }
+      if (builder.getTags() != null)
+        ++mapAllocations;
     }
-    for (LogFieldAdapter customizer : logFieldCustomizers) {
-      if (customizer.getFields() != null) {
-        mapAllocations++;
-      }
-    }
+
+    for (final LogFieldAdapter customizer : logFieldCustomizers)
+      if (customizer.getFields() != null)
+        ++mapAllocations;
 
     assertEquals(root.getNumber("expectedListAllocations", 0), listAllocations);
     assertEquals(root.getNumber("expectedMapAllocations", 0), mapAllocations);

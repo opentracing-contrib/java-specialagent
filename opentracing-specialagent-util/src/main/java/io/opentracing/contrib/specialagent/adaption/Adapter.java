@@ -9,9 +9,9 @@ abstract class Adapter {
     this.rules = rules;
   }
 
-  abstract void setTag(String key, Object value);
-  abstract void addLogField(String key, Object value);
-  abstract void setOperationName(String name);
+  abstract void adaptTag(String key, Object value);
+  abstract void adaptLogField(String key, Object value);
+  abstract void adaptOperationName(String name);
 
   final boolean processRules(final AdaptionRuleType type, final String key, final Object value) {
     for (final AdaptionRule<?> rule : rules.getSpanRules(key)) {
@@ -36,4 +36,5 @@ abstract class Adapter {
         output.type.apply(this, key, outputValue);
       }
     }
-  }}
+  }
+}

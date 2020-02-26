@@ -1,26 +1,26 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tag;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tag;
+
 public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder {
   private final Adaptive adaptive;
   private final Tracer.SpanBuilder target;
 
-  AdaptiveSpanBuilder(final String operationName, final Tracer target, final AdaptionRules rules, String serviceName) {
+  AdaptiveSpanBuilder(final String operationName, final Tracer tracer, final AdaptionRules rules, final String serviceName) {
     super(rules);
     this.adaptive = new Adaptive(rules) {
       @Override
-      public void setTag(final String key, final Object value) {
+      void adaptTag(final String key, final Object value) {
         if (value == null)
           AdaptiveSpanBuilder.this.target.withTag(key, (String)null);
         else if (value instanceof Number)
@@ -32,12 +32,12 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
       }
 
       @Override
-      public void setOperationName(final String name) {
+      void adaptOperationName(final String name) {
         AdaptiveSpanBuilder.this.operationName = name;
       }
 
       @Override
-      public void addLogField(final String key, final Object value) {
+      void adaptLogField(final String key, final Object value) {
         if (log == null)
           log = new ArrayList<>();
 
@@ -46,12 +46,15 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
     };
 
     processOperationName(operationName);
-    if (serviceName != null)
-      processServiceName(serviceName);
-    this.target = target.buildSpan(operationName);
+    if (serviceName != null) {
+      // Cannot set the service name, only process it
+      processRules(AdaptionRuleType.SERVICE_NAME, null, serviceName);
+    }
+
+    this.target = tracer.buildSpan(operationName);
     if (tags != null)
-      for (Map.Entry<String,Object> entry : tags.entrySet())
-        adaptive.setTag(entry.getKey(), entry.getValue());
+      for (final Map.Entry<String,Object> entry : tags.entrySet())
+        adaptive.adaptTag(entry.getKey(), entry.getValue());
   }
 
   @Override
@@ -142,7 +145,7 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   private Map<String,Object> tags;
 
   @Override
-  void setTag(final String key, final Object value) {
+  void adaptTag(final String key, final Object value) {
     if (tags == null)
       tags = new LinkedHashMap<>();
 
@@ -150,7 +153,7 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   }
 
   @Override
-  void addLogField(final String key, final Object value) {
+  void adaptLogField(final String key, final Object value) {
     if (log == null)
       log = new ArrayList<>();
 
@@ -158,7 +161,7 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   }
 
   @Override
-  void setOperationName(final String name) {
+  void adaptOperationName(final String name) {
     this.operationName = name;
   }
 

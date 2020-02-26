@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class AdaptionRuleParser {
-
   public static final String GLOBAL_RULES = "all";
 
   public static Map<String,AdaptionRules> parseRules(final InputStream inputStream) {
@@ -51,8 +50,8 @@ public final class AdaptionRuleParser {
       final JsonObject jsonRule = Objects.requireNonNull(jsonRules.getObject(i), ruleSubject + "not an object");
       rules[i] = parseRule(jsonRule, ruleSubject);
     }
-    System.arraycopy(globalRules, 0, rules, size, globalRules.length);
 
+    System.arraycopy(globalRules, 0, rules, size, globalRules.length);
     return rules;
   }
 

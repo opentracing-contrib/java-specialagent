@@ -4,7 +4,7 @@ public enum AdaptionRuleType {
   LOG("log") {
     @Override
     void apply(final Adapter adapter, final String key, final Object value) {
-      adapter.addLogField(key, value);
+      adapter.adaptLogField(key, value);
     }
 
     @Override
@@ -38,7 +38,7 @@ public enum AdaptionRuleType {
   OPERATION_NAME("operationName") {
     @Override
     void apply(final Adapter adapter, final String key, final Object value) {
-      adapter.setOperationName(value.toString());
+      adapter.adaptOperationName(value.toString());
     }
 
     @Override
@@ -56,7 +56,7 @@ public enum AdaptionRuleType {
   TAG("tag") {
     @Override
     void apply(final Adapter adapter, final String key, final Object value) {
-      adapter.setTag(key, value);
+      adapter.adaptTag(key, value);
     }
 
     @Override

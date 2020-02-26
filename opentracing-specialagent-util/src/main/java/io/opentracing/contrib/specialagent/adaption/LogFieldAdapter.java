@@ -45,7 +45,7 @@ public class LogFieldAdapter extends Adapter {
       if (key.equals(matchedRule.key))
         processMatch(matchedRule, match);
       else if (!processRules(AdaptionRuleType.LOG, key, value))
-        this.addLogField(key, value);
+        adaptLogField(key, value);
     }
 
     this.log(timestampMicroseconds);
@@ -64,7 +64,7 @@ public class LogFieldAdapter extends Adapter {
   }
 
   @Override
-  void addLogField(final String key, final Object value) {
+  void adaptLogField(final String key, final Object value) {
     if (fields == null)
       fields = new LinkedHashMap<>();
 
@@ -72,13 +72,13 @@ public class LogFieldAdapter extends Adapter {
   }
 
   @Override
-  void setTag(final String key, final Object value) {
-    source.setTag(key, value);
+  void adaptTag(final String key, final Object value) {
+    source.adaptTag(key, value);
   }
 
   @Override
-  void setOperationName(final String name) {
-    source.setOperationName(name);
+  void adaptOperationName(final String name) {
+    source.adaptOperationName(name);
   }
 
   Map<String,Object> getFields() {

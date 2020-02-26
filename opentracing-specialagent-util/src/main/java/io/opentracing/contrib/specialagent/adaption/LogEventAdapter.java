@@ -27,17 +27,17 @@ public class LogEventAdapter extends Adapter {
   }
 
   @Override
-  void addLogField(final String key, final Object value) {
+  void adaptLogField(final String key, final Object value) {
     log(value);
   }
 
   @Override
-  void setTag(final String key, final Object value) {
-    source.setTag(key, value);
+  void adaptTag(final String key, final Object value) {
+    source.adaptTag(key, value);
   }
 
   @Override
-  void setOperationName(final String name) {
-    source.setOperationName(name);
+  void adaptOperationName(final String name) {
+    source.adaptOperationName(name);
   }
 }

@@ -1,9 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.Span;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,8 +10,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.Test;
+
+import io.opentracing.Span;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 public class AdaptionRuleParserTest {
   @Test
@@ -26,25 +26,24 @@ public class AdaptionRuleParserTest {
     }
   }
 
-  private void assertTags(Map<String, AdaptionRules> rules, String key, List<Map<String, String>> logs) {
-    AdaptionRules adaptionRules = rules.get(key);
-
+  private static void assertTags(Map<String,AdaptionRules> rules, String key, List<Map<String,String>> logs) {
+    final AdaptionRules adaptionRules = rules.get(key);
     final MockTracer mockTracer = new MockTracer();
+    try (final AdaptiveTracer tracer = new AdaptiveTracer(mockTracer, adaptionRules)) {
+      Span span = tracer.buildSpan("op").start();
+      span.log(Collections.singletonMap("db.statement", "select a"));
+      span.log(Collections.singletonMap("db.statement", "not matched"));
+      span.finish();
 
-    AdaptiveTracer tracer = new AdaptiveTracer(mockTracer, adaptionRules);
-    Span span = tracer.buildSpan("op").start();
-    span.log(Collections.singletonMap("db.statement", "select a"));
-    span.log(Collections.singletonMap("db.statement", "not matched"));
-    span.finish();
+      List<MockSpan> spans = mockTracer.finishedSpans();
+      assertEquals(1, spans.size());
+      MockSpan mockSpan = spans.get(0);
 
-    List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(1, spans.size());
-    MockSpan mockSpan = spans.get(0);
-
-    assertEquals(2, mockSpan.logEntries().size());
-    for (int i = 0; i < logs.size(); i++) {
-      Map<String, String> log = logs.get(i);
-      assertEquals("log " + i, log, mockSpan.logEntries().get(i).fields());
+      assertEquals(2, mockSpan.logEntries().size());
+      for (int i = 0; i < logs.size(); ++i) {
+        final Map<String,String> log = logs.get(i);
+        assertEquals("log " + i, log, mockSpan.logEntries().get(i).fields());
+      }
     }
   }
 
