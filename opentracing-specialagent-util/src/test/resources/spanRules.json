@@ -1,14 +1,25 @@
 {
+  "all": [
+    {
+      "type": "log",
+      "key": "db.statement",
+      "output": [
+        {
+          "type": "log",
+          "key": "all"
+        }
+      ]
+    }
+  ],
   "jedis": [
     {
-      "type": "tag",
+      "type": "log",
       "key": "db.statement",
       "valueRegex": "(select).*",
       "output": [
         {
           "type": "log",
-          "key": "sql",
-          "value": "$1"
+          "key": "jedis"
         }
       ]
     }

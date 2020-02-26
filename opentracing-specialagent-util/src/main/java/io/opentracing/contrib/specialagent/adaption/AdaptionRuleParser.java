@@ -13,10 +13,17 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class AdaptionRuleParser {
+
+  public static final String GLOBAL_RULES = "all";
+
   public static Map<String,AdaptionRules> parseRules(final InputStream inputStream) {
     try {
       Map<String,AdaptionRules> result = null;
       final JsonObject root = JsonParser.object().from(inputStream);
+
+      final JsonArray global = root.getArray(GLOBAL_RULES);
+      final AdaptionRule<?>[] globalRules = global != null ? parseRules(global, new AdaptionRule[0], "all: ") : new AdaptionRule[0];
+
       for (final String key : root.keySet()) {
         final String subject = key + ": ";
         final JsonArray ruleEntry = root.getArray(key);
@@ -26,7 +33,7 @@ public final class AdaptionRuleParser {
         if (result == null)
           result = new LinkedHashMap<>();
 
-        result.put(key, new AdaptionRules(parseRules(ruleEntry, subject)));
+        result.put(key, new AdaptionRules(parseRules(ruleEntry, globalRules, subject)));
       }
 
       return result != null ? result : Collections.EMPTY_MAP;
@@ -36,14 +43,15 @@ public final class AdaptionRuleParser {
     }
   }
 
-  static AdaptionRule<?>[] parseRules(final JsonArray jsonRules, final String subject) {
+  static AdaptionRule<?>[] parseRules(final JsonArray jsonRules, final AdaptionRule<?>[] globalRules, final String subject) {
     final int size = jsonRules.size();
-    final AdaptionRule<?>[] rules = new AdaptionRule[size];
+    final AdaptionRule<?>[] rules = new AdaptionRule[size + globalRules.length];
     for (int i = 0; i < size; ++i) {
       final String ruleSubject = subject + "rule " + i + ": ";
       final JsonObject jsonRule = Objects.requireNonNull(jsonRules.getObject(i), ruleSubject + "not an object");
       rules[i] = parseRule(jsonRule, ruleSubject);
     }
+    System.arraycopy(globalRules, 0, rules, size, globalRules.length);
 
     return rules;
   }

@@ -1,6 +1,17 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import static org.junit.Assert.*;
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.Function;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,20 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.Function;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class AdaptiveTracerTest {
@@ -75,7 +73,7 @@ public class AdaptiveTracerTest {
   }
 
   private AdaptionRules parseRules(final JsonArray jsonRules) {
-    final AdaptionRule<?>[] rules = AdaptionRuleParser.parseRules(jsonRules, "test: ");
+    final AdaptionRule<?>[] rules = AdaptionRuleParser.parseRules(jsonRules, new AdaptionRule[0], "test: ");
     for (int i = 0; i < rules.length; i++) {
       final AdaptionRule<?> rule = rules[i];
       if (rule instanceof PatternAdaptionRule) {
