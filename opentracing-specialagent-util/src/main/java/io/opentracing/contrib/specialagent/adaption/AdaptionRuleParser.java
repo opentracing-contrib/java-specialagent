@@ -85,7 +85,7 @@ public final class AdaptionRuleParser {
   }
 
   private static AdaptionRuleType parseType(final String type, final String subject) {
-    return Objects.requireNonNull(AdaptionRuleType.fromString(Objects.requireNonNull(type, subject + "type is null")), subject + "invalid type");
+    return Objects.requireNonNull(AdaptionRuleType.fromString(Objects.requireNonNull(type, subject + "type is not a string")), subject + "invalid type");
   }
 
   private AdaptionRuleParser() {

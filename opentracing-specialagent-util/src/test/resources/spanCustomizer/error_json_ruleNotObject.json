@@ -1,0 +1,6 @@
+{
+  "expectedError": "test: rule 0: not an object",
+  "rules": [
+    "not an object"
+  ]
+}

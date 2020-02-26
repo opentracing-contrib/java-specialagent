@@ -1,0 +1,11 @@
+{
+  "expectedError": "test: rule 0: output 0: not an object",
+  "rules": [
+    {
+      "type": "operationName",
+      "output": [
+        "not an object"
+      ]
+    }
+  ]
+}
