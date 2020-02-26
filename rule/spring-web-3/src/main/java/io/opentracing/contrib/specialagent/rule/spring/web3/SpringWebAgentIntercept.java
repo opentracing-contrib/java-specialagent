@@ -15,22 +15,20 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.web3;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
-
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.contrib.specialagent.rule.spring.web3.copied.HttpHeadersCarrier;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringWebAgentIntercept {
-
   public static void enter(final Object thiz) {
     final ClientHttpRequest request = (ClientHttpRequest)thiz;
     final Tracer tracer = GlobalTracer.get();
@@ -67,5 +65,4 @@ public class SpringWebAgentIntercept {
 
     context.closeAndFinish();
   }
-
 }

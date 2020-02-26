@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.net.HttpURLConnection;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -25,6 +23,8 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -87,5 +87,4 @@ public class HttpURLConnectionAgentIntercept {
 
     return 80;
   }
-
 }

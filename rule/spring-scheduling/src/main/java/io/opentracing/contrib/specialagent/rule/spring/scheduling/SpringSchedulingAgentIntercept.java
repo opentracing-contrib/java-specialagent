@@ -15,9 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.scheduling;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
-
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
@@ -25,11 +22,12 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringSchedulingAgentIntercept {
-
   public static void enter(final Object thiz) {
     final ScheduledMethodRunnable runnable = (ScheduledMethodRunnable)thiz;
     final Tracer tracer = GlobalTracer.get();

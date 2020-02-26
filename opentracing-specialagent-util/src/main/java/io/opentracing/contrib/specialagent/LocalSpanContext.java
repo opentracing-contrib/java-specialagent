@@ -12,13 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 
 /**
- * Thread local holder for Span, Scope and counter to control stack of calls
+ * Thread local holder for Span, Scope and counter to control stack of calls.
  */
 public class LocalSpanContext {
   private static final ThreadLocal<LocalSpanContext> instance = new ThreadLocal<>();
@@ -35,7 +36,7 @@ public class LocalSpanContext {
     return instance.get();
   }
 
-  public static void set(Span span, Scope scope) {
+  public static void set(final Span span, final Scope scope) {
     instance.set(new LocalSpanContext(span, scope));
   }
 
@@ -57,15 +58,13 @@ public class LocalSpanContext {
 
   public void closeAndFinish() {
     closeScope();
-    if (span != null) {
+    if (span != null)
       span.finish();
-    }
   }
 
   public void closeScope() {
     instance.remove();
-    if (scope != null) {
+    if (scope != null)
       scope.close();
-    }
   }
 }

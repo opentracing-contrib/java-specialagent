@@ -15,9 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.actor;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
-import io.opentracing.propagation.Format;
 import java.util.HashMap;
 
 import akka.actor.AbstractActor;
@@ -30,6 +27,9 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
+import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -43,10 +43,7 @@ public class AkkaAgentIntercept {
     }
 
     final Tracer tracer = GlobalTracer.get();
-    final SpanBuilder spanBuilder = tracer
-      .buildSpan("receive")
-      .withTag(Tags.COMPONENT, COMPONENT_NAME)
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
+    final SpanBuilder spanBuilder = tracer.buildSpan("receive").withTag(Tags.COMPONENT, COMPONENT_NAME).withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
 
     final TracedMessage<?> tracedMessage;
     if (message instanceof TracedMessage) {
@@ -106,11 +103,7 @@ public class AkkaAgentIntercept {
       return message;
 
     final Tracer tracer = GlobalTracer.get();
-    final Span span = tracer
-      .buildSpan(method)
-      .withTag(Tags.COMPONENT, COMPONENT_NAME)
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER)
-      .withTag(Tags.MESSAGE_BUS_DESTINATION, path).start();
+    final Span span = tracer.buildSpan(method).withTag(Tags.COMPONENT, COMPONENT_NAME).withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_PRODUCER).withTag(Tags.MESSAGE_BUS_DESTINATION, path).start();
 
     final HashMap<String,String> headers = new HashMap<>();
     tracer.inject(span.context(), Format.Builtin.TEXT_MAP_INJECT, headers::put);
@@ -135,5 +128,4 @@ public class AkkaAgentIntercept {
 
     context.closeAndFinish();
   }
-
 }

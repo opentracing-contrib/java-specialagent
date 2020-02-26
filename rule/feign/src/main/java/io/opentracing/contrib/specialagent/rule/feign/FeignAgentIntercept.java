@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.feign;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,13 +27,13 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class FeignAgentIntercept {
   private static final StandardTags standardTags = new StandardTags();
-
 
   public static Object onRequest(final Object arg1, final Object arg2) {
     Request request = (Request)arg1;

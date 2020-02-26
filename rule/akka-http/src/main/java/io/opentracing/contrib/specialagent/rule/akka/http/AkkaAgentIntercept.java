@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -25,6 +23,8 @@ import akka.http.javadsl.model.HttpResponse;
 import akka.japi.Function;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -41,14 +41,7 @@ public class AkkaAgentIntercept {
 
     final HttpRequest request = (HttpRequest)arg0;
     final Tracer tracer = GlobalTracer.get();
-    final Span span = tracer.buildSpan(request.method().value())
-      .withTag(Tags.COMPONENT, COMPONENT_NAME_CLIENT)
-      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT)
-      .withTag(Tags.HTTP_METHOD, request.method().value())
-      .withTag(Tags.HTTP_URL, request.getUri().toString())
-      .withTag(Tags.PEER_HOSTNAME, request.getUri().host().address())
-      .withTag(Tags.PEER_PORT, request.getUri().port())
-      .start();
+    final Span span = tracer.buildSpan(request.method().value()).withTag(Tags.COMPONENT, COMPONENT_NAME_CLIENT).withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT).withTag(Tags.HTTP_METHOD, request.method().value()).withTag(Tags.HTTP_URL, request.getUri().toString()).withTag(Tags.PEER_HOSTNAME, request.getUri().host().address()).withTag(Tags.PEER_PORT, request.getUri().port()).start();
 
     final HttpHeadersInjectAdapter injectAdapter = new HttpHeadersInjectAdapter(request);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, injectAdapter);
@@ -96,5 +89,4 @@ public class AkkaAgentIntercept {
   public static Object bindAndHandleAsync(final Object handler) {
     return new AkkaHttpAsyncHandler((Function<HttpRequest,CompletableFuture<HttpResponse>>)handler);
   }
-
 }

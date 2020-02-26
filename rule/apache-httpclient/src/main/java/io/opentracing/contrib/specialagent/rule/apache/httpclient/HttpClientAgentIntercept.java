@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.net.URI;
 import java.util.HashMap;
 
@@ -28,6 +27,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -46,7 +46,7 @@ public class HttpClientAgentIntercept {
       return null;
     }
 
-    LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context != null) {
       context.increment();
       return null;

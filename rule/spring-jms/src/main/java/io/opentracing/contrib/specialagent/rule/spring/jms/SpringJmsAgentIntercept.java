@@ -15,9 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.jms;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
-
 import javax.jms.Message;
 
 import io.opentracing.References;
@@ -27,11 +24,12 @@ import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.jms.common.SpanContextContainer;
 import io.opentracing.contrib.jms.common.TracingMessageUtils;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringJmsAgentIntercept {
-
   public static void onMessageEnter(final Object msg) {
     if (LocalSpanContext.get() != null) {
       LocalSpanContext.get().increment();
@@ -40,9 +38,9 @@ public class SpringJmsAgentIntercept {
 
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder builder = tracer
-        .buildSpan("onMessage")
-        .withTag(Tags.COMPONENT, "spring-jms")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
+      .buildSpan("onMessage")
+      .withTag(Tags.COMPONENT, "spring-jms")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
 
     final Message message = (Message) msg;
 
@@ -52,13 +50,11 @@ public class SpringJmsAgentIntercept {
       spanContext = spanContextContainer.getSpanContext();
     }
 
-    if (spanContext == null) {
+    if (spanContext == null)
       spanContext = TracingMessageUtils.extract(message, tracer);
-    }
 
-    if (spanContext != null) {
+    if (spanContext != null)
       builder.addReference(References.FOLLOWS_FROM, spanContext);
-    }
 
     final Span span = builder.start();
     LocalSpanContext.set(span, tracer.activateSpan(span));
@@ -77,5 +73,4 @@ public class SpringJmsAgentIntercept {
 
     context.closeAndFinish();
   }
-
 }

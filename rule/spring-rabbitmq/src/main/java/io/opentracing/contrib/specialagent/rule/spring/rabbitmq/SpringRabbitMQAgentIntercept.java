@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.rabbitmq;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.util.Map;
 
 import org.springframework.amqp.core.Message;
@@ -26,12 +24,13 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringRabbitMQAgentIntercept {
-
   public static void onMessageEnter(final Object msg) {
     if (LocalSpanContext.get() != null) {
       LocalSpanContext.get().increment();
@@ -56,7 +55,7 @@ public class SpringRabbitMQAgentIntercept {
     LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
-  public static void onMessageExit(Throwable thrown) {
+  public static void onMessageExit(final Throwable thrown) {
     final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
@@ -69,5 +68,4 @@ public class SpringRabbitMQAgentIntercept {
 
     context.closeAndFinish();
   }
-
 }

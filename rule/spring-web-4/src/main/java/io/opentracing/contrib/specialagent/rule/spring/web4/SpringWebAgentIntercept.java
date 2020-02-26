@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.spring.web4;
 
 import static io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingListenableFutureCallback.*;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.net.URI;
 
 import org.springframework.http.HttpMethod;
@@ -30,6 +29,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingAsyncRequestCallback;
 import io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingListenableFuture;
 import io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingListenableFutureCallback;
@@ -38,8 +38,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringWebAgentIntercept {
-
-  public static void enter(Object thiz) {
+  public static void enter(final Object thiz) {
     final RestTemplate restTemplate = (RestTemplate)thiz;
     for (final ClientHttpRequestInterceptor interceptor : restTemplate.getInterceptors())
       if (interceptor instanceof TracingRestTemplateInterceptor)

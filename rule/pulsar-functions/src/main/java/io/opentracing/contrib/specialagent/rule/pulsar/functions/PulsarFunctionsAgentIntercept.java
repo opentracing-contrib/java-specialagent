@@ -15,9 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
-import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.contrib.specialagent.SpanUtil;
-
+import org.apache.pulsar.functions.api.Context;
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.functions.instance.JavaExecutionResult;
 
@@ -27,6 +25,8 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -34,19 +34,16 @@ import io.opentracing.util.GlobalTracer;
 public class PulsarFunctionsAgentIntercept {
   static final String COMPONENT_NAME = "java-pulsar-functions";
 
-
-  public static void handleMessageEnter(final Object function, final Object contextArg,
-      final Object arg0) {
+  public static void handleMessageEnter(final Object function, final Object contextArg, final Object arg0) {
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder spanBuilder = tracer
-        .buildSpan(getFunctionName(function, contextArg))
-        .withTag(Tags.COMPONENT, COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
+      .buildSpan(getFunctionName(function, contextArg))
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_SERVER);
 
     if (arg0 != null) {
-      final Record<?> record = (Record<?>) arg0;
-      final SpanContext spanContext = tracer
-          .extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(record.getProperties()));
+      final Record<?> record = (Record<?>)arg0;
+      final SpanContext spanContext = tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(record.getProperties()));
       if (spanContext != null)
         spanBuilder.addReference(References.FOLLOWS_FROM, spanContext);
     }
@@ -59,7 +56,7 @@ public class PulsarFunctionsAgentIntercept {
 
   private static String getFunctionName(final Object function, final Object contextArg) {
     if (contextArg != null) {
-      final org.apache.pulsar.functions.api.Context contextImpl = (org.apache.pulsar.functions.api.Context) contextArg;
+      final Context contextImpl = (Context)contextArg;
       if (contextImpl.getFunctionName() != null)
         return contextImpl.getFunctionName();
     }
@@ -93,5 +90,4 @@ public class PulsarFunctionsAgentIntercept {
 
     span.finish();
   }
-
 }
