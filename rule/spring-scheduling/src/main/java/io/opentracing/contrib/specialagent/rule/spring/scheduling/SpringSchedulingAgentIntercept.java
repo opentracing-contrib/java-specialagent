@@ -15,9 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.scheduling;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
@@ -26,6 +23,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -50,17 +48,9 @@ public class SpringSchedulingAgentIntercept {
       return;
 
     if (thrown != null)
-      captureException(context.getSpan(), thrown);
+      SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-  }
-
-  static void captureException(final Span span, final Throwable t) {
-    final Map<String,Object> exceptionLogs = new HashMap<>();
-    exceptionLogs.put("event", Tags.ERROR.getKey());
-    exceptionLogs.put("error.object", t);
-    span.log(exceptionLogs);
-    Tags.ERROR.set(span, true);
   }
 
   public static Object invoke(final Object arg) {

@@ -14,10 +14,9 @@
  */
 package io.opentracing.contrib.specialagent.rule.playws;
 
+import io.opentracing.contrib.specialagent.SpanUtil;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -67,7 +66,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
 
   @Override
   public void onThrowable(final Throwable throwable) {
-    onError(throwable, span);
+    SpanUtil.onError(throwable, span);
     try {
       asyncHandler.onThrowable(throwable);
     }
@@ -160,16 +159,4 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
     asyncHandler.onRetry();
   }
 
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
-  }
 }

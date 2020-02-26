@@ -15,9 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.googlehttpclient;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpResponse;
 
@@ -25,6 +22,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -64,7 +62,7 @@ public class GoogleHttpClientAgentIntercept {
       return;
 
     if (thrown != null)
-      onError(thrown, context.getSpan());
+      SpanUtil.onError(thrown, context.getSpan());
     else
       context.getSpan().setTag(Tags.HTTP_STATUS, ((HttpResponse)returned).getStatusCode());
 
@@ -80,18 +78,5 @@ public class GoogleHttpClientAgentIntercept {
       return 443;
 
     return 80;
-  }
-
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
   }
 }

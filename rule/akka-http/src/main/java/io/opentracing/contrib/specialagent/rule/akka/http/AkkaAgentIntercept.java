@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.akka.http;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -26,6 +24,7 @@ import akka.japi.Function;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -65,7 +64,7 @@ public class AkkaAgentIntercept {
     context.closeScope();
 
     if (thrown != null) {
-      onError(thrown, span);
+      SpanUtil.onError(thrown, span);
       span.finish();
       return returned;
     }
@@ -75,7 +74,7 @@ public class AkkaAgentIntercept {
       span.finish();
       return httpResponse;
     }).exceptionally(throwable -> {
-      onError(throwable, span);
+      SpanUtil.onError(throwable, span);
       span.finish();
       return null;
     });
@@ -89,18 +88,5 @@ public class AkkaAgentIntercept {
   @SuppressWarnings("unchecked")
   public static Object bindAndHandleAsync(final Object handler) {
     return new AkkaHttpAsyncHandler((Function<HttpRequest,CompletableFuture<HttpResponse>>)handler);
-  }
-
-  static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
   }
 }

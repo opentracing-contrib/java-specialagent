@@ -14,6 +14,7 @@
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,8 +95,7 @@ public interface WebClientSpanDecorator {
 
     @Override
     public void onError(final ClientRequest clientRequest, final Throwable throwable, final Span span) {
-      Tags.ERROR.set(span, Boolean.TRUE);
-      span.log(errorLogs(throwable));
+      SpanUtil.onError(throwable, span);
     }
 
     @Override
@@ -106,12 +106,6 @@ public interface WebClientSpanDecorator {
       span.log(logs);
     }
 
-    static Map<String, Object> errorLogs(final Throwable throwable) {
-      final Map<String, Object> errorLogs = new HashMap<>(2);
-      errorLogs.put("event", Tags.ERROR.getKey());
-      errorLogs.put("error.object", throwable);
-      return errorLogs;
-    }
   }
 }
 

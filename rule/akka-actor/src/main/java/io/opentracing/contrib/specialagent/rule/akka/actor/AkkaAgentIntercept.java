@@ -28,6 +28,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -72,7 +73,7 @@ public class AkkaAgentIntercept {
       return;
 
     if (thrown != null)
-      onError(thrown, context.getSpan());
+      SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
   }
@@ -123,21 +124,8 @@ public class AkkaAgentIntercept {
       return;
 
     if (thrown != null)
-      onError(thrown, context.getSpan());
+      SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-  }
-
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static HashMap<String,Object> errorLogs(final Throwable t) {
-    final HashMap<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
   }
 }

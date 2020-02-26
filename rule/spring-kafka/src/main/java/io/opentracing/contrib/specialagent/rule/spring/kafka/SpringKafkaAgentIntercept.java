@@ -15,9 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.kafka;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import io.opentracing.References;
@@ -27,6 +24,7 @@ import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -58,17 +56,9 @@ public class SpringKafkaAgentIntercept {
     final LocalSpanContext context = LocalSpanContext.get();
     if (context != null && context.decrementAndGet() == 0) {
       if (thrown != null)
-        captureException(context.getSpan(), thrown);
+        SpanUtil.onError(thrown, context.getSpan());
 
       context.closeAndFinish();
     }
-  }
-
-  private static void captureException(final Span span, final Throwable t) {
-    final Map<String,Object> exceptionLogs = new HashMap<>();
-    exceptionLogs.put("event", Tags.ERROR.getKey());
-    exceptionLogs.put("error.object", t);
-    span.log(exceptionLogs);
-    Tags.ERROR.set(span, true);
   }
 }

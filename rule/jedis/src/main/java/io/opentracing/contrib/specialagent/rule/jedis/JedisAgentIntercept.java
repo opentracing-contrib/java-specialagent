@@ -15,10 +15,9 @@
 
 package io.opentracing.contrib.specialagent.rule.jedis;
 
+import io.opentracing.contrib.specialagent.SpanUtil;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 import io.opentracing.Span;
@@ -80,17 +79,10 @@ public class JedisAgentIntercept {
 
     final Span span = spans.poll();
     if (throwable != null) {
-      Tags.ERROR.set(span, Boolean.TRUE);
-      span.log(errorLogs(throwable));
+      SpanUtil.onError(throwable, span);
     }
 
     span.finish();
   }
 
-  private static Map<String,Object> errorLogs(final Throwable throwable) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", throwable);
-    return errorLogs;
-  }
 }

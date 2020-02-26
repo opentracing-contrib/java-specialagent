@@ -17,9 +17,6 @@ package io.opentracing.contrib.specialagent.rule.rabbitmq.client;
 
 import static io.opentracing.contrib.rabbitmq.TracingUtils.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.GetResponse;
@@ -31,6 +28,7 @@ import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -38,7 +36,7 @@ public class RabbitMQAgentIntercept {
   public static void exitGet(final Object response, final Object queue, final Throwable thrown) {
     final Span span = TracingUtils.buildChildSpan(((GetResponse)response).getProps(), (String)queue, GlobalTracer.get());
     if (thrown != null)
-      captureException(span, thrown);
+      SpanUtil.onError(thrown, span);
 
     span.finish();
   }
@@ -68,16 +66,8 @@ public class RabbitMQAgentIntercept {
       return;
 
     if (thrown != null)
-      captureException(context.getSpan(), thrown);
+      SpanUtil.onError(thrown, context.getSpan());
 
     context.closeAndFinish();
-  }
-
-  private static void captureException(final Span span, final Throwable thrown) {
-    final Map<String,Object> exceptionLogs = new HashMap<>();
-    exceptionLogs.put("event", Tags.ERROR.getKey());
-    exceptionLogs.put("error.object", thrown);
-    span.log(exceptionLogs);
-    Tags.ERROR.set(span, true);
   }
 }

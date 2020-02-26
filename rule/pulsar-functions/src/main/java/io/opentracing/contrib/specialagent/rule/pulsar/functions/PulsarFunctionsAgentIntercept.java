@@ -15,8 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
-import java.util.HashMap;
-
+import org.apache.pulsar.functions.api.Context;
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.functions.instance.JavaExecutionResult;
 
@@ -27,6 +26,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.SpanUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -56,7 +56,7 @@ public class PulsarFunctionsAgentIntercept {
 
   private static String getFunctionName(final Object function, final Object contextArg) {
     if (contextArg != null) {
-      final org.apache.pulsar.functions.api.Context contextImpl = (org.apache.pulsar.functions.api.Context)contextArg;
+      final Context contextImpl = (Context)contextArg;
       if (contextImpl.getFunctionName() != null)
         return contextImpl.getFunctionName();
     }
@@ -77,30 +77,17 @@ public class PulsarFunctionsAgentIntercept {
     final Span span = context.getSpan();
 
     if (thrown != null) {
-      onError(thrown, span);
+      SpanUtil.onError(thrown, span);
       span.finish();
       return;
     }
 
-    final JavaExecutionResult result = (JavaExecutionResult)returned;
+    final JavaExecutionResult result = (JavaExecutionResult) returned;
     if (result.getSystemException() != null)
-      onError(result.getSystemException(), span);
+      SpanUtil.onError(result.getSystemException(), span);
     else if (result.getUserException() != null)
-      onError(result.getUserException(), span);
+      SpanUtil.onError(result.getUserException(), span);
 
     span.finish();
-  }
-
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static HashMap<String,Object> errorLogs(final Throwable t) {
-    final HashMap<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
   }
 }
