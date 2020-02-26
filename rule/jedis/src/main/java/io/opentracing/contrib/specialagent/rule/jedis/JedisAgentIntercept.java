@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent.rule.jedis;
 
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import redis.clients.jedis.Protocol.Command;
@@ -39,7 +39,8 @@ public class JedisAgentIntercept {
       .buildSpan(cmd.name())
       .withTag(Tags.COMPONENT.getKey(), "java-redis")
       .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-      .withTag(Tags.DB_TYPE.getKey(), "redis").start();
+      .withTag(Tags.DB_TYPE.getKey(), "redis")
+      .start();
 
     final String redisCommand = convert(args);
     if (redisCommand != null)
@@ -64,25 +65,19 @@ public class JedisAgentIntercept {
   }
 
   public static void readCommandOutput() {
-    final Queue<Span> spans = spanHolder.get();
-    if (spans.isEmpty())
-      return;
-
-    final Span span = spans.poll();
-    span.finish();
+    final Span span = spanHolder.get().poll();
+    if (span != null)
+      span.finish();
   }
 
   public static void onError(final Throwable throwable) {
-    final Queue<Span> spans = spanHolder.get();
-    if (spans.isEmpty())
+    final Span span = spanHolder.get().poll();
+    if (span == null)
       return;
 
-    final Span span = spans.poll();
-    if (throwable != null) {
-      SpanUtil.onError(throwable, span);
-    }
+    if (throwable != null)
+      AgentRuleUtil.setErrorTag(span, throwable);
 
     span.finish();
   }
-
 }

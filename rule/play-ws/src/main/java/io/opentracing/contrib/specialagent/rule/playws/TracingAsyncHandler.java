@@ -12,14 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.playws;
 
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.net.InetSocketAddress;
 import java.util.List;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import play.shaded.ahc.io.netty.channel.Channel;
@@ -66,7 +67,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
 
   @Override
   public void onThrowable(final Throwable throwable) {
-    SpanUtil.onError(throwable, span);
+    AgentRuleUtil.setErrorTag(span, throwable);
     try {
       asyncHandler.onThrowable(throwable);
     }
@@ -130,7 +131,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   }
 
   @Override
-  public void onTlsHandshakeFailure(Throwable cause) {
+  public void onTlsHandshakeFailure(final Throwable cause) {
     asyncHandler.onTlsHandshakeFailure(cause);
   }
 
@@ -140,17 +141,17 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   }
 
   @Override
-  public void onConnectionPooled(Channel connection) {
+  public void onConnectionPooled(final Channel connection) {
     asyncHandler.onConnectionPooled(connection);
   }
 
   @Override
-  public void onConnectionOffer(Channel connection) {
+  public void onConnectionOffer(final Channel connection) {
     asyncHandler.onConnectionOffer(connection);
   }
 
   @Override
-  public void onRequestSend(NettyRequest request) {
+  public void onRequestSend(final NettyRequest request) {
     asyncHandler.onRequestSend(request);
   }
 
@@ -158,5 +159,4 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   public void onRetry() {
     asyncHandler.onRetry();
   }
-
 }

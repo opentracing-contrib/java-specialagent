@@ -24,6 +24,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -44,7 +45,7 @@ public class AkkaHttpSyncHandler implements Function<HttpRequest,HttpResponse> {
       return response;
     }
     catch (final Exception e) {
-      AkkaAgentIntercept.onError(e, span);
+      AgentRuleUtil.setErrorTag(span, e);
       throw e;
     }
     finally {

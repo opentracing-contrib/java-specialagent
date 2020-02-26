@@ -15,11 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.spymemcached;
 
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.util.HashMap;
 import java.util.Map;
 
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 
@@ -51,7 +51,7 @@ public class TracingOperationCallback implements OperationCallback {
   }
 
   void onError(final Throwable thrown) {
-    SpanUtil.onError(thrown, span);
+    AgentRuleUtil.setErrorTag(span, thrown);
     span.finish();
   }
 }

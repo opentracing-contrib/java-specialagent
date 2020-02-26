@@ -13,18 +13,19 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.SpanUtil;
-import io.opentracing.tag.Tags;
+import java.net.Inet6Address;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.server.ServerWebExchange;
 
-import java.net.Inet6Address;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.tag.Tags;
 
 /**
  * SpanDecorator to decorate span at different stages in WebFlux processing (at subscription, after error or completion).
@@ -96,9 +97,8 @@ public interface WebFluxSpanDecorator {
 
     @Override
     public void onError(final ServerWebExchange exchange, final Throwable exception, final Span span) {
-      SpanUtil.onError(exception, span);
+      AgentRuleUtil.setErrorTag(span, exception);
     }
-
   }
 
   /**
@@ -151,4 +151,3 @@ public interface WebFluxSpanDecorator {
     }
   }
 }
-

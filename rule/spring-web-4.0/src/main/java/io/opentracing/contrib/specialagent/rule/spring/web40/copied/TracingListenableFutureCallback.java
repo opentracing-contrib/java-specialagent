@@ -14,13 +14,14 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.web40.copied;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.SpanUtil;
-import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.concurrent.ListenableFutureCallback;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 
 public class TracingListenableFutureCallback implements ListenableFutureCallback<Object> {
   private final ListenableFutureCallback<Object> callback;
@@ -37,7 +38,7 @@ public class TracingListenableFutureCallback implements ListenableFutureCallback
   @Override
   public void onFailure(Throwable ex) {
     if (finishSpan) {
-      SpanUtil.onError(ex, span);
+      AgentRuleUtil.setErrorTag(span, ex);
       span.finish();
     }
     if (callback != null) {
@@ -45,7 +46,6 @@ public class TracingListenableFutureCallback implements ListenableFutureCallback
         callback.onFailure(ex);
       }
     }
-
   }
 
   @Override
@@ -62,7 +62,5 @@ public class TracingListenableFutureCallback implements ListenableFutureCallback
         callback.onSuccess(result);
       }
     }
-
   }
-
 }

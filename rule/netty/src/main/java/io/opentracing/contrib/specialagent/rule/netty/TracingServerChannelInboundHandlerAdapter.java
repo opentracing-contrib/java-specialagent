@@ -15,8 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.netty;
 
-import io.opentracing.contrib.specialagent.SpanUtil;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
@@ -26,6 +24,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -60,12 +59,11 @@ public class TracingServerChannelInboundHandlerAdapter extends ChannelInboundHan
       try {
         handlerContext.fireChannelRead(message);
       }
-      catch (final Throwable throwable) {
-        SpanUtil.onError(throwable, span);
+      catch (final Throwable t) {
+        AgentRuleUtil.setErrorTag(span, t);
         span.finish();
-        throw throwable;
+        throw t;
       }
     }
   }
-
 }

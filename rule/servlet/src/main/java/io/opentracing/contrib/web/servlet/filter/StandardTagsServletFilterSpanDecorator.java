@@ -1,6 +1,7 @@
 package io.opentracing.contrib.web.servlet.filter;
 
-import io.opentracing.contrib.specialagent.SpanUtil;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,8 @@ public class StandardTagsServletFilterSpanDecorator implements ServletFilterSpan
     @Override
     public void onError(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                         Throwable exception, Span span) {
-      SpanUtil.onError(exception, span);
+      Tags.ERROR.set(span, Boolean.TRUE);
+      span.log(logsForException(exception));
 
       if (FilterAgentIntercept.getSatusCode(httpServletResponse) == HttpServletResponse.SC_OK) {
         // exception is thrown in filter chain, but status code is incorrect
@@ -56,4 +58,18 @@ public class StandardTagsServletFilterSpanDecorator implements ServletFilterSpan
       span.log(timeoutLogs);
     }
 
+    private Map<String, String> logsForException(Throwable throwable) {
+      Map<String, String> errorLog = new HashMap<>(3);
+      errorLog.put("event", Tags.ERROR.getKey());
+
+      String message = throwable.getCause() != null ? throwable.getCause().getMessage() : throwable.getMessage();
+      if (message != null) {
+        errorLog.put("message", message);
+      }
+      StringWriter sw = new StringWriter();
+      throwable.printStackTrace(new PrintWriter(sw));
+      errorLog.put("stack", sw.toString());
+
+      return errorLog;
+    }
   }

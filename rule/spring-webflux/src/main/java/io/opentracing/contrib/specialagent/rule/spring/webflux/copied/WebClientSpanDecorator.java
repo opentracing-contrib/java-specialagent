@@ -13,13 +13,15 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.SpanUtil;
-import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
+
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.tag.Tags;
 
 /**
  * Decorate span by adding tags/logs or operation name change.
@@ -95,7 +97,7 @@ public interface WebClientSpanDecorator {
 
     @Override
     public void onError(final ClientRequest clientRequest, final Throwable throwable, final Span span) {
-      SpanUtil.onError(throwable, span);
+      AgentRuleUtil.setErrorTag(span, throwable);
     }
 
     @Override
@@ -108,4 +110,3 @@ public interface WebClientSpanDecorator {
 
   }
 }
-

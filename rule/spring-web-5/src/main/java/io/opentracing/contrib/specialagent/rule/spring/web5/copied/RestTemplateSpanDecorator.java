@@ -13,7 +13,6 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.web5.copied;
 
-import io.opentracing.contrib.specialagent.SpanUtil;
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -23,6 +22,7 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 
 /**
@@ -97,7 +97,7 @@ public interface RestTemplateSpanDecorator {
 
     @Override
     public void onError(HttpRequest httpRequest, Throwable ex, Span span) {
-      SpanUtil.onError(ex, span);
+      AgentRuleUtil.setErrorTag(span, ex);
     }
 
   }
