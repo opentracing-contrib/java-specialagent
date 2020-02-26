@@ -28,9 +28,9 @@
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-util</url>
   <dependencies>
     <dependency>
-        <groupId>com.grack</groupId>
-        <artifactId>nanojson</artifactId>
-        <version>1.4</version>
+      <groupId>com.grack</groupId>
+      <artifactId>nanojson</artifactId>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>

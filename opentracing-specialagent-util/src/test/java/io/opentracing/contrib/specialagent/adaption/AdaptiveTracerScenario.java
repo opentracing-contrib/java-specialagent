@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.tracer;
+package io.opentracing.contrib.specialagent.adaption;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -8,7 +8,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 
-public enum CustomizableTracerScenario {
+public enum AdaptiveTracerScenario {
   COMPLEX("complex") {
     @Override
     void play(final Tracer tracer) {
@@ -142,7 +142,7 @@ public enum CustomizableTracerScenario {
 
   private final String tagName;
 
-  private CustomizableTracerScenario(final String tagName) {
+  private AdaptiveTracerScenario(final String tagName) {
     this.tagName = tagName;
   }
 
@@ -162,8 +162,8 @@ public enum CustomizableTracerScenario {
 
   abstract void play(Tracer tracer);
 
-  public static CustomizableTracerScenario fromString(final String str) {
-    for (final CustomizableTracerScenario value : values())
+  public static AdaptiveTracerScenario fromString(final String str) {
+    for (final AdaptiveTracerScenario value : values())
       if (value.tagName.equals(str))
         return value;
 

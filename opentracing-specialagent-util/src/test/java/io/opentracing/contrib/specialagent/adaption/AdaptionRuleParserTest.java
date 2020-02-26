@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.tracer;
+package io.opentracing.contrib.specialagent.adaption;
 
 import static org.junit.Assert.*;
 
@@ -9,11 +9,11 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class SpanRuleParserTest {
+public class AdaptionRuleParserTest {
   @Test
   public void parseRules() throws IOException {
     try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
-      final Map<String,SpanRules> rules = SpanRuleParser.parseRules(in);
+      final Map<String,AdaptionRules> rules = AdaptionRuleParser.parseRules(in);
       assertEquals(1, rules.size());
       assertEquals("jedis", rules.keySet().iterator().next());
     }
@@ -22,7 +22,7 @@ public class SpanRuleParserTest {
   @Test
   public void completeInvalidJson() {
     try {
-      SpanRuleParser.parseRules(new ByteArrayInputStream("invalid".getBytes()));
+      AdaptionRuleParser.parseRules(new ByteArrayInputStream("invalid".getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {
@@ -33,7 +33,7 @@ public class SpanRuleParserTest {
   public void oneRuleInvalidJson() {
     final String json = "{\"invalid\": 1, \"jedis\": []}";
     try {
-      SpanRuleParser.parseRules(new ByteArrayInputStream(json.getBytes()));
+      AdaptionRuleParser.parseRules(new ByteArrayInputStream(json.getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {

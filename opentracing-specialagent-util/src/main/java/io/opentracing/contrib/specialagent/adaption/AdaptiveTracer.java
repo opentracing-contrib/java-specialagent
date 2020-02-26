@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.tracer;
+package io.opentracing.contrib.specialagent.adaption;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -7,11 +7,11 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 
-public class CustomizableTracer implements Tracer {
-  protected final Tracer target;
-  protected final SpanRules rules;
+public class AdaptiveTracer implements Tracer {
+  final Tracer target;
+  final AdaptionRules rules;
 
-  public CustomizableTracer(final Tracer target, final SpanRules rules) {
+  AdaptiveTracer(final Tracer target, final AdaptionRules rules) {
     this.target = target;
     this.rules = rules;
   }
@@ -23,7 +23,7 @@ public class CustomizableTracer implements Tracer {
 
   @Override
   public Span activeSpan() {
-    return new CustomizableSpan(target.activeSpan(), rules);
+    return new AdaptiveSpan(target.activeSpan(), rules);
   }
 
   @Override
@@ -33,7 +33,7 @@ public class CustomizableTracer implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(final String operationName) {
-    return new CustomizableSpanBuilder(operationName, target, rules);
+    return new AdaptiveSpanBuilder(operationName, target, rules);
   }
 
   @Override

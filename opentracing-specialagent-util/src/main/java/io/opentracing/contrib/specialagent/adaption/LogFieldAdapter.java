@@ -1,20 +1,20 @@
-package io.opentracing.contrib.specialagent.tracer;
-
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.Function;
+package io.opentracing.contrib.specialagent.adaption;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class LogFieldCustomizer extends SpanCustomizer {
-  private final SpanCustomizer customizer;
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.Function;
+
+public class LogFieldAdapter extends Adapter {
+  private final Adaptive source;
   private final Span target;
 
   private Map<String,Object> fields;
 
-  public LogFieldCustomizer(final SpanRules rules, final SpanCustomizer source, final Span target) {
+  LogFieldAdapter(final AdaptionRules rules, final Adaptive source, final Span target) {
     super(rules);
-    this.customizer = source;
+    this.source = source;
     this.target = target;
   }
 
@@ -22,11 +22,11 @@ public class LogFieldCustomizer extends SpanCustomizer {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
-      for (final SpanRule rule : rules.getSpanRules(key)) {
-        if (rule.type != SpanRuleType.LOG)
+      for (final AdaptionRule<?> rule : rules.getSpanRules(key)) {
+        if (rule.type != AdaptionRuleType.LOG)
           continue;
 
-        final Function<Object,Object> match = SpanRuleMatcher.match(rule.predicate, value);
+        final Function<Object,Object> match = rule.match(value);
         if (match != null) {
           replaceLog(timestampMicroseconds, fields, rule, match);
           return;
@@ -38,13 +38,13 @@ public class LogFieldCustomizer extends SpanCustomizer {
     log(fields, timestampMicroseconds);
   }
 
-  private void replaceLog(final long timestampMicroseconds, final Map<String,?> fields, final SpanRule matchedRule, final Function<Object,Object> match) {
+  private void replaceLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<?> matchedRule, final Function<Object,Object> match) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
       if (key.equals(matchedRule.key))
         processMatch(matchedRule, match);
-      else if (!processRules(SpanRuleType.LOG, key, value))
+      else if (!processRules(AdaptionRuleType.LOG, key, value))
         this.addLogField(key, value);
     }
 
@@ -73,15 +73,15 @@ public class LogFieldCustomizer extends SpanCustomizer {
 
   @Override
   void setTag(final String key, final Object value) {
-    customizer.setTag(key, value);
+    source.setTag(key, value);
   }
 
   @Override
   void setOperationName(final String name) {
-    customizer.setOperationName(name);
+    source.setOperationName(name);
   }
 
-  Map<String, Object> getFields() {
+  Map<String,Object> getFields() {
     return fields;
   }
 }

@@ -1,20 +1,20 @@
-package io.opentracing.contrib.specialagent.tracer;
+package io.opentracing.contrib.specialagent.adaption;
+
+import java.util.Collections;
+import java.util.Map;
 
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
 
-import java.util.Collections;
-import java.util.Map;
-
-public class CustomizableSpan implements Span {
-  private final SpanCustomizer customizer;
+public class AdaptiveSpan implements Span {
+  private final Adaptive adaptive;
 
   private final Span target;
-  private final SpanRules rules;
+  private final AdaptionRules rules;
 
-  public CustomizableSpan(final Span target, final SpanRules rules) {
-    this.customizer = new SpanCustomizer(rules) {
+  AdaptiveSpan(final Span target, final AdaptionRules rules) {
+    this.adaptive = new Adaptive(rules) {
       @Override
       public void addLogField(final String key, final Object value) {
         target.log(Collections.singletonMap(key, value));
@@ -49,53 +49,53 @@ public class CustomizableSpan implements Span {
 
   @Override
   public Span setTag(final String key, final String value) {
-    customizer.processTag(key, value);
+    adaptive.processTag(key, value);
     return this;
   }
 
   @Override
   public Span setTag(final String key, final boolean value) {
-    customizer.processTag(key, value);
+    adaptive.processTag(key, value);
     return this;
   }
 
   @Override
   public Span setTag(final String key, final Number value) {
-    customizer.processTag(key, value);
+    adaptive.processTag(key, value);
     return this;
   }
 
   @Override
-  public <T>Span setTag(final Tag<T> tag, final T value) {
-    customizer.processTag(tag.getKey(), value);
+  public <T> Span setTag(final Tag<T> tag, final T value) {
+    adaptive.processTag(tag.getKey(), value);
     return this;
   }
 
   @Override
   public Span log(final Map<String,?> fields) {
-    logFieldCustomizer().processLog(0, fields);
+    newLogFieldCustomizer().processLog(0, fields);
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final Map<String,?> fields) {
-    logFieldCustomizer().processLog(timestampMicroseconds, fields);
+    newLogFieldCustomizer().processLog(timestampMicroseconds, fields);
     return this;
   }
 
-  LogFieldCustomizer logFieldCustomizer() {
-    return new LogFieldCustomizer(rules, customizer, target);
+  LogFieldAdapter newLogFieldCustomizer() {
+    return new LogFieldAdapter(rules, adaptive, target);
   }
 
   @Override
   public Span log(final String event) {
-    new LogEventCustomizer(rules, 0, customizer, target).processLog(event);
+    new LogEventAdapter(rules, 0, adaptive, target).processLog(event);
     return this;
   }
 
   @Override
   public Span log(final long timestampMicroseconds, final String event) {
-    new LogEventCustomizer(rules, timestampMicroseconds, customizer, target).processLog(event);
+    new LogEventAdapter(rules, timestampMicroseconds, adaptive, target).processLog(event);
     return this;
   }
 
@@ -112,7 +112,7 @@ public class CustomizableSpan implements Span {
 
   @Override
   public Span setOperationName(final String operationName) {
-    customizer.processOperationName(operationName);
+    adaptive.processOperationName(operationName);
     return this;
   }
 

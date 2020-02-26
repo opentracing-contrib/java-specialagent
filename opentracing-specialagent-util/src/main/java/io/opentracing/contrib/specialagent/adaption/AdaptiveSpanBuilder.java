@@ -1,10 +1,4 @@
-package io.opentracing.contrib.specialagent.tracer;
-
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tag;
+package io.opentracing.contrib.specialagent.adaption;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,28 +6,34 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.SpanBuilder {
-  private final SpanCustomizer customizer;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tag;
+
+public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder {
+  private final Adaptive adaptive;
   private final Tracer.SpanBuilder target;
 
-  public CustomizableSpanBuilder(final String operationName, final Tracer target, final SpanRules rules) {
+  AdaptiveSpanBuilder(final String operationName, final Tracer target, final AdaptionRules rules) {
     super(rules);
-    this.customizer = new SpanCustomizer(rules) {
+    this.adaptive = new Adaptive(rules) {
       @Override
       public void setTag(final String key, final Object value) {
         if (value == null)
-          CustomizableSpanBuilder.this.target.withTag(key, (String) null);
+          AdaptiveSpanBuilder.this.target.withTag(key, (String)null);
         else if (value instanceof Number)
-          CustomizableSpanBuilder.this.target.withTag(key, (Number) value);
+          AdaptiveSpanBuilder.this.target.withTag(key, (Number)value);
         else if (value instanceof Boolean)
-          CustomizableSpanBuilder.this.target.withTag(key, (Boolean) value);
+          AdaptiveSpanBuilder.this.target.withTag(key, (Boolean)value);
         else
-          CustomizableSpanBuilder.this.target.withTag(key, value.toString());
+          AdaptiveSpanBuilder.this.target.withTag(key, value.toString());
       }
 
       @Override
       public void setOperationName(final String name) {
-        CustomizableSpanBuilder.this.operationName = name;
+        AdaptiveSpanBuilder.this.operationName = name;
       }
 
       @Override
@@ -49,7 +49,7 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
     this.target = target.buildSpan(operationName);
     if (tags != null)
       for (Map.Entry<String,Object> entry : tags.entrySet())
-        customizer.setTag(entry.getKey(), entry.getValue());
+        adaptive.setTag(entry.getKey(), entry.getValue());
   }
 
   @Override
@@ -78,25 +78,25 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final String value) {
-    customizer.processTag(key, value);
+    adaptive.processTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final boolean value) {
-    customizer.processTag(key, value);
+    adaptive.processTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final Number value) {
-    customizer.processTag(key, value);
+    adaptive.processTag(key, value);
     return this;
   }
 
   @Override
   public <T> Tracer.SpanBuilder withTag(final Tag<T> tag, final T value) {
-    customizer.processTag(tag.getKey(), value);
+    adaptive.processTag(tag.getKey(), value);
     return this;
   }
 
@@ -125,8 +125,8 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
     return getCustomizableSpan(span);
   }
 
-  protected CustomizableSpan getCustomizableSpan(final Span span) {
-    return new CustomizableSpan(span, rules);
+  AdaptiveSpan getCustomizableSpan(final Span span) {
+    return new AdaptiveSpan(span, rules);
   }
 
   @Override
@@ -160,11 +160,11 @@ public class CustomizableSpanBuilder extends SpanCustomizer implements Tracer.Sp
     this.operationName = name;
   }
 
-  List<Map<String, Object>> getLog() {
+  List<Map<String,Object>> getLog() {
     return log;
   }
 
-  Map<String, Object> getTags() {
+  Map<String,Object> getTags() {
     return tags;
   }
 }

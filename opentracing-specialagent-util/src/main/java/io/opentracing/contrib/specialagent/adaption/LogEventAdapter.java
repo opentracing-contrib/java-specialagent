@@ -1,13 +1,13 @@
-package io.opentracing.contrib.specialagent.tracer;
+package io.opentracing.contrib.specialagent.adaption;
 
 import io.opentracing.Span;
 
-public class LogEventCustomizer extends SpanCustomizer {
+public class LogEventAdapter extends Adapter {
   private final long timestampMicroseconds;
   private final Span target;
-  private final SpanCustomizer source;
+  private final Adaptive source;
 
-  public LogEventCustomizer(final SpanRules rules, final long timestampMicroseconds, final SpanCustomizer source, final Span target) {
+  LogEventAdapter(final AdaptionRules rules, final long timestampMicroseconds, final Adaptive source, final Span target) {
     super(rules);
     this.timestampMicroseconds = timestampMicroseconds;
     this.source = source;
@@ -15,7 +15,7 @@ public class LogEventCustomizer extends SpanCustomizer {
   }
 
   final void processLog(final String event) {
-    if (!processRules(SpanRuleType.LOG, null, event))
+    if (!processRules(AdaptionRuleType.LOG, null, event))
       log(event);
   }
 

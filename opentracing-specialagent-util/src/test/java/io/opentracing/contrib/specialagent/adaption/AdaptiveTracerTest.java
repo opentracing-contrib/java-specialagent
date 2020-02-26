@@ -1,17 +1,6 @@
-package io.opentracing.contrib.specialagent.tracer;
+package io.opentracing.contrib.specialagent.adaption;
 
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.Function;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,12 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+
+import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.Function;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(Parameterized.class)
-public class CustomizableTracerTest {
+public class AdaptiveTracerTest {
   private static List<URL> getResourceFiles(final String path) throws IOException {
     final List<URL> resources = new ArrayList<>();
     final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -45,11 +46,11 @@ public class CustomizableTracerTest {
   }
 
   private final JsonObject root;
-  private final List<CustomizableSpanBuilder> spanBuilders = new ArrayList<>();
-  private final List<LogFieldCustomizer> logFieldCustomizers = new ArrayList<>();
+  private final List<AdaptiveSpanBuilder> spanBuilders = new ArrayList<>();
+  private final List<LogFieldAdapter> logFieldCustomizers = new ArrayList<>();
   private int regexMatches = 0;
 
-  public CustomizableTracerTest(final URL resource) throws IOException, JsonParserException {
+  public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException {
     try (final InputStream in = resource.openStream()) {
       root = JsonParser.object().from(in);
     }
@@ -73,29 +74,28 @@ public class CustomizableTracerTest {
     }
   }
 
-  private SpanRules parseRules(final JsonArray jsonRules) {
-    SpanRule[] rules = SpanRuleParser.parseRules(jsonRules, "test: ");
+  private AdaptionRules parseRules(final JsonArray jsonRules) {
+    final AdaptionRule<?>[] rules = AdaptionRuleParser.parseRules(jsonRules, "test: ");
     for (int i = 0; i < rules.length; i++) {
-      SpanRule rule = rules[i];
-      if (rule.predicate instanceof Function) {
-        final Function<String, Matcher> predicate = (Function<String, Matcher>) rule.predicate;
-        Function<String, Matcher> pattern = new Function<String, Matcher>() {
+      final AdaptionRule<?> rule = rules[i];
+      if (rule instanceof PatternAdaptionRule) {
+        rules[i] = new PatternAdaptionRule(((PatternAdaptionRule)rule).getPredicate(), rule.type, rule.key, rule.outputs) {
           @Override
-          public Matcher apply(String s) {
-            regexMatches++;
-            return predicate.apply(s);
+          public Function<Object,Object> match(final Object value) {
+            ++regexMatches;
+            return super.match(value);
           }
         };
-        rules[i] = new SpanRule(pattern, rule.type, rule.key, rule.outputs);
       }
     }
-    return new SpanRules(rules);
+
+    return new AdaptionRules(rules);
   }
 
-  private void playScenario(final JsonObject root, final SpanRules rules) {
+  private void playScenario(final JsonObject root, final AdaptionRules rules) {
     final MockTracer mockTracer = new MockTracer();
 
-    final CustomizableTracerScenario scenario = CustomizableTracerScenario.fromString(root.getString("scenario"));
+    final AdaptiveTracerScenario scenario = AdaptiveTracerScenario.fromString(root.getString("scenario"));
     scenario.play(getTracer(rules, mockTracer));
 
     final JsonArray expectedSpans = Objects.requireNonNull(root.getArray("expectedSpans"));
@@ -115,17 +115,17 @@ public class CustomizableTracerTest {
     assertAllocations(root);
   }
 
-  private CustomizableTracer getTracer(final SpanRules rules, final MockTracer mockTracer) {
-    return new CustomizableTracer(mockTracer, rules) {
+  private AdaptiveTracer getTracer(final AdaptionRules rules, final MockTracer mockTracer) {
+    return new AdaptiveTracer(mockTracer, rules) {
       @Override
       public SpanBuilder buildSpan(String operationName) {
-        CustomizableSpanBuilder builder = new CustomizableSpanBuilder(operationName, target, rules) {
+        AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules) {
           @Override
-          protected CustomizableSpan getCustomizableSpan(Span span) {
-            return new CustomizableSpan(span, rules) {
+          protected AdaptiveSpan getCustomizableSpan(Span span) {
+            return new AdaptiveSpan(span, rules) {
               @Override
-              LogFieldCustomizer logFieldCustomizer() {
-                LogFieldCustomizer logFieldCustomizer = super.logFieldCustomizer();
+              LogFieldAdapter newLogFieldCustomizer() {
+                LogFieldAdapter logFieldCustomizer = super.newLogFieldCustomizer();
                 logFieldCustomizers.add(logFieldCustomizer);
                 return logFieldCustomizer;
               }
@@ -203,7 +203,7 @@ public class CustomizableTracerTest {
     int listAllocations = 0;
     int mapAllocations = 0;
 
-    for (CustomizableSpanBuilder builder : spanBuilders) {
+    for (AdaptiveSpanBuilder builder : spanBuilders) {
       if (builder.getLog() != null) {
         listAllocations++;
       }
@@ -211,7 +211,7 @@ public class CustomizableTracerTest {
         mapAllocations++;
       }
     }
-    for (LogFieldCustomizer customizer : logFieldCustomizers) {
+    for (LogFieldAdapter customizer : logFieldCustomizers) {
       if (customizer.getFields() != null) {
         mapAllocations++;
       }
