@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.rule.rabbitmq.client;
 
 import static io.opentracing.contrib.rabbitmq.TracingUtils.*;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,17 +35,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class RabbitMQAgentIntercept {
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-
-  private static class Context {
-    private final Scope scope;
-    private final Span span;
-
-    private Context(final Scope scope, final Span span) {
-      this.scope = scope;
-      this.span = span;
-    }
-  }
 
   public static void exitGet(final Object response, final Object queue, final Throwable thrown) {
     final Span span = TracingUtils.buildChildSpan(((GetResponse)response).getProps(), (String)queue, GlobalTracer.get());
@@ -64,7 +54,7 @@ public class RabbitMQAgentIntercept {
     final Span span = TracingUtils.buildSpan((String)exchange, (String)routingKey, properties, tracer);
 
     final Scope scope = tracer.activateSpan(span);
-    contextHolder.set(new Context(scope, span));
+    LocalSpanContext.set(span, scope);
 
     return inject(properties, span, tracer);
   }
@@ -74,16 +64,14 @@ public class RabbitMQAgentIntercept {
   }
 
   private static void finish(final Throwable thrown) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
     if (thrown != null)
-      captureException(context.span, thrown);
+      captureException(context.getSpan(), thrown);
 
-    context.scope.close();
-    context.span.finish();
-    contextHolder.remove();
+    context.closeAndFinish();
   }
 
   private static void captureException(final Span span, final Throwable thrown) {

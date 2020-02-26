@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.googlehttpclient;
 
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,18 +30,11 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class GoogleHttpClientAgentIntercept {
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "google-http-client";
 
-  private static class Context {
-    private Span span;
-    private Scope scope;
-    private int counter = 1;
-  }
-
   public static void enter(final Object thiz) {
-    if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -58,28 +52,23 @@ public class GoogleHttpClientAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(request.getHeaders()));
 
-    final Context context = new Context();
-    contextHolder.set(context);
-    context.span = span;
-    context.scope = scope;
+    LocalSpanContext.set(span, scope);
   }
 
   public static void exit(Throwable thrown, Object returned) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
-    if (--context.counter != 0)
+    if (context.decrementAndGet() != 0)
       return;
 
     if (thrown != null)
-      onError(thrown, context.span);
+      onError(thrown, context.getSpan());
     else
-      context.span.setTag(Tags.HTTP_STATUS, ((HttpResponse)returned).getStatusCode());
+      context.getSpan().setTag(Tags.HTTP_STATUS, ((HttpResponse)returned).getStatusCode());
 
-    context.scope.close();
-    context.span.finish();
-    contextHolder.remove();
+    context.closeAndFinish();
   }
 
   private static Integer getPort(final HttpRequest httpRequest) {
