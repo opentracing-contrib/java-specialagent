@@ -8,7 +8,7 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateRule(final AdaptionRule<?> rule, final String subject) {
+    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
     }
 
     @Override
@@ -25,7 +25,7 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateRule(final AdaptionRule<?> rule, final String subject) {
+    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
       if (rule.key != null)
         throw new IllegalStateException(subject + "key for serviceName must be null");
     }
@@ -42,7 +42,7 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateRule(final AdaptionRule<?> rule, final String subject) {
+    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
       if (rule.key != null)
         throw new IllegalStateException(subject + "key for operationName must be null");
     }
@@ -60,7 +60,7 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateRule(final AdaptionRule<?> rule, final String subject) {
+    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
       if (rule.key == null)
         throw new IllegalStateException(subject + "tag without a key is not allowed");
     }
@@ -78,7 +78,7 @@ public enum AdaptionRuleType {
     this.tagName = tagName;
   }
 
-  void validate(final AdaptionRule<?> rule, final String subject) {
+  void validate(final AdaptionRule<?,?> rule, final String subject) {
     validateRule(rule, subject);
     if (rule.outputs != null) {
       for (int i = 0; i < rule.outputs.length; ++i) {
@@ -90,7 +90,7 @@ public enum AdaptionRuleType {
 
   abstract void apply(Adapter adapter, String key, Object value);
   abstract void validateOutputKey(AdaptionRuleType matchType, String matchKey, String outputKey, String subject);
-  abstract void validateRule(AdaptionRule<?> rule, String subject);
+  abstract void validateRule(AdaptionRule<?,?> rule, String subject);
 
   public static AdaptionRuleType fromString(final String str) {
     for (final AdaptionRuleType value : values())

@@ -1,4 +1,4 @@
-The customizable tracer allows you to change the spans created by agent rules without having to modify the source code.
+The <ins>Adaptive Tracer</ins> allows you to change the spans created by <ins>Instrumentation Plugins</ins> without having to modify the source code.
 
 All features are explained using the following use cases. These features can also be combined - even if this is not mentioned explicitly.
 

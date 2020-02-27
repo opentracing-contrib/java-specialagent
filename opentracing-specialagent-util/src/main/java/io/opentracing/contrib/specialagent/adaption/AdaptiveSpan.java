@@ -48,8 +48,7 @@ public class AdaptiveSpan extends Adaptive implements Span {
 
   @Override
   public Span log(final Map<String,?> fields) {
-    newLogFieldAdapter().processLog(0, fields);
-    return this;
+    return log(0, fields);
   }
 
   @Override

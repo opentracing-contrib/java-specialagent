@@ -1,17 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.Function;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,8 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+
+import io.opentracing.Span;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(Parameterized.class)
 public class AdaptiveTracerTest {
@@ -40,12 +42,12 @@ public class AdaptiveTracerTest {
 
   @Parameterized.Parameters(name = "{0}")
   public static URL[] data() throws IOException {
-    return getResourceFiles("spanCustomizer").toArray(new URL[0]);
+    return getResourceFiles("adaption").toArray(new URL[0]);
   }
 
   private final JsonObject root;
   private final List<AdaptiveSpanBuilder> spanBuilders = new ArrayList<>();
-  private final List<LogFieldAdapter> logFieldCustomizers = new ArrayList<>();
+  private final List<LogFieldAdapter> logFieldAdapters = new ArrayList<>();
   private int regexMatches = 0;
 
   public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException {
@@ -74,14 +76,14 @@ public class AdaptiveTracerTest {
 
   private AdaptionRules parseRules(final JsonArray jsonRules) {
     final AdaptionRules rules = AdaptionRuleParser.parseRules(jsonRules,  "test");
-    for (final Map.Entry<String,List<AdaptionRule<?>>> entry : rules.keyToRules.entrySet()) {
-      final List<AdaptionRule<?>> list = entry.getValue();
+    for (final Map.Entry<String,List<AdaptionRule<?,?>>> entry : rules.keyToRules.entrySet()) {
+      final List<AdaptionRule<?,?>> list = entry.getValue();
       for (int i = 0; i < list.size(); ++i) {
-        final AdaptionRule<?> rule = list.get(i);
+        final AdaptionRule<?,?> rule = list.get(i);
         if (rule instanceof PatternAdaptionRule) {
           list.set(i, new PatternAdaptionRule(((PatternAdaptionRule)rule).getPredicate(), rule.type, rule.key, rule.outputs) {
             @Override
-            public Function<Object,Object> match(final Object value) {
+            public Matcher match(final Object value) {
               ++regexMatches;
               return super.match(value);
             }
@@ -119,16 +121,16 @@ public class AdaptiveTracerTest {
   private AdaptiveTracer getTracer(final AdaptionRules rules, final MockTracer mockTracer) {
     return new AdaptiveTracer(mockTracer, rules) {
       @Override
-      public SpanBuilder buildSpan(String operationName) {
-        AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules, "serviceName") {
+      public SpanBuilder buildSpan(final String operationName) {
+        final AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules, "serviceName") {
           @Override
-          protected AdaptiveSpan getCustomizableSpan(Span span) {
+          protected AdaptiveSpan newAdaptiveSpan(final Span span) {
             return new AdaptiveSpan(span, rules) {
               @Override
               LogFieldAdapter newLogFieldAdapter() {
-                LogFieldAdapter logFieldCustomizer = super.newLogFieldAdapter();
-                logFieldCustomizers.add(logFieldCustomizer);
-                return logFieldCustomizer;
+                final LogFieldAdapter logFieldAdapter = super.newLogFieldAdapter();
+                logFieldAdapters.add(logFieldAdapter);
+                return logFieldAdapter;
               }
             };
           }
@@ -203,13 +205,12 @@ public class AdaptiveTracerTest {
   private void assertAllocations(final JsonObject root) {
     int listAllocations = 0;
     int mapAllocations = 0;
-    for (final AdaptiveSpanBuilder builder : spanBuilders) {
+    for (final AdaptiveSpanBuilder builder : spanBuilders)
       if (builder.getLog() != null)
         ++listAllocations;
-    }
 
-    for (final LogFieldAdapter customizer : logFieldCustomizers)
-      if (customizer.getFields() != null)
+    for (final LogFieldAdapter adapter : logFieldAdapters)
+      if (adapter.getFields() != null)
         ++mapAllocations;
 
     assertEquals(root.getNumber("expectedListAllocations", 0), listAllocations);

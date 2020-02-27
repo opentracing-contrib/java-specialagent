@@ -1,8 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.contrib.specialagent.Function;
-
-class SimpleAdaptionRule extends AdaptionRule<Object> {
+class SimpleAdaptionRule extends AdaptionRule<Object,Boolean> {
   private static boolean matchesSimpleValue(final Object predicate, final Object value) {
     if (predicate == null)
       return true;
@@ -26,15 +24,12 @@ class SimpleAdaptionRule extends AdaptionRule<Object> {
   }
 
   @Override
-  Function<Object,Object> match(final Object value) {
-    if (!matchesSimpleValue(this.value, value))
-      return null;
+  Boolean match(final Object input) {
+    return matchesSimpleValue(this.value, input) ? Boolean.TRUE : null;
+  }
 
-    return new Function<Object,Object>() {
-      @Override
-      public Object apply(final Object outputExpression) {
-        return outputExpression != null ? outputExpression : value;
-      }
-    };
+  @Override
+  Object adapt(final Boolean match, final Object input, final Object output) {
+    return output != null ? output : input;
   }
 }

@@ -1,7 +1,5 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.contrib.specialagent.Function;
-
 abstract class Adapter {
   final AdaptionRules rules;
 
@@ -14,13 +12,13 @@ abstract class Adapter {
   abstract void adaptOperationName(String name);
 
   final boolean processRules(final AdaptionRuleType type, final String key, final Object value) {
-    for (final AdaptionRule<?> rule : rules.getSpanRules(key)) {
+    for (final AdaptionRule<?,?> rule : rules.getSpanRules(key)) {
       if (rule.type != type)
         continue;
 
-      final Function<Object,Object> match = rule.match(value);
+      final Object match = rule.match(value);
       if (match != null) {
-        processMatch(rule, match);
+        processMatch(rule, match, value);
         return true;
       }
     }
@@ -28,12 +26,12 @@ abstract class Adapter {
     return false;
   }
 
-  final void processMatch(final AdaptionRule<?> rule, final Function<Object,Object> match) {
+  final void processMatch(final AdaptionRule rule, final Object match, final Object input) {
     if (rule.outputs != null) {
-      for (final AdaptedOutput output : rule.outputs) {
-        final Object outputValue = match.apply(output.value);
-        final String key = output.key != null ? output.key : rule.key;
-        output.type.apply(this, key, outputValue);
+      for (final AdaptedOutput adaptedOutput : rule.outputs) {
+        final Object output = rule.adapt(match, input, adaptedOutput.value);
+        final String key = adaptedOutput.key != null ? adaptedOutput.key : rule.key;
+        adaptedOutput.type.apply(this, key, output);
       }
     }
   }

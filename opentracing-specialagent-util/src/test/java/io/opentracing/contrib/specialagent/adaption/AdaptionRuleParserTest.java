@@ -30,12 +30,12 @@ public class AdaptionRuleParserTest {
     final AdaptionRules adaptionRules = rules.get(key);
     final MockTracer mockTracer = new MockTracer();
     try (final AdaptiveTracer tracer = new AdaptiveTracer(mockTracer, adaptionRules)) {
-      Span span = tracer.buildSpan("op").start();
+      final Span span = tracer.buildSpan("op").start();
       span.log(Collections.singletonMap("db.statement", "select a"));
       span.log(Collections.singletonMap("db.statement", "not matched"));
       span.finish();
 
-      List<MockSpan> spans = mockTracer.finishedSpans();
+      final List<MockSpan> spans = mockTracer.finishedSpans();
       assertEquals(1, spans.size());
       MockSpan mockSpan = spans.get(0);
 

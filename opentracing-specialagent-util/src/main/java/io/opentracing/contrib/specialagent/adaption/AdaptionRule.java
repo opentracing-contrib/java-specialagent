@@ -1,8 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.contrib.specialagent.Function;
-
-abstract class AdaptionRule<T> {
+abstract class AdaptionRule<T,V> {
   final AdaptionRuleType type;
   final String key;
   final AdaptedOutput[] outputs;
@@ -14,7 +12,8 @@ abstract class AdaptionRule<T> {
   }
 
   abstract T getPredicate();
-  abstract Function<Object,Object> match(Object value);
+  abstract V match(Object input);
+  abstract Object adapt(V match, Object input, Object output);
 
   final void validate(final String subject) {
     type.validate(this, subject);

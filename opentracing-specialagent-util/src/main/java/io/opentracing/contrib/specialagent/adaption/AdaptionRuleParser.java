@@ -1,16 +1,16 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
 
 public final class AdaptionRuleParser {
   public static final String GLOBAL_RULES = "*";
@@ -50,14 +50,14 @@ public final class AdaptionRuleParser {
     for (int i = 0; i < size; ++i) {
       final String ruleSubject = key + ": rule " + i + ": ";
       final JsonObject jsonRule = Objects.requireNonNull(jsonRules.getObject(i), ruleSubject + "not an object");
-      final AdaptionRule<?> rule = parseRule(jsonRule, ruleSubject);
+      final AdaptionRule<?,?> rule = parseRule(jsonRule, ruleSubject);
       rules.add(rule);
     }
 
     return rules;
   }
 
-  private static AdaptionRule<?> parseRule(final JsonObject jsonRule, final String subject) {
+  private static AdaptionRule<?,?> parseRule(final JsonObject jsonRule, final String subject) {
     final AdaptionRuleType type = parseType(jsonRule.getString("type"), subject);
     final String key = jsonRule.getString("key");
     final JsonArray jsonOutputs = jsonRule.getArray("output");
@@ -69,7 +69,7 @@ public final class AdaptionRuleParser {
         outputs[i] = parseOutput(jsonOutputs, i, subject + "output " + i + ": ");
     }
 
-    final AdaptionRule<?> rule;
+    final AdaptionRule<?,?> rule;
     final String valueRegex = jsonRule.getString("valueRegex");
     if (valueRegex != null)
       rule = new PatternAdaptionRule(Pattern.compile(valueRegex), type, key, outputs);

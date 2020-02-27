@@ -1,15 +1,15 @@
 package io.opentracing.contrib.specialagent.adaption;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder {
   private final Tracer.SpanBuilder target;
@@ -17,7 +17,6 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   AdaptiveSpanBuilder(final String operationName, final Tracer tracer, final AdaptionRules rules, final String serviceName) {
     super(rules);
     this.target = tracer.buildSpan(operationName);
-
     processOperationName(operationName);
     if (serviceName != null) {
       // Cannot set the service name, only process it
@@ -68,7 +67,7 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   }
 
   @Override
-  public <T> Tracer.SpanBuilder withTag(final Tag<T> tag, final T value) {
+  public <T>Tracer.SpanBuilder withTag(final Tag<T> tag, final T value) {
     processTag(tag.getKey(), value);
     return this;
   }
@@ -95,10 +94,10 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
     if (operationName != null)
       span.setOperationName(operationName);
 
-    return getCustomizableSpan(span);
+    return newAdaptiveSpan(span);
   }
 
-  AdaptiveSpan getCustomizableSpan(final Span span) {
+  AdaptiveSpan newAdaptiveSpan(final Span span) {
     return new AdaptiveSpan(span, rules);
   }
 
@@ -139,5 +138,4 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   List<Map<String,Object>> getLog() {
     return log;
   }
-
 }

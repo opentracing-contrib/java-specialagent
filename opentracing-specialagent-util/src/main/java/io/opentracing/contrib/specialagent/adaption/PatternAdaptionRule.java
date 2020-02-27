@@ -3,9 +3,7 @@ package io.opentracing.contrib.specialagent.adaption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.opentracing.contrib.specialagent.Function;
-
-class PatternAdaptionRule extends AdaptionRule<Pattern> {
+class PatternAdaptionRule extends AdaptionRule<Pattern,Matcher> {
   private final Pattern pattern;
 
   PatternAdaptionRule(final Pattern pattern, final AdaptionRuleType type, final String key, final AdaptedOutput[] outputs) {
@@ -19,16 +17,13 @@ class PatternAdaptionRule extends AdaptionRule<Pattern> {
   }
 
   @Override
-  Function<Object,Object> match(final Object value) {
-    final Matcher matcher = pattern.matcher(value.toString());
-    if (!matcher.matches())
-      return null;
+  Matcher match(final Object input) {
+    final Matcher matcher = pattern.matcher(input.toString());
+    return matcher.matches() ? matcher : null;
+  }
 
-    return new Function<Object,Object>() {
-      @Override
-      public Object apply(final Object outputExpression) {
-        return outputExpression != null ? matcher.replaceAll(outputExpression.toString()) : value;
-      }
-    };
+  @Override
+  Object adapt(final Matcher matcher, final Object value, final Object output) {
+    return output != null ? matcher.replaceAll(output.toString()) : value;
   }
 }

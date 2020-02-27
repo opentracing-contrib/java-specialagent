@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.Function;
 
 public class LogFieldAdapter extends Adapter {
   private final Adaptive source;
@@ -22,13 +21,13 @@ public class LogFieldAdapter extends Adapter {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
-      for (final AdaptionRule<?> rule : rules.getSpanRules(key)) {
+      for (final AdaptionRule<?,?> rule : rules.getSpanRules(key)) {
         if (rule.type != AdaptionRuleType.LOG)
           continue;
 
-        final Function<Object,Object> match = rule.match(value);
+        final Object match = rule.match(value);
         if (match != null) {
-          replaceLog(timestampMicroseconds, fields, rule, match);
+          replaceLog(timestampMicroseconds, fields, rule, match, value);
           return;
         }
       }
@@ -38,12 +37,12 @@ public class LogFieldAdapter extends Adapter {
     log(fields, timestampMicroseconds);
   }
 
-  private void replaceLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<?> matchedRule, final Function<Object,Object> match) {
+  private <T,V>void replaceLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<T,V> rule, final Object match, final Object input) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
-      if (key.equals(matchedRule.key))
-        processMatch(matchedRule, match);
+      if (key.equals(rule.key))
+        processMatch(rule, match, input);
       else if (!processRules(AdaptionRuleType.LOG, key, value))
         adaptLogField(key, value);
     }
