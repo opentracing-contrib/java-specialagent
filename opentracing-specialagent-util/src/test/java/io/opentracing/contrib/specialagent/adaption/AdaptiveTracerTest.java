@@ -75,7 +75,7 @@ public class AdaptiveTracerTest {
   }
 
   private AdaptionRules parseRules(final JsonArray jsonRules) {
-    final AdaptionRule<?>[] rules = AdaptionRuleParser.parseRules(jsonRules, new AdaptionRule[0], "test: ");
+    final AdaptionRule<?>[] rules = AdaptionRuleParser.parseRules(jsonRules, new AdaptionRule[jsonRules.size()], "test: ");
     for (int i = 0; i < rules.length; i++) {
       final AdaptionRule<?> rule = rules[i];
       if (rule instanceof PatternAdaptionRule) {
