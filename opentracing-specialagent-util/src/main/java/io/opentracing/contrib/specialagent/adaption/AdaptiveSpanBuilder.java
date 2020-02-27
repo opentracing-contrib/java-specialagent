@@ -1,60 +1,28 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder {
-  private final Adaptive adaptive;
   private final Tracer.SpanBuilder target;
 
   AdaptiveSpanBuilder(final String operationName, final Tracer tracer, final AdaptionRules rules, final String serviceName) {
     super(rules);
-    this.adaptive = new Adaptive(rules) {
-      @Override
-      void adaptTag(final String key, final Object value) {
-        if (value == null)
-          AdaptiveSpanBuilder.this.target.withTag(key, (String)null);
-        else if (value instanceof Number)
-          AdaptiveSpanBuilder.this.target.withTag(key, (Number)value);
-        else if (value instanceof Boolean)
-          AdaptiveSpanBuilder.this.target.withTag(key, (Boolean)value);
-        else
-          AdaptiveSpanBuilder.this.target.withTag(key, value.toString());
-      }
-
-      @Override
-      void adaptOperationName(final String name) {
-        AdaptiveSpanBuilder.this.operationName = name;
-      }
-
-      @Override
-      void adaptLogField(final String key, final Object value) {
-        if (log == null)
-          log = new ArrayList<>();
-
-        log.add(Collections.singletonMap(key, value));
-      }
-    };
+    this.target = tracer.buildSpan(operationName);
 
     processOperationName(operationName);
     if (serviceName != null) {
       // Cannot set the service name, only process it
       processRules(AdaptionRuleType.SERVICE_NAME, null, serviceName);
     }
-
-    this.target = tracer.buildSpan(operationName);
-    if (tags != null)
-      for (final Map.Entry<String,Object> entry : tags.entrySet())
-        adaptive.adaptTag(entry.getKey(), entry.getValue());
   }
 
   @Override
@@ -83,25 +51,25 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final String value) {
-    adaptive.processTag(key, value);
+    processTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final boolean value) {
-    adaptive.processTag(key, value);
+    processTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final Number value) {
-    adaptive.processTag(key, value);
+    processTag(key, value);
     return this;
   }
 
   @Override
   public <T> Tracer.SpanBuilder withTag(final Tag<T> tag, final T value) {
-    adaptive.processTag(tag.getKey(), value);
+    processTag(tag.getKey(), value);
     return this;
   }
 
@@ -142,14 +110,17 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
 
   private String operationName;
   private List<Map<String,Object>> log;
-  private Map<String,Object> tags;
 
   @Override
   void adaptTag(final String key, final Object value) {
-    if (tags == null)
-      tags = new LinkedHashMap<>();
-
-    tags.put(key, value);
+    if (value == null)
+      target.withTag(key, (String)null);
+    else if (value instanceof Number)
+      target.withTag(key, (Number)value);
+    else if (value instanceof Boolean)
+      target.withTag(key, (Boolean)value);
+    else
+      target.withTag(key, value.toString());
   }
 
   @Override
@@ -162,14 +133,11 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
 
   @Override
   void adaptOperationName(final String name) {
-    this.operationName = name;
+    operationName = name;
   }
 
   List<Map<String,Object>> getLog() {
     return log;
   }
 
-  Map<String,Object> getTags() {
-    return tags;
-  }
 }
