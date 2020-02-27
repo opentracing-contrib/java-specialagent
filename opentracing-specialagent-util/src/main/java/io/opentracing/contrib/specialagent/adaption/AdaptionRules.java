@@ -6,16 +6,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 final class AdaptionRules {
-  private final LinkedHashMap<String,List<AdaptionRule<?>>> keyToRules = new LinkedHashMap<>();
+  final LinkedHashMap<String,List<AdaptionRule<?>>> keyToRules = new LinkedHashMap<>();
 
-  AdaptionRules(final AdaptionRule<?>[] rules) {
-    for (final AdaptionRule<?> rule : rules) {
-      List<AdaptionRule<?>> list = keyToRules.get(rule.key);
-      if (list == null)
-        keyToRules.put(rule.key, list = new ArrayList<>());
+  void add(final AdaptionRule<?> rule) {
+    List<AdaptionRule<?>> list = keyToRules.get(rule.key);
+    if (list == null)
+      keyToRules.put(rule.key, list = new ArrayList<>());
 
-      list.add(rule);
-    }
+    list.add(rule);
+  }
+
+  void addAll(final AdaptionRules rules) {
+    for (final List<AdaptionRule<?>> value : rules.keyToRules.values())
+      for (final AdaptionRule<?> rule : value)
+        add(rule);
   }
 
   List<AdaptionRule<?>> getSpanRules(final String key) {

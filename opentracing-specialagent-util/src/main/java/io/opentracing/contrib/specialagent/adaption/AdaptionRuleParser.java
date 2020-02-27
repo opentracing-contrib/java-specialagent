@@ -13,18 +13,16 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class AdaptionRuleParser {
-  public static final String GLOBAL_RULES = "all";
+  public static final String GLOBAL_RULES = "*";
 
   public static Map<String,AdaptionRules> parseRules(final InputStream inputStream) {
     try {
       Map<String,AdaptionRules> result = null;
       final JsonObject root = JsonParser.object().from(inputStream);
-
-      final JsonArray global = root.getArray(GLOBAL_RULES);
-      final AdaptionRule<?>[] globalRules = global != null ? parseRules(global, new AdaptionRule[global.size()], "all: ") : new AdaptionRule[0];
+      final JsonArray globalRuleEntry = root.getArray(GLOBAL_RULES);
+      final AdaptionRules globalRules = globalRuleEntry == null ? null : parseRules(globalRuleEntry, GLOBAL_RULES);
 
       for (final String key : root.keySet()) {
-        final String subject = key + ": ";
         final JsonArray ruleEntry = root.getArray(key);
         if (ruleEntry == null)
           throw new IllegalArgumentException("\"" + key + "\" is not an array");
@@ -32,9 +30,11 @@ public final class AdaptionRuleParser {
         if (result == null)
           result = new LinkedHashMap<>();
 
-        AdaptionRule<?>[] rules = parseRules(ruleEntry, new AdaptionRule[ruleEntry.size() + globalRules.length], subject);
-        System.arraycopy(globalRules, 0, rules, ruleEntry.size(), globalRules.length);
-        result.put(key, new AdaptionRules(rules));
+        final AdaptionRules rules = parseRules(ruleEntry, key);
+        if (globalRules != null)
+          rules.addAll(globalRules);
+
+        result.put(key, rules);
       }
 
       return result != null ? result : Collections.EMPTY_MAP;
@@ -44,12 +44,14 @@ public final class AdaptionRuleParser {
     }
   }
 
-  static AdaptionRule<?>[] parseRules(JsonArray jsonRules, AdaptionRule<?>[] rules, String subject) {
+  static AdaptionRules parseRules(final JsonArray jsonRules, final String key) {
+    final AdaptionRules rules = new AdaptionRules();
     final int size = jsonRules.size();
     for (int i = 0; i < size; ++i) {
-      final String ruleSubject = subject + "rule " + i + ": ";
+      final String ruleSubject = key + ": rule " + i + ": ";
       final JsonObject jsonRule = Objects.requireNonNull(jsonRules.getObject(i), ruleSubject + "not an object");
-      rules[i] = parseRule(jsonRule, ruleSubject);
+      final AdaptionRule<?> rule = parseRule(jsonRule, ruleSubject);
+      rules.add(rule);
     }
 
     return rules;

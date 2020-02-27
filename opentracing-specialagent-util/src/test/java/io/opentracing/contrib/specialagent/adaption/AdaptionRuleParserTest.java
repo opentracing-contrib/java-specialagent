@@ -21,8 +21,8 @@ public class AdaptionRuleParserTest {
   public void specificRulesHavePriorityOverGlobalRules() throws IOException {
     try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
       final Map<String,AdaptionRules> rules = AdaptionRuleParser.parseRules(in);
-      assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("all", "not matched")));
-      assertTags(rules, "all", Arrays.asList(Collections.singletonMap("all", "select a"), Collections.singletonMap("all", "not matched")));
+      assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
+      assertTags(rules, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
     }
   }
 

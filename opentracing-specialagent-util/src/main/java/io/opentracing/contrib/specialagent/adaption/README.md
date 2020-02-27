@@ -141,9 +141,9 @@ you can redact specific parts of a value (tag, log or operationName).
     }
   ]
 }
-```       
+```
 
-In this example, `$1?` is the [replacement](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html#replaceAll(java.lang.String) string. If you don't use `valueRegex`, the output `value` would be interpreted as a plain string. 
+In this example, `$1?` is the [replacement](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html#replaceAll(java.lang.String) string. If you don't use `valueRegex`, the output `value` would be interpreted as a plain string.
 
 ## Multiple Outputs
 
@@ -206,18 +206,18 @@ If you need to apply a rule globally, you can use `all`, e.g. for blacklisting a
 
 ```json
 {
-  "all": [
+  "*": [
     {
       "type": "tag",
       "key": "http.url"
     }
   ]
 }
-```      
+```
 
 ## ServiceName
 
-You can create a tag from the service name as follows: 
+You can create a tag from the service name as follows:
 
  ```json
 {
@@ -226,7 +226,7 @@ You can create a tag from the service name as follows:
       "type": "serviceName",
       "output": [
         {
-          "type": "tag", 
+          "type": "tag",
           "key": "service"
         }
       ]

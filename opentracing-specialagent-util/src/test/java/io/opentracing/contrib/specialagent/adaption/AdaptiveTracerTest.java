@@ -75,21 +75,24 @@ public class AdaptiveTracerTest {
   }
 
   private AdaptionRules parseRules(final JsonArray jsonRules) {
-    final AdaptionRule<?>[] rules = AdaptionRuleParser.parseRules(jsonRules, new AdaptionRule[jsonRules.size()], "test: ");
-    for (int i = 0; i < rules.length; i++) {
-      final AdaptionRule<?> rule = rules[i];
-      if (rule instanceof PatternAdaptionRule) {
-        rules[i] = new PatternAdaptionRule(((PatternAdaptionRule)rule).getPredicate(), rule.type, rule.key, rule.outputs) {
-          @Override
-          public Function<Object,Object> match(final Object value) {
-            ++regexMatches;
-            return super.match(value);
-          }
-        };
+    final AdaptionRules rules = AdaptionRuleParser.parseRules(jsonRules,  "test");
+    for (final Map.Entry<String,List<AdaptionRule<?>>> entry : rules.keyToRules.entrySet()) {
+      final List<AdaptionRule<?>> list = entry.getValue();
+      for (int i = 0; i < list.size(); ++i) {
+        final AdaptionRule<?> rule = list.get(i);
+        if (rule instanceof PatternAdaptionRule) {
+          list.set(i, new PatternAdaptionRule(((PatternAdaptionRule)rule).getPredicate(), rule.type, rule.key, rule.outputs) {
+            @Override
+            public Function<Object,Object> match(final Object value) {
+              ++regexMatches;
+              return super.match(value);
+            }
+          });
+        }
       }
     }
 
-    return new AdaptionRules(rules);
+    return rules;
   }
 
   private void playScenario(final JsonObject root, final AdaptionRules rules) {

@@ -1,12 +1,12 @@
 {
-  "all": [
+  "*": [
     {
       "type": "log",
       "key": "db.statement",
       "output": [
         {
           "type": "log",
-          "key": "all"
+          "key": "*"
         }
       ]
     }
