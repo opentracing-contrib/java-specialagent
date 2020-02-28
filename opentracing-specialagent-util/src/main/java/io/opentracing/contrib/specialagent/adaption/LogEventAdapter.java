@@ -19,7 +19,10 @@ final class LogEventAdapter extends Adapter {
 
   @Override
   void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
-    target.log(timestampMicroseconds, value.toString());
+    if (timestampMicroseconds > 0)
+      target.log(timestampMicroseconds, value.toString());
+    else
+      target.log(value.toString());
   }
 
   @Override
