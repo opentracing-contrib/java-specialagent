@@ -1,6 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-public enum AdaptionType {
+enum AdaptionType {
   LOG("log") {
     @Override
     void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
@@ -91,7 +91,7 @@ public enum AdaptionType {
   abstract void validateOutputKey(AdaptionType type, String matchKey, String outputKey, String subject);
   abstract void validateRule(AdaptionRule<?,?> rule, String subject);
 
-  public static AdaptionType fromString(final String str) {
+  static AdaptionType fromString(final String str) {
     for (final AdaptionType value : values())
       if (value.tagName.equals(str))
         return value;

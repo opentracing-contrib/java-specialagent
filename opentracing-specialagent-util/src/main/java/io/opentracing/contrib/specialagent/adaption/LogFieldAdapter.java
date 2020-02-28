@@ -1,9 +1,9 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import io.opentracing.Span;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import io.opentracing.Span;
 
 final class LogFieldAdapter extends Adapter {
   private final Adaptive source;
@@ -27,7 +27,7 @@ final class LogFieldAdapter extends Adapter {
 
         final Object match = rule.match(value);
         if (match != null) {
-          replaceLog(timestampMicroseconds, fields, rule, match, value);
+          adaptLog(timestampMicroseconds, fields, rule, match, value);
           return;
         }
       }
@@ -37,7 +37,7 @@ final class LogFieldAdapter extends Adapter {
     log(timestampMicroseconds, fields);
   }
 
-  private <T,V>void replaceLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<T,V> rule, final Object match, final Object input) {
+  private <T,V>void adaptLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<T,V> rule, final Object match, final Object input) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
@@ -47,19 +47,15 @@ final class LogFieldAdapter extends Adapter {
         adaptLog(timestampMicroseconds, key, value);
     }
 
-    this.log(timestampMicroseconds);
+    if (this.fields != null)
+      log(timestampMicroseconds, this.fields);
   }
 
-  void log(final long timestampMicroseconds, final Map<String,?> fields) {
+  private void log(final long timestampMicroseconds, final Map<String,?> fields) {
     if (timestampMicroseconds > 0)
       target.log(timestampMicroseconds, fields);
     else
       target.log(fields);
-  }
-
-  void log(final long timestampMicroseconds) {
-    if (fields != null)
-      log(timestampMicroseconds, fields);
   }
 
   @Override

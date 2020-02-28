@@ -106,7 +106,10 @@ public class AdaptiveSpan extends Adaptive implements Span {
 
   @Override
   void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
-    target.log(Collections.singletonMap(key, value));
+    if (timestampMicroseconds > 0)
+      target.log(timestampMicroseconds, Collections.singletonMap(key, value));
+    else
+      target.log(Collections.singletonMap(key, value));
   }
 
   @Override
