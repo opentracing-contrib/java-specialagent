@@ -58,7 +58,7 @@ public final class AdaptionRuleParser {
   }
 
   private static AdaptionRule<?,?> parseRule(final JsonObject jsonRule, final String subject) {
-    final AdaptionRuleType type = parseType(jsonRule.getString("type"), subject);
+    final AdaptionType type = parseType(jsonRule.getString("type"), subject);
     final String key = jsonRule.getString("key");
     final JsonArray jsonOutputs = jsonRule.getArray("output");
     AdaptedOutput[] outputs = null;
@@ -85,8 +85,8 @@ public final class AdaptionRuleParser {
     return new AdaptedOutput(parseType(jsonOutput.getString("type"), subject), jsonOutput.getString("key"), jsonOutput.get("value"));
   }
 
-  private static AdaptionRuleType parseType(final String type, final String subject) {
-    return Objects.requireNonNull(AdaptionRuleType.fromString(Objects.requireNonNull(type, subject + "type is not a string")), subject + "invalid type");
+  private static AdaptionType parseType(final String type, final String subject) {
+    return Objects.requireNonNull(AdaptionType.fromString(Objects.requireNonNull(type, subject + "type is not a string")), subject + "invalid type");
   }
 
   private AdaptionRuleParser() {

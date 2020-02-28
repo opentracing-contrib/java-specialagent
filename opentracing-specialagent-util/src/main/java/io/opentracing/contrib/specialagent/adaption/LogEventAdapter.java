@@ -2,33 +2,24 @@ package io.opentracing.contrib.specialagent.adaption;
 
 import io.opentracing.Span;
 
-public class LogEventAdapter extends Adapter {
-  private final long timestampMicroseconds;
-  private final Span target;
+final class LogEventAdapter extends Adapter {
   private final Adaptive source;
+  private final Span target;
 
-  LogEventAdapter(final AdaptionRules rules, final long timestampMicroseconds, final Adaptive source, final Span target) {
+  LogEventAdapter(final AdaptionRules rules, final Adaptive source, final Span target) {
     super(rules);
-    this.timestampMicroseconds = timestampMicroseconds;
     this.source = source;
     this.target = target;
   }
 
-  final void processLog(final String event) {
-    if (!processRules(AdaptionRuleType.LOG, null, event))
-      log(event);
-  }
-
-  void log(final Object value) {
-    if (timestampMicroseconds > 0)
-      target.log(timestampMicroseconds, value.toString());
-    else
-      target.log(value.toString());
+  void processLog(final long timestampMicroseconds, final String event) {
+    if (!processRules(AdaptionType.LOG, timestampMicroseconds, null, event))
+      adaptLog(timestampMicroseconds, null, event);
   }
 
   @Override
-  void adaptLogField(final String key, final Object value) {
-    log(value);
+  void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
+    target.log(timestampMicroseconds, value.toString());
   }
 
   @Override

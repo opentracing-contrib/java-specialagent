@@ -1,11 +1,11 @@
 package io.opentracing.contrib.specialagent.adaption;
 
 abstract class AdaptionRule<T,V> {
-  final AdaptionRuleType type;
+  final AdaptionType type;
   final String key;
   final AdaptedOutput[] outputs;
 
-  AdaptionRule(final AdaptionRuleType type, final String key, final AdaptedOutput[] outputs) {
+  AdaptionRule(final AdaptionType type, final String key, final AdaptedOutput[] outputs) {
     this.type = type;
     this.key = key;
     this.outputs = outputs;

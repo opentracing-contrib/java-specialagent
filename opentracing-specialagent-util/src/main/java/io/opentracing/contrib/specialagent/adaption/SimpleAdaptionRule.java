@@ -13,7 +13,7 @@ class SimpleAdaptionRule extends AdaptionRule<Object,Boolean> {
 
   private final Object value;
 
-  SimpleAdaptionRule(final Object value, final AdaptionRuleType type, final String key, final AdaptedOutput[] outputs) {
+  SimpleAdaptionRule(final Object value, final AdaptionType type, final String key, final AdaptedOutput[] outputs) {
     super(type, key, outputs);
     this.value = value;
   }

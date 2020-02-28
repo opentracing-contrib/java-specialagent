@@ -63,13 +63,17 @@ public class AdaptiveSpan extends Adaptive implements Span {
 
   @Override
   public Span log(final String event) {
-    new LogEventAdapter(rules, 0, this, target).processLog(event);
-    return this;
+    return log(0, event);
   }
+
+  private LogEventAdapter logEventAdapter;
 
   @Override
   public Span log(final long timestampMicroseconds, final String event) {
-    new LogEventAdapter(rules, timestampMicroseconds, this, target).processLog(event);
+    if (logEventAdapter == null)
+      logEventAdapter = new LogEventAdapter(rules, this, target);
+
+    logEventAdapter.processLog(timestampMicroseconds, event);
     return this;
   }
 
@@ -101,7 +105,7 @@ public class AdaptiveSpan extends Adaptive implements Span {
   }
 
   @Override
-  void adaptLogField(final String key, final Object value) {
+  void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
     target.log(Collections.singletonMap(key, value));
   }
 

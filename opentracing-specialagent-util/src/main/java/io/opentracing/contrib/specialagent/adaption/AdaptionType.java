@@ -1,10 +1,10 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-public enum AdaptionRuleType {
+public enum AdaptionType {
   LOG("log") {
     @Override
-    void apply(final Adapter adapter, final String key, final Object value) {
-      adapter.adaptLogField(key, value);
+    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
+      adapter.adaptLog(timestampMicroseconds, key, value);
     }
 
     @Override
@@ -12,16 +12,15 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateOutputKey(final AdaptionRuleType matchType, final String matchKey, final String outputKey, final String subject) {
-      final boolean matchLogEvent = matchType == AdaptionRuleType.LOG && matchKey == null;
-      if (!matchLogEvent && matchKey == null && outputKey == null)
+    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
+      if (type != AdaptionType.LOG && matchKey == null && outputKey == null)
         throw new IllegalStateException(subject + "missing output key for log fields");
     }
   },
   SERVICE_NAME("serviceName") {
     @Override
-    void apply(final Adapter adapter, final String key, final Object value) {
-      throw new IllegalStateException();
+    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -31,13 +30,13 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateOutputKey(final AdaptionRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
       throw new IllegalStateException(subject + "serviceName cannot be used as output");
     }
   },
   OPERATION_NAME("operationName") {
     @Override
-    void apply(final Adapter adapter, final String key, final Object value) {
+    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
       adapter.adaptOperationName(value.toString());
     }
 
@@ -48,14 +47,14 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateOutputKey(final AdaptionRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
       if (outputKey != null)
         throw new IllegalStateException(subject + "operationName cannot have output key");
     }
   },
   TAG("tag") {
     @Override
-    void apply(final Adapter adapter, final String key, final Object value) {
+    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
       adapter.adaptTag(key, value);
     }
 
@@ -66,7 +65,7 @@ public enum AdaptionRuleType {
     }
 
     @Override
-    void validateOutputKey(final AdaptionRuleType matchType, final String matchKey, final String outputKey, final String subject) {
+    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
       if (matchKey == null && outputKey == null)
         throw new IllegalStateException(subject + "missing output key for tag");
     }
@@ -74,7 +73,7 @@ public enum AdaptionRuleType {
 
   private final String tagName;
 
-  private AdaptionRuleType(final String tagName) {
+  private AdaptionType(final String tagName) {
     this.tagName = tagName;
   }
 
@@ -88,12 +87,12 @@ public enum AdaptionRuleType {
     }
   }
 
-  abstract void apply(Adapter adapter, String key, Object value);
-  abstract void validateOutputKey(AdaptionRuleType matchType, String matchKey, String outputKey, String subject);
+  abstract void adapt(Adapter adapter, long timestampMicroseconds, String key, Object value);
+  abstract void validateOutputKey(AdaptionType type, String matchKey, String outputKey, String subject);
   abstract void validateRule(AdaptionRule<?,?> rule, String subject);
 
-  public static AdaptionRuleType fromString(final String str) {
-    for (final AdaptionRuleType value : values())
+  public static AdaptionType fromString(final String str) {
+    for (final AdaptionType value : values())
       if (value.tagName.equals(str))
         return value;
 

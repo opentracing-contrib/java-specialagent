@@ -6,12 +6,18 @@ abstract class Adaptive extends Adapter {
   }
 
   final void processOperationName(final String operationName) {
-    if (!processRules(AdaptionRuleType.OPERATION_NAME, null, operationName))
+    if (!processRules(AdaptionType.OPERATION_NAME, 0, null, operationName))
       adaptOperationName(operationName);
   }
 
+  final void processServiceName(final String serviceName) {
+    // Cannot set the service name, only process it
+    if (serviceName != null)
+      processRules(AdaptionType.SERVICE_NAME, 0, null, serviceName);
+  }
+
   final void processTag(final String key, final Object value) {
-    if (!processRules(AdaptionRuleType.TAG, key, value))
+    if (!processRules(AdaptionType.TAG, 0, key, value))
       adaptTag(key, value);
   }
 }

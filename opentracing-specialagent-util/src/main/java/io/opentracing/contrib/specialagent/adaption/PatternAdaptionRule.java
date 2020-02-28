@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 class PatternAdaptionRule extends AdaptionRule<Pattern,Matcher> {
   private final Pattern pattern;
 
-  PatternAdaptionRule(final Pattern pattern, final AdaptionRuleType type, final String key, final AdaptedOutput[] outputs) {
+  PatternAdaptionRule(final Pattern pattern, final AdaptionType type, final String key, final AdaptedOutput[] outputs) {
     super(type, key, outputs);
     this.pattern = pattern;
   }

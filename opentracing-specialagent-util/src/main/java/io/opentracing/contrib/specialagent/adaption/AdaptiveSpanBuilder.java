@@ -18,10 +18,7 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
     super(rules);
     this.target = tracer.buildSpan(operationName);
     processOperationName(operationName);
-    if (serviceName != null) {
-      // Cannot set the service name, only process it
-      processRules(AdaptionRuleType.SERVICE_NAME, null, serviceName);
-    }
+    processServiceName(serviceName);
   }
 
   @Override
@@ -123,7 +120,7 @@ public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder 
   }
 
   @Override
-  void adaptLogField(final String key, final Object value) {
+  void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
     if (log == null)
       log = new ArrayList<>();
 

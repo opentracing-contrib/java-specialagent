@@ -5,7 +5,7 @@ import java.util.Map;
 
 import io.opentracing.Span;
 
-public class LogFieldAdapter extends Adapter {
+final class LogFieldAdapter extends Adapter {
   private final Adaptive source;
   private final Span target;
 
@@ -17,12 +17,12 @@ public class LogFieldAdapter extends Adapter {
     this.target = target;
   }
 
-  final void processLog(final long timestampMicroseconds, final Map<String,?> fields) {
+  void processLog(final long timestampMicroseconds, final Map<String,?> fields) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
       for (final AdaptionRule<?,?> rule : rules.getSpanRules(key)) {
-        if (rule.type != AdaptionRuleType.LOG)
+        if (rule.type != AdaptionType.LOG)
           continue;
 
         final Object match = rule.match(value);
@@ -34,7 +34,7 @@ public class LogFieldAdapter extends Adapter {
     }
 
     // nothing matched
-    log(fields, timestampMicroseconds);
+    log(timestampMicroseconds, fields);
   }
 
   private <T,V>void replaceLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<T,V> rule, final Object match, final Object input) {
@@ -42,28 +42,25 @@ public class LogFieldAdapter extends Adapter {
       final String key = entry.getKey();
       final Object value = entry.getValue();
       if (key.equals(rule.key))
-        processMatch(rule, match, input);
-      else if (!processRules(AdaptionRuleType.LOG, key, value))
-        adaptLogField(key, value);
+        processMatch(rule, timestampMicroseconds, match, input);
+      else if (!processRules(AdaptionType.LOG, timestampMicroseconds, key, value))
+        adaptLog(timestampMicroseconds, key, value);
     }
 
     this.log(timestampMicroseconds);
   }
 
-  void log(final Map<String,?> fields, final long timestampMicroseconds) {
-    if (timestampMicroseconds > 0)
-      target.log(timestampMicroseconds, fields);
-    else
-      target.log(fields);
+  void log(final long timestampMicroseconds, final Map<String,?> fields) {
+    target.log(timestampMicroseconds, fields);
   }
 
   void log(final long timestampMicroseconds) {
     if (fields != null)
-      log(fields, timestampMicroseconds);
+      log(timestampMicroseconds, fields);
   }
 
   @Override
-  void adaptLogField(final String key, final Object value) {
+  void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
     if (fields == null)
       fields = new LinkedHashMap<>();
 

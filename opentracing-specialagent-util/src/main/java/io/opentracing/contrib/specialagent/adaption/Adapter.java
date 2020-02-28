@@ -8,17 +8,17 @@ abstract class Adapter {
   }
 
   abstract void adaptTag(String key, Object value);
-  abstract void adaptLogField(String key, Object value);
+  abstract void adaptLog(long timestampMicroseconds, String key, Object value);
   abstract void adaptOperationName(String name);
 
-  final boolean processRules(final AdaptionRuleType type, final String key, final Object value) {
+  final boolean processRules(final AdaptionType type, final long timestampMicroseconds, final String key, final Object value) {
     for (final AdaptionRule<?,?> rule : rules.getSpanRules(key)) {
       if (rule.type != type)
         continue;
 
       final Object match = rule.match(value);
       if (match != null) {
-        processMatch(rule, match, value);
+        processMatch(rule, timestampMicroseconds, match, value);
         return true;
       }
     }
@@ -26,12 +26,13 @@ abstract class Adapter {
     return false;
   }
 
-  final void processMatch(final AdaptionRule rule, final Object match, final Object input) {
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  final void processMatch(final AdaptionRule rule, final long timestampMicroseconds, final Object match, final Object input) {
     if (rule.outputs != null) {
       for (final AdaptedOutput adaptedOutput : rule.outputs) {
-        final Object output = rule.adapt(match, input, adaptedOutput.value);
         final String key = adaptedOutput.key != null ? adaptedOutput.key : rule.key;
-        adaptedOutput.type.apply(this, key, output);
+        final Object output = rule.adapt(match, input, adaptedOutput.value);
+        adaptedOutput.type.adapt(this, timestampMicroseconds, key, output);
       }
     }
   }
