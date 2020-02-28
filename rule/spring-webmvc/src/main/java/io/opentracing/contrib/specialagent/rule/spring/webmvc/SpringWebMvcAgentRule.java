@@ -35,7 +35,7 @@ public class SpringWebMvcAgentRule extends AgentRule {
   public static boolean initialized;
 
   @Override
-  public boolean isDeferrable(final Instrumentation inst) {
+  public boolean isDeferrer(final Instrumentation inst) {
     try {
       Class.forName("org.springframework.web.servlet.FrameworkServlet", false, ClassLoader.getSystemClassLoader());
     }

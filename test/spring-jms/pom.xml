@@ -27,9 +27,6 @@
   <artifactId>spring-jms</artifactId>
   <packaging>pom</packaging>
   <name>SpecialAgent Tests for Spring JMS</name>
-  <properties>
-    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
-  </properties>
   <modules>
     <module>spring-jms-5.0.0</module>
     <module>spring-jms-5.2.2</module>

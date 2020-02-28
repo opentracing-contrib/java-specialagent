@@ -28,26 +28,38 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringWebFluxChainAgentRule extends AgentRule {
+public class SpringWebFluxBuilderAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.web.server.handler.DefaultWebFilterChain")))
+      // in spring-webflux 5.0.x DefaultWebFilterChain.initChain() doesn't exist therefore use WebHttpHandlerBuilder$SortedBeanContainer.getFilters():
+      .type(named("org.springframework.web.server.adapter.WebHttpHandlerBuilder$SortedBeanContainer"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringWebFluxChainAgentRule.class).on(named("initChain")));
+          return builder.visit(Advice.to(Filters.class).on(named("getFilters")));
+        }})
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.web.reactive.function.client.WebClient$Builder"))))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(FluxClient.class).on(named("build")));
         }}));
   }
 
-  @Override
-  public boolean isDeferrable() {
-    return false;
+  public static class Filters {
+    @Advice.OnMethodExit
+    public static void enter(final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
+      if (isEnabled("SpringWebFluxBuilderAgentRule", origin))
+        returned = SpringWebFluxAgentIntercept.filters(returned);
+    }
   }
 
-  @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, @Advice.Argument(typing = Typing.DYNAMIC, readOnly = false, value = 0) Object filters) {
-    if (isEnabled("SpringWebFluxChainAgentRule", origin))
-      filters = SpringWebFluxAgentIntercept.filters(filters);
+  public static class FluxClient {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled("SpringWebFluxBuilderAgentRule", origin))
+        SpringWebFluxAgentIntercept.client(thiz);
+    }
   }
 }

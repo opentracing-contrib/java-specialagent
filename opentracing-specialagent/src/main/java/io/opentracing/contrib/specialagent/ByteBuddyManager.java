@@ -110,8 +110,8 @@ public class ByteBuddyManager extends Manager {
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  LinkedHashMap<AgentRule,Integer> scanRules(final Instrumentation inst, final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
-    LinkedHashMap<AgentRule,Integer> deferrers = null;
+  Deferrers scanRules(final Instrumentation inst, final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
+    Deferrers deferrers = null;
     AgentRule agentRule = null;
     try {
       // Prepare the agent rules
@@ -157,11 +157,17 @@ public class ByteBuddyManager extends Manager {
 
               classNameToName.put(agentClass.getName(), pluginManifest.name);
               agentRule = (AgentRule)agentClass.getConstructor().newInstance();
-              if (agentRule.isDeferrable(inst)) {
+              if (agentRule.isDeferrer(inst)) {
                 if (deferrers == null)
-                  deferrers = new LinkedHashMap<>(1);
+                  deferrers = new Deferrers();
 
-                deferrers.put(agentRule, index);
+                deferrers.getDeferrers().put(agentRule, index);
+              }
+              else if (!agentRule.isDeferrable()) {
+                if (deferrers == null)
+                  deferrers = new Deferrers();
+
+                deferrers.getNonDeferrables().put(agentRule, index);
               }
               else {
                 agentRules.put(agentRule, index);

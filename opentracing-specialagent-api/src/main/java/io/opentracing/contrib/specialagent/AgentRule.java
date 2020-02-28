@@ -151,8 +151,19 @@ public abstract class AgentRule {
    *         {@code false} for all {@link AgentRule}s, the SpecialAgent will
    *         invoke {@code init} immediately.
    */
-  public boolean isDeferrable(final Instrumentation inst) {
+  public boolean isDeferrer(final Instrumentation inst) {
     return false;
+  }
+
+  /**
+   * Returns {@code true} if the loading of this {@code AgentRule} can be
+   * deferred, otherwise {@code false}.
+   *
+   * @return {@code true} if the loading of this {@code AgentRule} can be
+   *         deferred, otherwise {@code false}.
+   */
+  public boolean isDeferrable() {
+    return true;
   }
 
   public abstract Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception;

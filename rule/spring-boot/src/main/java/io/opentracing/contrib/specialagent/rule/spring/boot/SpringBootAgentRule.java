@@ -36,7 +36,7 @@ public class SpringBootAgentRule extends AgentRule {
   public static boolean initialized;
 
   @Override
-  public boolean isDeferrable(final Instrumentation inst) {
+  public boolean isDeferrer(final Instrumentation inst) {
     for (int i = 0; i < testClasses.length; ++i) {
       try {
         Class.forName(testClasses[i], false, ClassLoader.getSystemClassLoader());

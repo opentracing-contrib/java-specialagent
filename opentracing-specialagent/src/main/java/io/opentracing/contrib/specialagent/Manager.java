@@ -61,12 +61,39 @@ public abstract class Manager {
     return ClassLoader.getSystemClassLoader().getResources(file);
   }
 
+  class Deferrers {
+    private LinkedHashMap<AgentRule,Integer> deferrers;
+    private LinkedHashMap<AgentRule,Integer> nonDeferables;
+
+    LinkedHashMap<AgentRule,Integer> getDeferrers() {
+      if (deferrers == null)
+        deferrers = new LinkedHashMap<>(1);
+
+      return deferrers;
+    }
+
+    boolean hasDeferrers() {
+      return deferrers != null && deferrers.size() > 0;
+    }
+
+    LinkedHashMap<AgentRule,Integer> getNonDeferrables() {
+      if (nonDeferables == null)
+        nonDeferables = new LinkedHashMap<>(1);
+
+      return nonDeferables;
+    }
+
+    boolean hasNonDeferrables() {
+      return nonDeferables != null && nonDeferables.size() > 0;
+    }
+  }
+
   /**
    * Scans the rules from {@code agentRules}, prepares the provided arguments to
    * be used in a subsequent calls to
    * {@link #loadRules(Instrumentation,Map,Event[])}, and returns a map of
    * {@link AgentRule} that are identified to be deferrers via
-   * {@link AgentRule#isDeferrable(Instrumentation)}.
+   * {@link AgentRule#isDeferrer(Instrumentation)}.
    *
    * @param inst The {@code Instrumentation} instance.
    * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
@@ -85,7 +112,7 @@ public abstract class Manager {
    *         {@link #loadRules(Instrumentation,Map,Event[])}.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract LinkedHashMap<AgentRule,Integer> scanRules(Instrumentation inst, LinkedHashMap<AgentRule,Integer> agentRules, ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
+  abstract Deferrers scanRules(Instrumentation inst, LinkedHashMap<AgentRule,Integer> agentRules, ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in

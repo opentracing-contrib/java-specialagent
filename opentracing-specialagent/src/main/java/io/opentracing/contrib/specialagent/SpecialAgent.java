@@ -478,7 +478,7 @@ public class SpecialAgent extends SpecialAgentBase {
           }
         }, classNameToName);
 
-        final LinkedHashMap<AgentRule,Integer> deferrers = manager.scanRules(inst, agentRules, pluginsClassLoader, ruleJarToIndex, classNameToName, pluginManifestDirectory);
+        final Manager.Deferrers deferrers = manager.scanRules(inst, agentRules, pluginsClassLoader, ruleJarToIndex, classNameToName, pluginManifestDirectory);
 
         final String initDeferProperty = System.getProperty(INIT_DEFER);
         if (initDeferProperty != null) {
@@ -504,7 +504,7 @@ public class SpecialAgent extends SpecialAgentBase {
           logger.info("|=============================================================='");
         }
 
-        if (deferrers == null) {
+        if (deferrers == null || !deferrers.hasDeferrers()) {
           if (attachMode == AttachMode.STATIC_DEFERRED) {
             logger.info("' 0 deferrers were detected, overriding to: -Dsa.init.defer=false");
             attachMode = AttachMode.STATIC;
@@ -515,13 +515,18 @@ public class SpecialAgent extends SpecialAgentBase {
           }
         }
         else {
-          logger.info("' " + deferrers.size() + " deferrers were detected:");
-          for (final AgentRule deferrer : deferrers.keySet())
+          logger.info("' " + deferrers.getDeferrers().size() + " deferrers were detected:");
+          for (final AgentRule deferrer : deferrers.getDeferrers().keySet())
             logger.info("  " + deferrer.getClass().getName());
 
           if (attachMode == AttachMode.STATIC_DEFERRED) {
-            // Just load the deferrers
-            manager.loadRules(inst, deferrers, events);
+            // Load deferrers
+            manager.loadRules(inst, deferrers.getDeferrers(), events);
+
+            // Load non-deferrables
+            if (deferrers.hasNonDeferrables())
+              manager.loadRules(inst, deferrers.getNonDeferrables(), events);
+
             return;
           }
         }
