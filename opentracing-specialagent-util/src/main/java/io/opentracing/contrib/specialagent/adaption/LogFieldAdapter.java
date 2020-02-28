@@ -1,9 +1,9 @@
 package io.opentracing.contrib.specialagent.adaption;
 
+import io.opentracing.Span;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import io.opentracing.Span;
 
 final class LogFieldAdapter extends Adapter {
   private final Adaptive source;
@@ -51,7 +51,10 @@ final class LogFieldAdapter extends Adapter {
   }
 
   void log(final long timestampMicroseconds, final Map<String,?> fields) {
-    target.log(timestampMicroseconds, fields);
+    if (timestampMicroseconds > 0)
+      target.log(timestampMicroseconds, fields);
+    else
+      target.log(fields);
   }
 
   void log(final long timestampMicroseconds) {
