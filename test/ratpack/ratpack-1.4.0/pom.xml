@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.ratpack</groupId>
     <artifactId>ratpack</artifactId>
-    <version>1.5.9-SNAPSHOT</version>
+    <version>1.5.9</version>
   </parent>
   <artifactId>ratpack-1.4.0</artifactId>
   <name>SpecialAgent Test for Ratpack 1.4.0</name>

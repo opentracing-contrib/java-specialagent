@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.sparkjava</groupId>
     <artifactId>sparkjava</artifactId>
-    <version>1.5.9-SNAPSHOT</version>
+    <version>1.5.9</version>
   </parent>
   <artifactId>sparkjava-2.9.1</artifactId>
   <name>SpecialAgent Test for SparkJava 2.9.1</name>

@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test</groupId>
     <artifactId>test</artifactId>
-    <version>1.5.9-SNAPSHOT</version>
+    <version>1.5.9</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test.rabbitmq-client</groupId>
   <artifactId>rabbitmq-client</artifactId>
