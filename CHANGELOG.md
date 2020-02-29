@@ -9,6 +9,7 @@
 * Concurrent-safe and self-healing builds in Travis CI (#429 #436)
 * Implement `LocalSpanContext` to avoid duplication of `Context` pattern (#432 #433)
 * Refactor duplicated `onError(...)` methods to `AgentRuleUtil` (#435)
+* Upgrade LightStep Tracer Plugin to `v0.19.0` (#447)
 
 ## v1.5.8 (2020-02-14)
 * New instrumentation plugins: Mule 4 (#324), Pulsar Functions (#398)
