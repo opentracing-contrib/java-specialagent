@@ -17,7 +17,7 @@ enum AdaptionType {
         throw new IllegalStateException(subject + "missing output key for log fields");
     }
   },
-  SERVICE_NAME("serviceName") {
+  SPAN("span") {
     @Override
     void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
       throw new UnsupportedOperationException();
@@ -26,12 +26,14 @@ enum AdaptionType {
     @Override
     void validateRule(final AdaptionRule<?,?> rule, final String subject) {
       if (rule.key != null)
-        throw new IllegalStateException(subject + "key for serviceName must be null");
+        throw new IllegalStateException(subject + "key for span must be null");
+      if (rule.getPredicate() != null)
+        throw new IllegalStateException(subject + "value and valueRegex for span must be null");
     }
 
     @Override
     void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
-      throw new IllegalStateException(subject + "serviceName cannot be used as output");
+      throw new IllegalStateException(subject + "span cannot be used as output");
     }
   },
   OPERATION_NAME("operationName") {
@@ -73,7 +75,7 @@ enum AdaptionType {
 
   private final String tagName;
 
-  private AdaptionType(final String tagName) {
+  AdaptionType(final String tagName) {
     this.tagName = tagName;
   }
 

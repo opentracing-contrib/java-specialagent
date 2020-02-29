@@ -1,0 +1,9 @@
+{
+  "expectedError": "test: rule 0: key for span must be null",
+  "rules": [
+    {
+      "type": "span",
+      "key": "k1"
+    }
+  ]
+}

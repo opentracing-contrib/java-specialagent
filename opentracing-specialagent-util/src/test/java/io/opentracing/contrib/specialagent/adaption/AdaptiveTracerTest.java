@@ -121,7 +121,7 @@ public class AdaptiveTracerTest {
     return new AdaptiveTracer(mockTracer, rules) {
       @Override
       public SpanBuilder buildSpan(final String operationName) {
-        final AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules, "serviceName") {
+        final AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules) {
           @Override
           protected AdaptiveSpan newAdaptiveSpan(final Span span) {
             return new AdaptiveSpan(span, rules) {

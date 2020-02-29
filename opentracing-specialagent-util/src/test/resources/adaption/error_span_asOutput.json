@@ -1,0 +1,13 @@
+{
+  "expectedError": "test: rule 0: output 0: span cannot be used as output",
+  "rules": [
+    {
+      "type": "operationName",
+      "output": [
+        {
+          "type": "span"
+        }
+      ]
+    }
+  ]
+}

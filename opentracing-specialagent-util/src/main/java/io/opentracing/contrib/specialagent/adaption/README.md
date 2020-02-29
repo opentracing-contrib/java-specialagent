@@ -215,24 +215,25 @@ If you need to apply a rule globally, you can use `all`, e.g. for blacklisting a
 }
 ```
 
-## ServiceName
+## Span start
 
-You can create a tag from the service name as follows:
+You can add arbitrary tags when a span is started as follows:
 
  ```json
 {
   "jedis": [
     {
-      "type": "serviceName",
+      "type": "span",
       "output": [
         {
           "type": "tag",
-          "key": "service"
+          "key": "service",
+          "value": "my_service"
         }
       ]
     }
   ]
 }
 ```
-
-Note that this feature is only supported for LightStep and Jaeger.
+                               
+This would add a tag `service` with value `my_service` to all spans. 

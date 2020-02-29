@@ -2,18 +2,21 @@
   "scenario": "operationName",
   "rules": [
     {
-      "type": "serviceName",
+      "type": "span",
       "output": [
         {
           "type": "log",
-          "key": "lop"
+          "key": "lop",
+          "value": "serviceName"
         },
         {
-          "type": "operationName"
+          "type": "operationName",
+          "value": "serviceName"
         },
         {
           "type": "tag",
-          "key": "top"
+          "key": "top",
+          "value": "serviceName"
         }
       ]
     }

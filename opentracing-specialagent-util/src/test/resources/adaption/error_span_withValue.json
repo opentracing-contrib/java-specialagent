@@ -1,0 +1,9 @@
+{
+  "expectedError": "test: rule 0: value and valueRegex for span must be null",
+  "rules": [
+    {
+      "type": "span",
+      "value": "v"
+    }
+  ]
+}

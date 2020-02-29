@@ -10,10 +10,9 @@ abstract class Adaptive extends Adapter {
       adaptOperationName(operationName);
   }
 
-  final void processServiceName(final String serviceName) {
-    // Cannot set the service name, only process it
-    if (serviceName != null)
-      processRules(AdaptionType.SERVICE_NAME, 0, null, serviceName);
+  final void processSpanStart() {
+    // Cannot set the span start, only process it
+    processRules(AdaptionType.SPAN, 0, null, null);
   }
 
   final void processTag(final String key, final Object value) {
