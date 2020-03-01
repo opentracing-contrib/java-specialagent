@@ -16,8 +16,6 @@
 package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
 import java.net.HttpURLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -25,23 +23,18 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class HttpURLConnectionAgentIntercept {
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
   static final String COMPONENT_NAME = "http-url-connection";
 
-  private static class Context {
-    private Span span;
-    private Scope scope;
-    private int counter = 1;
-  }
-
   public static void enter(final Object thiz, final boolean connected) {
-    if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
 
@@ -65,28 +58,23 @@ public class HttpURLConnectionAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpURLConnectionInjectAdapter(connection));
 
-    final Context context = new Context();
-    contextHolder.set(context);
-    context.span = span;
-    context.scope = scope;
+    LocalSpanContext.set(span, scope);
   }
 
   public static void exit(final Throwable thrown, int responseCode) {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context == null)
       return;
 
-    if (--context.counter != 0)
+    if (context.decrementAndGet() != 0)
       return;
 
     if (thrown != null)
-      onError(thrown, context.span);
+      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
     else
-      context.span.setTag(Tags.HTTP_STATUS, responseCode);
+      context.getSpan().setTag(Tags.HTTP_STATUS, responseCode);
 
-    context.scope.close();
-    context.span.finish();
-    contextHolder.remove();
+    context.closeAndFinish();
   }
 
   private static Integer getPort(final HttpURLConnection connection) {
@@ -98,18 +86,5 @@ public class HttpURLConnectionAgentIntercept {
       return 443;
 
     return 80;
-  }
-
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
   }
 }

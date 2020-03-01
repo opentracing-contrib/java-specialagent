@@ -26,7 +26,7 @@ import io.opentracing.util.GlobalTracer;
 
 @SuppressWarnings("deprecation")
 public class SpringWebAgentIntercept {
-  public static void enter(Object thiz) {
+  public static void enter(final Object thiz) {
     final RestTemplate restTemplate = (RestTemplate)thiz;
     for (final ClientHttpRequestInterceptor interceptor : restTemplate.getInterceptors())
       if (interceptor instanceof TracingRestTemplateInterceptor)
@@ -35,7 +35,7 @@ public class SpringWebAgentIntercept {
     restTemplate.getInterceptors().add(new TracingRestTemplateInterceptor(GlobalTracer.get()));
   }
 
-  public static void enterAsync(Object thiz) {
+  public static void enterAsync(final Object thiz) {
     final AsyncRestTemplate restTemplate = (AsyncRestTemplate)thiz;
     for (final AsyncClientHttpRequestInterceptor interceptor : restTemplate.getInterceptors())
       if (interceptor instanceof TracingAsyncRestTemplateInterceptor)

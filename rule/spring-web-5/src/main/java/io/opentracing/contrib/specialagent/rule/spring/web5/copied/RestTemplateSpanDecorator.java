@@ -14,8 +14,6 @@
 package io.opentracing.contrib.specialagent.rule.spring.web5.copied;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +22,7 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 
 /**
@@ -98,15 +97,8 @@ public interface RestTemplateSpanDecorator {
 
     @Override
     public void onError(HttpRequest httpRequest, Throwable ex, Span span) {
-      Tags.ERROR.set(span, Boolean.TRUE);
-      span.log(errorLogs(ex));
+      AgentRuleUtil.setErrorTag(span, ex);
     }
 
-    public static Map<String, Object> errorLogs(Throwable ex) {
-      Map<String, Object> errorLogs = new HashMap<>(2);
-      errorLogs.put("event", Tags.ERROR.getKey());
-      errorLogs.put("error.object", ex);
-      return errorLogs;
-    }
   }
 }

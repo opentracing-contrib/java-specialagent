@@ -15,38 +15,25 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.kafka;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import io.opentracing.References;
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringKafkaAgentIntercept {
-  private static class Context {
-    private int counter = 1;
-    private Scope scope;
-    private Span span;
-  }
-
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-
   public static void onMessageEnter(final Object record) {
-    if (contextHolder.get() != null) {
-      ++contextHolder.get().counter;
+    if (LocalSpanContext.get() != null) {
+      LocalSpanContext.get().increment();
       return;
     }
-
-    final Context context = new Context();
-    contextHolder.set(context);
 
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder builder = tracer
@@ -62,30 +49,16 @@ public class SpringKafkaAgentIntercept {
     }
 
     final Span span = builder.start();
-    contextHolder.get().span = span;
-    contextHolder.get().scope = tracer.activateSpan(span);
+    LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
-  public static void onMessageExit(Throwable thrown) {
-    final Context context = contextHolder.get();
-    if (context != null) {
-      --context.counter;
-      if (context.counter == 0) {
-        if (thrown != null) {
-          captureException(context.span, thrown);
-        }
-        context.scope.close();
-        context.span.finish();
-        contextHolder.remove();
-      }
+  public static void onMessageExit(final Throwable thrown) {
+    final LocalSpanContext context = LocalSpanContext.get();
+    if (context != null && context.decrementAndGet() == 0) {
+      if (thrown != null)
+        AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+
+      context.closeAndFinish();
     }
-  }
-
-  private static void captureException(final Span span, final Throwable t) {
-    final Map<String,Object> exceptionLogs = new HashMap<>();
-    exceptionLogs.put("event", Tags.ERROR.getKey());
-    exceptionLogs.put("error.object", t);
-    span.log(exceptionLogs);
-    Tags.ERROR.set(span, true);
   }
 }

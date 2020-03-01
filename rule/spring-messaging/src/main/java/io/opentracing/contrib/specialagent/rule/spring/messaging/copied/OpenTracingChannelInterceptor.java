@@ -13,14 +13,6 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.messaging.copied;
 
-import io.opentracing.References;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.propagation.Format;
-import io.opentracing.tag.Tags;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.channel.AbstractMessageChannel;
@@ -31,6 +23,16 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ExecutorChannelInterceptor;
 import org.springframework.util.ClassUtils;
+
+import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
@@ -144,8 +146,7 @@ public class OpenTracingChannelInterceptor extends ChannelInterceptorAdapter imp
    */
   protected void handleException(Exception ex, Span span) {
     if (ex != null) {
-      Tags.ERROR.set(span, true);
-      // TODO add exception logs
+      AgentRuleUtil.setErrorTag(span, ex);
     }
   }
 

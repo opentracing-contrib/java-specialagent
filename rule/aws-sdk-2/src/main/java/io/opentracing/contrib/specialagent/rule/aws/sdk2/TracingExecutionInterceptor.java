@@ -15,10 +15,8 @@
 
 package io.opentracing.contrib.specialagent.rule.aws.sdk2;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import software.amazon.awssdk.core.interceptor.Context.AfterExecution;
@@ -75,15 +73,7 @@ public class TracingExecutionInterceptor implements ExecutionInterceptor {
       return;
 
     executionAttributes.putAttribute(SPAN_ATTRIBUTE, null);
-    Tags.ERROR.set(span, Boolean.TRUE);
-    span.log(errorLogs(context.exception()));
+    AgentRuleUtil.setErrorTag(span, context.exception());
     span.finish();
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable ex) {
-    Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", ex);
-    return errorLogs;
   }
 }
