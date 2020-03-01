@@ -1,7 +1,6 @@
 # Changes by Version
 
 ## v1.5.9 (2020-02-28)
-* Fix `spring-kafka` test failure for jdk8 (#393)
 * Enable Static Deferred Attach for `spring-kafka` integration test (#425)
 * Fix failing Pulsar Functions integration test (#418)
 * Selective assertion of span count in Pulsar Functions integration test (#419)
