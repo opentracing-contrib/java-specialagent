@@ -1,8 +1,10 @@
 {
-  "expectedError": "test: rule 0: invalid type",
+  "expectedError": "test.rules[0].input: Invalid type",
   "rules": [
     {
-      "type": "foo"
+      "input": {
+        "type": "foo"
+      }
     }
   ]
 }

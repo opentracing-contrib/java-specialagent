@@ -1,16 +1,6 @@
 package io.opentracing.contrib.specialagent.adaption;
 
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
-import com.grack.nanojson.JsonParser;
-import com.grack.nanojson.JsonParserException;
-import io.opentracing.Span;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,10 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonParserException;
+
+import io.opentracing.Span;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
 
 @RunWith(Parameterized.class)
 public class AdaptiveTracerTest {
@@ -44,12 +45,14 @@ public class AdaptiveTracerTest {
     return getResourceFiles("adaption").toArray(new URL[0]);
   }
 
+  private final URL resource;
   private final JsonObject root;
   private final List<AdaptiveSpanBuilder> spanBuilders = new ArrayList<>();
   private final List<LogFieldAdapter> logFieldAdapters = new ArrayList<>();
   private int regexMatches = 0;
 
   public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException {
+    this.resource = resource;
     try (final InputStream in = resource.openStream()) {
       root = JsonParser.object().from(in);
     }
@@ -74,20 +77,20 @@ public class AdaptiveTracerTest {
   }
 
   private AdaptionRules parseRules(final JsonArray jsonRules) {
-    final AdaptionRules rules = AdaptionRuleParser.parseRules(jsonRules,  "test");
-    for (final Map.Entry<String,List<AdaptionRule<?,?>>> entry : rules.keyToRules.entrySet()) {
-      final List<AdaptionRule<?,?>> list = entry.getValue();
+    final AdaptionRules rules = AdaptionRule.parseRules(jsonRules, "test");
+    for (final Map.Entry<String,List<AdaptionRule>> entry : rules.keyToRules.entrySet()) {
+      final List<AdaptionRule> list = entry.getValue();
       for (int i = 0; i < list.size(); ++i) {
-        final AdaptionRule<?,?> rule = list.get(i);
-        if (rule instanceof PatternAdaptionRule) {
-          list.set(i, new PatternAdaptionRule(((PatternAdaptionRule)rule).getPredicate(), rule.type, rule.key, rule.outputs) {
-            @Override
-            public Matcher match(final Object value) {
+        final AdaptionRule rule = list.get(i);
+        list.set(i, new AdaptionRule(rule.input, rule.outputs) {
+          @Override
+          public Object match(final Object value) {
+            if (this.input.getValue() instanceof Pattern)
               ++regexMatches;
-              return super.match(value);
-            }
-          });
-        }
+
+            return super.match(value);
+          }
+        });
       }
     }
 
@@ -214,8 +217,8 @@ public class AdaptiveTracerTest {
       if (adapter.getFields() != null)
         ++mapAllocations;
 
-    assertEquals(root.getNumber("expectedListAllocations", 0), listAllocations);
-    assertEquals(root.getNumber("expectedMapAllocations", 0), mapAllocations);
-    assertEquals(root.getNumber("expectedRegexMatches", 0), regexMatches);
+    assertEquals("expectedListAllocations", root.getNumber("expectedListAllocations", 0), listAllocations);
+    assertEquals("expectedMapAllocations", root.getNumber("expectedMapAllocations", 0), mapAllocations);
+    assertEquals("expectedRegexMatches", root.getNumber("expectedRegexMatches", 0), regexMatches);
   }
 }

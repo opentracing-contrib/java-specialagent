@@ -2,7 +2,9 @@
   "scenario": "operationName",
   "rules": [
     {
-      "type": "operationName"
+      "input": {
+        "type": "operationName"
+      }
     }
   ],
   "expectedSpans": [

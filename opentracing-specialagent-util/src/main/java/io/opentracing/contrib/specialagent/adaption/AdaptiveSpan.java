@@ -7,7 +7,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
 
-public class AdaptiveSpan extends Adaptive implements Span {
+public class AdaptiveSpan extends Adapter implements Span {
   private final Span target;
   private final AdaptionRules rules;
 
@@ -73,7 +73,7 @@ public class AdaptiveSpan extends Adaptive implements Span {
     if (logEventAdapter == null)
       logEventAdapter = new LogEventAdapter(rules, this, target);
 
-    logEventAdapter.processLog(timestampMicroseconds, event);
+    logEventAdapter.processLog(timestampMicroseconds, null, event);
     return this;
   }
 

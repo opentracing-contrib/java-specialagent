@@ -1,9 +1,11 @@
 {
-  "expectedError": "test: rule 0: value and valueRegex for span must be null",
+  "expectedError": "test.rules[0]: Value for type=start must be null",
   "rules": [
     {
-      "type": "span",
-      "value": "v"
+      "input": {
+        "type": "start",
+        "value": "v"
+      }
     }
   ]
 }

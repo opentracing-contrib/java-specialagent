@@ -1,11 +1,13 @@
 {
-  "expectedError": "test: rule 0: output 0: span cannot be used as output",
+  "expectedError": "test.rules[0].outputs[0]: type=start cannot be used as output",
   "rules": [
     {
-      "type": "operationName",
-      "output": [
+      "input": {
+        "type": "operationName"
+      },
+      "outputs": [
         {
-          "type": "span"
+          "type": "start"
         }
       ]
     }

@@ -3,18 +3,13 @@ package io.opentracing.contrib.specialagent.adaption;
 import io.opentracing.Span;
 
 final class LogEventAdapter extends Adapter {
-  private final Adaptive source;
+  private final Adapter source;
   private final Span target;
 
-  LogEventAdapter(final AdaptionRules rules, final Adaptive source, final Span target) {
+  LogEventAdapter(final AdaptionRules rules, final Adapter source, final Span target) {
     super(rules);
     this.source = source;
     this.target = target;
-  }
-
-  void processLog(final long timestampMicroseconds, final String event) {
-    if (!processRules(AdaptionType.LOG, timestampMicroseconds, null, event))
-      adaptLog(timestampMicroseconds, null, event);
   }
 
   @Override

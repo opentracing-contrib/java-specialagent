@@ -20,13 +20,13 @@ public class AdaptionRuleParserTest {
   @Test
   public void specificRulesHavePriorityOverGlobalRules() throws IOException {
     try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
-      final Map<String,AdaptionRules> rules = AdaptionRuleParser.parseRules(in);
+      final Map<String,AdaptionRules> rules = AdaptionRule.parseRules(in);
       assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
       assertTags(rules, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
     }
   }
 
-  private static void assertTags(Map<String,AdaptionRules> rules, String key, List<Map<String,String>> logs) {
+  private static void assertTags(final Map<String,AdaptionRules> rules, final String key, final List<Map<String,String>> logs) {
     final AdaptionRules adaptionRules = rules.get(key);
     final MockTracer mockTracer = new MockTracer();
     try (final AdaptiveTracer tracer = new AdaptiveTracer(mockTracer, adaptionRules)) {
@@ -37,7 +37,7 @@ public class AdaptionRuleParserTest {
 
       final List<MockSpan> spans = mockTracer.finishedSpans();
       assertEquals(1, spans.size());
-      MockSpan mockSpan = spans.get(0);
+      final MockSpan mockSpan = spans.get(0);
 
       assertEquals(2, mockSpan.logEntries().size());
       for (int i = 0; i < logs.size(); ++i) {
@@ -50,7 +50,7 @@ public class AdaptionRuleParserTest {
   @Test
   public void completeInvalidJson() {
     try {
-      AdaptionRuleParser.parseRules(new ByteArrayInputStream("invalid".getBytes()));
+      AdaptionRule.parseRules(new ByteArrayInputStream("invalid".getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {
@@ -61,10 +61,51 @@ public class AdaptionRuleParserTest {
   public void oneRuleInvalidJson() {
     final String json = "{\"invalid\": 1, \"jedis\": []}";
     try {
-      AdaptionRuleParser.parseRules(new ByteArrayInputStream(json.getBytes()));
+      AdaptionRule.parseRules(new ByteArrayInputStream(json.getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {
     }
+  }
+
+  @Test
+  public void testIsRegex() {
+    assertNull(AdaptionInput.parseRegex(null));
+    assertNull(AdaptionInput.parseRegex("abc"));
+    assertNull(AdaptionInput.parseRegex(""));
+
+    assertNull(AdaptionInput.parseRegex("\\\\s"));
+    assertNotNull(AdaptionInput.parseRegex("\\s"));
+
+    assertNull(AdaptionInput.parseRegex("?"));
+    assertNull(AdaptionInput.parseRegex("a\\?"));
+    assertNotNull(AdaptionInput.parseRegex("a?"));
+
+    assertNull(AdaptionInput.parseRegex("+"));
+    assertNull(AdaptionInput.parseRegex("a\\+"));
+    assertNotNull(AdaptionInput.parseRegex("a+"));
+
+    assertNull(AdaptionInput.parseRegex("*"));
+    assertNull(AdaptionInput.parseRegex("a\\*"));
+    assertNotNull(AdaptionInput.parseRegex("a*"));
+
+    assertNull(AdaptionInput.parseRegex("x\\{\\}"));
+    assertNull(AdaptionInput.parseRegex("x\\{1}"));
+    assertNull(AdaptionInput.parseRegex("x{1\\}"));
+    assertNull(AdaptionInput.parseRegex("x{}"));
+    assertNull(AdaptionInput.parseRegex("x{a}"));
+    assertNotNull(AdaptionInput.parseRegex("x{1}"));
+
+    assertNull(AdaptionInput.parseRegex("\\[\\]"));
+    assertNull(AdaptionInput.parseRegex("\\[a]"));
+    assertNull(AdaptionInput.parseRegex("[a\\]"));
+    assertNull(AdaptionInput.parseRegex("[]"));
+    assertNotNull(AdaptionInput.parseRegex("[a]"));
+
+    assertNull(AdaptionInput.parseRegex("\\."));
+    assertNotNull(AdaptionInput.parseRegex("\\\\."));
+
+    assertNull(AdaptionInput.parseRegex("\\*"));
+    assertNotNull(AdaptionInput.parseRegex("\\\\*"));
   }
 }

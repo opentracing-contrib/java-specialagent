@@ -2,12 +2,16 @@
   "scenario": "logFieldsTypes",
   "rules": [
     {
-      "type": "tag",
-      "key": "k2"
+      "input": {
+        "type": "tag",
+        "key": "k2"
+      }
     },
     {
-      "type": "log",
-      "key": "k2"
+      "input": {
+        "type": "log",
+        "key": "k2"
+      }
     }
   ],
   "expectedMapAllocations": 1,

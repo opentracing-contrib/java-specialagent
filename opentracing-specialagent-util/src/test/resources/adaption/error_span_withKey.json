@@ -1,9 +1,11 @@
 {
-  "expectedError": "test: rule 0: key for span must be null",
+  "expectedError": "test.rules[0]: Key for type=start must be null",
   "rules": [
     {
-      "type": "span",
-      "key": "k1"
+      "input": {
+        "type": "start",
+        "key": "k1"
+      }
     }
   ]
 }

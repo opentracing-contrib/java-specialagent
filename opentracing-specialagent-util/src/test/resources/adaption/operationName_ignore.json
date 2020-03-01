@@ -2,12 +2,16 @@
   "scenario": "operationNameLate",
   "rules": [
     {
-      "type": "operationName",
-      "value": "strange"
+      "input": {
+        "type": "operationName",
+        "value": "strange"
+      }
     },
     {
-      "type": "operationName",
-      "value": "strange2"
+      "input": {
+        "type": "operationName",
+        "value": "strange2"
+      }
     }
   ],
   "expectedSpans": [

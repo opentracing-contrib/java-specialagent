@@ -2,8 +2,10 @@
   "scenario": "operationName",
   "rules": [
     {
-      "type": "span",
-      "output": [
+      "input": {
+        "type": "start"
+      },
+      "outputs": [
         {
           "type": "log",
           "key": "lop",

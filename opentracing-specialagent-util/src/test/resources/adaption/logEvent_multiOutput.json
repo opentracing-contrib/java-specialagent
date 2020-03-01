@@ -2,8 +2,10 @@
   "scenario": "logEventTimestamp",
   "rules": [
     {
-      "type": "log",
-      "output": [
+      "input": {
+        "type": "log"
+      },
+      "outputs": [
         {
           "type": "log"
         },

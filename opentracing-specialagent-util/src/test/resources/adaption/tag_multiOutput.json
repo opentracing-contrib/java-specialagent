@@ -2,9 +2,11 @@
   "scenario": "tag2Spans",
   "rules": [
     {
-      "type": "tag",
-      "key": "key",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "key"
+      },
+      "outputs": [
         {
           "type": "log"
         },

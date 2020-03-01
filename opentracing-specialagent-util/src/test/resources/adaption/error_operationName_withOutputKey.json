@@ -1,9 +1,11 @@
 {
-  "expectedError": "test: rule 0: output 0: operationName cannot have output key",
+  "expectedError": "test.rules[0].outputs[0]: operationName cannot have output key",
   "rules": [
     {
-      "type": "operationName",
-      "output": [
+      "input": {
+        "type": "operationName"
+      },
+      "outputs": [
         {
           "type": "operationName",
           "key": "key"

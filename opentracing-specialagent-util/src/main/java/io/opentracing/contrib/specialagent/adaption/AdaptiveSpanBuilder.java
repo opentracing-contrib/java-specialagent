@@ -11,14 +11,14 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
-public class AdaptiveSpanBuilder extends Adaptive implements Tracer.SpanBuilder {
+public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
   private final Tracer.SpanBuilder target;
 
   AdaptiveSpanBuilder(final String operationName, final Tracer tracer, final AdaptionRules rules) {
     super(rules);
     this.target = tracer.buildSpan(operationName);
     processOperationName(operationName);
-    processSpanStart();
+    processStart();
   }
 
   @Override

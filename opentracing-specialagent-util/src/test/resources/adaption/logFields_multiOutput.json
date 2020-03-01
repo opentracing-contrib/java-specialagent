@@ -2,9 +2,11 @@
   "scenario": "logFieldsTimestamp",
   "rules": [
     {
-      "type": "log",
-      "key": "key",
-      "output": [
+      "input": {
+        "type": "log",
+        "key": "key"
+      },
+      "outputs": [
         {
           "type": "log"
         },

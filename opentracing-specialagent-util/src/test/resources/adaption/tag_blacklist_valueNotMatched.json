@@ -2,9 +2,11 @@
   "scenario": "tag",
   "rules": [
     {
-      "type": "tag",
-      "key": "key",
-      "value": "other"
+      "input": {
+        "type": "tag",
+        "key": "key",
+        "value": "other"
+      }
     }
   ],
   "expectedSpans": [

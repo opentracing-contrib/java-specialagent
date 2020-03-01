@@ -2,9 +2,11 @@
   "scenario": "operationName2Spans",
   "rules": [
     {
-      "type": "operationName",
-      "value": "newOperation",
-      "output": [
+      "input": {
+        "type": "operationName",
+        "value": "newOperation"
+      },
+      "outputs": [
         {
           "type": "log",
           "key": "lop"

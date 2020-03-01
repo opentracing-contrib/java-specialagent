@@ -18,8 +18,10 @@ The following rule definition blacklists the `http.url` tag:
 {
   "jedis": [
     {
-      "type": "tag",
-      "key": "http.url"
+      "input": {
+        "type": "tag",
+        "key": "http.url"
+      }
     }
   ]
 }
@@ -31,31 +33,53 @@ If you only want to blacklist `http.url` if it equals `http://example.com`, add 
 {
   "jedis": [
     {
-      "type": "tag",
-      "key": "http.url",
-      "value": "http://example.com"
+      "input": {
+        "type": "tag",
+        "key": "http.url",
+        "value": "http://example.com"
+      }
     }
   ]
 }
 ```
 
-If you want to blacklist all `http.url`s that start with `http://`, use a `valueRegex`:
+**`value` is interpreted as a regex.**
+
+If you want to blacklist all `http.url`s that start with `http://`, specify a regex in `value`:
 
 ```json
 {
   "jedis": [
     {
-      "type": "tag",
-      "key": "http.url",
-      "valueRegex": "http://.*"
+      "input": {
+        "type": "tag",
+        "key": "http.url",
+        "regex": "http://.*"
+      }
     }
   ]
 }
 ```
 
 Note
-1. The trailing `.*` is necessary, because the regular expression must match the entire tag value
-2. Use the [Java](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) pattern syntax
+1. The trailing `.*` is necessary, because the regular expression must match the entire tag value.
+2. Use the [Java](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) pattern syntax.
+
+If you want to blacklist a specific tag whose value is the string literal `Are you happy?`, make sure to escape the `?`, because `value` is interpreted as a regex:
+
+```json
+{
+  "jedis": [
+    {
+      "input": {
+        "type": "tag",
+        "key": "hello",
+        "regex": "Are you happy\?"
+      }
+    }
+  ]
+}
+```
 
 ## Blacklist a log entry
 
@@ -67,14 +91,16 @@ To blacklist a log event, use
 {
   "jedis": [
     {
-      "type": "log"
+      "input": {
+        "type": "log"
+      }
     }
   ]
 }
 ```
 
 This would blacklist all log events (for jedis).
-You can restrict the log events to be blacklisted using `value` or `valueRegex` (see above).
+You can restrict the log events to be blacklisted using `value` (see above).
 
 To blacklist a single field from a log entry with fields, use
 
@@ -82,12 +108,16 @@ To blacklist a single field from a log entry with fields, use
 {
   "jedis": [
     {
-      "type": "log",
-      "key": "http.method"
+      "input": {
+        "type": "log",
+        "key": "http.method"
+      }
     },
     {
-      "type": "log",
-      "key": "http.url"
+      "input": {
+        "type": "log",
+        "key": "http.url"
+      }
     }
   ]
 }
@@ -107,14 +137,16 @@ and this call can be blacklisted. The result is the same as if
 {
   "jedis": [
     {
-      "type": "operationName"
+      "input": {
+        "type": "operationName"
+      }
     }
   ]
 }
 ```
 
 This would blacklist all calls to `setOperationName` (in jedis).
-You can restrict calls to be blacklisted using `value` or `valueRegex` (see above).
+You can restrict calls to be blacklisted using `value` (see above).
 
 # Advanced use cases
 
@@ -129,10 +161,12 @@ you can redact specific parts of a value (tag, log or operationName).
 {
   "jedis": [
     {
-      "type": "tag",
-      "key": "db.statement",
-      "valueRegex": "(select * from user where first_name =).*",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "db.statement",
+        "value": "(select * from user where first_name =).*"
+      },
+      "outputs": [
         {
           "type": "tag",
           "value": "$1?"
@@ -143,7 +177,7 @@ you can redact specific parts of a value (tag, log or operationName).
 }
 ```
 
-In this example, `$1?` is the [replacement](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html#replaceAll(java.lang.String) string. If you don't use `valueRegex`, the output `value` would be interpreted as a plain string.
+In this example, `$1?` is the [replacement](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html#replaceAll(java.lang.String) string. If `value` does not specify a regex, the output `value` would be interpreted as a plain string.
 
 ## Multiple Outputs
 
@@ -155,10 +189,12 @@ you might want to transform the value - but keep the original value somewhere el
 {
   "jedis": [
     {
-      "type": "tag",
-      "key": "db.statement",
-      "valueRegex": "(select * from articles) where id =.*",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "db.statement",
+        "value": "(select * from articles) where id =.*"
+      }
+      "outputs": [
         {
           "type": "tag",
           "value": "$1"
@@ -182,10 +218,12 @@ In this case, it is a different tag - and you can specify the output tag using `
 {
   "jedis": [
     {
-      "type": "tag",
-      "key": "http.url",
-      "valueRegex": "(https?).*",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "http.url",
+        "value": "(https?).*"
+      },
+      "outputs": [
         {
           "type": "tag",
           "key": "http.protocol",
@@ -208,8 +246,10 @@ If you need to apply a rule globally, you can use `all`, e.g. for blacklisting a
 {
   "*": [
     {
-      "type": "tag",
-      "key": "http.url"
+      "input": {
+        "type": "tag",
+        "key": "http.url"
+      }
     }
   ]
 }
@@ -223,8 +263,10 @@ You can add arbitrary tags when a span is started as follows:
 {
   "jedis": [
     {
-      "type": "span",
-      "output": [
+      "input": {
+        "type": "span"
+      },
+      "outputs": [
         {
           "type": "tag",
           "key": "service",

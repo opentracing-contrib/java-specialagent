@@ -2,9 +2,11 @@
   "scenario": "logFieldsNumber",
   "rules": [
     {
-      "type": "log",
-      "key": "key",
-      "value": 1
+      "input": {
+        "type": "log",
+        "key": "key",
+        "value": 1
+      }
     }
   ],
   "expectedSpans": [

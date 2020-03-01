@@ -1,9 +1,11 @@
 {
   "*": [
     {
-      "type": "log",
-      "key": "db.statement",
-      "output": [
+      "input": {
+        "type": "log",
+        "key": "db.statement"
+      },
+      "outputs": [
         {
           "type": "log",
           "key": "*"
@@ -13,10 +15,12 @@
   ],
   "jedis": [
     {
-      "type": "log",
-      "key": "db.statement",
-      "valueRegex": "(select).*",
-      "output": [
+      "input": {
+        "type": "log",
+        "key": "db.statement",
+        "value": "(select).*"
+      },
+      "outputs": [
         {
           "type": "log",
           "key": "jedis"

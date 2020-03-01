@@ -2,9 +2,11 @@
   "scenario": "tag",
   "rules": [
     {
-      "type": "tag",
-      "key": "key",
-      "valueRegex": "var.*"
+      "input": {
+        "type": "tag",
+        "key": "key",
+        "value": "var.*"
+      }
     }
   ],
   "expectedRegexMatches": 1,

@@ -2,9 +2,11 @@
   "scenario": "tag",
   "rules": [
     {
-      "type": "tag",
-      "key": "key",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "key"
+      },
+      "outputs": [
         {
           "type": "tag",
           "key": "newKey"

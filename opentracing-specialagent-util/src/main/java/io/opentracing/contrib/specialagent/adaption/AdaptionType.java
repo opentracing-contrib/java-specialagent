@@ -1,6 +1,30 @@
 package io.opentracing.contrib.specialagent.adaption;
 
+import java.util.Objects;
+
+import com.grack.nanojson.JsonObject;
+
 enum AdaptionType {
+  START("start") {
+    @Override
+    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    void validateInput(final AdaptionRule rule, final String subject) {
+      if (rule.input.getKey() != null)
+        throw new IllegalStateException(subject + ": Key for type=start must be null");
+
+      if (rule.input.getValue() != null)
+        throw new IllegalStateException(subject + ": Value for type=start must be null");
+    }
+
+    @Override
+    void validateOutput(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
+      throw new IllegalStateException(subject + ": type=start cannot be used as output");
+    }
+  },
   LOG("log") {
     @Override
     void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
@@ -8,50 +32,13 @@ enum AdaptionType {
     }
 
     @Override
-    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
+    void validateInput(final AdaptionRule rule, final String subject) {
     }
 
     @Override
-    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
+    void validateOutput(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
       if (type != AdaptionType.LOG && matchKey == null && outputKey == null)
-        throw new IllegalStateException(subject + "missing output key for log fields");
-    }
-  },
-  SPAN("span") {
-    @Override
-    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
-      if (rule.key != null)
-        throw new IllegalStateException(subject + "key for span must be null");
-      if (rule.getPredicate() != null)
-        throw new IllegalStateException(subject + "value and valueRegex for span must be null");
-    }
-
-    @Override
-    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
-      throw new IllegalStateException(subject + "span cannot be used as output");
-    }
-  },
-  OPERATION_NAME("operationName") {
-    @Override
-    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
-      adapter.adaptOperationName(value.toString());
-    }
-
-    @Override
-    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
-      if (rule.key != null)
-        throw new IllegalStateException(subject + "key for operationName must be null");
-    }
-
-    @Override
-    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
-      if (outputKey != null)
-        throw new IllegalStateException(subject + "operationName cannot have output key");
+        throw new IllegalStateException(subject + ": Missing output key for log fields");
     }
   },
   TAG("tag") {
@@ -61,15 +48,33 @@ enum AdaptionType {
     }
 
     @Override
-    void validateRule(final AdaptionRule<?,?> rule, final String subject) {
-      if (rule.key == null)
-        throw new IllegalStateException(subject + "tag without a key is not allowed");
+    void validateInput(final AdaptionRule rule, final String subject) {
+      if (rule.input.getKey() == null)
+        throw new IllegalStateException(subject + ": Tag without a key is not allowed");
     }
 
     @Override
-    void validateOutputKey(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
+    void validateOutput(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
       if (matchKey == null && outputKey == null)
-        throw new IllegalStateException(subject + "missing output key for tag");
+        throw new IllegalStateException(subject + ": Missing output key for tag");
+    }
+  },
+  OPERATION_NAME("operationName") {
+    @Override
+    void adapt(final Adapter adapter, final long timestampMicroseconds, final String key, final Object value) {
+      adapter.adaptOperationName(value.toString());
+    }
+
+    @Override
+    void validateInput(final AdaptionRule rule, final String subject) {
+      if (rule.input.getKey() != null)
+        throw new IllegalStateException(subject + ": Key for operationName must be null");
+    }
+
+    @Override
+    void validateOutput(final AdaptionType type, final String matchKey, final String outputKey, final String subject) {
+      if (outputKey != null)
+        throw new IllegalStateException(subject + ": operationName cannot have output key");
     }
   };
 
@@ -79,25 +84,29 @@ enum AdaptionType {
     this.tagName = tagName;
   }
 
-  void validate(final AdaptionRule<?,?> rule, final String subject) {
-    validateRule(rule, subject);
+  void validate(final AdaptionRule rule, final String subject) {
+    validateInput(rule, subject);
     if (rule.outputs != null) {
       for (int i = 0; i < rule.outputs.length; ++i) {
-        final AdaptedOutput output = rule.outputs[i];
-        output.type.validateOutputKey(rule.type, rule.key, output.key, subject + "output " + i + ": ");
+        final Adaption output = rule.outputs[i];
+        output.getType().validateOutput(rule.input.getType(), rule.input.getKey(), output.getKey(), subject + ".outputs[" + i + "]");
       }
     }
   }
 
   abstract void adapt(Adapter adapter, long timestampMicroseconds, String key, Object value);
-  abstract void validateOutputKey(AdaptionType type, String matchKey, String outputKey, String subject);
-  abstract void validateRule(AdaptionRule<?,?> rule, String subject);
+  abstract void validateOutput(AdaptionType type, String matchKey, String outputKey, String subject);
+  abstract void validateInput(AdaptionRule rule, String subject);
 
-  static AdaptionType fromString(final String str) {
+  private static AdaptionType fromString(final String str) {
     for (final AdaptionType value : values())
       if (value.tagName.equals(str))
         return value;
 
     return null;
+  }
+
+  static AdaptionType parseType(final JsonObject type, final String subject) {
+    return Objects.requireNonNull(AdaptionType.fromString(Objects.requireNonNull(type.getString("type"), subject + ".type: Is not a string")), subject + ": Invalid type");
   }
 }

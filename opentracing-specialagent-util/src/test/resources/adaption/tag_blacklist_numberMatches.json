@@ -2,9 +2,11 @@
   "scenario": "tagNumber",
   "rules": [
     {
-      "type": "tag",
-      "key": "key",
-      "value": 1
+      "input": {
+        "type": "tag",
+        "key": "key",
+        "value": 1
+      }
     }
   ],
   "expectedSpans": [

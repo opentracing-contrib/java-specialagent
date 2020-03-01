@@ -2,10 +2,12 @@
   "scenario": "tag",
   "rules": [
     {
-      "type": "tag",
-      "key": "key",
-      "valueRegex": "(va.?)ue",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "key",
+        "value": "(va.?)ue"
+      },
+      "outputs": [
         {
           "type": "tag",
           "value": "$1?"

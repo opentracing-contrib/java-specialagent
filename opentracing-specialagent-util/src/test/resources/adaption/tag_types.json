@@ -2,10 +2,12 @@
   "scenario": "tagTypes",
   "rules": [
     {
-      "type": "tag",
-      "key": "k1",
-      "value": "v1",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "k1",
+        "value": "v1"
+      },
+      "outputs": [
         {
           "type": "tag",
           "value": "new"
@@ -13,10 +15,12 @@
       ]
     },
     {
-      "type": "tag",
-      "key": "k2",
-      "value": 1,
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "k2",
+        "value": 1
+      },
+      "outputs": [
         {
           "type": "tag",
           "value": 2
@@ -24,9 +28,11 @@
       ]
     },
     {
-      "type": "tag",
-      "key": "k3",
-      "output": [
+      "input": {
+        "type": "tag",
+        "key": "k3"
+      },
+      "outputs": [
         {
           "type": "tag",
           "value": true

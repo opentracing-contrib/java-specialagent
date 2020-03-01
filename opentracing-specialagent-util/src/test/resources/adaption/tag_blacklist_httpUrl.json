@@ -2,8 +2,10 @@
   "scenario": "tagHttpUrl",
   "rules": [
     {
-      "type": "tag",
-      "key": "http.url"
+      "input": {
+        "type": "tag",
+        "key": "http.url"
+      }
     }
   ],
   "expectedSpans": [

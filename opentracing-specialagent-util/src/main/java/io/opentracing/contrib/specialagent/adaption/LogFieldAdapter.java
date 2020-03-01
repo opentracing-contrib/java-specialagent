@@ -6,12 +6,12 @@ import java.util.Map;
 import io.opentracing.Span;
 
 final class LogFieldAdapter extends Adapter {
-  private final Adaptive source;
+  private final Adapter source;
   private final Span target;
 
   private Map<String,Object> fields;
 
-  LogFieldAdapter(final AdaptionRules rules, final Adaptive source, final Span target) {
+  LogFieldAdapter(final AdaptionRules rules, final Adapter source, final Span target) {
     super(rules);
     this.source = source;
     this.target = target;
@@ -21,8 +21,8 @@ final class LogFieldAdapter extends Adapter {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
-      for (final AdaptionRule<?,?> rule : rules.getSpanRules(key)) {
-        if (rule.type != AdaptionType.LOG)
+      for (final AdaptionRule rule : rules.getRules(key)) {
+        if (rule.input.getType() != AdaptionType.LOG)
           continue;
 
         final Object match = rule.match(value);
@@ -37,14 +37,14 @@ final class LogFieldAdapter extends Adapter {
     log(timestampMicroseconds, fields);
   }
 
-  private <T,V>void adaptLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule<T,V> rule, final Object match, final Object input) {
+  private <T>void adaptLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule rule, final Object match, final Object input) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
-      if (key.equals(rule.key))
+      if (key.equals(rule.input.getKey()))
         processMatch(rule, timestampMicroseconds, match, input);
-      else if (!processRules(AdaptionType.LOG, timestampMicroseconds, key, value))
-        adaptLog(timestampMicroseconds, key, value);
+      else
+        processLog(timestampMicroseconds, key, value);
     }
 
     if (this.fields != null)
