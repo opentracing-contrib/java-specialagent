@@ -14,7 +14,7 @@
       ]
     }
   ],
-  "expectedRegexMatches": 1,
+  "expectedMatches": 0,
   "expectedSpans": [
     {
       "operationName": "operation",

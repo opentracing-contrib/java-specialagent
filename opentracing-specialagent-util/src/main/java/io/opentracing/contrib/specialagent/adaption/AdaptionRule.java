@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.grack.nanojson.JsonArray;
 import com.grack.nanojson.JsonObject;
@@ -40,7 +41,7 @@ class AdaptionRule {
 
       return result != null ? result : Collections.EMPTY_MAP;
     }
-    catch (final JsonParserException e) {
+    catch (final JsonParserException | PatternSyntaxException e) {
       throw new IllegalArgumentException(e);
     }
   }

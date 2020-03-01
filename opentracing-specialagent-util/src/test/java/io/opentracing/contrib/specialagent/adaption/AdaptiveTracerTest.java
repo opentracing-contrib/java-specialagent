@@ -3,15 +3,16 @@ package io.opentracing.contrib.specialagent.adaption;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,14 +46,16 @@ public class AdaptiveTracerTest {
     return getResourceFiles("adaption").toArray(new URL[0]);
   }
 
-  private final URL resource;
+  private final String fileName;
   private final JsonObject root;
   private final List<AdaptiveSpanBuilder> spanBuilders = new ArrayList<>();
   private final List<LogFieldAdapter> logFieldAdapters = new ArrayList<>();
-  private int regexMatches = 0;
+  private int matches = 0;
 
-  public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException {
-    this.resource = resource;
+  public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException, URISyntaxException {
+    this.fileName = new File(resource.toURI()).getName();
+    if (fileName.contains("blacklist_regex_valueMatched"))
+      System.out.println();
     try (final InputStream in = resource.openStream()) {
       root = JsonParser.object().from(in);
     }
@@ -84,11 +87,12 @@ public class AdaptiveTracerTest {
         final AdaptionRule rule = list.get(i);
         list.set(i, new AdaptionRule(rule.input, rule.outputs) {
           @Override
-          public Object match(final Object value) {
-            if (this.input.getValue() instanceof Pattern)
-              ++regexMatches;
+          Object adapt(final Object matcher, final Object input, final Object output) {
+            final Object out = super.adapt(matcher, input, output);
+            if (output != null && out != output && !String.valueOf(out).equals(String.valueOf(output)))
+              ++matches;
 
-            return super.match(value);
+            return out;
           }
         });
       }
@@ -217,8 +221,8 @@ public class AdaptiveTracerTest {
       if (adapter.getFields() != null)
         ++mapAllocations;
 
-    assertEquals("expectedListAllocations", root.getNumber("expectedListAllocations", 0), listAllocations);
-    assertEquals("expectedMapAllocations", root.getNumber("expectedMapAllocations", 0), mapAllocations);
-    assertEquals("expectedRegexMatches", root.getNumber("expectedRegexMatches", 0), regexMatches);
+    assertEquals(fileName + ": listAllocations", root.getNumber("expectedListAllocations", 0), listAllocations);
+    assertEquals(fileName + ": mapAllocations", root.getNumber("expectedMapAllocations", 0), mapAllocations);
+    assertEquals(fileName + ": matches", root.getNumber("expectedMatches", 0), matches);
   }
 }

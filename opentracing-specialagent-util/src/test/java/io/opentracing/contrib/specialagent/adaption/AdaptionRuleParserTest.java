@@ -67,45 +67,4 @@ public class AdaptionRuleParserTest {
     catch (final IllegalArgumentException e) {
     }
   }
-
-  @Test
-  public void testIsRegex() {
-    assertNull(AdaptionInput.parseRegex(null));
-    assertNull(AdaptionInput.parseRegex("abc"));
-    assertNull(AdaptionInput.parseRegex(""));
-
-    assertNull(AdaptionInput.parseRegex("\\\\s"));
-    assertNotNull(AdaptionInput.parseRegex("\\s"));
-
-    assertNull(AdaptionInput.parseRegex("?"));
-    assertNull(AdaptionInput.parseRegex("a\\?"));
-    assertNotNull(AdaptionInput.parseRegex("a?"));
-
-    assertNull(AdaptionInput.parseRegex("+"));
-    assertNull(AdaptionInput.parseRegex("a\\+"));
-    assertNotNull(AdaptionInput.parseRegex("a+"));
-
-    assertNull(AdaptionInput.parseRegex("*"));
-    assertNull(AdaptionInput.parseRegex("a\\*"));
-    assertNotNull(AdaptionInput.parseRegex("a*"));
-
-    assertNull(AdaptionInput.parseRegex("x\\{\\}"));
-    assertNull(AdaptionInput.parseRegex("x\\{1}"));
-    assertNull(AdaptionInput.parseRegex("x{1\\}"));
-    assertNull(AdaptionInput.parseRegex("x{}"));
-    assertNull(AdaptionInput.parseRegex("x{a}"));
-    assertNotNull(AdaptionInput.parseRegex("x{1}"));
-
-    assertNull(AdaptionInput.parseRegex("\\[\\]"));
-    assertNull(AdaptionInput.parseRegex("\\[a]"));
-    assertNull(AdaptionInput.parseRegex("[a\\]"));
-    assertNull(AdaptionInput.parseRegex("[]"));
-    assertNotNull(AdaptionInput.parseRegex("[a]"));
-
-    assertNull(AdaptionInput.parseRegex("\\."));
-    assertNotNull(AdaptionInput.parseRegex("\\\\."));
-
-    assertNull(AdaptionInput.parseRegex("\\*"));
-    assertNotNull(AdaptionInput.parseRegex("\\\\*"));
-  }
 }
