@@ -27,9 +27,9 @@ public class AdaptionRuleParserTest {
   }
 
   private static void assertTags(final Map<String,RewriteRules> rules, final String key, final List<Map<String,String>> logs) {
-    final RewriteRules adaptionRules = rules.get(key);
+    final RewriteRules rewriteRules = rules.get(key);
     final MockTracer mockTracer = new MockTracer();
-    try (final RewritableTracer tracer = new RewritableTracer(mockTracer, adaptionRules)) {
+    try (final RewritableTracer tracer = new RewritableTracer(mockTracer, rewriteRules)) {
       final Span span = tracer.buildSpan("op").start();
       span.log(Collections.singletonMap("db.statement", "select a"));
       span.log(Collections.singletonMap("db.statement", "not matched"));

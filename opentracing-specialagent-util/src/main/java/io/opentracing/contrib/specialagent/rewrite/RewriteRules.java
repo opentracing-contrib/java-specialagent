@@ -48,8 +48,11 @@ final class RewriteRules {
   static RewriteRules parseRules(final JsonArray jsonRules, final String key) {
     final RewriteRules rules = new RewriteRules();
     final int size = jsonRules.size();
-    for (int i = 0; i < size; ++i)
-      rules.add(RewriteRule.parseRule(jsonRules.getObject(i), key + ".rules[" + i + "]"));
+    for (int i = 0; i < size; ++i) {
+      final RewriteRule[] rule = RewriteRule.parseRule(jsonRules.getObject(i), key + ".rules[" + i + "]");
+      for (int j = 0; j < rule.length; ++j)
+        rules.add(rule[j]);
+    }
 
     return rules;
   }

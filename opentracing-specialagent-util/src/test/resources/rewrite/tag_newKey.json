@@ -6,19 +6,17 @@
         "type": "tag",
         "key": "key"
       },
-      "outputs": [
-        {
-          "type": "tag",
-          "value": "new"
-        }
-      ]
+      "output": {
+        "type": "tag",
+        "key": "newKey"
+      }
     }
   ],
   "expectedSpans": [
     {
       "operationName": "operation",
       "tags": {
-        "key": "new"
+        "newKey": "value"
       }
     }
   ]

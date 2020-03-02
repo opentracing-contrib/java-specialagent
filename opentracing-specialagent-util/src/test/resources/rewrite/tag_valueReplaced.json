@@ -4,22 +4,19 @@
     {
       "input": {
         "type": "tag",
-        "key": "key",
-        "value": "(va.?)ue"
+        "key": "key"
       },
-      "outputs": [
-        {
-          "type": "tag"
-        }
-      ]
+      "output": {
+        "type": "tag",
+        "value": "new"
+      }
     }
   ],
-  "expectedMatches": 0,
   "expectedSpans": [
     {
       "operationName": "operation",
       "tags": {
-        "key": "value"
+        "key": "new"
       }
     }
   ]

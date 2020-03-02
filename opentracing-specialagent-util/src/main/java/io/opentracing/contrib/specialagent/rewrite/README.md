@@ -1,4 +1,4 @@
-The <ins>Adaptive Tracer</ins> allows you to change the spans created by <ins>Instrumentation Plugins</ins> without having to modify the source code.
+The <ins>Rewritable Tracer</ins> allows you to change the spans created by <ins>Instrumentation Plugins</ins> without having to modify the source code.
 
 All features are explained using the following use cases. These features can also be combined - even if this is not mentioned explicitly.
 
@@ -154,7 +154,7 @@ The remaining use case cover advanced scenarios that go beyond blacklisting.
 
 ## Transforming values
 
-If you want to strike a better balance between redacting user information and keeping observability, final
+If you want to strike a better balance between redacting user information and keeping observability,
 you can redact specific parts of a value (tag, log or operationName).
 
 ```json
@@ -166,12 +166,10 @@ you can redact specific parts of a value (tag, log or operationName).
         "key": "db.statement",
         "value": "(select * from user where first_name =).*"
       },
-      "outputs": [
-        {
-          "type": "tag",
-          "value": "$1?"
-        }
-      ]
+      "output": {
+        "type": "tag",
+        "value": "$1?"
+      }
     }
   ]
 }
@@ -181,9 +179,11 @@ In this example, `$1?` is the [replacement](https://docs.oracle.com/javase/7/doc
 
 ## Multiple Outputs
 
-If you have a tag with a high cardinality (e.g. database statements without wildcards), final
+If you have a tag with a high cardinality (e.g. database statements without wildcards),
 you might want to transform the value - but keep the original value somewhere else
 (e.g. in a log statement which is not indexed).
+
+The `output` property accepts either a single object, or an array of objects, for instance:
 
 ```json
 {
@@ -193,8 +193,8 @@ you might want to transform the value - but keep the original value somewhere el
         "type": "tag",
         "key": "db.statement",
         "value": "(select * from articles) where id =.*"
-      }
-      "outputs": [
+      },
+      "output": [
         {
           "type": "tag",
           "value": "$1"
@@ -208,7 +208,7 @@ you might want to transform the value - but keep the original value somewhere el
 }
 ```
 
-This would shorten the `db.statement` tag to `select * from articles`, final
+This would shorten the `db.statement` tag to `select * from articles`,
 but keep the original statement in a log entry with the same field key (`db.statement`).
 
 The next example uses the same mechanism - using multiple output to have a shorter version somewhere else.
@@ -223,7 +223,7 @@ In this case, it is a different tag - and you can specify the output tag using `
         "key": "http.url",
         "value": "(https?).*"
       },
-      "outputs": [
+      "output": [
         {
           "type": "tag",
           "key": "http.protocol",
@@ -231,6 +231,69 @@ In this case, it is a different tag - and you can specify the output tag using `
         },
         {
           "type": "tag"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Multiple Inputs
+
+Similar to the `output` property, the `input` property accepts either a single object, or an array of objects. This allows one to define rules that differ in the input constraints, but share the same output(s). For instance:
+
+```json
+{
+  "jedis": [
+    {
+      "input": [
+        {
+          "type": "tag",
+          "key": "k0",
+          "value": "v1"
+        },
+        {
+          "type": "tag",
+          "key": "k1",
+          "value": "v1"
+        }
+      ],
+      "output": {
+        "type": "tag",
+        "value": "new"
+      }
+    }
+  ]
+}
+```
+
+## Multiple Inputs and Outputs
+
+Multiple `input`s and `output`s can be used together, for example:
+
+```json
+{
+  "jedis": [
+    {
+      "input": [
+        {
+          "type": "tag",
+          "key": "k0",
+          "value": "v1"
+        },
+        {
+          "type": "tag",
+          "key": "k1",
+          "value": "v1"
+        }
+      ],
+      "output": [
+        {
+          "type": "tag",
+          "value": "new"
+        },
+        {
+          "type": "log"
         }
       ]
     }
@@ -266,7 +329,7 @@ You can add arbitrary tags when a span is started as follows:
       "input": {
         "type": "span"
       },
-      "outputs": [
+      "output": [
         {
           "type": "tag",
           "key": "service",
@@ -277,5 +340,5 @@ You can add arbitrary tags when a span is started as follows:
   ]
 }
 ```
-                               
-This would add a tag `service` with value `my_service` to all spans. 
+
+This would add a tag `service` with value `my_service` to all spans.

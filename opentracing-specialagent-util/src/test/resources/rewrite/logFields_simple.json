@@ -6,11 +6,9 @@
         "type": "log",
         "key": "key"
       },
-      "outputs": [
-        {
-          "type": "log"
-        }
-      ]
+      "output": {
+        "type": "log"
+      }
     }
   ],
   "expectedMapAllocations": 1,

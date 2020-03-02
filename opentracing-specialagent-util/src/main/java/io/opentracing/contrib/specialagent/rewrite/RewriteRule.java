@@ -8,20 +8,42 @@ import com.grack.nanojson.JsonArray;
 import com.grack.nanojson.JsonObject;
 
 class RewriteRule {
-  static RewriteRule parseRule(final JsonObject jsonRule, final String subject) {
+  static RewriteRule[] parseRule(final JsonObject jsonRule, final String subject) {
     Objects.requireNonNull(jsonRule, subject + ": Not an object");
-    final JsonArray jsonOutputs = jsonRule.getArray("outputs");
     Event[] outputs = null;
+
+    final JsonArray jsonOutputs = jsonRule.getArray("output");
     if (jsonOutputs != null) {
       final int size = jsonOutputs.size();
       outputs = new Event[size];
       for (int i = 0; i < size; ++i)
-        outputs[i] = Event.parseOutputEvent(jsonOutputs.getObject(i), subject + ".outputs[" + i + "]");
+        outputs[i] = Event.parseOutputEvent(jsonOutputs.getObject(i), subject + ".output[" + i + "]");
+    }
+    else {
+      final JsonObject jsonOutput = jsonRule.getObject("output");
+      if (jsonOutput != null)
+        outputs = new Event[] {Event.parseOutputEvent(jsonOutput, subject + ".output")};
     }
 
-    final Event input = Event.parseInputEvent(jsonRule.getObject("input"), subject + ".input");
+    final RewriteRule[] rules;
+    final JsonArray jsonInputs = jsonRule.getArray("input");
+    if (jsonInputs != null) {
+      final int len = jsonInputs.size();
+      rules = new RewriteRule[len];
+      for (int i = 0; i < len; ++i)
+        rules[i] = parseInput(jsonInputs.getObject(i), outputs, subject + ".input[" + i + "]").validate(subject);
+    }
+    else {
+      final JsonObject jsonInput = jsonRule.getObject("input");
+      rules = new RewriteRule[] {parseInput(jsonInput, outputs, subject + ".input").validate(subject)};
+    }
+
+    return rules;
+  }
+
+  private static RewriteRule parseInput(final JsonObject jsonInput, final Event[] outputs, final String subject) {
+    final Event input = Event.parseInputEvent(jsonInput, subject);
     final RewriteRule rule = new RewriteRule(input, outputs);
-    rule.validate(subject);
     return rule;
   }
 
@@ -70,7 +92,8 @@ class RewriteRule {
     return output == null ? input : matcher == SIMPLE ? output : ((Matcher)matcher).replaceAll(output.toString());
   }
 
-  final void validate(final String subject) {
+  final RewriteRule validate(final String subject) {
     this.input.validate(this, subject);
+    return this;
   }
 }

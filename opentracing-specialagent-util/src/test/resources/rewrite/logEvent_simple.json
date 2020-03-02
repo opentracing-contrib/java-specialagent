@@ -3,13 +3,11 @@
   "rules": [
     {
       "input": {
-       "type": "log"
-     },
-      "outputs": [
-        {
-          "type": "log"
-        }
-      ]
+        "type": "log"
+      },
+      "output": {
+        "type": "log"
+      }
     }
   ],
   "expectedSpans": [

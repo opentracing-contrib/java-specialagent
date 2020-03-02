@@ -130,10 +130,11 @@ public enum AdaptiveTracerScenario {
   TAG_TYPES("tagTypes") {
     @Override
     void play(final Tracer tracer) {
-      tracer.buildSpan("operation").withTag("k1", "v1").withTag("k2", 1).withTag("k3", false).start().finish();
+      tracer.buildSpan("operation").withTag("k0", "v1").withTag("k1", "v1").withTag("k2", 1).withTag("k3", false).start().finish();
 
       // should behave the same when we set the tag later
       final Span late = tracer.buildSpan("operation").start();
+      late.setTag("k0", "v1");
       late.setTag("k1", "v1");
       late.setTag("k2", 1);
       late.setTag("k3", false);

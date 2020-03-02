@@ -1,12 +1,11 @@
 {
-  "scenario": "logFieldsTimestamp",
+  "scenario": "logEventTimestamp",
   "rules": [
     {
       "input": {
-        "type": "log",
-        "key": "key"
+        "type": "log"
       },
-      "outputs": [
+      "output": [
         {
           "type": "log"
         },
@@ -14,23 +13,21 @@
           "type": "operationName"
         },
         {
-          "type": "tag"
+          "type": "tag",
+          "key": "key"
         }
       ]
     }
   ],
-  "expectedMapAllocations": 1,
   "expectedSpans": [
     {
-      "operationName": "value",
+      "operationName": "event",
       "tags": {
-        "key": "value"
+        "key": "event"
       },
       "logs": [
         {
-          "fields": {
-            "key": "value"
-          },
+          "event": "event",
           "timestampMicros": 1
         }
       ]

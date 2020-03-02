@@ -7,20 +7,17 @@
         "key": "key",
         "value": "(va.?)ue"
       },
-      "outputs": [
-        {
-          "type": "tag",
-          "value": "$1?"
-        }
-      ]
+      "output": {
+        "type": "tag"
+      }
     }
   ],
-  "expectedMatches": 1,
+  "expectedMatches": 0,
   "expectedSpans": [
     {
       "operationName": "operation",
       "tags": {
-        "key": "val?"
+        "key": "value"
       }
     }
   ]

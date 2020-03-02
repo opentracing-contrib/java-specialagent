@@ -1,12 +1,12 @@
 {
-  "scenario": "tag2Spans",
+  "scenario": "logFieldsTimestamp",
   "rules": [
     {
       "input": {
-        "type": "tag",
+        "type": "log",
         "key": "key"
       },
-      "outputs": [
+      "output": [
         {
           "type": "log"
         },
@@ -19,7 +19,7 @@
       ]
     }
   ],
-  "expectedListAllocations": 1,
+  "expectedMapAllocations": 1,
   "expectedSpans": [
     {
       "operationName": "value",
@@ -30,20 +30,8 @@
         {
           "fields": {
             "key": "value"
-          }
-        }
-      ]
-    },
-    {
-      "operationName": "value",
-      "tags": {
-        "key": "value"
-      },
-      "logs": [
-        {
-          "fields": {
-            "key": "value"
-          }
+          },
+          "timestampMicros": 1
         }
       ]
     }

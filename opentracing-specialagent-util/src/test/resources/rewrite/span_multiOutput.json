@@ -5,7 +5,7 @@
       "input": {
         "type": "start"
       },
-      "outputs": [
+      "output": [
         {
           "type": "log",
           "key": "lop",

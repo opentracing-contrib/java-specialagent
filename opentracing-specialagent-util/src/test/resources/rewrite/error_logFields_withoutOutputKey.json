@@ -1,11 +1,11 @@
 {
-  "expectedError": "test.rules[0].outputs[0]: Missing output key for log fields",
+  "expectedError": "test.rules[0].output[0]: Missing output key for log fields",
   "rules": [
     {
       "input": {
         "type": "operationName"
       },
-      "outputs": [
+      "output": [
         {
           "type": "log"
         }

@@ -6,7 +6,7 @@
         "type": "operationName",
         "value": "newOperation"
       },
-      "outputs": [
+      "output": [
         {
           "type": "log",
           "key": "lop"

@@ -55,7 +55,7 @@ abstract class Event {
 
   abstract String getTagName();
   abstract void rewrite(Rewriter rewriter, long timestampMicroseconds, String key, Object value);
-  abstract void validateOutput(Event input, String outputKey, String subject);
+  abstract void validateOutput(Event input, String subject);
   abstract void validateInput(RewriteRule rule, String subject);
 
   void validate(final RewriteRule rule, final String subject) {
@@ -63,7 +63,7 @@ abstract class Event {
     if (rule.outputs != null) {
       for (int i = 0; i < rule.outputs.length; ++i) {
         final Event output = rule.outputs[i];
-        output.validateOutput(rule.input, output.getKey(), subject + ".outputs[" + i + "]");
+        output.validateOutput(rule.input, subject + ".output[" + i + "]");
       }
     }
   }
@@ -93,7 +93,7 @@ abstract class Event {
     }
 
     @Override
-    void validateOutput(final Event input, final String outputKey, final String subject) {
+    void validateOutput(final Event input, final String subject) {
       throw new IllegalStateException(subject + ": type=start cannot be used as output");
     }
   }
@@ -120,8 +120,8 @@ abstract class Event {
     }
 
     @Override
-    void validateOutput(final Event input, final String outputKey, final String subject) {
-      if (outputKey != null)
+    void validateOutput(final Event input, final String subject) {
+      if (getKey() != null)
         throw new IllegalStateException(subject + ": operationName cannot have output key");
     }
   }
@@ -146,8 +146,8 @@ abstract class Event {
     }
 
     @Override
-    void validateOutput(final Event input, final String outputKey, final String subject) {
-      if (input.getClass() != Event.Log.class && input.getKey() == null && outputKey == null)
+    void validateOutput(final Event input, final String subject) {
+      if (input.getClass() != Event.Log.class && input.getKey() == null && getKey() == null)
         throw new IllegalStateException(subject + ": Missing output key for log fields");
     }
   }
@@ -174,8 +174,8 @@ abstract class Event {
     }
 
     @Override
-    void validateOutput(final Event input, final String outputKey, final String subject) {
-      if (input.getKey() == null && outputKey == null)
+    void validateOutput(final Event input, final String subject) {
+      if (input.getKey() == null && getKey() == null)
         throw new IllegalStateException(subject + ": Missing output key for tag");
     }
   }

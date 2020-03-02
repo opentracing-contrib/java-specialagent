@@ -1,11 +1,11 @@
 {
-  "expectedError": "test.rules[0].outputs[0]: type=start cannot be used as output",
+  "expectedError": "test.rules[0].output[0]: type=start cannot be used as output",
   "rules": [
     {
       "input": {
         "type": "operationName"
       },
-      "outputs": [
+      "output": [
         {
           "type": "start"
         }

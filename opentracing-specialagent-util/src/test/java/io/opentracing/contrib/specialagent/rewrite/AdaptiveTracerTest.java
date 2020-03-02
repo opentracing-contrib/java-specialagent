@@ -43,7 +43,7 @@ public class AdaptiveTracerTest {
 
   @Parameterized.Parameters(name = "{0}")
   public static URL[] data() throws IOException {
-    return getResourceFiles("adaption").toArray(new URL[0]);
+    return getResourceFiles("rewrite").toArray(new URL[0]);
   }
 
   private final String fileName;
@@ -55,8 +55,6 @@ public class AdaptiveTracerTest {
   public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException, URISyntaxException {
     this.fileName = new File(resource.toURI()).getName();
     System.out.println(fileName);
-    if (fileName.contains("blacklist_regex_valueMatched"))
-      System.out.println();
     try (final InputStream in = resource.openStream()) {
       root = JsonParser.object().from(in);
     }
