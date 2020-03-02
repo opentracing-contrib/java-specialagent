@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.adaption;
+package io.opentracing.contrib.specialagent.rewrite;
 
 import static org.junit.Assert.*;
 
@@ -20,16 +20,16 @@ public class AdaptionRuleParserTest {
   @Test
   public void specificRulesHavePriorityOverGlobalRules() throws IOException {
     try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
-      final Map<String,AdaptionRules> rules = AdaptionRule.parseRules(in);
+      final Map<String,RewriteRules> rules = RewriteRules.parseRules(in);
       assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
       assertTags(rules, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
     }
   }
 
-  private static void assertTags(final Map<String,AdaptionRules> rules, final String key, final List<Map<String,String>> logs) {
-    final AdaptionRules adaptionRules = rules.get(key);
+  private static void assertTags(final Map<String,RewriteRules> rules, final String key, final List<Map<String,String>> logs) {
+    final RewriteRules adaptionRules = rules.get(key);
     final MockTracer mockTracer = new MockTracer();
-    try (final AdaptiveTracer tracer = new AdaptiveTracer(mockTracer, adaptionRules)) {
+    try (final RewritableTracer tracer = new RewritableTracer(mockTracer, adaptionRules)) {
       final Span span = tracer.buildSpan("op").start();
       span.log(Collections.singletonMap("db.statement", "select a"));
       span.log(Collections.singletonMap("db.statement", "not matched"));
@@ -50,7 +50,7 @@ public class AdaptionRuleParserTest {
   @Test
   public void completeInvalidJson() {
     try {
-      AdaptionRule.parseRules(new ByteArrayInputStream("invalid".getBytes()));
+      RewriteRules.parseRules(new ByteArrayInputStream("invalid".getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {
@@ -61,7 +61,7 @@ public class AdaptionRuleParserTest {
   public void oneRuleInvalidJson() {
     final String json = "{\"invalid\": 1, \"jedis\": []}";
     try {
-      AdaptionRule.parseRules(new ByteArrayInputStream(json.getBytes()));
+      RewriteRules.parseRules(new ByteArrayInputStream(json.getBytes()));
       fail("Expected IllegalArgumentException");
     }
     catch (final IllegalArgumentException e) {

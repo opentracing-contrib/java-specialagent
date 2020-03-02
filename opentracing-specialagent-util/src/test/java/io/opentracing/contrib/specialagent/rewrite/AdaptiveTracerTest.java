@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.adaption;
+package io.opentracing.contrib.specialagent.rewrite;
 
 import static org.junit.Assert.*;
 
@@ -48,12 +48,13 @@ public class AdaptiveTracerTest {
 
   private final String fileName;
   private final JsonObject root;
-  private final List<AdaptiveSpanBuilder> spanBuilders = new ArrayList<>();
-  private final List<LogFieldAdapter> logFieldAdapters = new ArrayList<>();
+  private final List<RewritableSpanBuilder> spanBuilders = new ArrayList<>();
+  private final List<LogFieldRewriter> logFieldAdapters = new ArrayList<>();
   private int matches = 0;
 
   public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException, URISyntaxException {
     this.fileName = new File(resource.toURI()).getName();
+    System.out.println(fileName);
     if (fileName.contains("blacklist_regex_valueMatched"))
       System.out.println();
     try (final InputStream in = resource.openStream()) {
@@ -79,16 +80,16 @@ public class AdaptiveTracerTest {
     }
   }
 
-  private AdaptionRules parseRules(final JsonArray jsonRules) {
-    final AdaptionRules rules = AdaptionRule.parseRules(jsonRules, "test");
-    for (final Map.Entry<String,List<AdaptionRule>> entry : rules.keyToRules.entrySet()) {
-      final List<AdaptionRule> list = entry.getValue();
+  private RewriteRules parseRules(final JsonArray jsonRules) {
+    final RewriteRules rules = RewriteRules.parseRules(jsonRules, "test");
+    for (final Map.Entry<String,List<RewriteRule>> entry : rules.keyToRules.entrySet()) {
+      final List<RewriteRule> list = entry.getValue();
       for (int i = 0; i < list.size(); ++i) {
-        final AdaptionRule rule = list.get(i);
-        list.set(i, new AdaptionRule(rule.input, rule.outputs) {
+        final RewriteRule rule = list.get(i);
+        list.set(i, new RewriteRule(rule.input, rule.outputs) {
           @Override
-          Object adapt(final Object matcher, final Object input, final Object output) {
-            final Object out = super.adapt(matcher, input, output);
+          Object rewriteValue(final Object matcher, final Object input, final Object output) {
+            final Object out = super.rewriteValue(matcher, input, output);
             if (output != null && out != output && !String.valueOf(out).equals(String.valueOf(output)))
               ++matches;
 
@@ -101,7 +102,7 @@ public class AdaptiveTracerTest {
     return rules;
   }
 
-  private void playScenario(final JsonObject root, final AdaptionRules rules) {
+  private void playScenario(final JsonObject root, final RewriteRules rules) {
     final MockTracer mockTracer = new MockTracer();
 
     final AdaptiveTracerScenario scenario = AdaptiveTracerScenario.fromString(root.getString("scenario"));
@@ -124,17 +125,17 @@ public class AdaptiveTracerTest {
     assertAllocations(root);
   }
 
-  private AdaptiveTracer getTracer(final AdaptionRules rules, final MockTracer mockTracer) {
-    return new AdaptiveTracer(mockTracer, rules) {
+  private RewritableTracer getTracer(final RewriteRules rules, final MockTracer mockTracer) {
+    return new RewritableTracer(mockTracer, rules) {
       @Override
       public SpanBuilder buildSpan(final String operationName) {
-        final AdaptiveSpanBuilder builder = new AdaptiveSpanBuilder(operationName, target, rules) {
+        final RewritableSpanBuilder builder = new RewritableSpanBuilder(operationName, target, rules) {
           @Override
-          protected AdaptiveSpan newAdaptiveSpan(final Span span) {
-            return new AdaptiveSpan(span, rules) {
+          protected RewritableSpan newRewritableSpan(final Span span) {
+            return new RewritableSpan(span, rules) {
               @Override
-              LogFieldAdapter newLogFieldAdapter() {
-                final LogFieldAdapter logFieldAdapter = super.newLogFieldAdapter();
+              LogFieldRewriter newLogFieldRewriter() {
+                final LogFieldRewriter logFieldAdapter = super.newLogFieldRewriter();
                 logFieldAdapters.add(logFieldAdapter);
                 return logFieldAdapter;
               }
@@ -213,11 +214,11 @@ public class AdaptiveTracerTest {
   private void assertAllocations(final JsonObject root) {
     int listAllocations = 0;
     int mapAllocations = 0;
-    for (final AdaptiveSpanBuilder builder : spanBuilders)
+    for (final RewritableSpanBuilder builder : spanBuilders)
       if (builder.getLog() != null)
         ++listAllocations;
 
-    for (final LogFieldAdapter adapter : logFieldAdapters)
+    for (final LogFieldRewriter adapter : logFieldAdapters)
       if (adapter.getFields() != null)
         ++mapAllocations;
 

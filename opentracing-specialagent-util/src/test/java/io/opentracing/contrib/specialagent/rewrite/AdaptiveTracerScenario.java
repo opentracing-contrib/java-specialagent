@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.adaption;
+package io.opentracing.contrib.specialagent.rewrite;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

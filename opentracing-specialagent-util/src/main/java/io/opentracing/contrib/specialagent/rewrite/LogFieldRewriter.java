@@ -1,17 +1,17 @@
-package io.opentracing.contrib.specialagent.adaption;
+package io.opentracing.contrib.specialagent.rewrite;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.opentracing.Span;
 
-final class LogFieldAdapter extends Adapter {
-  private final Adapter source;
+final class LogFieldRewriter extends Rewriter {
+  private final Rewriter source;
   private final Span target;
 
   private Map<String,Object> fields;
 
-  LogFieldAdapter(final AdaptionRules rules, final Adapter source, final Span target) {
+  LogFieldRewriter(final RewriteRules rules, final Rewriter source, final Span target) {
     super(rules);
     this.source = source;
     this.target = target;
@@ -21,13 +21,13 @@ final class LogFieldAdapter extends Adapter {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
-      for (final AdaptionRule rule : rules.getRules(key)) {
-        if (rule.input.getType() != AdaptionType.LOG)
+      for (final RewriteRule rule : rules.getRules(key)) {
+        if (rule.input.getClass() != Event.Log.class)
           continue;
 
-        final Object match = rule.match(value);
+        final Object match = rule.matchValue(value);
         if (match != null) {
-          adaptLog(timestampMicroseconds, fields, rule, match, value);
+          rewriteLog(timestampMicroseconds, fields, rule, match, value);
           return;
         }
       }
@@ -37,14 +37,14 @@ final class LogFieldAdapter extends Adapter {
     log(timestampMicroseconds, fields);
   }
 
-  private <T>void adaptLog(final long timestampMicroseconds, final Map<String,?> fields, final AdaptionRule rule, final Object match, final Object input) {
+  private <T>void rewriteLog(final long timestampMicroseconds, final Map<String,?> fields, final RewriteRule rule, final Object match, final Object input) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
       if (key.equals(rule.input.getKey()))
-        processMatch(rule, timestampMicroseconds, match, input);
+        rule.rewrite(this, timestampMicroseconds, match, input);
       else
-        processLog(timestampMicroseconds, key, value);
+        onLog(timestampMicroseconds, key, value);
     }
 
     if (this.fields != null)
@@ -59,7 +59,7 @@ final class LogFieldAdapter extends Adapter {
   }
 
   @Override
-  void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
+  void rewriteLog(final long timestampMicroseconds, final String key, final Object value) {
     if (fields == null)
       fields = new LinkedHashMap<>();
 
@@ -67,13 +67,13 @@ final class LogFieldAdapter extends Adapter {
   }
 
   @Override
-  void adaptTag(final String key, final Object value) {
-    source.adaptTag(key, value);
+  void rewriteTag(final String key, final Object value) {
+    source.rewriteTag(key, value);
   }
 
   @Override
-  void adaptOperationName(final String name) {
-    source.adaptOperationName(name);
+  void rewriteOperationName(final String name) {
+    source.rewriteOperationName(name);
   }
 
   Map<String,Object> getFields() {

@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.adaption;
+package io.opentracing.contrib.specialagent.rewrite;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,14 +11,14 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
-public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
+public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilder {
   private final Tracer.SpanBuilder target;
 
-  AdaptiveSpanBuilder(final String operationName, final Tracer tracer, final AdaptionRules rules) {
+  RewritableSpanBuilder(final String operationName, final Tracer tracer, final RewriteRules rules) {
     super(rules);
     this.target = tracer.buildSpan(operationName);
-    processOperationName(operationName);
-    processStart();
+    onOperationName(operationName);
+    onStart();
   }
 
   @Override
@@ -47,25 +47,25 @@ public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final String value) {
-    processTag(key, value);
+    onTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final boolean value) {
-    processTag(key, value);
+    onTag(key, value);
     return this;
   }
 
   @Override
   public Tracer.SpanBuilder withTag(final String key, final Number value) {
-    processTag(key, value);
+    onTag(key, value);
     return this;
   }
 
   @Override
   public <T>Tracer.SpanBuilder withTag(final Tag<T> tag, final T value) {
-    processTag(tag.getKey(), value);
+    onTag(tag.getKey(), value);
     return this;
   }
 
@@ -91,11 +91,11 @@ public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
     if (operationName != null)
       span.setOperationName(operationName);
 
-    return newAdaptiveSpan(span);
+    return newRewritableSpan(span);
   }
 
-  AdaptiveSpan newAdaptiveSpan(final Span span) {
-    return new AdaptiveSpan(span, rules);
+  RewritableSpan newRewritableSpan(final Span span) {
+    return new RewritableSpan(span, rules);
   }
 
   @Override
@@ -108,7 +108,7 @@ public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
   private List<Map<String,Object>> log;
 
   @Override
-  void adaptTag(final String key, final Object value) {
+  void rewriteTag(final String key, final Object value) {
     if (value == null)
       target.withTag(key, (String)null);
     else if (value instanceof Number)
@@ -120,7 +120,7 @@ public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
   }
 
   @Override
-  void adaptLog(final long timestampMicroseconds, final String key, final Object value) {
+  void rewriteLog(final long timestampMicroseconds, final String key, final Object value) {
     if (log == null)
       log = new ArrayList<>();
 
@@ -128,7 +128,7 @@ public class AdaptiveSpanBuilder extends Adapter implements Tracer.SpanBuilder {
   }
 
   @Override
-  void adaptOperationName(final String name) {
+  void rewriteOperationName(final String name) {
     operationName = name;
   }
 
