@@ -54,7 +54,7 @@ If you want to blacklist all `http.url`s that start with `http://`, specify a re
       "input": {
         "type": "tag",
         "key": "http.url",
-        "regex": "http://.*"
+        "value": "http://.*"
       }
     }
   ]
@@ -64,6 +64,7 @@ If you want to blacklist all `http.url`s that start with `http://`, specify a re
 Note
 1. The trailing `.*` is necessary, because the regular expression must match the entire tag value.
 2. Use the [Java](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) pattern syntax.
+3. It's possible to use a number of boolean as `value`, which will not be interpreted as a regular expression. 
 
 If you want to blacklist a specific tag whose value is the string literal `Are you happy?`, make sure to escape the `?`, because `value` is interpreted as a regex:
 
@@ -74,7 +75,7 @@ If you want to blacklist a specific tag whose value is the string literal `Are y
       "input": {
         "type": "tag",
         "key": "hello",
-        "regex": "Are you happy\?"
+        "value": "Are you happy\?"
       }
     }
   ]
@@ -327,7 +328,7 @@ You can add arbitrary tags when a span is started as follows:
   "jedis": [
     {
       "input": {
-        "type": "span"
+        "type": "start"
       },
       "output": [
         {

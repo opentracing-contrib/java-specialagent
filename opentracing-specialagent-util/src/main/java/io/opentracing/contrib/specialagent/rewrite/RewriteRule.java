@@ -1,11 +1,11 @@
 package io.opentracing.contrib.specialagent.rewrite;
 
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonObject;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.grack.nanojson.JsonArray;
-import com.grack.nanojson.JsonObject;
 
 class RewriteRule {
   static RewriteRule[] parseRule(final JsonObject jsonRule, final String subject) {
@@ -48,9 +48,6 @@ class RewriteRule {
   }
 
   private static boolean matchesSimpleValue(final Object predicate, final Object value) {
-    if (predicate == null)
-      return true;
-
     if (predicate instanceof Number && value instanceof Number)
       return ((Number)predicate).doubleValue() == ((Number)value).doubleValue();
 

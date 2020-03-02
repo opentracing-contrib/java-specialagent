@@ -1,9 +1,9 @@
 package io.opentracing.contrib.specialagent.rewrite;
 
+import com.grack.nanojson.JsonObject;
+
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import com.grack.nanojson.JsonObject;
 
 abstract class Event {
   static Event parseInputEvent(final JsonObject object, final String subject) {
@@ -53,7 +53,6 @@ abstract class Event {
     return this.value;
   }
 
-  abstract String getTagName();
   abstract void rewrite(Rewriter rewriter, long timestampMicroseconds, String key, Object value);
   abstract void validateOutput(Event input, String subject);
   abstract void validateInput(RewriteRule rule, String subject);
@@ -71,11 +70,6 @@ abstract class Event {
   static class Start extends Event {
     private Start(final String key, final Object value) {
       super(key, value);
-    }
-
-    @Override
-    String getTagName() {
-      return "start";
     }
 
     @Override
@@ -104,11 +98,6 @@ abstract class Event {
     }
 
     @Override
-    String getTagName() {
-      return "operationName";
-    }
-
-    @Override
     void rewrite(final Rewriter rewriter, final long timestampMicroseconds, final String key, final Object value) {
       rewriter.rewriteOperationName(value.toString());
     }
@@ -132,11 +121,6 @@ abstract class Event {
     }
 
     @Override
-    String getTagName() {
-      return "log";
-    }
-
-    @Override
     void rewrite(final Rewriter rewriter, final long timestampMicroseconds, final String key, final Object value) {
       rewriter.rewriteLog(timestampMicroseconds, key, value);
     }
@@ -155,11 +139,6 @@ abstract class Event {
   static class Tag extends Event {
     private Tag(final String key, final Object value) {
       super(key, value);
-    }
-
-    @Override
-    String getTagName() {
-      return "tag";
     }
 
     @Override
