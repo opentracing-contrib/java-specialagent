@@ -15,12 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.rabbitmq.client;
 
-import static io.opentracing.contrib.rabbitmq.TracingUtils.*;
+import static io.opentracing.contrib.rabbitmq.TracingUtils.inject;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.GetResponse;
-
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -65,4 +64,32 @@ public class RabbitMQAgentIntercept {
   public static Object enterConsume(final Object callback, final Object queue) {
     return WrapperProxy.wrap(callback, new TracingConsumer((Consumer)callback, (String)queue, GlobalTracer.get()));
   }
+
+  public static void handleDeliveryStart(Object thiz, Object props) {
+    if(WrapperProxy.isWrapper(thiz, TracingConsumer.class))
+      return;
+
+    if(AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.rabbitmq.TracingConsumer.handleDelivery"))
+      return;
+
+    final AMQP.BasicProperties properties = (AMQP.BasicProperties) props;
+    final Tracer tracer = GlobalTracer.get();
+
+    final Span span = TracingUtils.buildChildSpan(properties, null, tracer);
+
+    final Scope scope = tracer.activateSpan(span);
+    LocalSpanContext.set(span, scope);
+  }
+
+  public static void handleDeliveryEnd(final Throwable thrown) {
+    final LocalSpanContext context = LocalSpanContext.get();
+    if (context == null)
+      return;
+
+    if (thrown != null)
+      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+
+    context.closeAndFinish();
+  }
+
 }
