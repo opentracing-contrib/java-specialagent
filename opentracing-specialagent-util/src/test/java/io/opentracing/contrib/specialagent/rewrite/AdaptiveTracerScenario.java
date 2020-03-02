@@ -1,12 +1,12 @@
 package io.opentracing.contrib.specialagent.rewrite;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public enum AdaptiveTracerScenario {
   COMPLEX("complex") {
@@ -40,6 +40,12 @@ public enum AdaptiveTracerScenario {
       final Span span = tracer.buildSpan("operation").start();
       span.log(Collections.singletonMap("key", "value"));
       span.finish();
+    }
+  },
+  LOG_FIELDS_BOOLEAN("logFieldsBoolean") {
+    @Override
+    void play(final Tracer tracer) {
+      logFieldsSpan(tracer, Collections.singletonMap("key", true));
     }
   },
   LOG_FIELDS_TIMESTAMP("logFieldsTimestamp") {
