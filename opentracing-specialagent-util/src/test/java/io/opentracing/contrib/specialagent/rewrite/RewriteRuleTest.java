@@ -16,16 +16,7 @@ import io.opentracing.Span;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
-public class AdaptionRuleParserTest {
-  @Test
-  public void specificRulesHavePriorityOverGlobalRules() throws IOException {
-    try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
-      final Map<String,RewriteRules> rules = RewriteRules.parseRules(in);
-      assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
-      assertTags(rules, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
-    }
-  }
-
+public class RewriteRuleTest {
   private static void assertTags(final Map<String,RewriteRules> rules, final String key, final List<Map<String,String>> logs) {
     final RewriteRules rewriteRules = rules.get(key);
     final MockTracer mockTracer = new MockTracer();
@@ -40,10 +31,17 @@ public class AdaptionRuleParserTest {
       final MockSpan mockSpan = spans.get(0);
 
       assertEquals(2, mockSpan.logEntries().size());
-      for (int i = 0; i < logs.size(); ++i) {
-        final Map<String,String> log = logs.get(i);
-        assertEquals("log " + i, log, mockSpan.logEntries().get(i).fields());
-      }
+      for (int i = 0; i < logs.size(); ++i)
+        assertEquals("log " + i, logs.get(i), mockSpan.logEntries().get(i).fields());
+    }
+  }
+
+  @Test
+  public void specificRulesHavePriorityOverGlobalRules() throws IOException {
+    try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
+      final Map<String,RewriteRules> rules = RewriteRules.parseRules(in);
+      assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
+      assertTags(rules, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
     }
   }
 

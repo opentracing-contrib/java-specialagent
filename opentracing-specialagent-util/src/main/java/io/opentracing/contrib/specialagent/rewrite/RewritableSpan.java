@@ -8,7 +8,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
 
 public class RewritableSpan extends Rewriter implements Span {
-  private final Span target;
+  final Span target;
   private final RewriteRules rules;
 
   RewritableSpan(final Span target, final RewriteRules rules) {

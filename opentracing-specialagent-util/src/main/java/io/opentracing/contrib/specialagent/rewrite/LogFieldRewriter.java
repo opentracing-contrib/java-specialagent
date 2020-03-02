@@ -22,7 +22,7 @@ final class LogFieldRewriter extends Rewriter {
       final String key = entry.getKey();
       final Object value = entry.getValue();
       for (final RewriteRule rule : rules.getRules(key)) {
-        if (rule.input.getClass() != Event.Log.class)
+        if (rule.input.getClass() != Action.Log.class)
           continue;
 
         final Object match = rule.matchValue(value);

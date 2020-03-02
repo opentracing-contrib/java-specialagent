@@ -3,7 +3,7 @@
   "rules": [
     {
       "input": {
-        "type": "start"
+        "type": "operationName"
       },
       "output": [
         {

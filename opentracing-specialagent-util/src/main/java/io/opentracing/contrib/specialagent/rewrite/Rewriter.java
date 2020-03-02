@@ -12,26 +12,21 @@ abstract class Rewriter {
   abstract void rewriteOperationName(String name);
 
   final void onOperationName(final String operationName) {
-    if (!onEvent(Event.OperationName.class, 0, null, operationName))
+    if (!onEvent(Action.OperationName.class, 0, null, operationName))
       rewriteOperationName(operationName);
   }
 
-  final void onStart() {
-    // Cannot set the span start, only process it
-    onEvent(Event.Start.class, 0, null, null);
-  }
-
   final void onLog(final long timestampMicroseconds, final String key, final Object value) {
-    if (!onEvent(Event.Log.class, timestampMicroseconds, key, value))
+    if (!onEvent(Action.Log.class, timestampMicroseconds, key, value))
       rewriteLog(timestampMicroseconds, key, value);
   }
 
   final void onTag(final String key, final Object value) {
-    if (!onEvent(Event.Tag.class, 0, key, value))
+    if (!onEvent(Action.Tag.class, 0, key, value))
       rewriteTag(key, value);
   }
 
-  private boolean onEvent(final Class<? extends Event> type, final long timestampMicroseconds, final String key, final Object value) {
+  private boolean onEvent(final Class<? extends Action> type, final long timestampMicroseconds, final String key, final Object value) {
     for (final RewriteRule rule : rules.getRules(key)) {
       if (rule.input.getClass() != type)
         continue;

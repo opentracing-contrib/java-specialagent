@@ -29,7 +29,7 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(Parameterized.class)
-public class AdaptiveTracerTest {
+public class RewritableTracerTest {
   private static List<URL> getResourceFiles(final String path) throws IOException {
     final List<URL> resources = new ArrayList<>();
     final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -49,10 +49,10 @@ public class AdaptiveTracerTest {
   private final String fileName;
   private final JsonObject root;
   private final List<RewritableSpanBuilder> spanBuilders = new ArrayList<>();
-  private final List<LogFieldRewriter> logFieldAdapters = new ArrayList<>();
+  private final List<LogFieldRewriter> logFieldRewriters = new ArrayList<>();
   private int matches = 0;
 
-  public AdaptiveTracerTest(final URL resource) throws IOException, JsonParserException, URISyntaxException {
+  public RewritableTracerTest(final URL resource) throws IOException, JsonParserException, URISyntaxException {
     this.fileName = new File(resource.toURI()).getName();
     System.out.println(fileName);
     try (final InputStream in = resource.openStream()) {
@@ -70,7 +70,7 @@ public class AdaptiveTracerTest {
         Assert.fail("no exception thrown");
       }
       catch (final IllegalStateException | NullPointerException e) {
-        assertEquals(expectedError, e.getMessage());
+        assertEquals(fileName, expectedError, e.getMessage());
       }
     }
     else {
@@ -103,16 +103,16 @@ public class AdaptiveTracerTest {
   private void playScenario(final JsonObject root, final RewriteRules rules) {
     final MockTracer mockTracer = new MockTracer();
 
-    final AdaptiveTracerScenario scenario = AdaptiveTracerScenario.fromString(root.getString("scenario"));
+    final RewritableTracerScenario scenario = RewritableTracerScenario.fromString(root.getString("scenario"));
     scenario.play(getTracer(rules, mockTracer));
 
     final JsonArray expectedSpans = Objects.requireNonNull(root.getArray("expectedSpans"));
 
     final List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(expectedSpans.size(), spans.size());
+    assertEquals(fileName, expectedSpans.size(), spans.size());
     for (int i = 0; i < spans.size(); ++i) {
       final MockSpan span = spans.get(i);
-      final String message = "span " + i;
+      final String message = fileName + ": span " + i;
       final JsonObject expectedSpan = Objects.requireNonNull(expectedSpans.getObject(i), message);
 
       assertEquals(message, Objects.requireNonNull(expectedSpan.getString("operationName")), span.operationName());
@@ -127,15 +127,15 @@ public class AdaptiveTracerTest {
     return new RewritableTracer(mockTracer, rules) {
       @Override
       public SpanBuilder buildSpan(final String operationName) {
-        final RewritableSpanBuilder builder = new RewritableSpanBuilder(operationName, target, rules) {
+        final RewritableSpanBuilder builder = new RewritableSpanBuilder(operationName, target.buildSpan(operationName), rules) {
           @Override
           protected RewritableSpan newRewritableSpan(final Span span) {
             return new RewritableSpan(span, rules) {
               @Override
               LogFieldRewriter newLogFieldRewriter() {
-                final LogFieldRewriter logFieldAdapter = super.newLogFieldRewriter();
-                logFieldAdapters.add(logFieldAdapter);
-                return logFieldAdapter;
+                final LogFieldRewriter logFieldRewriter = super.newLogFieldRewriter();
+                logFieldRewriters.add(logFieldRewriter);
+                return logFieldRewriter;
               }
             };
           }
@@ -166,15 +166,13 @@ public class AdaptiveTracerTest {
     final JsonArray expectedLogs = expectedSpan.getArray("logs");
     final List<MockSpan.LogEntry> logEntries = span.logEntries();
     if (expectedLogs == null) {
-      assertEquals(0, logEntries.size());
+      assertEquals(message, 0, logEntries.size());
       return;
     }
 
     assertEquals(message, expectedLogs.size(), logEntries.size());
-    for (int i = 0; i < expectedLogs.size(); ++i) {
-      final JsonObject expectedLog = Objects.requireNonNull(expectedLogs.getObject(i));
-      assertLog(expectedLog, logEntries.get(i), message + " log " + i);
-    }
+    for (int i = 0; i < expectedLogs.size(); ++i)
+      assertLog(Objects.requireNonNull(expectedLogs.getObject(i)), logEntries.get(i), message + " log " + i);
   }
 
   private static void assertLog(final JsonObject expectedLog, final MockSpan.LogEntry logEntry, final String message) {
@@ -216,8 +214,8 @@ public class AdaptiveTracerTest {
       if (builder.getLog() != null)
         ++listAllocations;
 
-    for (final LogFieldRewriter adapter : logFieldAdapters)
-      if (adapter.getFields() != null)
+    for (final LogFieldRewriter rewriter : logFieldRewriters)
+      if (rewriter.getFields() != null)
         ++mapAllocations;
 
     assertEquals(fileName + ": listAllocations", root.getNumber("expectedListAllocations", 0), listAllocations);

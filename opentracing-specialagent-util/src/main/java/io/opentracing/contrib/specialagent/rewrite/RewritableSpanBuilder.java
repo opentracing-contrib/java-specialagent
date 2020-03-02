@@ -12,13 +12,12 @@ import io.opentracing.Tracer;
 import io.opentracing.tag.Tag;
 
 public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilder {
-  private final Tracer.SpanBuilder target;
+  final Tracer.SpanBuilder target;
 
-  RewritableSpanBuilder(final String operationName, final Tracer tracer, final RewriteRules rules) {
+  RewritableSpanBuilder(final String operationName, final Tracer.SpanBuilder tracer, final RewriteRules rules) {
     super(rules);
-    this.target = tracer.buildSpan(operationName);
+    this.target = tracer;
     onOperationName(operationName);
-    onStart();
   }
 
   @Override
@@ -81,9 +80,14 @@ public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilde
     return target.startManual();
   }
 
+  private RewritableSpan span;
+
   @Override
   public Span start() {
     final Span span = target.start();
+    if (this.span != null && this.span.target == span)
+      return this.span;
+
     if (log != null)
       for (final Map<String,Object> fields : log)
         span.log(fields);
@@ -91,7 +95,7 @@ public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilde
     if (operationName != null)
       span.setOperationName(operationName);
 
-    return newRewritableSpan(span);
+    return this.span = newRewritableSpan(span);
   }
 
   RewritableSpan newRewritableSpan(final Span span) {

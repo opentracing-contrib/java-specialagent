@@ -21,9 +21,12 @@ public class RewritableTracer implements Tracer {
     return target.scopeManager();
   }
 
+  private RewritableSpan activeSpan;
+
   @Override
   public Span activeSpan() {
-    return new RewritableSpan(target.activeSpan(), rules);
+    final Span activeSpan = target.activeSpan();
+    return this.activeSpan == null || this.activeSpan.target != activeSpan ? this.activeSpan = new RewritableSpan(activeSpan, rules) : this.activeSpan;
   }
 
   @Override
@@ -31,9 +34,12 @@ public class RewritableTracer implements Tracer {
     return target.activateSpan(span);
   }
 
+  private RewritableSpanBuilder spanBuilder;
+
   @Override
   public SpanBuilder buildSpan(final String operationName) {
-    return new RewritableSpanBuilder(operationName, target, rules);
+    final SpanBuilder spanBuilder = target.buildSpan(operationName);
+    return this.spanBuilder == null || this.spanBuilder.target != spanBuilder ? this.spanBuilder = new RewritableSpanBuilder(operationName, spanBuilder, rules) : this.spanBuilder;
   }
 
   @Override
