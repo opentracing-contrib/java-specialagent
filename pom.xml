@@ -242,6 +242,7 @@
         <module>opentracing-specialagent-api</module>
         <module>opentracing-specialagent-util</module>
         <module>fingerprint</module>
+        <module>rewrite</module>
         <module>assemble-maven-plugin</module>
         <module>opentracing-specialagent</module>
         <module>agentrule-maven-plugin</module>

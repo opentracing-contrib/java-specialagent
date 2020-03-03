@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.rewrite;
+package io.opentracing.contrib.specialagent;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -154,7 +154,7 @@ public enum RewritableTracerScenario {
     this.tagName = tagName;
   }
 
-  private static void logFieldsSpan(final Tracer tracer, Map<String,? extends Object> fields) {
+  private static void logFieldsSpan(final Tracer tracer, final Map<String,? extends Object> fields) {
     final Span span = tracer.buildSpan("operation").start();
     span.log(1, fields);
     span.finish();

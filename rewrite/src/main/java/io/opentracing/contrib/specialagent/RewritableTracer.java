@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.rewrite;
+package io.opentracing.contrib.specialagent;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;

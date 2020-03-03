@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.rewrite;
+package io.opentracing.contrib.specialagent;
 
 abstract class Rewriter {
   final RewriteRules rules;

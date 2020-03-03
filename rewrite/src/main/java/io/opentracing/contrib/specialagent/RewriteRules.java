@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.rewrite;
+package io.opentracing.contrib.specialagent;
 
 import java.io.InputStream;
 import java.util.ArrayList;

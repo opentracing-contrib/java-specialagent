@@ -1,4 +1,4 @@
-package io.opentracing.contrib.specialagent.rewrite;
+package io.opentracing.contrib.specialagent;
 
 import static org.junit.Assert.*;
 
@@ -44,7 +44,7 @@ public class RewritableTracerTest {
 
   @Parameterized.Parameters(name = "{0}")
   public static URL[] data() throws IOException {
-    return getResourceFiles("rewrite").toArray(new URL[0]);
+    return getResourceFiles("parameterized").toArray(new URL[0]);
   }
 
   private final String fileName;
