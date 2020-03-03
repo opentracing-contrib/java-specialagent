@@ -54,6 +54,7 @@
         <module>elasticsearch-client-rest</module>
         <module>elasticsearch-client-transport</module>
         <module>rxjava-2</module>
+        <module>rxjava-3</module>
         <module>kafka-client</module>
         <module>asynchttpclient</module>
         <module>rabbitmq-client</module>
