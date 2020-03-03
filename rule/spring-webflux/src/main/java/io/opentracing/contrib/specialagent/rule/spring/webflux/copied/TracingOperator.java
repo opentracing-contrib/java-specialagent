@@ -35,12 +35,12 @@ import java.util.List;
  *
  * @author Csaba Kos
  */
-class TracingOperator extends MonoOperator<Void, Void> {
+public class TracingOperator extends MonoOperator<Void, Void> {
   private final Tracer tracer;
   private final ServerWebExchange exchange;
   private final List<WebFluxSpanDecorator> spanDecorators;
 
-  TracingOperator(
+ public TracingOperator(
       final Mono<? extends Void> source,
       final ServerWebExchange exchange,
       final Tracer tracer,
