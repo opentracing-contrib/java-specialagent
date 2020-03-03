@@ -5,7 +5,7 @@ import java.util.Map;
 
 import io.opentracing.Span;
 
-final class LogFieldRewriter extends Rewriter {
+class LogFieldRewriter extends Rewriter {
   private final Rewriter source;
   private final Span target;
 
@@ -37,7 +37,7 @@ final class LogFieldRewriter extends Rewriter {
     log(timestampMicroseconds, fields);
   }
 
-  private <T>void rewriteLog(final long timestampMicroseconds, final Map<String,?> fields, final RewriteRule rule, final Object match, final Object input) {
+  private void rewriteLog(final long timestampMicroseconds, final Map<String,?> fields, final RewriteRule rule, final Object match, final Object input) {
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
@@ -74,9 +74,5 @@ final class LogFieldRewriter extends Rewriter {
   @Override
   void rewriteOperationName(final String name) {
     source.rewriteOperationName(name);
-  }
-
-  Map<String,Object> getFields() {
-    return fields;
   }
 }

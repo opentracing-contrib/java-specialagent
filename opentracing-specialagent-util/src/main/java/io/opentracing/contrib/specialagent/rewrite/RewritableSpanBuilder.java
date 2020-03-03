@@ -2,7 +2,6 @@ package io.opentracing.contrib.specialagent.rewrite;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import io.opentracing.Scope;
@@ -14,9 +13,9 @@ import io.opentracing.tag.Tag;
 public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilder {
   final Tracer.SpanBuilder target;
 
-  RewritableSpanBuilder(final String operationName, final Tracer.SpanBuilder tracer, final RewriteRules rules) {
+  RewritableSpanBuilder(final String operationName, final Tracer.SpanBuilder target, final RewriteRules rules) {
     super(rules);
-    this.target = tracer;
+    this.target = target;
     onOperationName(operationName);
   }
 
@@ -109,7 +108,7 @@ public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilde
   }
 
   private String operationName;
-  private List<Map<String,Object>> log;
+  private ArrayList<Map<String,Object>> log;
 
   @Override
   void rewriteTag(final String key, final Object value) {
@@ -134,9 +133,5 @@ public class RewritableSpanBuilder extends Rewriter implements Tracer.SpanBuilde
   @Override
   void rewriteOperationName(final String name) {
     operationName = name;
-  }
-
-  List<Map<String,Object>> getLog() {
-    return log;
   }
 }

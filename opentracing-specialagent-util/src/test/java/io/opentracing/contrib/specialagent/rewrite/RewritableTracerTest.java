@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +52,8 @@ public class RewritableTracerTest {
   private final List<RewritableSpanBuilder> spanBuilders = new ArrayList<>();
   private final List<LogFieldRewriter> logFieldRewriters = new ArrayList<>();
   private int matches = 0;
+  private final HashSet<RewritableSpanBuilder> listAllocations = new HashSet<>();
+  private final HashSet<LogFieldRewriter> mapAllocations = new HashSet<>();
 
   public RewritableTracerTest(final URL resource) throws IOException, JsonParserException, URISyntaxException {
     this.fileName = new File(resource.toURI()).getName();
@@ -129,11 +132,23 @@ public class RewritableTracerTest {
       public SpanBuilder buildSpan(final String operationName) {
         final RewritableSpanBuilder builder = new RewritableSpanBuilder(operationName, target.buildSpan(operationName), rules) {
           @Override
+          void rewriteLog(final long timestampMicroseconds, final String key, final Object value) {
+            listAllocations.add(this);
+            super.rewriteLog(timestampMicroseconds, key, value);
+          }
+
+          @Override
           protected RewritableSpan newRewritableSpan(final Span span) {
             return new RewritableSpan(span, rules) {
               @Override
               LogFieldRewriter newLogFieldRewriter() {
-                final LogFieldRewriter logFieldRewriter = super.newLogFieldRewriter();
+                final LogFieldRewriter logFieldRewriter = new LogFieldRewriter(rules, this, target) {
+                  @Override
+                  void rewriteLog(final long timestampMicroseconds, final String key, final Object value) {
+                    mapAllocations.add(this);
+                    super.rewriteLog(timestampMicroseconds, key, value);
+                  }
+                };
                 logFieldRewriters.add(logFieldRewriter);
                 return logFieldRewriter;
               }
@@ -208,18 +223,8 @@ public class RewritableTracerTest {
   }
 
   private void assertAllocations(final JsonObject root) {
-    int listAllocations = 0;
-    int mapAllocations = 0;
-    for (final RewritableSpanBuilder builder : spanBuilders)
-      if (builder.getLog() != null)
-        ++listAllocations;
-
-    for (final LogFieldRewriter rewriter : logFieldRewriters)
-      if (rewriter.getFields() != null)
-        ++mapAllocations;
-
-    assertEquals(fileName + ": listAllocations", root.getNumber("expectedListAllocations", 0), listAllocations);
-    assertEquals(fileName + ": mapAllocations", root.getNumber("expectedMapAllocations", 0), mapAllocations);
+    assertEquals(fileName + ": listAllocations", root.getNumber("expectedListAllocations", 0), listAllocations.size());
+    assertEquals(fileName + ": mapAllocations", root.getNumber("expectedMapAllocations", 0), mapAllocations.size());
     assertEquals(fileName + ": matches", root.getNumber("expectedMatches", 0), matches);
   }
 }
