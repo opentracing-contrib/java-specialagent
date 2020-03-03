@@ -22,7 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import io.opentracing.contrib.specialagent.TestUtil;
-import play.core.PlayVersion;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import play.routing.RoutingDsl;
 import play.server.Server;
 
@@ -45,12 +45,6 @@ public class PlayITest {
     if (200 != responseCode)
       throw new AssertionError("ERROR: response: " + responseCode);
 
-    final String playVersion = PlayVersion.current();
-    if (playVersion.startsWith("2.6")) {
-      TestUtil.checkSpan("play", 3); // 1 Play span + 1 Akka Actor span + 1 HttpUrlConnection span
-    }
-    else {
-      TestUtil.checkSpan("play", 2);
-    }
+    TestUtil.checkSpan(true, new ComponentSpanCount("play", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 }

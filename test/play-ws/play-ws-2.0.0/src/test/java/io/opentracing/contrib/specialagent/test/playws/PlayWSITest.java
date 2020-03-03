@@ -21,6 +21,7 @@ import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import play.libs.ws.ahc.StandaloneAhcWSClient;
 import play.shaded.ahc.org.asynchttpclient.AsyncHttpClient;
 import play.shaded.ahc.org.asynchttpclient.AsyncHttpClientConfig;
@@ -46,10 +47,11 @@ public class PlayWSITest {
         .getStatus();
 
       if (200 != status)
-        throw new AssertionError("ERROR: response: " + status);
+        throw new AssertionError("Response: " + status);
     }
-
-    system.terminate();
-    TestUtil.checkSpan("play-ws", 1);
+    finally {
+      system.terminate();
+      TestUtil.checkSpan(new ComponentSpanCount("play-ws", 1));
+    }
   }
 }

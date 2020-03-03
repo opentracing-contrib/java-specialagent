@@ -21,6 +21,7 @@ import java.time.temporal.ChronoUnit;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import ratpack.exec.ExecResult;
 import ratpack.exec.Execution;
 import ratpack.exec.Promise;
@@ -82,6 +83,6 @@ public class RatpackITest {
     }
 
     server.stop();
-    TestUtil.checkSpan("netty", 2, true);
+    TestUtil.checkSpan(new ComponentSpanCount("netty", 2, true));
   }
 }

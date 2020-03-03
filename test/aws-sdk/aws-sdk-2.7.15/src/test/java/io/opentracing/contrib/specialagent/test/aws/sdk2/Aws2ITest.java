@@ -23,6 +23,7 @@ import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
 import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
@@ -50,13 +51,12 @@ public class Aws2ITest {
     }
 
     server.stop();
-    TestUtil.checkSpan("java-aws-sdk", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("java-aws-sdk", 1));
     System.exit(0);
   }
 
   private static DynamoDbClient buildClient() {
     final AwsSessionCredentials awsCreds = AwsSessionCredentials.create("access_key_id", "secret_key_id", "session_token");
-
     return DynamoDbClient
       .builder()
       .endpointOverride(URI.create("http://localhost:8000"))

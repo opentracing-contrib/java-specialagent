@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.test.pulsar.client;
 
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Set;
@@ -124,7 +125,7 @@ public class PulsarClientITest {
 
     bkEnsemble.stop();
 
-    TestUtil.checkSpan("java-pulsar", 2, true);
+    TestUtil.checkSpan(new ComponentSpanCount("java-pulsar", 2, true));
 
     // Embedded Zookeeper processes may not exit
     System.exit(0);

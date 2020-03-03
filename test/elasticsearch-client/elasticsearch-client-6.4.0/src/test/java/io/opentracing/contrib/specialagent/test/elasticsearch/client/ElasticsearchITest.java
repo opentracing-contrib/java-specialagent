@@ -45,6 +45,7 @@ import org.elasticsearch.transport.Netty4Plugin;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class ElasticsearchITest {
   private static final int HTTP_PORT = 9205;
@@ -72,7 +73,7 @@ public class ElasticsearchITest {
       runTransportClient();
     }
 
-    TestUtil.checkSpan("java-elasticsearch", 6);
+    TestUtil.checkSpan(new ComponentSpanCount("java-elasticsearch", 4));
   }
 
   private static void runRestClient() throws IOException, InterruptedException {

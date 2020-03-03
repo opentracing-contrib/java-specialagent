@@ -16,8 +16,6 @@
 package io.opentracing.contrib.specialagent.rule.spring.websocket;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
@@ -25,6 +23,7 @@ import org.springframework.messaging.support.ChannelInterceptor;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -33,15 +32,15 @@ public class SpringWebSocketAgentIntercept {
   private static final ThreadLocal<Span> spanHolder = new ThreadLocal<>();
 
   public static void clientInboundChannel(final Object returned) {
-    final AbstractSubscribableChannel channel = (AbstractSubscribableChannel) returned;
-    final List<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
+    final AbstractSubscribableChannel channel = (AbstractSubscribableChannel)returned;
+    final ArrayList<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
     interceptors.add(new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_SERVER));
     channel.setInterceptors(interceptors);
   }
 
   public static void clientOutboundChannel(final Object returned) {
-    final AbstractSubscribableChannel channel = (AbstractSubscribableChannel) returned;
-    final List<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
+    final AbstractSubscribableChannel channel = (AbstractSubscribableChannel)returned;
+    final ArrayList<ChannelInterceptor> interceptors = new ArrayList<>(channel.getInterceptors());
     interceptors.add(new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_CLIENT));
     channel.setInterceptors(interceptors);
   }
@@ -63,13 +62,8 @@ public class SpringWebSocketAgentIntercept {
     if (span == null)
       return;
 
-    if (thrown != null) {
-      Tags.ERROR.set(span, Boolean.TRUE);
-      final HashMap<String,Object> errorLogs = new HashMap<>(2);
-      errorLogs.put("event", Tags.ERROR.getKey());
-      errorLogs.put("error.object", thrown);
-      span.log(errorLogs);
-    }
+    if (thrown != null)
+      AgentRuleUtil.setErrorTag(span, thrown);
 
     span.finish();
     spanHolder.remove();

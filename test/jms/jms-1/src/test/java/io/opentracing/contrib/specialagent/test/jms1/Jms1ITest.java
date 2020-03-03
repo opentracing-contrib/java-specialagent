@@ -31,6 +31,7 @@ import javax.jms.TextMessage;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class Jms1ITest {
   private static final int threadCount = 4;
@@ -45,7 +46,7 @@ public class Jms1ITest {
       new Thread(new HelloWorldProducer(connection)).start();
 
     latch.await();
-    TestUtil.checkSpan("java-jms", 4);
+    TestUtil.checkSpan(new ComponentSpanCount("java-jms", 4));
     connection.close();
   }
 
@@ -136,7 +137,7 @@ public class Jms1ITest {
 
     @Override
     public synchronized void onException(final JMSException e) {
-      System.out.println("JMS Exception occured.  Shutting down client.");
+      System.out.println("JMS Exception occured. Shutting down client.");
     }
   }
 }

@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.pulsar-client</groupId>
     <artifactId>pulsar-client</artifactId>
-    <version>1.5.9-SNAPSHOT</version>
+    <version>1.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>pulsar-client-2.4.2</artifactId>
   <name>SpecialAgent Test for Pulsar Client 2.4.2</name>

@@ -35,6 +35,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public abstract class TomcatTest {
   private static final Logger logger = Logger.getLogger(TomcatAsyncITest.class.getName());
@@ -54,7 +55,7 @@ public abstract class TomcatTest {
 
     tomcatServer.stop();
     tomcatServer.destroy();
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 
   protected static void run(final Servlet servlet, final boolean async) throws IllegalAccessException, InvocationTargetException, IOException, LifecycleException, ServletException {

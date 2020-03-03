@@ -12,15 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentracing.contrib.specialagent.rule.playws;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import play.shaded.ahc.io.netty.channel.Channel;
@@ -67,7 +67,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
 
   @Override
   public void onThrowable(final Throwable throwable) {
-    onError(throwable, span);
+    AgentRuleUtil.setErrorTag(span, throwable);
     try {
       asyncHandler.onThrowable(throwable);
     }
@@ -131,7 +131,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   }
 
   @Override
-  public void onTlsHandshakeFailure(Throwable cause) {
+  public void onTlsHandshakeFailure(final Throwable cause) {
     asyncHandler.onTlsHandshakeFailure(cause);
   }
 
@@ -141,35 +141,22 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   }
 
   @Override
-  public void onConnectionPooled(Channel connection) {
+  public void onConnectionPooled(final Channel connection) {
     asyncHandler.onConnectionPooled(connection);
   }
 
   @Override
-  public void onConnectionOffer(Channel connection) {
+  public void onConnectionOffer(final Channel connection) {
     asyncHandler.onConnectionOffer(connection);
   }
 
   @Override
-  public void onRequestSend(NettyRequest request) {
+  public void onRequestSend(final NettyRequest request) {
     asyncHandler.onRequestSend(request);
   }
 
   @Override
   public void onRetry() {
     asyncHandler.onRetry();
-  }
-
-  private static void onError(final Throwable t, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (t != null)
-      span.log(errorLogs(t));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable t) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", t);
-    return errorLogs;
   }
 }

@@ -32,18 +32,11 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(hasSuperType(named("org.springframework.web.server.handler.DefaultWebFilterChain")))
+      .type(hasSuperType(named("org.springframework.web.server.handler.FilteringWebHandler")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Chain.class).on(named("initChain")));
-        }})
-      // in spring-webflux 5.0.x DefaultWebFilterChain.initChain() doesn't exist therefore use WebHttpHandlerBuilder$SortedBeanContainer.getFilters():
-      .type(named("org.springframework.web.server.adapter.WebHttpHandlerBuilder$SortedBeanContainer"))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Filters.class).on(named("getFilters")));
+          return builder.visit(Advice.to(Handler.class).on(named("handle")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("org.springframework.web.reactive.function.client.WebClient$Builder"))))
       .transform(new Transformer() {
@@ -53,19 +46,11 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
         }}));
   }
 
-  public static class Chain {
-    @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(typing = Typing.DYNAMIC, readOnly = false, value = 0) Object filters) {
-      if (isEnabled("SpringWebFluxChainAgentRule", origin))
-        filters = SpringWebFluxAgentIntercept.filters(filters);
-    }
-  }
-
-  public static class Filters {
+  public static class Handler {
     @Advice.OnMethodExit
-    public static void enter(final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(typing = Typing.DYNAMIC, value = 0) Object exchange, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
       if (isEnabled("SpringWebFluxChainAgentRule", origin))
-        returned = SpringWebFluxAgentIntercept.filters(returned);
+        returned = SpringWebFluxAgentIntercept.handle(exchange, returned);
     }
   }
 

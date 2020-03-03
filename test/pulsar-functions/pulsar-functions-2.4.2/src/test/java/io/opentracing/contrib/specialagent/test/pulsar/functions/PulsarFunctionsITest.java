@@ -50,6 +50,7 @@ import org.apache.pulsar.zookeeper.LocalBookkeeperEnsemble;
 import com.google.common.collect.Sets;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class PulsarFunctionsITest {
   private static final String CLUSTER_NAME = "use";
@@ -157,7 +158,7 @@ public class PulsarFunctionsITest {
       consumer.receive(15, TimeUnit.SECONDS);
     }
 
-    TestUtil.checkSpan("java-pulsar-functions", 15);
+    TestUtil.checkSpan(new ComponentSpanCount("java-pulsar-functions", 1));
   }
 
   private static FunctionConfig createFunctionConfig(final String namespace, final String functionName, final String sourceTopic, final String sinkTopic, final String subscriptionName) {

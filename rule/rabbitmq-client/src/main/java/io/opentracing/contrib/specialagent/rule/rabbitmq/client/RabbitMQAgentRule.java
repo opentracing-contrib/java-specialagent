@@ -70,7 +70,7 @@ public class RabbitMQAgentRule extends AgentRule {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
       if (isEnabled("RabbitMQAgentRule", origin))
-        RabbitMQAgentIntercept.exitPublish(thrown);
+        RabbitMQAgentIntercept.finish(thrown);
     }
   }
 

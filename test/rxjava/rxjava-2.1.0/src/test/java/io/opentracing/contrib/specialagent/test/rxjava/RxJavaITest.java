@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent.test.rxjava;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -45,6 +46,6 @@ public class RxJavaITest {
     });
 
     Observable.just("Hello", "World").subscribe(System.out::println);
-    TestUtil.checkSpan("rxjava-2", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("rxjava-2", 2, true));
   }
 }

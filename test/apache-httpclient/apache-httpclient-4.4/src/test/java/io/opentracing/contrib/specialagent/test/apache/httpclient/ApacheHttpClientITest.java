@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class ApacheHttpClientITest {
   public static void main(final String[] args) throws Exception {
@@ -31,6 +32,6 @@ public class ApacheHttpClientITest {
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
-    TestUtil.checkSpan("java-httpclient", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("java-httpclient", 1));
   }
 }

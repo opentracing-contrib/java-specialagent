@@ -55,6 +55,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class PulsarFunctionsITest {
   private static final String CLUSTER_NAME = "use";
@@ -177,7 +178,7 @@ public class PulsarFunctionsITest {
       }
     }
 
-    TestUtil.checkSpan("java-pulsar-functions", 5);
+    TestUtil.checkSpan(new ComponentSpanCount("java-pulsar-functions", 1));
   }
 
   private static FunctionDetails createSinkConfig(final String jarFile, final String namespace, final String functionName, final String sourceTopic, final String sinkTopic, final String subscriptionName) {

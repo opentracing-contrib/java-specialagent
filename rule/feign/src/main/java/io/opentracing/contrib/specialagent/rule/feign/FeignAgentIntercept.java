@@ -27,18 +27,13 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class FeignAgentIntercept {
   private static final StandardTags standardTags = new StandardTags();
-  private static final ThreadLocal<Context> contextHolder = new ThreadLocal<>();
-
-  private static class Context {
-    private Scope scope;
-    private Span span;
-  }
 
   public static Object onRequest(final Object arg1, final Object arg2) {
     Request request = (Request)arg1;
@@ -53,10 +48,7 @@ public class FeignAgentIntercept {
     request = inject(span.context(), request);
 
     final Scope scope = tracer.activateSpan(span);
-    final Context context = new Context();
-    contextHolder.set(context);
-    context.scope = scope;
-    context.span = span;
+    LocalSpanContext.set(span, scope);
 
     return request;
   }
@@ -80,11 +72,9 @@ public class FeignAgentIntercept {
   }
 
   private static void finish() {
-    final Context context = contextHolder.get();
+    final LocalSpanContext context = LocalSpanContext.get();
     if (context != null) {
-      context.scope.close();
-      context.span.finish();
-      contextHolder.remove();
+      context.closeAndFinish();
     }
   }
 }

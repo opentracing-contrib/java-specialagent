@@ -28,6 +28,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JettySyncITest {
   static {
@@ -56,14 +57,15 @@ public class JettySyncITest {
       server.join();
     }
 
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 
   static File installWebApp() throws IOException {
-    final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("web.xml");
-    final File webapp = new File("target/webapp/WEB-INF/web.xml");
-    webapp.getParentFile().mkdirs();
-    Files.copy(in, webapp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-    return webapp.getParentFile().getParentFile();
+    try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("web.xml")) {
+      final File webapp = new File("target/webapp/WEB-INF/web.xml");
+      webapp.getParentFile().mkdirs();
+      Files.copy(in, webapp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      return webapp.getParentFile().getParentFile();
+    }
   }
 }

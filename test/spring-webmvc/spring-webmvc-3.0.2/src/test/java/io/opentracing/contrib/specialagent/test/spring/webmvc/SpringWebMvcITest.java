@@ -27,6 +27,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class SpringWebMvcITest {
   public static void main(final String[] args) throws Exception {
@@ -42,7 +43,7 @@ public class SpringWebMvcITest {
       throw new AssertionError("ERROR: response: " + responseCode);
 
     server.stop();
-    TestUtil.checkSpan("java-web-servlet", 2);
+    TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
   }
 
   private static Server startServer() throws Exception {

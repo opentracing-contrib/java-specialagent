@@ -24,6 +24,7 @@ import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class SpringWebITest {
   public static void main(final String[] args) throws Exception {
@@ -32,7 +33,7 @@ public class SpringWebITest {
     final RestTemplate restTemplate = new RestTemplate();
     restTemplate.getForObject("http://www.google.com", String.class);
 
-    TestUtil.checkSpan("java-spring-rest-template", 3);
+    TestUtil.checkSpan(new ComponentSpanCount("java-spring-rest-template", 3));
   }
 
   private static boolean makeAsyncCall() throws Exception {
@@ -43,7 +44,6 @@ public class SpringWebITest {
       throw new AssertionError("ERROR: response: " + status);
 
     final CountDownLatch latch = new CountDownLatch(1);
-
     asyncRestTemplate.getForEntity("http://www.google.com", String.class).addCallback(new ListenableFutureCallback<ResponseEntity<String>>() {
       @Override
       public void onSuccess(final ResponseEntity<String> result) {

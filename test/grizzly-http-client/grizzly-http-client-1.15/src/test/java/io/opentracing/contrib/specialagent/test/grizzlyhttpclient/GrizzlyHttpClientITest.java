@@ -23,6 +23,7 @@ import com.ning.http.client.Response;
 import com.ning.http.client.SimpleAsyncHttpClient;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class GrizzlyHttpClientITest {
   public static void main(final String[] args) throws InterruptedException, IOException, ExecutionException {
@@ -40,6 +41,6 @@ public class GrizzlyHttpClientITest {
         throw new AssertionError("ERROR: response: " + statusCode);
     }
 
-    TestUtil.checkSpan("java-grizzly-ahc", 2);
+    TestUtil.checkSpan(new ComponentSpanCount("java-grizzly-ahc", 2));
   }
 }

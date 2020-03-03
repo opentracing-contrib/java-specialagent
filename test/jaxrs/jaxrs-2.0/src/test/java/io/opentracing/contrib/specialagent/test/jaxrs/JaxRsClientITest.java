@@ -21,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JaxRsClientITest {
   public static void main(final String[] args) throws Exception {
@@ -31,6 +32,6 @@ public class JaxRsClientITest {
     if (200 != statusCode)
       throw new AssertionError("ERROR: response: " + statusCode);
 
-    TestUtil.checkSpan("jaxrs", 1);
+    TestUtil.checkSpan(new ComponentSpanCount("jaxrs", 1));
   }
 }

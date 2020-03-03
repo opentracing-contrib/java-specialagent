@@ -16,9 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.asynchttpclient;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.SSLSession;
 
@@ -32,6 +30,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.tag.Tags;
 
 public class TracingAsyncHandler implements AsyncHandler<Object> {
@@ -73,7 +72,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
       handler.onThrowable(t);
     }
     finally {
-      onError(t, span);
+      AgentRuleUtil.setErrorTag(span, t);
     }
   }
 
@@ -153,18 +152,5 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
   @Override
   public void onRetry() {
     handler.onRetry();
-  }
-
-  private static void onError(final Throwable throwable, final Span span) {
-    Tags.ERROR.set(span, Boolean.TRUE);
-    if (throwable != null)
-      span.log(errorLogs(throwable));
-  }
-
-  private static Map<String,Object> errorLogs(final Throwable throwable) {
-    final Map<String,Object> errorLogs = new HashMap<>(2);
-    errorLogs.put("event", Tags.ERROR.getKey());
-    errorLogs.put("error.object", throwable);
-    return errorLogs;
   }
 }
