@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.webflux;
 
-import io.opentracing.contrib.specialagent.rule.spring.webflux.copied.TracingOperator;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -24,13 +23,13 @@ import org.springframework.web.reactive.function.client.WebClient.Builder;
 import org.springframework.web.server.ServerWebExchange;
 
 import io.opentracing.contrib.specialagent.rule.spring.webflux.copied.TracingExchangeFilterFunction;
+import io.opentracing.contrib.specialagent.rule.spring.webflux.copied.TracingOperator;
 import io.opentracing.contrib.specialagent.rule.spring.webflux.copied.WebClientSpanDecorator;
 import io.opentracing.contrib.specialagent.rule.spring.webflux.copied.WebFluxSpanDecorator;
 import io.opentracing.util.GlobalTracer;
 import reactor.core.publisher.Mono;
 
 public class SpringWebFluxAgentIntercept {
-
   public static void client(final Object thiz) {
     final WebClient.Builder builder = (Builder)thiz;
     builder.filter(new TracingExchangeFilterFunction(GlobalTracer.get(), Collections.singletonList(new WebClientSpanDecorator.StandardTags())));
@@ -38,8 +37,8 @@ public class SpringWebFluxAgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object handle(Object exchange, Object returned) {
-    ServerWebExchange serverWebExchange = (ServerWebExchange) exchange;
-    Mono<Void> res = (Mono<Void>) returned;
+    final ServerWebExchange serverWebExchange = (ServerWebExchange)exchange;
+    final Mono<Void> res = (Mono<Void>)returned;
     return new TracingOperator(res, serverWebExchange, GlobalTracer.get(), Arrays.asList(new WebFluxSpanDecorator.StandardTags(), new WebFluxSpanDecorator.WebFluxTags()));
   }
 }
