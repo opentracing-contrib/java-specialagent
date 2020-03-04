@@ -67,10 +67,10 @@ public class RabbitMQAgentIntercept {
   }
 
   public static void handleDeliveryStart(Object thiz, Object props) {
-    if(WrapperProxy.isWrapper(thiz, TracingConsumer.class))
+    if (WrapperProxy.isWrapper(thiz, TracingConsumer.class))
       return;
 
-    if(AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.rabbitmq.TracingConsumer.handleDelivery"))
+    if (AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.rabbitmq.TracingConsumer.handleDelivery"))
       return;
 
     final AMQP.BasicProperties properties = (AMQP.BasicProperties) props;
