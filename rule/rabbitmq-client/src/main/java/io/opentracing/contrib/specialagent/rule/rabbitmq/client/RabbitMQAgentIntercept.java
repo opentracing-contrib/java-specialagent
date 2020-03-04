@@ -15,11 +15,12 @@
 
 package io.opentracing.contrib.specialagent.rule.rabbitmq.client;
 
-import static io.opentracing.contrib.rabbitmq.TracingUtils.inject;
+import static io.opentracing.contrib.rabbitmq.TracingUtils.*;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.GetResponse;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
