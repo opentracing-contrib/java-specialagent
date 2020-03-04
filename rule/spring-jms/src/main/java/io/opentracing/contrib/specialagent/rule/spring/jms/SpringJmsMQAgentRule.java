@@ -38,21 +38,20 @@ public class SpringJmsMQAgentRule extends AgentRule {
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(SpringJmsMQAgentRule.class).on(named("onMessage").and(takesArguments(2))));
         }})
-      .type(not(isInterface())).and(hasSuperType(named("org.springframework.jms.listener.AbstractPollingMessageListenerContainer")))
+      .type(hasSuperType(named("org.springframework.jms.listener.AbstractPollingMessageListenerContainer")))
       .transform(new Transformer() {
         @Override
-        public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(ReceiveMessage.class).on(named("receiveMessage").and(takesArguments(1))));
-        }
-        })
+        }})
     );
   }
 
   public static class ReceiveMessage {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object consumer, final @Advice.Return(typing = Typing.DYNAMIC) Object message) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object consumer, final @Advice.Return Object message) {
       if (isEnabled("SpringJmsMQAgentRule", origin))
-         SpringJmsAgentIntercept.onReceiveMessage(consumer, message);
+        SpringJmsAgentIntercept.onReceiveMessage(consumer, message);
     }
   }
 
