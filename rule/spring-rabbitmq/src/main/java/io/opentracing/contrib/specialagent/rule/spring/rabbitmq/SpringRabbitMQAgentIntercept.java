@@ -15,6 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.rabbitmq;
 
+import com.rabbitmq.client.AMQP;
+import io.opentracing.Scope;
+import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.rabbitmq.TracingConsumer;
+import io.opentracing.contrib.rabbitmq.TracingUtils;
 import java.util.Map;
 
 import org.springframework.amqp.core.Message;
@@ -65,4 +70,32 @@ public class SpringRabbitMQAgentIntercept {
 
     context.closeAndFinish();
   }
+
+  public static void handleDeliveryStart(Object thiz, Object props) {
+    if (WrapperProxy.isWrapper(thiz, TracingConsumer.class))
+      return;
+
+    if (AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.rabbitmq.TracingConsumer.handleDelivery"))
+      return;
+
+    final AMQP.BasicProperties properties = (AMQP.BasicProperties) props;
+    final Tracer tracer = GlobalTracer.get();
+
+    final Span span = TracingUtils.buildChildSpan(properties, null, tracer);
+
+    final Scope scope = tracer.activateSpan(span);
+    LocalSpanContext.set(span, scope);
+  }
+
+  public static void handleDeliveryEnd(final Throwable thrown) {
+    final LocalSpanContext context = LocalSpanContext.get();
+    if (context == null)
+      return;
+
+    if (thrown != null)
+      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+
+    context.closeAndFinish();
+  }
+
 }

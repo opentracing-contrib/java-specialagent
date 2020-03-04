@@ -47,33 +47,7 @@ public class RabbitMQAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnEnterConsume.class).on(named("basicConsume").and(takesArguments(7))));
-        }})
-        .type(not(isInterface()).and(hasSuperType(named("com.rabbitmq.client.Consumer"))).and(not(named("io.opentracing.contrib.rabbitmq.TracingConsumer"))))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
-              ClassLoader classLoader, JavaModule module) {
-            return builder.visit(Advice.to(Consumer.class).on(named("handleDelivery")));
-          }
-        })
-    );
-  }
-
-  /**
-   * It's needed for spring-rabbitmq to work in static deferred attach mode
-   */
-  public static class Consumer {
-    @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.This Object thiz, final @Advice.Argument(value = 2) Object properties) {
-      if (isEnabled("RabbitMQAgentRule", origin))
-        RabbitMQAgentIntercept.handleDeliveryStart(thiz, properties);
-    }
-
-    @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled("RabbitMQAgentRule", origin))
-        RabbitMQAgentIntercept.handleDeliveryEnd(thrown);
-    }
+        }}));
   }
 
   public static class OnEnterConsume {
