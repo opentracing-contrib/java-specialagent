@@ -278,4 +278,47 @@ public class AssembleUtilTest {
     for (final File file : files)
       assertTrue(file.getName(), expected.contains(file.getName()));
   }
+
+  private static void testRegexMatch(final String pluginName, final String expectedRegex, final String ... tests) {
+    assertEquals(expectedRegex, AssembleUtil.convertToNameRegex(pluginName));
+    for (final String test : tests)
+      assertTrue(test.matches(expectedRegex));
+  }
+
+  @Test
+  public void testConvertToNameRegex() {
+    try {
+      AssembleUtil.convertToNameRegex(null);
+      fail("Expected NullPointerException");
+    }
+    catch (final NullPointerException e) {
+    }
+
+    try {
+      AssembleUtil.convertToNameRegex("");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
+
+    testRegexMatch("*", "^.*", "spring:webmvc",
+      "okhttp", "lettuce", "jdbc", "spring:boot", "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:*", "^spring:.*",
+      "spring:boot", "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:*:*", "^spring:[^:]*:.*",
+      "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:boot", "(^spring:boot$|^spring:boot:.*)",
+      "spring:boot");
+    testRegexMatch("spring:webmvc", "(^spring:webmvc$|^spring:webmvc:.*)",
+      "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:web", "(^spring:web$|^spring:web:.*)",
+      "spring:web:3", "spring:web:4", "spring:web:5");
+
+    testRegexMatch("lettuce:5.?", "^lettuce:5\\..",
+      "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
+    testRegexMatch("lettuce:5", "^lettuce:5.*",
+      "lettuce:5", "lettuce:5.1", "lettuce:5.2");
+    testRegexMatch("lettuce", "(^lettuce$|^lettuce:.*)",
+      "lettuce:5", "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
+  }
 }

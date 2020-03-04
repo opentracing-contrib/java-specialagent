@@ -15,6 +15,9 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.util.HashMap;
+import java.util.List;
+
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -24,11 +27,40 @@ import io.opentracing.propagation.Format;
 
 public class RewritableTracer implements Tracer {
   final Tracer target;
-  final RewriteRules rules;
+  final List<RewriteRules> rulesManifest;
 
-  RewritableTracer(final Tracer target, final RewriteRules rules) {
+  RewritableTracer(final Tracer target, final List<RewriteRules> rulesManifest) {
     this.target = target;
-    this.rules = rules;
+    this.rulesManifest = rulesManifest;
+  }
+
+  private static final HashMap<String,RewriteRules> nameToRules = new HashMap<>();
+
+  private RewriteRules getRulesForCurrentPlugin() {
+    final String currentPluginName = AgentRule.getCurrentPluginName();
+    if (nameToRules.containsKey(currentPluginName))
+      return nameToRules.get(currentPluginName);
+
+    boolean cloned = false;
+    RewriteRules matchingRules = null;
+    for (final RewriteRules rules : rulesManifest) {
+      if (rules.namePattern.matcher(currentPluginName).matches()) {
+        if (matchingRules == null) {
+          matchingRules = rules;
+        }
+        else {
+          if (!cloned) {
+            matchingRules = matchingRules.clone();
+            cloned = true;
+          }
+
+          matchingRules.addAll(rules);
+        }
+      }
+    }
+
+    nameToRules.put(currentPluginName, matchingRules);
+    return matchingRules;
   }
 
   @Override
@@ -41,7 +73,11 @@ public class RewritableTracer implements Tracer {
   @Override
   public Span activeSpan() {
     final Span activeSpan = target.activeSpan();
-    return this.activeSpan == null || this.activeSpan.target != activeSpan ? this.activeSpan = new RewritableSpan(activeSpan, rules) : this.activeSpan;
+    if (this.activeSpan != null && this.activeSpan.target == activeSpan)
+      return this.activeSpan;
+
+    final RewriteRules rules = getRulesForCurrentPlugin();
+    return this.activeSpan = new RewritableSpan(activeSpan, rules);
   }
 
   @Override
@@ -54,7 +90,11 @@ public class RewritableTracer implements Tracer {
   @Override
   public SpanBuilder buildSpan(final String operationName) {
     final SpanBuilder spanBuilder = target.buildSpan(operationName);
-    return this.spanBuilder == null || this.spanBuilder.target != spanBuilder ? this.spanBuilder = new RewritableSpanBuilder(operationName, spanBuilder, rules) : this.spanBuilder;
+    if (this.spanBuilder != null && this.spanBuilder.target == spanBuilder)
+      return this.spanBuilder;
+
+    final RewriteRules rules = getRulesForCurrentPlugin();
+    return this.spanBuilder = new RewritableSpanBuilder(operationName, spanBuilder, rules);
   }
 
   @Override

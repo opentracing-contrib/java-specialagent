@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +143,7 @@ public class RewritableTracerTest {
   }
 
   private RewritableTracer getTracer(final RewriteRules rules, final MockTracer mockTracer) {
-    return new RewritableTracer(mockTracer, rules) {
+    return new RewritableTracer(mockTracer, Collections.singletonList(rules)) {
       @Override
       public SpanBuilder buildSpan(final String operationName) {
         final RewritableSpanBuilder builder = new RewritableSpanBuilder(operationName, target.buildSpan(operationName), rules) {

@@ -18,9 +18,9 @@ package io.opentracing.contrib.specialagent;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.grack.nanojson.JsonArray;
@@ -28,32 +28,23 @@ import com.grack.nanojson.JsonObject;
 import com.grack.nanojson.JsonParser;
 import com.grack.nanojson.JsonParserException;
 
-final class RewriteRules {
-  static final String GLOBAL_RULES = "*";
-
-  public static Map<String,RewriteRules> parseRules(final InputStream inputStream) {
+final class RewriteRules implements Cloneable {
+  public static List<RewriteRules> parseRules(final InputStream inputStream) {
     try {
-      Map<String,RewriteRules> result = null;
+      List<RewriteRules> result = null;
       final JsonObject root = JsonParser.object().from(inputStream);
-      final JsonArray globalRuleEntry = root.getArray(GLOBAL_RULES);
-      final RewriteRules globalRules = globalRuleEntry == null ? null : parseRules(globalRuleEntry, GLOBAL_RULES);
-
       for (final String key : root.keySet()) {
         final JsonArray jsonRules = root.getArray(key);
         if (jsonRules == null)
           throw new IllegalArgumentException(key + ": Is not an array");
 
         if (result == null)
-          result = new LinkedHashMap<>();
+          result = new ArrayList<>();
 
-        final RewriteRules rules = parseRules(jsonRules, key);
-        if (globalRules != null)
-          rules.addAll(globalRules);
-
-        result.put(key, rules);
+        result.add(parseRules(jsonRules, key));
       }
 
-      return result != null ? result : Collections.EMPTY_MAP;
+      return result != null ? result : Collections.EMPTY_LIST;
     }
     catch (final JsonParserException | PatternSyntaxException e) {
       throw new IllegalArgumentException(e);
@@ -61,7 +52,7 @@ final class RewriteRules {
   }
 
   static RewriteRules parseRules(final JsonArray jsonRules, final String key) {
-    final RewriteRules rules = new RewriteRules();
+    final RewriteRules rules = new RewriteRules(AssembleUtil.convertToNameRegex(key));
     final int size = jsonRules.size();
     for (int i = 0; i < size; ++i) {
       final RewriteRule[] rule = RewriteRule.parseRule(jsonRules.getObject(i), key + ".rules[" + i + "]");
@@ -72,9 +63,16 @@ final class RewriteRules {
     return rules;
   }
 
-  final LinkedHashMap<String,List<RewriteRule>> keyToRules = new LinkedHashMap<>();
+  final HashMap<String,List<RewriteRule>> keyToRules = new HashMap<>();
+  final Pattern namePattern;
 
-  private RewriteRules() {
+  private RewriteRules(final Pattern namePattern) {
+    this.namePattern = namePattern;
+  }
+
+  private RewriteRules(final HashMap<String,List<RewriteRule>> keyToRules) {
+    this.keyToRules.putAll(keyToRules);
+    this.namePattern = null;
   }
 
   void add(final RewriteRule rule) {
@@ -94,5 +92,10 @@ final class RewriteRules {
   List<RewriteRule> getRules(final String key) {
     final List<RewriteRule> inputs = keyToRules.get(key);
     return inputs != null ? inputs : Collections.<RewriteRule>emptyList();
+  }
+
+  @Override
+  public RewriteRules clone() {
+    return new RewriteRules(new HashMap<>(keyToRules));
   }
 }

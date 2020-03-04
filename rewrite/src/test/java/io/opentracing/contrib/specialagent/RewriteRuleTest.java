@@ -32,31 +32,33 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 public class RewriteRuleTest {
-  private static void assertTags(final Map<String,RewriteRules> rules, final String key, final List<Map<String,String>> logs) {
-    final RewriteRules rewriteRules = rules.get(key);
-    final MockTracer mockTracer = new MockTracer();
-    try (final RewritableTracer tracer = new RewritableTracer(mockTracer, rewriteRules)) {
-      final Span span = tracer.buildSpan("op").start();
-      span.log(Collections.singletonMap("db.statement", "select a"));
-      span.log(Collections.singletonMap("db.statement", "not matched"));
-      span.finish();
+  private static void assertTags(final RewritableTracer tracer, final MockTracer mockTracer, final String key, final List<Map<String,String>> logs) {
+    AgentRule.classNameToName = Collections.singletonMap(null, key);
+    final Span span = tracer.buildSpan("op").start();
+    span.log(Collections.singletonMap("db.statement", "select a"));
+    span.log(Collections.singletonMap("db.statement", "not matched"));
+    span.finish();
 
-      final List<MockSpan> spans = mockTracer.finishedSpans();
-      assertEquals(1, spans.size());
-      final MockSpan mockSpan = spans.get(0);
+    final List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(1, spans.size());
+    final MockSpan mockSpan = spans.get(0);
 
-      assertEquals(2, mockSpan.logEntries().size());
-      for (int i = 0; i < logs.size(); ++i)
-        assertEquals("log " + i, logs.get(i), mockSpan.logEntries().get(i).fields());
-    }
+    assertEquals(2, mockSpan.logEntries().size());
+    for (int i = 0; i < logs.size(); ++i)
+      assertEquals("log " + i, logs.get(i), mockSpan.logEntries().get(i).fields());
+
+    mockTracer.reset();
   }
 
   @Test
   public void specificRulesHavePriorityOverGlobalRules() throws IOException {
     try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
-      final Map<String,RewriteRules> rules = RewriteRules.parseRules(in);
-      assertTags(rules, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
-      assertTags(rules, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
+      final List<RewriteRules> nameToRules = RewriteRules.parseRules(in);
+      final MockTracer mockTracer = new MockTracer();
+      try (final RewritableTracer tracer = new RewritableTracer(mockTracer, nameToRules)) {
+        assertTags(tracer, mockTracer, "jedis", Arrays.asList(Collections.singletonMap("jedis", "select a"), Collections.singletonMap("*", "not matched")));
+        assertTags(tracer, mockTracer, "*", Arrays.asList(Collections.singletonMap("*", "select a"), Collections.singletonMap("*", "not matched")));
+      }
     }
   }
 

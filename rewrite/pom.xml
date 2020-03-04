@@ -29,6 +29,10 @@
   <dependencies>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
+      <artifactId>opentracing-specialagent-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>opentracing-specialagent-util</artifactId>
     </dependency>
     <dependency>

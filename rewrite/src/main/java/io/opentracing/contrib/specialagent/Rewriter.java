@@ -42,6 +42,9 @@ abstract class Rewriter {
   }
 
   private boolean onEvent(final Class<? extends Action> type, final long timestampMicroseconds, final String key, final Object value) {
+    if (rules == null)
+      return false;
+
     for (final RewriteRule rule : rules.getRules(key)) {
       if (rule.input.getClass() != type)
         continue;

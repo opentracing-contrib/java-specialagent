@@ -33,6 +33,9 @@ class LogFieldRewriter extends Rewriter {
   }
 
   void processLog(final long timestampMicroseconds, final Map<String,?> fields) {
+    if (rules == null)
+      return;
+
     for (final Map.Entry<String,?> entry : fields.entrySet()) {
       final String key = entry.getKey();
       final Object value = entry.getValue();
