@@ -103,7 +103,7 @@ public class RxJava3Test {
     final Consumer<Integer> onNext = consumer(result);
     final List<String> completeList = new ArrayList<>();
     final List<String> errorList = new ArrayList<>();
-    observable.subscribe(onNext, onError(errorList), onComplete(completeList));
+    observable.subscribe(onNext, onError(errorList), onComplete(completeList, tracer));
 
     assertEquals(5, result.size());
     assertTrue(completeList.contains(COMPLETED));
@@ -123,7 +123,7 @@ public class RxJava3Test {
     final Consumer<Integer> onNext = consumer(result);
     final List<String> completeList = new ArrayList<>();
     final List<String> errorList = new ArrayList<>();
-    observable.subscribe(onNext, onError(errorList), onComplete(completeList));
+    observable.subscribe(onNext, onError(errorList), onComplete(completeList, tracer));
 
     assertEquals(0, result.size());
     assertEquals(0, completeList.size());
@@ -151,7 +151,7 @@ public class RxJava3Test {
 
     final List<String> completeList = new ArrayList<>();
     final List<String> errorList = new ArrayList<>();
-    observable.doOnSubscribe(onSubscribe).subscribe(onNext, onError(errorList), onComplete(completeList));
+    observable.doOnSubscribe(onSubscribe).subscribe(onNext, onError(errorList), onComplete(completeList, tracer));
 
     assertEquals(5, result.size());
 
@@ -184,7 +184,7 @@ public class RxJava3Test {
 
     final List<String> completeList = new ArrayList<>();
     final List<String> errorList = new ArrayList<>();
-    observable.doOnSubscribe(onSubscribe).subscribe(onNext, onError(errorList), onComplete(completeList));
+    observable.doOnSubscribe(onSubscribe).subscribe(onNext, onError(errorList), onComplete(completeList, tracer));
 
     assertEquals(0, result.size());
     assertEquals(0, completeList.size());
@@ -216,12 +216,12 @@ public class RxJava3Test {
     };
   }
 
-  private static Action onComplete(final List<String> completeList) {
+  private static Action onComplete(final List<String> completeList, final MockTracer tracer) {
     return new Action() {
       @Override
       public void run() {
         logger.fine("onComplete()");
-        // assertNotNull(tracer.scopeManager().active());
+        assertNotNull(tracer.scopeManager().active());
         completeList.add(COMPLETED);
       }
     };
@@ -238,13 +238,13 @@ public class RxJava3Test {
       @Override
       public Integer apply(final Integer t) {
         logger.fine(tracer.scopeManager().active() + ": " + t);
-        // assertNotNull(tracer.scopeManager().active());
+        assertNotNull(tracer.scopeManager().active());
         return t * 3;
       }
     }).filter(new Predicate<Integer>() {
       @Override
       public boolean test(final Integer t) {
-        // assertNotNull(tracer.scopeManager().active());
+        assertNotNull(tracer.scopeManager().active());
         if (withError)
           throw new IllegalStateException();
 
