@@ -37,6 +37,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-rabbitmq-client</artifactId>
+      <version>0.1.8</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-broker</artifactId>
       <version>7.1.0</version>
