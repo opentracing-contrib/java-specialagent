@@ -535,8 +535,8 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | 5.7.3 |
 | [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | **3.2.3.RELEASE** |
 | [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.11.0 | 3.11.5 |
-| [RxJava 2](https://github.com/opentracing-contrib/java-rxjava) | [`rxjava:2`][rxjava-2] | 2.1.0 | 2.2.12 |
-| [RxJava 3](https://github.com/opentracing-contrib/java-rxjava) | [`rxjava:3`][rxjava-3] | 3.0.0 | 3.0.0 |
+| [RxJava](https://github.com/opentracing-contrib/java-rxjava) | [`rxjava:2`][rxjava-2] | 2.1.0 | 2.2.12 |
+| | [`rxjava:3`][rxjava-3] | 3.0.0 | 3.0.0 |
 | [Spring JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | [`spring:jms`][spring-jms] | 5.0.0.RELEASE | 5.2.2.RELEASE |
 | [Spring Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | [`spring:kafka`][spring-kafka] | 2.2.0.RELEASE | 2.3.3.RELEASE |
 | [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.0.RELEASE | 5.2.2.RELEASE |
