@@ -34,5 +34,6 @@
   <modules>
     <module>rxjava-2.1.0</module>
     <module>rxjava-2.2.12</module>
+    <module>rxjava-3.0.0</module>
   </modules>
 </project>
