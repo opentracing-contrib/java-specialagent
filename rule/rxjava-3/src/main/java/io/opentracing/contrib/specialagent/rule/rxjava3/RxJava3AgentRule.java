@@ -47,8 +47,7 @@ public class RxJava3AgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(OnEnter3.class, OnExit.class).on(named("subscribe").and(takesArguments(3))));
-        }})
-      );
+        }}));
   }
 
   public static class OnExit {
@@ -97,5 +96,4 @@ public class RxJava3AgentRule extends AgentRule {
         onNext = enter;
     }
   }
-
 }

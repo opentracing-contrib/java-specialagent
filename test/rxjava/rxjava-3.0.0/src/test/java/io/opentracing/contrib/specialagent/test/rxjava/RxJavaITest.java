@@ -21,7 +21,6 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
 
-
 public class RxJavaITest {
   public static void main(final String[] args) throws Exception {
     Observable.range(1, 5).subscribe(new Observer<Integer>() {

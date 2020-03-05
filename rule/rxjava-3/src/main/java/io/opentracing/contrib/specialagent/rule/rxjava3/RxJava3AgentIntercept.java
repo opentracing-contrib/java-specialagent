@@ -31,9 +31,7 @@ public class RxJava3AgentIntercept {
 
   @SuppressWarnings("unchecked")
   public static Object enter(final Object thiz, final int argc, final Object arg0, final Object arg1, final Object arg2) {
-    if (arg0 == null || arg0.getClass().getName().startsWith("io.reactivex.rxjava3.internal"))
-      return NULL;
-    if (arg0 instanceof TracingConsumer)
+    if (arg0 == null || arg0.getClass().getName().startsWith("io.reactivex.rxjava3.internal") || arg0 instanceof TracingConsumer)
       return NULL;
 
     if (!isTracingEnabled) {
