@@ -80,7 +80,7 @@ class ClassScanner extends ClassVisitor {
   private final Set<String> innerClassExcludes;
 
   private ClassScanner(final ClassLoader classLoader, final Collection<MethodFingerprint> methods, final List<FieldFingerprint> fields, final Set<String> innerClassExcludes) {
-    super(Opcodes.ASM4);
+    super(Opcodes.ASM5);
     this.classLoader = classLoader;
     this.methods = methods;
     this.fields = fields;
