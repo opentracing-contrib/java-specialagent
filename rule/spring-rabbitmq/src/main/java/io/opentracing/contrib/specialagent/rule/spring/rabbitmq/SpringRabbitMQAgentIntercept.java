@@ -15,20 +15,21 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.rabbitmq;
 
-import com.rabbitmq.client.AMQP;
-import io.opentracing.Scope;
-import io.opentracing.contrib.common.WrapperProxy;
-import io.opentracing.contrib.rabbitmq.TracingConsumer;
-import io.opentracing.contrib.rabbitmq.TracingUtils;
 import java.util.Map;
 
 import org.springframework.amqp.core.Message;
 
+import com.rabbitmq.client.AMQP;
+
 import io.opentracing.References;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.rabbitmq.TracingConsumer;
+import io.opentracing.contrib.rabbitmq.TracingUtils;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.propagation.Format.Builtin;
@@ -78,11 +79,9 @@ public class SpringRabbitMQAgentIntercept {
     if (AgentRuleUtil.callerEquals(1, 3, "io.opentracing.contrib.rabbitmq.TracingConsumer.handleDelivery"))
       return;
 
-    final AMQP.BasicProperties properties = (AMQP.BasicProperties) props;
+    final AMQP.BasicProperties properties = (AMQP.BasicProperties)props;
     final Tracer tracer = GlobalTracer.get();
-
     final Span span = TracingUtils.buildChildSpan(properties, null, tracer);
-
     final Scope scope = tracer.activateSpan(span);
     LocalSpanContext.set(span, scope);
   }
@@ -97,5 +96,4 @@ public class SpringRabbitMQAgentIntercept {
 
     context.closeAndFinish();
   }
-
 }

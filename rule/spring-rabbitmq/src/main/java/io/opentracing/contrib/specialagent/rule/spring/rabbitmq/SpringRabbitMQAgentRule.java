@@ -46,7 +46,7 @@ public class SpringRabbitMQAgentRule extends AgentRule {
 
   public static class Consumer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.This Object thiz, final @Advice.Argument(value = 2) Object properties) {
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2) Object properties) {
       if (isEnabled("SpringRabbitMQAgentRule", origin))
         SpringRabbitMQAgentIntercept.handleDeliveryStart(thiz, properties);
     }
