@@ -162,8 +162,6 @@ public class LibraryFingerprint extends Fingerprint {
     for (int i = 0; i < classes.length; ++i) {
       try {
         final ClassFingerprint expected = classes[i];
-        if ("io.reactivex.rxjava3.core.Observable".equals(expected.getName()))
-          verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
         final ClassFingerprint actual = verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
         if (actual == null) {
           verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
