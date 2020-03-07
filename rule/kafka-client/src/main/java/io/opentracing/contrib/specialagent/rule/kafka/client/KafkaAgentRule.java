@@ -61,10 +61,5 @@ public class KafkaAgentRule extends AgentRule {
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
 
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled("KafkaAgentRule", origin))
-        KafkaAgentIntercept.onProducerExit();
-    }
   }
 }
