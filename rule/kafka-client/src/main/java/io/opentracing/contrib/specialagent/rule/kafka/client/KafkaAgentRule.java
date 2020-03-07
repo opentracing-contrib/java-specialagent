@@ -60,6 +60,5 @@ public class KafkaAgentRule extends AgentRule {
       if (isEnabled("KafkaAgentRule", origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
-
   }
 }

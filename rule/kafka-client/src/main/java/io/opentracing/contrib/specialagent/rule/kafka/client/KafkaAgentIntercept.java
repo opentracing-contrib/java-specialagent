@@ -38,5 +38,4 @@ public class KafkaAgentIntercept {
     final Span span = TracingKafkaUtils.buildAndInjectSpan((ProducerRecord<?,?>)record, tracer);
     return WrapperProxy.wrap(callback, new TracingCallback((Callback)callback, span, tracer));
   }
-
 }
