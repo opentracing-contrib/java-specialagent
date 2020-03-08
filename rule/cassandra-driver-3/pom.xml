@@ -26,7 +26,11 @@
   <artifactId>cassandra-driver-3</artifactId>
   <name>SpecialAgent Rule for Cassandra 3 Driver</name>
   <properties>
-    <sa.plugin.name>cassandra:driver:3</sa.plugin.name>
+    <sa.rule.name>cassandra:driver:3</sa.rule.name>
+    <min.version>3.0.0</min.version>
+    <max.version>4.0.0</max.version>
+    <passCompatibility>com.datastax.cassandra:cassandra-driver-core:[${min.version},3.1.4),(3.1.4,${max.version})</passCompatibility>
+    <failCompatibility>com.datastax.cassandra:cassandra-driver-core:[${max.version},]</failCompatibility>
   </properties>
   <dependencies>
     <dependency>
@@ -38,7 +42,7 @@
     <dependency>
       <groupId>com.datastax.cassandra</groupId>
       <artifactId>cassandra-driver-core</artifactId>
-      <version>3.0.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

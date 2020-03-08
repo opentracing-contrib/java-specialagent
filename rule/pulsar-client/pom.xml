@@ -28,23 +28,25 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.pulsar>2.2.0</version.pulsar>
-    <sa.plugin.name>pulsar:client</sa.plugin.name>
+    <sa.rule.name>pulsar:client</sa.rule.name>
+    <min.version>2.2.0</min.version>
+    <max.version>2.3.0</max.version>
+    <!-- FIXME: The compatibility of this rule is very unusual, and very restricted. -->
+    <passCompatibility>org.apache.pulsar:pulsar-client-original:[${min.version},${max.version})</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.pulsar</groupId>
       <artifactId>pulsar-client-original</artifactId>
-      <version>${version.pulsar}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.pulsar</groupId>
       <artifactId>pulsar-broker</artifactId>
-      <version>${version.pulsar}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>

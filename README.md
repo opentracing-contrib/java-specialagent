@@ -491,69 +491,72 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 
 | OpenTracing Plugin<br/><sup>(link to <ins>plugin</ins> implementation)</sup> | SpecialAgent Rule<br/><sup>(link to <ins>rule</ins> implementation)</sup> | Min Version<br/><sup>(min supported)</sup> | Max Version<br/><sup>(max supported)</sup> |
 |:-|:-|:-:|:-:|
-| [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka-actor] | 2.5.0 | 2.6.1 |
-| Akka Http | [`akka:http`][akka-http] | 10.1.0 | 10.1.10 |
+| [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka-actor] | 2.5.0 | LATEST |
+| Akka Http | [`akka:http`][akka-http] | 10.1.0 | LATEST |
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
-| [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | 4.5.9 |
-| [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | 2.10.4 |
-| [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | 1.11.5.1 |
-| | [`aws:sdk:2`][aws-sdk-2] | 2.1.4 | 2.7.15 |
+| [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | LATEST |
+| [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | LATEST |
+| [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | LATEST |
+| | [`aws:sdk:2`][aws-sdk-2] | 2.1.4 | **FIXME** |
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
-| | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | 4.2.0 |
-| Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.11 |
+| | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | LATEST |
+| Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.13 |
 | Dynamic<br>&nbsp; | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\***<br>&nbsp; | **\***<br>&nbsp; |
-| [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>&nbsp; | 7.3.1<br>&nbsp; |
-| [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | 10.4.0 |
-| Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | 1.33.0 |
-| [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | [`grizzly:ahc`][grizzly-ahc] | 1.15 | **1.15** |
-| [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | [`grizzly:http-server`][grizzly-http-server] | 2.3.35 | **2.3.35** |
-| [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.6.0 | 1.23.0 |
-| [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.4 |
+| [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>6.4.0 | LATEST<br>6.8.7 |
+| [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | LATEST |
+| Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | LATEST |
+| [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | [`grizzly:ahc`][grizzly-ahc] | 1.15 | LATEST |
+| [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | [`grizzly:http-server`][grizzly-http-server] | 2.3.35 | LATEST |
+| [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.6.0 | LATEST |
+| [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.6 |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
-| [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1 | 1.1 |
-| | [`jms:2`][jms-2] | 2.0 | 2.0a |
+| [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1-rev-1 | LATEST |
+| | [`jms:2`][jms-2] | 2.0.1 | LATEST |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter)<br>&nbsp; | [`servlet`<br><sup>(configurable)</sup>][servlet] | 2.3<br>&nbsp; | 3.1<br>&nbsp; |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
 | Java Thread [`java.lang.Thread`] | [`thread`][thread] | 1.0 | 11 |
 | HttpURLConnection [`java.net.HttpURLConnection`] | [`httpurlconnection`][httpurlconnection] | 1.1 | 11 |
-| [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | [`jax-rs`][jaxrs] | 2.0 | 2.1 |
+| [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | [`jax-rs`][jaxrs] | 2.0 | LATEST |
 | [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | [`jedis`][jedis] | 2.7.0 | 3.1.0 |
-| [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:client`][kafka-client] | 1.1.0 | 2.3.0 |
+| [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:client`][kafka-client] | 1.1.0 | LATEST |
 | [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | [`lettuce:5.0`][lettuce-5.0] | 5.0.0.RELEASE | 5.0.5.RELEASE |
-| | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.M1 | 5.1.8.RELEASE |
-| | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | **5.2.0.RELEASE** |
-| [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | 3.11.0 |
-| [Neo4j Driver](https://github.com/opentracing-contrib/java-neo4j-driver) | [`neo4j:driver`][neo4j-driver] | 4.0.0 | 4.0.0 |
-| Netty | [`netty`][netty] | 4.1.0 | 4.1.44 |
-| [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | 4.2.2 |
-| Play Framework | [`play`][play] | 2.6.0 | 2.7.3 |
-| Play WS | [`play:ws`][play-ws] | 2.0.0 | 2.0.7 |
-| Pulsar Client | [`pulsar:client`][pulsar-client] | 2.2.0 | 2.4.2 |
-| Pulsar Functions <br>&nbsp; | [`pulsar-functions`<br><sup>(configurable)</sup>][pulsar-functions] | 2.2.0<br>&nbsp; | 2.4.2<br>&nbsp; |
-| [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | 5.7.3 |
-| [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | **3.2.3.RELEASE** |
+| | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.RELEASE | 5.1.8.RELEASE |
+| | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | LATEST |
+| [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | LATEST |
+| Mule 4 Artifact Module | [`mule:artifact-module:4`][mule-4-module-artifact] | 4.2.2 | LATEST |
+| Mule 4 Http Service | [`mule:http-service:4`][mule-4-http-service] | 1.4.7 | LATEST |
+| Mule 4 Core | [`mule:core:4`][mule-4-core] | 4.2.2 | LATEST |
+| [Neo4j Driver](https://github.com/opentracing-contrib/java-neo4j-driver) | [`neo4j:driver`][neo4j-driver] | 4.0.0 | LATEST |
+| Netty | [`netty`][netty] | 4.1.0 | 4.1.46.Final |
+| [OkHttp][java-okhttp] | [`okhttp`][okhttp] | 3.5.0 | LATEST |
+| Play Framework | [`play`][play] | 2.6.0 | LATEST |
+| Play WS | [`play:ws`][play-ws] | 2.0.0 | **FIXME** |
+| Pulsar Client | [`pulsar:client`][pulsar-client] | 2.2.0 | **FIXME** |
+| Pulsar Functions <br>&nbsp; | [`pulsar-functions`<br><sup>(configurable)</sup>][pulsar-functions] | 2.2.0<br>&nbsp; | **FIXME**<br>&nbsp; |
+| [RabbitMQ Client](https://github.com/opentracing-contrib/java-rabbitmq-client) | [`rabbitmq:client`][rabbitmq-client] | 5.0.0 | LATEST |
+| [Reactor](https://github.com/opentracing-contrib/java-reactor) | [`reactor`][reactor] | 3.2.3.RELEASE | LATEST |
 | [Redisson](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-redisson) | [`redisson`][redisson] | 3.11.0 | 3.11.5 |
-| [RxJava](https://github.com/opentracing-contrib/java-rxjava) | [`rxjava:2`][rxjava-2] | 2.1.0 | 2.2.12 |
-| | [`rxjava:3`][rxjava-3] | 3.0.0 | 3.0.0 |
-| [Spring JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | [`spring:jms`][spring-jms] | 5.0.0.RELEASE | 5.2.2.RELEASE |
-| [Spring Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | [`spring:kafka`][spring-kafka] | 2.2.0.RELEASE | 2.3.3.RELEASE |
-| [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.0.RELEASE | 5.2.2.RELEASE |
-| [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | 2.2.1.RELEASE |
-| [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | 5.2.1.RELEASE |
-| [Spring Boot WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 2.1.0.RELEASE | 2.1.8.RELEASE |
-| [Spring \[`@Async` and `@Scheduled`\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | [`spring:scheduling`][spring-scheduling] | 5.0.0.RELEASE | 5.2.1.RELEASE |
+| [RxJava](https://github.com/opentracing-contrib/java-rxjava) | [`rxjava:2`][rxjava-2] | 2.1.0 | LATEST |
+| | [`rxjava:3`][rxjava-3] | 3.0.0 | LATEST |
+| [Spring JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | [`spring:jms`][spring-jms] | 5.0.0.RELEASE | LATEST |
+| [Spring Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | [`spring:kafka`][spring-kafka] | 2.2.0.RELEASE | LATEST |
+| [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.0.RELEASE | LATEST |
+| [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | LATEST |
+| [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | LATEST |
+| [Spring Boot WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 2.1.0.RELEASE | LATEST |
+| [Spring \[`@Async` and `@Scheduled`\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | [`spring:scheduling`][spring-scheduling] | 5.0.0.RELEASE | LATEST |
 | [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
 | | [`spring:web:4.0`][spring-web-4.0] | 4.0.0.RELEASE | 4.0.9.RELEASE |
 | | [`spring:web:4.x`][spring-web-4] | 4.1.0.RELEASE | 4.3.25.RELEASE |
-| | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | 5.2.1.RELEASE |
+| | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | LATEST |
 | [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc:3`][spring-webmvc-3] | 3.0.2.RELEASE | 3.2.18.RELEASE |
 | | [`spring:webmvc:4`][spring-webmvc-4] | 4.0.0.RELEASE | 4.3.25.RELEASE |
-| | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | 5.2.1.RELEASE |
-| [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | 2.12.3 |
-| [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.12.0 |
-| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 1.3.1 |
+| | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | LATEST |
+| [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | LATEST |
+| [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.13.0 |
+| [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 2.1.1 |
 
 ### 6.2 [<ins>Tracer Plugins</ins>](#43-tracer-plugin)
 
@@ -651,6 +654,9 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
 [lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
+[mule-4-core]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-core
+[mule-4-http-service]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-http-service
+[mule-4-module-artifact]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-module-artifact
 [neo4j-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/neo4j-driver
 [netty]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty
 [okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp

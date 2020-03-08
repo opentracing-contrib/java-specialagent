@@ -26,6 +26,9 @@
   <artifactId>okhttp</artifactId>
   <name>SpecialAgent Rule for OkHttp</name>
   <properties>
+    <sa.rule.name>okhttp</sa.rule.name>
+    <min.version>3.0.0</min.version>
+    <passCompatibility>com.squareup.okhttp3:okhttp:[${min.version},]</passCompatibility>
     <version.okhttp3>3.14.2</version.okhttp3>
   </properties>
   <dependencies>
@@ -33,7 +36,7 @@
       <!-- https://github.com/opentracing-contrib/java-okhttp -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
-      <version>3.0.0</version>
+      <version>${min.version}</version>
       <exclusions>
         <exclusion>
           <groupId>io.opentracing.contrib</groupId>

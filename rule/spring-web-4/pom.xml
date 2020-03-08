@@ -26,8 +26,12 @@
   <artifactId>spring-web-4</artifactId>
   <name>SpecialAgent Rule for Spring Web 4.1.x, 4.2.x, 4.3.x</name>
   <properties>
-    <version.spring>4.1.0.RELEASE</version.spring>
-    <sa.plugin.name>spring:web:4.x</sa.plugin.name>
+    <sa.rule.name>spring:web:4.x</sa.rule.name>
+    <min.version>4.1.0.RELEASE</min.version>
+    <max.version>5.0.0.RELEASE</max.version>
+    <passCompatibility>org.springframework:spring-web:[${min.version},${max.version})</passCompatibility>
+    <!-- FIXME: Fail compatibility test is failing. -->
+    <!--failCompatibility>org.springframework:spring-web:[3.0.3.RELEASE,${min.version}),[${max.version},]</failCompatibility-->
   </properties>
   <build>
     <plugins>
@@ -50,7 +54,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

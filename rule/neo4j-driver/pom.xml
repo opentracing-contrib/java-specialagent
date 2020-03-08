@@ -25,11 +25,16 @@
   </parent>
   <artifactId>neo4j-driver</artifactId>
   <name>SpecialAgent Rule for Neo4j Driver</name>
+  <properties>
+    <sa.rule.name>neo4j-driver</sa.rule.name>
+    <min.version>4.0.0</min.version>
+    <passCompatibility>org.neo4j.driver:neo4j-java-driver:[${min.version},]</passCompatibility>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.neo4j.driver</groupId>
       <artifactId>neo4j-java-driver</artifactId>
-      <version>4.0.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

@@ -111,7 +111,7 @@ public class PluginManifest {
   }
 
   private static PluginManifest getPluginManifestFromEntry(final File file, final String entry) {
-    if (entry.startsWith("sa.plugin.name."))
+    if (entry.startsWith("sa.rule.name."))
       return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(15));
 
     if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))

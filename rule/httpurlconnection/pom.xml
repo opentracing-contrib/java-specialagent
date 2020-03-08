@@ -25,4 +25,7 @@
   </parent>
   <artifactId>httpurlconnection</artifactId>
   <name>SpecialAgent Rule for HttpURLConnection</name>
+  <properties>
+    <sa.rule.name>httpurlconnection</sa.rule.name>
+  </properties>
 </project>

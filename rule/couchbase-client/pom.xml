@@ -25,11 +25,17 @@
   </parent>
   <artifactId>couchbase-client</artifactId>
   <name>SpecialAgent Rule for Couchbase Client</name>
+  <properties>
+    <sa.rule.name>couchbase-client</sa.rule.name>
+    <min.version>2.7.3</min.version>
+    <max.version>3.0.0</max.version>
+    <passCompatibility>com.couchbase.client:java-client:[${min.version},2.7.5),(2.7.5,2.7.8),(2.7.8,${max.version})</passCompatibility>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>com.couchbase.client</groupId>
       <artifactId>java-client</artifactId>
-      <version>2.7.3</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

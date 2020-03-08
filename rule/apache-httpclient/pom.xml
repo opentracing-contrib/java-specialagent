@@ -26,14 +26,16 @@
   <artifactId>apache-httpclient</artifactId>
   <name>SpecialAgent Rule for Apache HttpClient</name>
   <properties>
-    <sa.plugin.name>apache:httpclient</sa.plugin.name>
+    <min.version>4.4</min.version>
+    <sa.rule.name>apache:httpclient</sa.rule.name>
+    <passCompatibility>org.apache.httpcomponents:httpclient:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.4</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
