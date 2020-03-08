@@ -216,18 +216,19 @@ public final class CompatibilityTestMojo extends ResolveDependenciesMojo {
       return true;
     }
     catch (final DependencyResolutionException e) {
-      if (!(e.getCause() instanceof DependencyCollectionException) || !(e.getCause().getCause() instanceof ArtifactDescriptorException) || !(e.getCause().getCause().getCause() instanceof ArtifactResolutionException))
-        throw e;
-
-      final String message = e.getCause().getCause().getCause().getMessage();
-      final int index = message.indexOf("Authorization failed for ");
-      if (index == -1)
-        throw e;
-
-      if (!message.endsWith(" 403 Forbidden"))
-        throw new IllegalStateException("Expected exception message to end with \" 403 Forbidden\": " + message);
-
-      getLog().warn(message.substring(index));
+//      if (!(e.getCause() instanceof DependencyCollectionException) || !(e.getCause().getCause() instanceof ArtifactDescriptorException) || !(e.getCause().getCause().getCause() instanceof ArtifactResolutionException))
+//        throw e;
+//
+//      final String message = e.getCause().getCause().getCause().getMessage();
+//      final int index = message.indexOf("Authorization failed for ");
+//      if (index == -1)
+//        throw e;
+//
+//      if (!message.endsWith(" 403 Forbidden"))
+//        throw new IllegalStateException("Expected exception message to end with \" 403 Forbidden\": " + message);
+//
+//      getLog().warn(message.substring(index));
+      getLog().warn(e.getMessage(), e);
       return false;
     }
   }
