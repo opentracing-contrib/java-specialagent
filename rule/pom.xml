@@ -54,6 +54,7 @@
         <module>elasticsearch-client-rest</module>
         <module>elasticsearch-client-transport</module>
         <module>rxjava-2</module>
+        <module>rxjava-3</module>
         <module>kafka-client</module>
         <module>asynchttpclient</module>
         <module>rabbitmq-client</module>
@@ -294,10 +295,22 @@
             <version>${project.version}</version>
             <executions>
               <execution>
+                <id>fingerprint</id>
                 <goals>
                   <goal>fingerprint</goal>
                 </goals>
                 <phase>process-classes</phase>
+              </execution>
+              <execution>
+                <id>test-compatibility</id>
+                <goals>
+                  <goal>test-compatibility</goal>
+                </goals>
+                <phase>process-classes</phase>
+                <configuration>
+                  <passCompatibility>${passCompatibility}</passCompatibility>
+                  <failCompatibility>${failCompatibility}</failCompatibility>
+                </configuration>
               </execution>
             </executions>
             <configuration>

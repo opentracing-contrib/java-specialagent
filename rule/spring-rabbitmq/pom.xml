@@ -23,18 +23,26 @@
     <artifactId>rule</artifactId>
     <version>1.6.0-SNAPSHOT</version>
   </parent>
-  <name>SpecialAgent Rule for RabbitMQ Spring</name>
+  <name>SpecialAgent Rule for Spring RabbitMQ</name>
   <artifactId>spring-rabbitmq</artifactId>
   <properties>
-    <sa.plugin.name>spring:rabbitmq</sa.plugin.name>
+    <sa.rule.name>spring:rabbitmq</sa.rule.name>
+    <min.version>2.0.0.RELEASE</min.version>
+    <passCompatibility>org.springframework.amqp:spring-rabbit:[${min.version},2.1.1.RELEASE),(2.1.1.RELEASE,]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.amqp</groupId>
       <artifactId>spring-rabbit</artifactId>
-      <version>2.0.0.RELEASE</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-rabbitmq-client</artifactId>
+      <version>0.1.8</version>
     </dependency>
     <dependency>
       <groupId>org.apache.qpid</groupId>

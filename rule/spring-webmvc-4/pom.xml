@@ -26,9 +26,12 @@
   <artifactId>spring-webmvc-4</artifactId>
   <name>SpecialAgent Rule for Spring Web MVC 4</name>
   <properties>
-    <version.spring>4.0.0.RELEASE</version.spring>
+    <sa.rule.name>spring:webmvc:4</sa.rule.name>
+    <min.version>4.0.0.RELEASE</min.version>
+    <max.version>5.0.0.RELEASE</max.version>
+    <passCompatibility>org.springframework:spring-webmvc:[${min.version},${max.version})</passCompatibility>
+    <failCompatibility>org.springframework:spring-webmvc:[3.0.2.RELEASE,${min.version}),[${max.version},]</failCompatibility>
     <version.jetty>8.2.0.v20160908</version.jetty>
-    <sa.plugin.name>spring:webmvc:4</sa.plugin.name>
   </properties>
   <build>
     <plugins>
@@ -50,7 +53,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

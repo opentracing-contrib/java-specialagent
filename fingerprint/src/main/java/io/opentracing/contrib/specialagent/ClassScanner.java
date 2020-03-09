@@ -49,8 +49,8 @@ class ClassScanner extends ClassVisitor {
       return scanner;
     }
     catch (final Exception e) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer((e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath);
+      if (logger.isLoggable(Level.FINE))
+        logger.warning((e.getMessage() != null ? e.getMessage() + ": " : "") + resourcePath);
 
       if (e instanceof IOException && !"Class not found".equals(e.getMessage()))
         throw e;
@@ -80,7 +80,7 @@ class ClassScanner extends ClassVisitor {
   private final Set<String> innerClassExcludes;
 
   private ClassScanner(final ClassLoader classLoader, final Collection<MethodFingerprint> methods, final List<FieldFingerprint> fields, final Set<String> innerClassExcludes) {
-    super(Opcodes.ASM4);
+    super(Opcodes.ASM5);
     this.classLoader = classLoader;
     this.methods = methods;
     this.fields = fields;

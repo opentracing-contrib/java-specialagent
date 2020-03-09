@@ -15,7 +15,10 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.opentracing-lettuce>0.1.14</version.opentracing-lettuce>
     <version.apache-logging>2.11.2</version.apache-logging>
-    <sa.plugin.name>lettuce:5.2</sa.plugin.name>
+    <sa.rule.name>lettuce:5.2</sa.rule.name>
+    <min.version>5.2.0.RELEASE</min.version>
+    <passCompatibility>io.lettuce:lettuce-core:[${min.version},]</passCompatibility>
+    <failCompatibility>io.lettuce:lettuce-core:[5.0.0.RELEASE,${min.version})</failCompatibility>
   </properties>
   <build>
     <plugins>
@@ -40,7 +43,7 @@
     <dependency>
       <groupId>io.lettuce</groupId>
       <artifactId>lettuce-core</artifactId>
-      <version>5.2.0.RELEASE</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

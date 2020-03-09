@@ -1,5 +1,7 @@
 # SpecialAgent Rule for Java Servlet API
 
+**Rule Name:** `servlet`
+
 ## Configuration
 
 Following properties are supported by the Servlet Rule.

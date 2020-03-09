@@ -1,5 +1,15 @@
 # SpecialAgent Rule for Apache Pulsar Functions
 
+**Rule Name:** `pulsar:functions`
+
+## Compatibility
+
+```xml
+<groupId>org.apache.pulsar</groupId>
+<artifactId>pulsar-functions-instance</artifactId>
+<version>[2.2.0,2.3.0),(2.4.2,LATEST]</version>
+```
+
 ## Configuration
 
 Starting the **[Pulsar Broker][broker]** with <ins>SpecialAgent</ins> produces many spans for internal processes.

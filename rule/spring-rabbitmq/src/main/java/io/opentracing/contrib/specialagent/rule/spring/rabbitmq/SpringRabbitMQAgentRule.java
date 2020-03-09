@@ -35,7 +35,27 @@ public class SpringRabbitMQAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(SpringRabbitMQAgentRule.class).on(named("onMessage")));
+        }})
+      .type(not(isInterface()).and(hasSuperType(named("com.rabbitmq.client.Consumer"))).and(not(named("io.opentracing.contrib.rabbitmq.TracingConsumer"))))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
+          return builder.visit(Advice.to(Consumer.class).on(named("handleDelivery")));
         }}));
+  }
+
+  public static class Consumer {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2) Object properties) {
+      if (isEnabled("SpringRabbitMQAgentRule", origin))
+        SpringRabbitMQAgentIntercept.handleDeliveryStart(thiz, properties);
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled("SpringRabbitMQAgentRule", origin))
+        SpringRabbitMQAgentIntercept.handleDeliveryEnd(thrown);
+    }
   }
 
   @Advice.OnMethodEnter

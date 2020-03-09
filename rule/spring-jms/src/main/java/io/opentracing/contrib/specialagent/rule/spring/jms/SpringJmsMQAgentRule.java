@@ -25,6 +25,7 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class SpringJmsMQAgentRule extends AgentRule {
@@ -36,7 +37,22 @@ public class SpringJmsMQAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(SpringJmsMQAgentRule.class).on(named("onMessage").and(takesArguments(2))));
-        }}));
+        }})
+      .type(hasSuperType(named("org.springframework.jms.listener.AbstractPollingMessageListenerContainer")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(ReceiveMessage.class).on(named("receiveMessage").and(takesArguments(1))));
+        }})
+    );
+  }
+
+  public static class ReceiveMessage {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object consumer, final @Advice.Return Object message) {
+      if (isEnabled("SpringJmsMQAgentRule", origin))
+        SpringJmsAgentIntercept.onReceiveMessage(consumer, message);
+    }
   }
 
   @Advice.OnMethodEnter

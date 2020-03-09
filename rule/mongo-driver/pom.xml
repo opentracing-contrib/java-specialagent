@@ -26,8 +26,9 @@
   <artifactId>mongo-driver</artifactId>
   <name>SpecialAgent Rule for MongoDB Driver</name>
   <properties>
-    <version.org.mongodb.mongo-java-driver>3.9.0</version.org.mongodb.mongo-java-driver>
-    <sa.plugin.name>mongo:driver</sa.plugin.name>
+    <sa.rule.name>mongo:driver</sa.rule.name>
+    <min.version>3.9.0</min.version>
+    <passCompatibility>org.mongodb:mongodb-driver-core:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
@@ -39,7 +40,7 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-core</artifactId>
-      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -56,13 +57,13 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-async</artifactId>
-      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>${version.org.mongodb.mongo-java-driver}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -25,11 +25,16 @@
   </parent>
   <artifactId>google-http-client</artifactId>
   <name>SpecialAgent Rule for Google Http Client</name>
+  <properties>
+    <min.version>1.19.0</min.version>
+    <sa.rule.name>google-http-client</sa.rule.name>
+    <passCompatibility>com.google.http-client:google-http-client:[${min.version},]</passCompatibility>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>com.google.http-client</groupId>
       <artifactId>google-http-client</artifactId>
-      <version>1.19.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

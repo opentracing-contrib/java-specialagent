@@ -28,7 +28,9 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.plugin.name>akka:actor</sa.plugin.name>
+    <min.version>2.5.0</min.version>
+    <sa.rule.name>akka:actor</sa.rule.name>
+    <passCompatibility>com.typesafe.akka:akka-actor_2.12:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
@@ -46,7 +48,7 @@
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_2.12</artifactId>
-      <version>2.5.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

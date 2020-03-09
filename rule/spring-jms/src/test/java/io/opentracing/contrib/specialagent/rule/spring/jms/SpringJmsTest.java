@@ -88,11 +88,11 @@ public class SpringJmsTest {
       final JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
       jmsTemplate.convertAndSend("mailbox", "message");
 
-      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
+      await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
 
       assertEquals(1, counter.get());
       final List<MockSpan> spans = tracer.finishedSpans();
-      assertEquals(1, spans.size());
+      assertEquals(2, spans.size());
     }
   }
 

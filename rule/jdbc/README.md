@@ -1,5 +1,7 @@
 # SpecialAgent Rule for Java JDBC API
 
+**Rule Name:** `jdbc`
+
 ## Configuration
 
 Following properties are supported by the JDBC Rule.

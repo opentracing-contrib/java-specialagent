@@ -28,22 +28,23 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.plugin.name>mule:artifact-module:4</sa.plugin.name>
-    <version.mule>4.2.2</version.mule>
+    <sa.rule.name>mule:artifact-module:4</sa.rule.name>
+    <min.version>4.2.2</min.version>
+    <passCompatibility>org.mule.runtime:mule-module-artifact:[${min.version},]</passCompatibility>
     <version.apache-logging>2.11.2</version.apache-logging>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-module-artifact</artifactId>
-      <version>${version.mule}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-core</artifactId>
-      <version>${version.mule}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -55,7 +56,7 @@
     <dependency>
       <groupId>org.mule.tests</groupId>
       <artifactId>mule-tests-unit</artifactId>
-      <version>${version.mule}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -73,7 +74,7 @@
     <dependency>
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-module-container</artifactId>
-      <version>${version.mule}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

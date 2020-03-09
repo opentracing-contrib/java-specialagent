@@ -24,6 +24,7 @@
         <default-phases>
           <generate-sources>io.opentracing.contrib.specialagent:agentrule-maven-plugin:fingerprint</generate-sources>
           <prepare-package>io.opentracing.contrib.specialagent:agentrule-maven-plugin:verify</prepare-package>
+          <integration-test>io.opentracing.contrib.specialagent:agentrule-maven-plugin:test-compatibility</integration-test>
         </default-phases>
       </configuration>
     </component>
@@ -40,6 +41,7 @@
         <default-phases>
           <fingerprint>io.opentracing.contrib.specialagent:agentrule-maven-plugin:fingerprint</fingerprint>
           <verify>io.opentracing.contrib.specialagent:agentrule-maven-plugin:verify</verify>
+          <test-compatibility>io.opentracing.contrib.specialagent:agentrule-maven-plugin:test-compatibility</test-compatibility>
         </default-phases>
       </configuration>
     </component>

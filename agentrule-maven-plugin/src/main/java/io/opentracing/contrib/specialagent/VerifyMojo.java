@@ -94,7 +94,7 @@ public final class VerifyMojo extends AbstractMojo {
               hasDependenciesTgf = true;
             else if (UtilConstants.META_INF_TEST_MANIFEST.equals(entry))
               hasTestManifest = true;
-            else if (entry.startsWith("sa.plugin.name."))
+            else if (entry.startsWith("sa.rule.name."))
               hasPluginName = true;
           }
         }

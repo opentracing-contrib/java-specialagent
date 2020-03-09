@@ -25,11 +25,16 @@
   </parent>
   <artifactId>spymemcached</artifactId>
   <name>SpecialAgent Rule for Spymemcached</name>
+  <properties>
+    <sa.rule.name>spymemcached</sa.rule.name>
+    <min.version>2.11.0</min.version>
+    <passCompatibility>net.spy:spymemcached:[${min.version},]</passCompatibility>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>net.spy</groupId>
       <artifactId>spymemcached</artifactId>
-      <version>2.11.0</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
