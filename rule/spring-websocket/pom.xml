@@ -28,8 +28,43 @@
   <properties>
     <sa.rule.name>spring:websocket</sa.rule.name>
     <min.version>5.1.0.RELEASE</min.version>
-    <passCompatibility>org.springframework:spring-websocket:[${min.version},]</passCompatibility>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>agentrule-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>test-compatibility</id>
+            <configuration>
+              <passes>
+                <pass>
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.springframework</groupId>
+                      <artifactId>spring-websocket</artifactId>
+                      <version>org.springframework:spring-websocket:[${min.version},]</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.springframework</groupId>
+                      <artifactId>spring-webmvc</artifactId>
+                      <version>org.springframework:spring-websocket:[${min.version},]</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.springframework</groupId>
+                      <artifactId>spring-messaging</artifactId>
+                      <version>org.springframework:spring-websocket:[${min.version},]</version>
+                    </dependency>
+                  </dependencies>
+                </pass>
+              </passes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>

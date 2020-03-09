@@ -17,38 +17,29 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.inject.Inject;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.lifecycle.internal.MojoExecutor;
 import org.apache.maven.lifecycle.internal.ProjectIndex;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Repository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -66,8 +57,6 @@ import org.apache.maven.project.artifact.ProjectArtifactsCache;
 @Mojo(name = "test-compatibility", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "test-compatibility")
 public final class CompatibilityTestMojo extends AbstractMojo {
-  private static final HashMap<String,List<Dependency>> artifactToDependencies = new HashMap<>();
-
   @Inject
   private MojoExecutor mojoExecutor;
 
@@ -95,111 +84,27 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   @Parameter
   private String failCompatibility;
 
+  @Parameter
+  private List<CompatibilitySpec> passes;
+
+  @Parameter
+  private List<CompatibilitySpec> fails;
+
   private LibraryFingerprint fingerprint = null;
 
   private LibraryFingerprint getFingerprint() throws IOException {
     return fingerprint == null ? fingerprint = LibraryFingerprint.fromFile(new File(project.getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE).toURI().toURL()) : fingerprint;
   }
 
-  private boolean downloadVersions(final Repository repository, final String groupId, final String artifactId, final SortedSet<String> versions) throws MojoExecutionException {
-    try {
-      final URL url = new URL(repository.getUrl() + (repository.getUrl().endsWith("/") ? "" : "/") + groupId.replace('.', '/') + "/" + artifactId + "/maven-metadata.xml");
-      String data;
-      try (final InputStream in = url.openStream()) {
-        data = new String(AssembleUtil.readBytes(in));
-      }
-
-      getLog().info("Retrieving available versions for: " + groupId + ":" + artifactId);
-
-      int start = data.indexOf("<versioning>");
-      if (start == -1)
-        return false;
-
-      int end = data.indexOf("</versioning>");
-      data = data.substring(start + 12, end);
-      start = end = 0;
-
-      for (; start != -1; end += 10) {
-        start = data.indexOf("<version>", end);
-        if (start == -1)
-          return true;
-
-        end = data.indexOf("</version>", start + 9);
-        if (end == -1)
-          return true;
-
-        versions.add(data.substring(start + 9, end).trim());
-      }
-
-      return true;
-    }
-    catch (final MalformedURLException e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-    catch (final IOException e) {
-      return false;
-    }
-  }
-
-  private List<Dependency> downloadVersions(final String groupId, final String artifactId) throws MojoExecutionException {
-    final TreeSet<String> versions = new TreeSet<>();
-    final List<Repository> repositories = project.getRepositories();
-    for (final Repository repository : repositories)
-      downloadVersions(repository, groupId, artifactId, versions);
-
-    if (versions.size() == 0)
-      throw new MojoExecutionException("Artifact " + groupId + ":" + artifactId + " was not found in any repositories:\n" + AssembleUtil.toIndentedString(repositories));
-
-    final List<Dependency> dependencies = new ArrayList<>();
-    for (final String version : versions)
-      dependencies.add(MavenUtil.newDependency(groupId, artifactId, version));
-
-    return dependencies;
-  }
-
-  private void getVersions(final String groupId, final String artifactId, final List<Dependency> result, final VersionRange versionRange) throws MojoExecutionException {
-    final String key = groupId + ":" + artifactId;
-    final List<Dependency> dependencies;
-    if (artifactToDependencies.containsKey(key))
-      dependencies = artifactToDependencies.get(key);
-    else
-      artifactToDependencies.put(key, dependencies = downloadVersions(groupId, artifactId));
-
-    for (final Dependency dependency : dependencies)
-      if (versionRange.containsVersion(new DefaultArtifactVersion(dependency.getVersion())))
-        result.add(dependency);
-  }
-
-  private static void rollbackArtifactVersion(final List<Dependency> artifacts, final List<Dependency> rollbacks) {
+  private static void rollbackArtifactVersion(final List<Dependency> artifacts, final Dependency[] rollback) {
     artifacts.clear();
-    for (final Dependency artifact : rollbacks)
-      artifacts.add(artifact);
+    Collections.addAll(artifacts, rollback);
   }
 
-  private static List<Dependency> updateArtifactVersion(final List<Dependency> artifacts, final Dependency dependency) {
-    final Set<Dependency> used = new HashSet<>();
-    final List<Dependency> rollback = new ArrayList<>();
-    final List<Dependency> clones = new ArrayList<>();
-    for (final Dependency artifact : artifacts) {
-      rollback.add(artifact);
-      if (artifact.isOptional() && !used.contains(dependency) && dependency.getGroupId().equals(artifact.getGroupId()) && dependency.getArtifactId().equals(artifact.getArtifactId())) {
-        final Dependency clone = artifact.clone();
-        clone.setVersion(dependency.getVersion());
-        clones.add(clone);
-        used.add(dependency);
-      }
-      else {
-        clones.add(artifact);
-      }
-    }
-
-    if (!used.contains(dependency))
-      clones.add(0, MavenUtil.newDependency(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()));
-
+  private static Dependency[] updateArtifactVersion(final List<Dependency> artifacts, final Dependency[] dependencies) {
+    final Dependency[] rollback = artifacts.toArray(new Dependency[artifacts.size()]);
     artifacts.clear();
-    for (final Dependency artifact : clones)
-      artifacts.add(artifact);
-
+    Collections.addAll(artifacts, dependencies);
     return rollback;
   }
 
@@ -227,8 +132,17 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     }
   }
 
-  private static String print(final Dependency dependency) {
-    return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion();
+  private static String print(final Dependency ... dependencies) {
+    final StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < dependencies.length; ++i) {
+      if (i > 0)
+        builder.append(',');
+
+      final Dependency dependency = dependencies[i];
+      builder.append(dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion());
+    }
+
+    return builder.toString();
   }
 
   private void resolveDependencies(final MavenProject project) throws DependencyResolutionException, LifecycleExecutionException {
@@ -255,11 +169,11 @@ public final class CompatibilityTestMojo extends AbstractMojo {
 
   private List<String> errors = new ArrayList<>();
 
-  private void assertCompatibility(final Dependency dependency, final boolean shouldPass) throws DependencyResolutionException, IOException, LifecycleExecutionException, MojoExecutionException {
+  private void assertCompatibility(final Dependency[] dependencies, final boolean shouldPass) throws DependencyResolutionException, IOException, LifecycleExecutionException, MojoExecutionException {
     projectArtifactsCache.flush();
-    final List<Dependency> rollback1 = updateArtifactVersion(project.getDependencies(), dependency);
+    final Dependency[] rollback = updateArtifactVersion(project.getDependencies(), dependencies);
 
-    getLog().info("|-- " + print(dependency));
+    getLog().info("|-- " + print(dependencies));
     resolveDependencies(project);
     final List<URL> classpath = new ArrayList<>();
     for (final Artifact artifact : project.getArtifacts())
@@ -269,7 +183,7 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     try (final URLClassLoader classLoader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]), null)) {
       final List<FingerprintError> errors = getFingerprint().isCompatible(classLoader);
       if (errors == null != shouldPass) {
-        final String error = print(dependency) + " should have " + (errors == null ? "failed" : "passed:\n" + AssembleUtil.toIndentedString(errors));
+        final String error = print(dependencies) + " should have " + (errors == null ? "failed" : "passed:\n" + AssembleUtil.toIndentedString(errors));
         if (failAtEnd)
           this.errors.add(error);
         else
@@ -277,24 +191,46 @@ public final class CompatibilityTestMojo extends AbstractMojo {
       }
     }
 
-    rollbackArtifactVersion(project.getDependencies(), rollback1);
+    rollbackArtifactVersion(project.getDependencies(), rollback);
   }
 
-  private void assertCompatibility(final String compatibilityProperty, final boolean shouldPass) throws DependencyResolutionException, IOException, LifecycleExecutionException, MojoExecutionException, InvalidVersionSpecificationException {
+  private void assertCompatibility(final List<CompatibilitySpec> compatibilitySpecs, final boolean shouldPass) throws DependencyResolutionException, IOException, LifecycleExecutionException, MojoExecutionException, InvalidVersionSpecificationException {
     getLog().info("Running " + (shouldPass ? "PASS" : "FAIL") + " compatibility tests...");
-    getLog().info(">>> " + compatibilityProperty);
-    final List<Dependency> dependencies = new ArrayList<>();
-    final String[] compatibilitySpecs = compatibilityProperty.split(";");
-    for (final String compatibilitySpec : compatibilitySpecs) {
-      final String[] parts = compatibilitySpec.split(":");
-      final String groupId = parts[0];
-      final String artifactId = parts[1];
-      final VersionRange versionRange = VersionRange.createFromVersionSpec(parts[2]);
-      getVersions(groupId, artifactId, dependencies, versionRange);
-    }
+    for (final CompatibilitySpec compatibilitySpec : compatibilitySpecs) {
+      String versionSpec = null;
+      int numSpecs = -1;
+      final int size = compatibilitySpec.getDependencies().size();
+      final List<Dependency>[] resolvedVersions = new List[size];
+      for (int i = 0; i < size; ++i) {
+        final ResolvableDependency dependency = compatibilitySpec.getDependencies().get(i);
+        final boolean isSingleVersion = dependency.isSingleVersion();
+        if (!isSingleVersion) {
+          if (versionSpec == null)
+            versionSpec = dependency.getVersion();
+          else if (!versionSpec.equals(dependency.getVersion()))
+            throw new MojoExecutionException("Version across all dependencies in a <pass> or <fail> spec must be equal");
+        }
 
-    for (final Dependency dependency : dependencies)
-      assertCompatibility(dependency, shouldPass);
+        resolvedVersions[i] = dependency.resolveVersions(project, getLog());
+        if (!isSingleVersion) {
+          if (numSpecs == -1)
+            numSpecs = resolvedVersions[i].size();
+          else if (numSpecs != resolvedVersions[i].size())
+            throw new MojoExecutionException("Expeted the same number of resolved versions for: " + compatibilitySpec);
+        }
+      }
+
+      if (numSpecs == -1)
+        numSpecs = 1;
+
+      for (int i = 0; i < numSpecs; ++i) {
+        final Dependency[] dependencies = new Dependency[resolvedVersions.length];
+        for (int j = 0; j < resolvedVersions.length; ++j)
+          dependencies[j] = resolvedVersions[j].get(resolvedVersions[j].size() == numSpecs ? i : 0);
+
+        assertCompatibility(dependencies, shouldPass);
+      }
+    }
   }
 
   private List<Dependency> getFingerprintedDependencies() {
@@ -308,6 +244,15 @@ public final class CompatibilityTestMojo extends AbstractMojo {
 
   private static boolean isRunning;
 
+  private static List<CompatibilitySpec> shortFormToLongForm(final String str) {
+    final String[] specs = str.split(";");
+    final List<CompatibilitySpec> result = new ArrayList<>();
+    for (final String spec : specs)
+      result.add(new CompatibilitySpec(Collections.singletonList(ResolvableDependency.parse(spec))));
+
+    return result;
+  }
+
   @Override
   public void execute() throws MojoExecutionException {
     if (isRunning)
@@ -319,18 +264,28 @@ public final class CompatibilityTestMojo extends AbstractMojo {
       return;
     }
 
+    if ((passCompatibility != null || failCompatibility != null) && (passes != null || fails != null))
+      throw new MojoExecutionException("<{pass/fail}Compatibility> cannot be used in conjuction with <passes> or <fails>");
+
+    if (passCompatibility != null)
+      passes = shortFormToLongForm(passCompatibility);
+
+    if (failCompatibility != null)
+      fails = shortFormToLongForm(failCompatibility);
+
     try {
       boolean wasRun = false;
-      if (passCompatibility != null && (wasRun = true))
-        assertCompatibility(passCompatibility, true);
+      if (passes != null && (wasRun = true))
+        assertCompatibility(passes, true);
 
-      if (failCompatibility != null && (wasRun = true))
-        assertCompatibility(failCompatibility, false);
+      if (fails != null && (wasRun = true))
+        assertCompatibility(fails, false);
 
       if (failAtEnd && errors.size() > 0)
         throw new MojoExecutionException("Failed compatibility tests:\n" + AssembleUtil.toIndentedString(errors));
 
       if (wasRun) {
+        // Reset the dependencies back to original
         resolveDependencies(project);
         return;
       }
