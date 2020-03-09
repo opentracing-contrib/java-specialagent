@@ -24,10 +24,12 @@
     <version>1.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>jms-1</artifactId>
-  <name>SpecialAgent Rule for JMS 1</name>
+  <name>SpecialAgent Rule for JMS v1</name>
   <properties>
+    <sa.rule.name>jms:1</sa.rule.name>
+    <min.version>1.1-rev-1</min.version>
+    <passCompatibility>javax.jms:jms-api:[${min.version},]</passCompatibility>
     <version.activemq>5.15.9</version.activemq>
-    <sa.plugin.name>jms:1</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
@@ -39,7 +41,7 @@
     <dependency>
       <groupId>javax.jms</groupId>
       <artifactId>jms-api</artifactId>
-      <version>1.1-rev-1</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

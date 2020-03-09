@@ -25,4 +25,7 @@
   </parent>
   <artifactId>concurrent</artifactId>
   <name>SpecialAgent Rule for Java Concurrent API</name>
+  <properties>
+    <sa.rule.name>concurrent</sa.rule.name>
+  </properties>
 </project>

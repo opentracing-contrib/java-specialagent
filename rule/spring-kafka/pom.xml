@@ -24,13 +24,14 @@
     <version>1.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>spring-kafka</artifactId>
-  <name>SpecialAgent Rule for Kafka Spring</name>
+  <name>SpecialAgent Rule for Spring Kafka</name>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.spring.kafka>2.2.0.RELEASE</version.spring.kafka>
+    <sa.rule.name>spring:kafka</sa.rule.name>
+    <min.version>2.2.0.RELEASE</min.version>
+    <passCompatibility>org.apache.kafka:kafka-clients:[${min.version},]</passCompatibility>
     <version.kafka>2.0.0</version.kafka>
-    <sa.plugin.name>spring:kafka</sa.plugin.name>
   </properties>
   <build>
     <plugins>
@@ -49,7 +50,7 @@
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka</artifactId>
-      <version>${version.spring.kafka}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -76,7 +77,7 @@
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
-      <version>${version.spring.kafka}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

@@ -26,7 +26,9 @@
   <artifactId>grpc</artifactId>
   <name>SpecialAgent Rule for GRPC</name>
   <properties>
-    <version.grpc>1.6.0</version.grpc>
+    <sa.rule.name>grpc</sa.rule.name>
+    <min.version>1.6.0</min.version>
+    <passCompatibility>io.grpc:grpc-core:[${min.version},]</passCompatibility>
     <version.protobuf>3.7.0</version.protobuf>
   </properties>
   <build>
@@ -63,7 +65,7 @@
                 <configuration>
                   <protocArtifact>com.google.protobuf:protoc:${version.protobuf}:exe:${os.detected.classifier}</protocArtifact>
                   <pluginId>grpc-java</pluginId>
-                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:${os.detected.classifier}</pluginArtifact>
+                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${min.version}:exe:${os.detected.classifier}</pluginArtifact>
                   <clearOutputDirectory>false</clearOutputDirectory>
                 </configuration>
               </execution>
@@ -77,7 +79,7 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-core</artifactId>
-      <version>${version.grpc}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -90,25 +92,25 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
-      <version>${version.grpc}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
-      <version>${version.grpc}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty</artifactId>
-      <version>${version.grpc}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-testing</artifactId>
-      <version>${version.grpc}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

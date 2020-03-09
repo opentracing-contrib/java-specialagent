@@ -26,19 +26,21 @@
   <artifactId>rabbitmq-client</artifactId>
   <name>SpecialAgent Rule for RabbitMQ Client</name>
   <properties>
-    <sa.plugin.name>rabbitmq:client</sa.plugin.name>
+    <sa.rule.name>rabbitmq:client</sa.rule.name>
+    <min.version>5.0.0</min.version>
+    <passCompatibility>com.rabbitmq:amqp-client:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-rabbitmq-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
-      <version>0.1.7</version>
+      <version>0.1.8</version>
     </dependency>
     <dependency>
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
-      <version>5.0.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

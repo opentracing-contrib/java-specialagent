@@ -24,18 +24,20 @@
     <version>1.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>aws-sdk-2</artifactId>
-  <name>SpecialAgent Rule for AWS SDK 2</name>
+  <name>SpecialAgent Rule for AWS SDK v2</name>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.aws2>2.1.4</version.aws2>
-    <sa.plugin.name>aws:sdk:2</sa.plugin.name>
+    <sa.rule.name>aws:sdk:2</sa.rule.name>
+    <min.version>2.1.4</min.version>
+    <!-- FIXME: The compatibility of this rule is very unusual, and very restricted. -->
+    <passCompatibility>software.amazon.awssdk:sdk-core:[${min.version},2.2.0),[2.7.15]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>sdk-core</artifactId>
-      <version>${version.aws2}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -48,7 +50,7 @@
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>aws-sdk-java</artifactId>
-      <version>${version.aws2}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

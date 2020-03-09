@@ -25,6 +25,9 @@
   </parent>
   <artifactId>jdbc</artifactId>
   <name>SpecialAgent Rule for Java JDBC API</name>
+  <properties>
+    <sa.rule.name>jdbc</sa.rule.name>
+  </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jdbc -->

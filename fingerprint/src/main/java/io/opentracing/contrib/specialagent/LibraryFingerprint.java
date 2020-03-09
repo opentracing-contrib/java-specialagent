@@ -161,17 +161,18 @@ public class LibraryFingerprint extends Fingerprint {
     final FingerprintVerifier verifier = new FingerprintVerifier();
     for (int i = 0; i < classes.length; ++i) {
       try {
-        final ClassFingerprint fingerprint = verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(classes[i].getName()));
-        if (fingerprint == null) {
-          verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(classes[i].getName()));
-          errors.add(new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null));
+        final ClassFingerprint expected = classes[i];
+        final ClassFingerprint actual = verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
+        if (actual == null) {
+          verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
+          errors.add(new FingerprintError(FingerprintError.Reason.MISSING, expected, null));
         }
-        else if (!fingerprint.compatible(classes[i])) {
-          fingerprint.compatible(classes[i]);
-          errors.add(new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint));
+        else if (!actual.compatible(expected)) {
+          actual.compatible(expected);
+          errors.add(new FingerprintError(FingerprintError.Reason.MISMATCH, expected, actual));
         }
         else if (logger.isLoggable(Level.FINER)) {
-          logger.finer("ClassFingerprint#compatible[true](\"" + classes[i].getName() + "\")");
+          logger.finer("ClassFingerprint#compatible[true](\"" + expected.getName() + "\")");
         }
       }
       catch (final IOException e) {

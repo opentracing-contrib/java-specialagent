@@ -15,20 +15,19 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.rabbitmq;
 
-import io.opentracing.propagation.TextMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import io.opentracing.propagation.TextMap;
 
 public class HeadersMapExtractAdapter implements TextMap {
   private final Map<String,String> map = new HashMap<>();
 
   public HeadersMapExtractAdapter(final Map<String,Object> headers) {
-    if (headers == null)
-      return;
-
-    for (final Map.Entry<String,Object> entry : headers.entrySet())
-      map.put(entry.getKey(), entry.getValue().toString());
+    if (headers != null)
+      for (final Map.Entry<String,Object> entry : headers.entrySet())
+        map.put(entry.getKey(), entry.getValue().toString());
   }
 
   @Override

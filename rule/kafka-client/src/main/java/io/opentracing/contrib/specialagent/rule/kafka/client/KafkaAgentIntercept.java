@@ -20,7 +20,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
@@ -38,12 +37,5 @@ public class KafkaAgentIntercept {
     final Tracer tracer = GlobalTracer.get();
     final Span span = TracingKafkaUtils.buildAndInjectSpan((ProducerRecord<?,?>)record, tracer);
     return WrapperProxy.wrap(callback, new TracingCallback((Callback)callback, span, tracer));
-  }
-
-  @SuppressWarnings({"deprecation", "resource"})
-  public static void onProducerExit() {
-    final Scope active = GlobalTracer.get().scopeManager().active();
-    if (active != null)
-      active.close();
   }
 }

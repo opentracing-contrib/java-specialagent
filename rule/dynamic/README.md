@@ -1,5 +1,7 @@
 # SpecialAgent Rule for Dynamic Instrumentation
 
+**Rule Name:** `dynamic`
+
 ## Configuration
 
 Following properties are supported by the Dynamic Instrumentation Rule.
