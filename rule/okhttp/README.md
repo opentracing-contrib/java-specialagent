@@ -7,5 +7,5 @@
 ```xml
 <groupId>com.squareup.okhttp3</groupId>
 <artifactId>okhttp</artifactId>
-<version>[3.0.0,LATEST]</version>
+<version>[3.5.0,LATEST]</version>
 ```
