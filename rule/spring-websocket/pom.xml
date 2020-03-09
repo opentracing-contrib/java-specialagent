@@ -39,6 +39,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <!-- FIXME: Having a 2nd fingerprinted dependency couples this rule to environments that must have both artifacts. -->
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${min.version}</version>
@@ -46,6 +47,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <!-- FIXME: Having a 2nd fingerprinted dependency couples this rule to environments that must have both artifacts. -->
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
       <version>${min.version}</version>
