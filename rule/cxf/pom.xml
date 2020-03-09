@@ -26,9 +26,14 @@
   <artifactId>cxf</artifactId>
   <name>SpecialAgent Rule for Apache CXF</name>
   <properties>
+    <sa.rule.name>cxf</sa.rule.name>
+    <min.version>3.3.3</min.version>
     <version.cxf>3.3.5</version.cxf>
+    <passCompatibility>org.apache.cxf:cxf-core:[${min.version},]</passCompatibility>
+    <passCompatibility>org.apache.cxf:cxf-rt-management:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
+    <!-- https://github.com/apache/cxf/tree/master/integration/tracing/tracing-opentracing -->
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-integration-tracing-opentracing</artifactId>
@@ -48,28 +53,25 @@
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
+
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-rs-client</artifactId>
       <version>${version.cxf}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
       <version>${version.cxf}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxws</artifactId>
       <version>${version.cxf}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-http-jetty</artifactId>
