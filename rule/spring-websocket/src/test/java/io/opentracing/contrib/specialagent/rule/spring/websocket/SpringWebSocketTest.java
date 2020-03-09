@@ -14,23 +14,30 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.websocket;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
-import java.util.List;
+import io.opentracing.contrib.specialagent.TestUtil;
+import java.util.HashMap;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.stomp.DefaultStompSession;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
-import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.AbstractSubscribableChannel;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.socket.config.annotation.DelegatingWebSocketMessageBrokerConfiguration;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.rule.spring.websocket.TracingChannelInterceptor;
 import io.opentracing.mock.MockTracer;
+import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler;
 
 @RunWith(AgentRunner.class)
 public class SpringWebSocketTest {
@@ -40,16 +47,28 @@ public class SpringWebSocketTest {
   }
 
   @Test
-  public void testInterceptors() {
+  public void testInterceptors(final MockTracer tracer) {
     final DelegatingWebSocketMessageBrokerConfiguration configuration = new DelegatingWebSocketMessageBrokerConfiguration();
-    final List<ChannelInterceptor> inboundInterceptors = configuration.clientInboundChannel().getInterceptors();
+    final AbstractSubscribableChannel inboundChannel = configuration.clientInboundChannel();
+    inboundChannel.setBeanName("clientInboundChannel");
+    final AbstractSubscribableChannel outboundChannel = configuration.clientOutboundChannel();
+    outboundChannel.setBeanName("clientOutboundChannel");
 
-    final ChannelInterceptor inboundInterceptor = inboundInterceptors.get(inboundInterceptors.size() - 1);
-    assertTrue(inboundInterceptor instanceof TracingChannelInterceptor);
+    outboundChannel.subscribe(new SubProtocolWebSocketHandler(inboundChannel, outboundChannel));
+    inboundChannel.subscribe(new SubProtocolWebSocketHandler(inboundChannel, outboundChannel));
 
-    final List<ChannelInterceptor> outboundInterceptors = configuration.clientOutboundChannel().getInterceptors();
-    final ChannelInterceptor outboundInterceptor = outboundInterceptors.get(inboundInterceptors.size() - 1);
-    assertTrue(outboundInterceptor instanceof TracingChannelInterceptor);
+    configuration.clientInboundChannelExecutor().initialize();
+    configuration.clientOutboundChannelExecutor().initialize();
+
+    Map<String, Object> headers = new HashMap<>();
+    headers.put("simpMessageType", SimpMessageType.MESSAGE);
+    final GenericMessage<String> message = new GenericMessage<>("test", headers);
+    outboundChannel.send(message);
+    inboundChannel.send(message);
+
+    await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
+
+    assertEquals(2, tracer.finishedSpans().size());
   }
 
   @Test
