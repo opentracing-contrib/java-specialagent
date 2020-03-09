@@ -27,16 +27,15 @@
   <name>SpecialAgent Rule for OkHttp</name>
   <properties>
     <sa.rule.name>okhttp</sa.rule.name>
-    <min.version>3.0.0</min.version>
+    <min.version>3.5.0</min.version>
     <passCompatibility>com.squareup.okhttp3:okhttp:[${min.version},]</passCompatibility>
-    <version.okhttp3>3.14.2</version.okhttp3>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-okhttp -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-okhttp3</artifactId>
-      <version>${min.version}</version>
+      <version>3.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>io.opentracing.contrib</groupId>
@@ -47,14 +46,14 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>${version.okhttp3}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>
-      <version>${version.okhttp3}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -97,6 +97,12 @@
   </profiles>
   <dependencies>
     <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${version.maven}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
       <artifactId>fingerprint</artifactId>
       <version>${project.version}</version>
