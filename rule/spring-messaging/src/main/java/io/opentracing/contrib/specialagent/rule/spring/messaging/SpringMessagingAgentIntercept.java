@@ -29,6 +29,7 @@ public class SpringMessagingAgentIntercept {
   @SuppressWarnings("unchecked")
   public static void enter(final Object thiz) {
     try {
+      // Reflection is used because org.springframework.integration.channel.AbstractMessageChannel$ChannelInterceptorList is protected static class
       final Method getInterceptors = thiz.getClass().getMethod("getInterceptors");
       List<ChannelInterceptor> interceptors = (List<ChannelInterceptor>) getInterceptors.invoke(thiz);
 
