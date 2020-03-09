@@ -28,8 +28,9 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.plugin.name>mule:http-service:4</sa.plugin.name>
-    <version.mule.service.http>1.4.7</version.mule.service.http>
+    <sa.rule.name>mule:http-service:4</sa.rule.name>
+    <min.version>1.4.7</min.version>
+    <passCompatibility>org.mule.services:mule-service-http:[${min.version},]</passCompatibility>
     <version.opentracing.grizzly.http.server>0.1.3</version.opentracing.grizzly.http.server>
     <version.mule>4.2.2</version.mule>
     <version.apache-logging>2.11.2</version.apache-logging>
@@ -38,7 +39,7 @@
     <dependency>
       <groupId>org.mule.services</groupId>
       <artifactId>mule-service-http</artifactId>
-      <version>${version.mule.service.http}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

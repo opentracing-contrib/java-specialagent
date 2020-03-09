@@ -26,9 +26,10 @@
   <artifactId>elasticsearch-client-rest</artifactId>
   <name>SpecialAgent Rule for Elasticsearch Rest Client</name>
   <properties>
+    <sa.rule.name>elasticsearch:client-rest</sa.rule.name>
+    <min.version>6.4.0</min.version>
+    <passCompatibility>org.elasticsearch.client:elasticsearch-rest-client:[${min.version},]</passCompatibility>
     <version.apache.logging>2.11.2</version.apache.logging>
-    <version.elasticsearch>6.4.0</version.elasticsearch>
-    <sa.plugin.name>elasticsearch:client-rest</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
@@ -40,14 +41,14 @@
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>elasticsearch-rest-client</artifactId>
-      <version>${version.elasticsearch}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>transport</artifactId>
-      <version>${version.elasticsearch}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

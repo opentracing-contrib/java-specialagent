@@ -26,6 +26,7 @@
   <artifactId>thread</artifactId>
   <name>SpecialAgent Rule for java.lang.Thread</name>
   <properties>
+    <sa.rule.name>thread</sa.rule.name>
     <sa.rule.priority>2147483647</sa.rule.priority>
   </properties>
 </project>

@@ -28,8 +28,11 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.rule.name>elasticsearch:client-transport</sa.rule.name>
+    <min.version>6.4.0</min.version>
+    <max.version>6.8.7</max.version>
+    <passCompatibility>org.elasticsearch.client:transport:[${min.version},${max.version})</passCompatibility>
     <version.apache.logging>2.11.2</version.apache.logging>
-    <sa.plugin.name>elasticsearch:client-transport</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
@@ -41,7 +44,7 @@
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>transport</artifactId>
-      <version>6.4.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>

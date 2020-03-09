@@ -26,14 +26,16 @@
   <artifactId>jaxrs</artifactId>
   <name>SpecialAgent Rule for JAX-RS Client</name>
   <properties>
+    <sa.rule.name>jax-rs</sa.rule.name>
+    <min.version>2.0</min.version>
+    <passCompatibility>javax.ws.rs:javax.ws.rs-api:[${min.version},]</passCompatibility>
     <version.jetty>9.3.15.v20161220</version.jetty>
-    <sa.plugin.name>jax-rs</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.0</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

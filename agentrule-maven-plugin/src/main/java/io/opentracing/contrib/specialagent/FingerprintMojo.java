@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -83,40 +82,6 @@ public final class FingerprintMojo extends TreeMojo {
   }
 
   /**
-   * Returns the filesystem path of {@code artifact} located in
-   * {@code localRepository}.
-   *
-   * @param localRepository The local repository reference.
-   * @param artifact The artifact.
-   * @return The filesystem path of {@code dependency} located in
-   *         {@code localRepository}.
-   * @throws NullPointerException If {@code localRepository} or {@code artifact}
-   *           is null.
-   */
-  public static URL getPathOf(final ArtifactRepository localRepository, final Artifact artifact) {
-    final StringBuilder builder = new StringBuilder();
-    builder.append(localRepository.getBasedir());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getGroupId().replace('.', File.separatorChar));
-    builder.append(File.separatorChar);
-    builder.append(artifact.getArtifactId());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getVersion());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getArtifactId());
-    builder.append('-').append(artifact.getVersion());
-    if (artifact.getClassifier() != null)
-      builder.append('-').append(artifact.getClassifier());
-
-    try {
-      return new URL("file", "", builder.append(".jar").toString());
-    }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
-  }
-
-  /**
    * Returns a list of {@code URL} objects representing paths of
    * {@link Artifact} objects marked with {@code <optional>true</optional>} in
    * the specified iterator.
@@ -130,7 +95,7 @@ public final class FingerprintMojo extends TreeMojo {
     while (iterator.hasNext()) {
       final Artifact dependency = iterator.next();
       if (optional == dependency.isOptional() && (scope == null || scope.equals(dependency.getScope()))) {
-        final URL url = getPathOf(localRepository, dependency);
+        final URL url = MavenUtil.getPathOf(localRepository, dependency);
         final URL[] urls = getDependencyPaths(localRepository, scope, optional, iterator, depth + 1);
         if (urls != null && url != null)
           urls[depth] = url;
@@ -145,7 +110,7 @@ public final class FingerprintMojo extends TreeMojo {
   @Parameter(defaultValue="${localRepository}", required=true, readonly=true)
   private ArtifactRepository localRepository;
 
-  @Parameter(defaultValue="${sa.plugin.name}")
+  @Parameter(defaultValue="${sa.rule.name}", required=true)
   private String name;
 
   @Parameter
@@ -258,10 +223,7 @@ public final class FingerprintMojo extends TreeMojo {
   }
 
   private void createPluginName() throws IOException, MojoExecutionException {
-    if (name == null)
-      name = getProject().getArtifact().getArtifactId();
-
-    final String pluginName = "sa.plugin.name." + name;
+    final String pluginName = "sa.rule.name." + name;
     getLog().info("--> " + pluginName + " <--");
     final File nameFile = new File(getProject().getBuild().getOutputDirectory(), pluginName);
     if (!nameFile.exists() && !nameFile.createNewFile())

@@ -29,15 +29,16 @@
     <!-- FIXME: Can this be reduced to 1.7? -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.rule.name>spring:webflux</sa.rule.name>
+    <min.version>5.1.0.RELEASE</min.version>
+    <passCompatibility>org.springframework:spring-webflux:[${min.version},]</passCompatibility>
     <version.spring.boot>2.1.0.RELEASE</version.spring.boot>
-    <version.spring>5.1.0.RELEASE</version.spring>
-    <sa.plugin.name>spring:webflux</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webflux</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

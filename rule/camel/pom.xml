@@ -28,7 +28,9 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.rule.name>camel</sa.rule.name>
     <version.org.apache.camel>2.24.3</version.org.apache.camel>
+    <!-- FIXME: Need compatibility tests. -->
   </properties>
   <dependencies>
     <dependency>

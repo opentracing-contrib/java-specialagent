@@ -25,11 +25,17 @@
   </parent>
   <artifactId>zuul</artifactId>
   <name>SpecialAgent Rule for Netflix Zuul</name>
+  <properties>
+    <sa.rule.name>zuul</sa.rule.name>
+    <min.version>1.0.0</min.version>
+    <max.version>2.1.1</max.version>
+    <passCompatibility>com.netflix.zuul:zuul-core:[${min.version},1.0.20),(1.0.21,2.0.0-rc.1),(2.0.0-rc.2,${max.version})</passCompatibility>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>com.netflix.zuul</groupId>
       <artifactId>zuul-core</artifactId>
-      <version>1.0.0</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

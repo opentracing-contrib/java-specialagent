@@ -26,8 +26,8 @@
   <artifactId>spring-boot</artifactId>
   <name>SpecialAgent Rule for Spring Boot</name>
   <properties>
+    <sa.rule.name>spring:boot</sa.rule.name>
     <version.spring.boot>2.0.0.RELEASE</version.spring.boot>
-    <sa.plugin.name>spring:boot</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>

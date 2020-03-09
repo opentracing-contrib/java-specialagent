@@ -28,21 +28,24 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.plugin.name>play:ws</sa.plugin.name>
-    <version.play.ws>2.0.0</version.play.ws>
+    <sa.rule.name>play:ws</sa.rule.name>
+    <min.version>2.0.0</min.version>
+    <max.version>2.0.5</max.version>
+    <!-- FIXME: The compatibility of this rule is very unusual, and very restricted. -->
+    <passCompatibility>com.typesafe.play:shaded-asynchttpclient:[${min.version},2.0.5),(2.0.5,2.1.0-M1)</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>shaded-asynchttpclient</artifactId>
-      <version>${version.play.ws}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-ahc-ws-standalone_2.12</artifactId>
-      <version>${version.play.ws}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -26,20 +26,23 @@
   <artifactId>netty</artifactId>
   <name>SpecialAgent Rule for Netty</name>
   <properties>
-    <sa.plugin.name>netty</sa.plugin.name>
+    <sa.rule.name>netty</sa.rule.name>
+    <min.version>4.1.0.Final</min.version>
+    <max.version>5.0.0.Alpha1</max.version>
+    <passCompatibility>io.netty:netty-codec-http:[${min.version},${max.version})</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec-http</artifactId>
-      <version>4.1.0.Final</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
-      <version>4.1.0.Final</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

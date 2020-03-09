@@ -26,9 +26,10 @@
   <artifactId>grizzly-http-client</artifactId>
   <name>SpecialAgent Rule for Grizzly Async Http Client</name>
   <properties>
-    <version.grizzly-http-client>1.15</version.grizzly-http-client>
+    <sa.rule.name>grizzly:http-client</sa.rule.name>
+    <min.version>1.15</min.version>
+    <passCompatibility>org.glassfish.grizzly:grizzly-http-client:[${min.version},]</passCompatibility>
     <version.grizzly-http-server>2.3.35</version.grizzly-http-server>
-    <sa.plugin.name>grizzly:http-client</sa.plugin.name>
   </properties>
   <dependencies>
     <dependency>
@@ -47,7 +48,7 @@
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-client</artifactId>
-      <version>${version.grizzly-http-client}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

@@ -26,7 +26,9 @@
   <artifactId>feign</artifactId>
   <name>SpecialAgent Rule for Feign</name>
   <properties>
-    <version.feign>9.0.0</version.feign>
+    <min.version>9.0.0</min.version>
+    <sa.rule.name>feign</sa.rule.name>
+    <passCompatibility>io.github.openfeign:feign-core:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
@@ -44,14 +46,14 @@
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-core</artifactId>
-      <version>${version.feign}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-okhttp</artifactId>
-      <version>${version.feign}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

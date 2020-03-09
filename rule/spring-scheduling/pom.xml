@@ -26,14 +26,15 @@
   <artifactId>spring-scheduling</artifactId>
   <name>SpecialAgent Rule for Spring Scheduling</name>
   <properties>
-    <version.spring>5.0.0.RELEASE</version.spring>
-    <sa.plugin.name>spring:scheduling</sa.plugin.name>
+    <sa.rule.name>spring:scheduling</sa.rule.name>
+    <min.version>5.0.0.RELEASE</min.version>
+    <passCompatibility>org.springframework:spring-context:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

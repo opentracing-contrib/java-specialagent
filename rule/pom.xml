@@ -294,10 +294,22 @@
             <version>${project.version}</version>
             <executions>
               <execution>
+                <id>fingerprint</id>
                 <goals>
                   <goal>fingerprint</goal>
                 </goals>
                 <phase>process-classes</phase>
+              </execution>
+              <execution>
+                <id>test-compatibility</id>
+                <goals>
+                  <goal>test-compatibility</goal>
+                </goals>
+                <phase>process-classes</phase>
+                <configuration>
+                  <passCompatibility>${passCompatibility}</passCompatibility>
+                  <failCompatibility>${failCompatibility}</failCompatibility>
+                </configuration>
               </execution>
             </executions>
             <configuration>

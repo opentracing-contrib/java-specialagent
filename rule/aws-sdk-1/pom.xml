@@ -24,11 +24,11 @@
     <version>1.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>aws-sdk-1</artifactId>
-  <name>SpecialAgent Rule for AWS SDK 1</name>
+  <name>SpecialAgent Rule for AWS SDK v1</name>
   <properties>
-    <sa.plugin.name>aws-sdk</sa.plugin.name>
-    <version.aws>1.11.79</version.aws>
-    <sa.plugin.name>aws:sdk:1</sa.plugin.name>
+    <min.version>1.11.79</min.version>
+    <sa.rule.name>aws:sdk:1</sa.rule.name>
+    <passCompatibility>com.amazonaws:aws-java-sdk-core:[${min.version},1.11.662),(1.11.662,]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>${version.aws}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
       <exclusions>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
-      <version>${version.aws}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

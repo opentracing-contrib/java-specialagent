@@ -26,28 +26,29 @@
   <artifactId>spring-websocket</artifactId>
   <name>SpecialAgent Rule for Spring WebSocket STOMP</name>
   <properties>
-    <version.spring>5.1.0.RELEASE</version.spring>
-    <sa.plugin.name>spring:websocket</sa.plugin.name>
+    <sa.rule.name>spring:websocket</sa.rule.name>
+    <min.version>5.1.0.RELEASE</min.version>
+    <passCompatibility>org.springframework:spring-websocket:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-websocket</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

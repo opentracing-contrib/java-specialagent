@@ -28,21 +28,22 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.plugin.name>mule:core:4</sa.plugin.name>
-    <mule.version>4.2.2</mule.version>
+    <sa.rule.name>mule:core:4</sa.rule.name>
+    <min.version>4.2.2</min.version>
+    <passCompatibility>org.mule.runtime:mule-core:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-core</artifactId>
-      <version>${mule.version}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.mule.tests</groupId>
       <artifactId>mule-tests-unit</artifactId>
-      <version>${mule.version}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

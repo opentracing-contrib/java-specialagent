@@ -25,6 +25,12 @@
   </parent>
   <artifactId>thrift</artifactId>
   <name>SpecialAgent Rule for Apache Thrift</name>
+  <properties>
+    <sa.rule.name>thrift</sa.rule.name>
+    <min.version>0.10.0</min.version>
+    <max.version>0.13.0</max.version>
+    <passCompatibility>org.apache.thrift:libthrift:[${min.version},${max.version})</passCompatibility>
+  </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-thrift -->
@@ -35,7 +41,7 @@
     <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
-      <version>0.10.0</version>
+      <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
