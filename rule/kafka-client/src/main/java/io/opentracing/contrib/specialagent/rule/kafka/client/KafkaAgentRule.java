@@ -32,7 +32,7 @@ public class KafkaAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(named("org.apache.kafka.clients.consumer.KafkaConsumer"))
+      .type(not(isInterface()).and(hasSuperType(named("org.apache.kafka.clients.consumer.Consumer"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -48,9 +48,9 @@ public class KafkaAgentRule extends AgentRule {
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
       if (isEnabled("KafkaAgentRule", origin))
-        KafkaAgentIntercept.onConsumerEnter(returned);
+        KafkaAgentIntercept.onConsumerExit(returned);
     }
   }
 
