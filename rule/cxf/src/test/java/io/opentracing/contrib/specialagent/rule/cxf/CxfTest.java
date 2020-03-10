@@ -76,6 +76,7 @@ public class CxfTest {
     assertEquals(4, tracer.finishedSpans().size());
 
     server.destroy();
+    serverFactory.getBus().shutdown(true);
   }
 
   @Test
@@ -101,6 +102,7 @@ public class CxfTest {
     assertEquals(2, tracer.finishedSpans().size());
 
     server.destroy();
+    serverFactory.getBus().shutdown(true);
   }
 
   @Path("/")
