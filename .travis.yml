@@ -78,6 +78,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/akka-http -amd integration-test || (mvn -B -P test -pl test/akka-http -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Apache CXF JAX-RS [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/cxf-jaxrs -amd integration-test || (mvn -B -P test -pl test/cxf-jaxrs -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Apache CXF JAX-WS [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/cxf-jaxws -amd integration-test || (mvn -B -P test -pl test/cxf-jaxws -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "Apache HttpClient [openjdk8]"
     stage: test
     jdk: openjdk8
