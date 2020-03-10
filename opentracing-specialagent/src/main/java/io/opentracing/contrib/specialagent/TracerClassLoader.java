@@ -18,8 +18,21 @@ package io.opentracing.contrib.specialagent;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+/**
+ * {@code ClassLoader} to contain the classes belonging to a Tracer Plugin.
+ *
+ * @author Seva Safris
+ */
 class TracerClassLoader extends URLClassLoader {
-  TracerClassLoader(final URL url, final ClassLoader parent) {
-    super(new URL[] {url}, parent);
+  /**
+   * Creates a new {@link TracerClassLoader} with the specified {@code parent}
+   * class loader, and array of {@link URL}s from which to load classes and
+   * resources.
+   *
+   * @param parent The parent class loader.
+   * @param urls The {@link URL}s from which to load classes and resources.
+   */
+  TracerClassLoader(final ClassLoader parent, final URL ... urls) {
+    super(urls, parent);
   }
 }

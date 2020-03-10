@@ -22,9 +22,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
  * A {@link Fingerprint} that represents the fingerprint of a library.
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  */
 public class LibraryFingerprint extends Fingerprint {
   private static final long serialVersionUID = -8454972655262482231L;
-  private static final Logger logger = Logger.getLogger(LibraryFingerprint.class.getName());
+  private static final Logger logger = Logger.getLogger(LibraryFingerprint.class);
 
   /**
    * Returns a {@code LibraryFingerprint} for the serialized object encoding at
@@ -59,26 +59,31 @@ public class LibraryFingerprint extends Fingerprint {
   }
 
   private final ClassFingerprint[] classes;
+  private final List<String> presents;
+  private final List<String> absents;
 
   /**
    * Creates a new {@code LibraryFingerprint} with the specified {@code URL}
    * objects referencing JAR files.
    *
-   * @param parent The parent {@code ClassLoader} to use for resolution of
-   *          classes that should not be part of the fingerprint.
-   * @param scanUrls The {@code URL} objects referencing JAR files.
-   * @throws NullPointerException If {@code manifest} or {@code urls} is null.
-   * @throws IllegalArgumentException If the number of members in {@code urls}
-   *           is zero.
+   * @param classLoader The {@code ClassLoader} to use for resolution of classes
+   *          that should not be part of the fingerprint.
+   * @param presents List of classes the fingerprint must assert are present.
+   * @param absents List of classes the fingerprint must assert are absent.
+   * @param logger The logger to be used during the fingerprinting execution.
+   * @throws NullPointerException If {@code manifest} or {@code scanUrls} is
+   *           null.
+   * @throws IllegalArgumentException If the number of members in
+   *           {@code scanUrls} is zero.
    * @throws IOException If an I/O error has occurred.
    */
-  LibraryFingerprint(final ClassLoader parent, final URL ... scanUrls) throws IOException {
-    if (scanUrls.length == 0)
+  LibraryFingerprint(final URLClassLoader classLoader, final List<String> presents, final List<String> absents, final Logger logger) throws IOException {
+    if (classLoader.getURLs().length == 0)
       throw new IllegalArgumentException("Number of scan URLs must be greater than 0");
 
-    try (final URLClassLoader classLoader = new URLClassLoader(scanUrls, parent)) {
-      this.classes = FingerprintBuilder.build(classLoader, 1, Phase.LOAD);
-    }
+    this.classes = new FingerprintBuilder(logger).build(classLoader, Integer.MAX_VALUE).toArray(new ClassFingerprint[0]);
+    this.presents = presents;
+    this.absents = absents;
   }
 
   /**
@@ -86,6 +91,8 @@ public class LibraryFingerprint extends Fingerprint {
    */
   LibraryFingerprint() {
     this.classes = null;
+    this.presents = null;
+    this.absents = null;
   }
 
   /**
@@ -102,9 +109,6 @@ public class LibraryFingerprint extends Fingerprint {
   }
 
   /**
-   * Returns the {@code ClassFingerprint} array of this
-   * {@code LibraryFingerprint}.
-   *
    * @return The {@code ClassFingerprint} array of this
    *         {@code LibraryFingerprint}.
    */
@@ -113,17 +117,17 @@ public class LibraryFingerprint extends Fingerprint {
   }
 
   /**
-   * Tests whether the runtime represented by the specified {@code ClassLoader}
-   * is compatible with this fingerprint.
-   *
-   * @param classLoader The {@code ClassLoader} representing the runtime to test
-   *          for compatibility.
-   * @return An array of {@code FingerprintError} objects representing all
-   *         errors encountered in the compatibility test, or {@code null} if
-   *         the runtime is compatible with this fingerprint,
+   * @return The list of classes the fingerprint asserts must be present.
    */
-  public FingerprintError[] isCompatible(final ClassLoader classLoader) {
-    return classes == null ? null : isCompatible(classLoader, new FingerprintVerifier(), 0, 0);
+  List<String> getPresents() {
+    return this.presents;
+  }
+
+  /**
+   * @return The list of classes the fingerprint asserts must be absent.
+   */
+  List<String> getAbsents() {
+    return this.absents;
   }
 
   /**
@@ -132,40 +136,51 @@ public class LibraryFingerprint extends Fingerprint {
    *
    * @param classLoader The {@code ClassLoader} representing the runtime to test
    *          for compatibility.
-   * @param fingerprinter The {@code Fingerprinter} to be used for
-   *          fingerprinting.
-   * @param index The index of the iteration (should be 0 when called).
-   * @param depth The depth of the iteration (should be 0 when called).
-   * @return An array of {@code FingerprintError} objects representing all
+   * @return A list of {@code FingerprintError} objects representing all
    *         errors encountered in the compatibility test, or {@code null} if
-   *         the runtime is compatible with this fingerprint,
+   *         the runtime is compatible with this fingerprint.
    */
-  private FingerprintError[] isCompatible(final ClassLoader classLoader, final FingerprintVerifier fingerprinter, final int index, final int depth) {
-    for (int i = index; i < classes.length; ++i) {
-      FingerprintError error = null;
+  public List<FingerprintError> isCompatible(final ClassLoader classLoader) {
+    final List<FingerprintError> errors = new ArrayList<>();
+    if (presents != null) {
+      for (final String present : presents) {
+        final String resourcePath = AssembleUtil.classNameToResource(present);
+        if (classLoader.getResource(resourcePath) == null)
+          errors.add(new FingerprintError(FingerprintError.Reason.MUST_BE_PRESENT, new ClassNameFingerprint(present), null));
+      }
+    }
+
+    if (absents != null) {
+      for (final String absent : absents) {
+        final String resourcePath = AssembleUtil.classNameToResource(absent);
+        if (classLoader.getResource(resourcePath) != null)
+          errors.add(new FingerprintError(FingerprintError.Reason.MUST_BE_ABSENT, new ClassNameFingerprint(absent), null));
+      }
+    }
+
+    final FingerprintVerifier verifier = new FingerprintVerifier();
+    for (int i = 0; i < classes.length; ++i) {
       try {
-        final ClassFingerprint fingerprint = fingerprinter.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
-        if (fingerprint == null) {
-          fingerprinter.fingerprint(classLoader, classes[i].getName().replace('.', '/').concat(".class"));
-          error = new FingerprintError(FingerprintError.Reason.MISSING, classes[i], null);
+        final ClassFingerprint expected = classes[i];
+        final ClassFingerprint actual = verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
+        if (actual == null) {
+          verifier.fingerprint(classLoader, AssembleUtil.classNameToResource(expected.getName()));
+          errors.add(new FingerprintError(FingerprintError.Reason.MISSING, expected, null));
         }
-        else if (!fingerprint.compatible(classes[i])) {
-          fingerprint.compatible(classes[i]);
-          error = new FingerprintError(FingerprintError.Reason.MISMATCH, classes[i], fingerprint);
+        else if (!actual.compatible(expected)) {
+          actual.compatible(expected);
+          errors.add(new FingerprintError(FingerprintError.Reason.MISMATCH, expected, actual));
+        }
+        else if (logger.isLoggable(Level.FINER)) {
+          logger.finer("ClassFingerprint#compatible[true](\"" + expected.getName() + "\")");
         }
       }
       catch (final IOException e) {
         logger.log(Level.WARNING, "Failed generate class fingerprint due to IOException -- resorting to default behavior (permit instrumentation)", e);
       }
-
-      if (error != null) {
-        final FingerprintError[] errors = isCompatible(classLoader, fingerprinter, i + 1, depth + 1);
-        errors[depth] = error;
-        return errors;
-      }
     }
 
-    return depth == 0 ? null : new FingerprintError[depth];
+    return errors.size() != 0 ? errors : null;
   }
 
   @Override

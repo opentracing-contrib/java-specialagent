@@ -29,11 +29,12 @@ public class EarlyReturnException extends RuntimeException {
   private final Object returnValue;
 
   /**
-   * Creates a new {@code EarlyReturnException} for the specified return value.
+   * Creates a new {@code EarlyReturnException} with the specified return value.
    *
    * @param returnValue The value to return early.
    */
   public EarlyReturnException(final Object returnValue) {
+    super(null, null, false, false);
     this.returnValue = returnValue;
   }
 
@@ -41,7 +42,7 @@ public class EarlyReturnException extends RuntimeException {
    * Creates a new {@code EarlyReturnException} with a null return value.
    */
   public EarlyReturnException() {
-    this.returnValue = null;
+    this(null);
   }
 
   /**
@@ -49,5 +50,16 @@ public class EarlyReturnException extends RuntimeException {
    */
   public Object getReturnValue() {
     return this.returnValue;
+  }
+
+  /**
+   * No-op override of {@link Throwable#fillInStackTrace()} for improved
+   * performance.
+   *
+   * @return A reference to this {@code Throwable} instance.
+   */
+  @Override
+  public Throwable fillInStackTrace() {
+    return this;
   }
 }

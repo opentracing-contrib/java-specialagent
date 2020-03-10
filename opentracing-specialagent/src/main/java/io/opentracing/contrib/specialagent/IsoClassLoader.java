@@ -22,11 +22,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class IsoClassLoader extends URLClassLoader {
-  private static final Logger logger = Logger.getLogger(IsoClassLoader.class.getName());
+  private static final Logger logger = Logger.getLogger(IsoClassLoader.class);
 
   private static class IsoParentClassLoader extends ClassLoader {
     private final AtomicReference<Set<String>> isoNames = new AtomicReference<>();
@@ -48,9 +46,9 @@ class IsoClassLoader extends URLClassLoader {
 
         final Set<String> names = new HashSet<>();
         try {
-          AssembleUtil.forEachClass(isoClassPaths, new Consumer<String>() {
+          AssembleUtil.<Void>forEachClass(isoClassPaths, null, new BiConsumer<String,Void>() {
             @Override
-            public void accept(final String name) {
+            public void accept(final String name, final Void arg) {
               names.add(name);
             }
           });
@@ -66,7 +64,7 @@ class IsoClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-      final boolean isNameIso = getNames().contains(name.replace('.', '/').concat(".class"));
+      final boolean isNameIso = getNames().contains(AssembleUtil.classNameToResource(name));
       final Class<?> cls = isNameIso ? null : super.loadClass(name, resolve);
       if (logger.isLoggable(Level.FINEST))
         logger.finest("~~~~~~~~ IsoParentClassLoader.loadClass(\"" + name + "\", " + resolve + ") [" + isNameIso + "]: " + cls);

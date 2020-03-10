@@ -28,6 +28,8 @@ import java.util.Objects;
  *
  * @author Seva Safris
  * @param <E> The type of elements in this list.
+ * @see #indexOf(Object)
+ * @see #lastIndexOf(Object)
  */
 public class IdentityList<E> extends AbstractList<E> implements Serializable {
   private static final long serialVersionUID = 4868018708229533624L;

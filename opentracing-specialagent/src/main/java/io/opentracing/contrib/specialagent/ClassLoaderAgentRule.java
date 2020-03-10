@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -46,69 +45,84 @@ import net.bytebuddy.utility.JavaModule;
  *
  * @author Seva Safris
  */
-public class ClassLoaderAgentRule extends AgentRule {
+public class ClassLoaderAgentRule extends DefaultAgentRule {
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n");
+    log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
-    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(is(RuleClassLoader.class)).and(not(is(PluginsClassLoader.class)))));
+//    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(nameStartsWith(RuleClassLoader.class.getName()))).and(not(nameStartsWith(PluginsClassLoader.class.getName()))));
+    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class));
     final List<Extendable> builders = Arrays.asList(
       narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindClass.class, locatorProxy) : Advice.to(FindClass.class);
-          return builder.visit(advice.on(named("findClass").and(returns(Class.class).and(takesArguments(String.class)))));
-        }}),
-      narrowable.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindResource.class);
-          return builder.visit(advice.on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))));
-        }}),
-      narrowable.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          final Advice advice = locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class);
-          return builder.visit(advice.on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
+          return builder
+            .visit((locatorProxy != null ? Advice.to(DefineClass.class, locatorProxy) : Advice.to(DefineClass.class)).on(named("defineClass").and(returns(Class.class).and(takesArgument(0, String.class)))))
+            .visit((locatorProxy != null ? Advice.to(LoadClass.class, locatorProxy) : Advice.to(LoadClass.class)).on(named("loadClass").and(returns(Class.class).and(takesArguments(String.class)))))
+            .visit((locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindResource.class)).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))))
+            .visit((locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class)).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
         }}));
 
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n");
-
+    log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
     return builders;
   }
 
-  public static class FindClass {
+  public static boolean isExcluded(final ClassLoader thiz) {
+    final String className = thiz.getClass().getName();
+    return className.startsWith("io.opentracing.contrib.specialagent.RuleClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader");
+  }
+
+  public static class DefineClass {
+    @Advice.OnMethodExit
+    public static void exit(final @Advice.This ClassLoader thiz) {
+      if (!isExcluded(thiz))
+        SpecialAgent.inject(thiz);
+    }
+  }
+
+  public static class LoadClass {
     public static final Mutex mutex = new Mutex();
+    public static Method defineClass;
 
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
-    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-//      System.err.println(">>>>>>># findClass(" + SpecialAgentUtil.getIdentityCode(thiz) + ", \"" + arg + "\"): " + returned);
+    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
+      if (isExcluded(thiz))
+        return;
+
       final Set<String> visited;
-      if (returned != null || !(visited = mutex.get()).add(arg))
+      if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
       try {
-        final byte[] bytecode = SpecialAgent.findClass(thiz, arg);
+        final Class<?> bootstrapClass = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
+        if (bootstrapClass != null) {
+          log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, DefaultLevel.FINEST);
+
+          returned = bootstrapClass;
+          thrown = null;
+          return;
+        }
+
+        final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
           return;
 
-        if (AgentRule.logger.isLoggable(Level.FINEST))
-          AgentRule.logger.finest("<<<<<<<< defineClass(\"" + arg + "\")");
+        log("<<<<<<<< defineClass(\"" + name + "\")", null, DefaultLevel.FINEST);
 
-        final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-        returned = (Class<?>)defineClass.invoke(thiz, arg, bytecode, 0, bytecode.length, null);
+        if (defineClass == null)
+          defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
+
+        returned = (Class<?>)defineClass.invoke(thiz, name, bytecode, 0, bytecode.length, null);
         thrown = null;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindClass#exit", t);
+        log("<><><><> ClassLoaderAgent.LoadClass#exit(\"" + name + "\")", t, DefaultLevel.SEVERE);
       }
       finally {
-        visited.remove(arg);
+        visited.remove(name);
       }
     }
   }
@@ -117,21 +131,24 @@ public class ClassLoaderAgentRule extends AgentRule {
     public static final Mutex mutex = new Mutex();
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
+    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
+      if (isExcluded(thiz))
+        return;
+
       final Set<String> visited;
-      if (returned != null || !(visited = mutex.get()).add(arg))
+      if (returned != null || !(visited = mutex.get()).add(name))
         return;
 
       try {
-        final URL resource = SpecialAgent.findResource(thiz, arg);
+        final URL resource = SpecialAgent.findResource(thiz, name);
         if (resource != null)
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResource#exit", t);
+        log("<><><><> ClassLoaderAgent.FindResource#exit", t, DefaultLevel.SEVERE);
       }
       finally {
-        visited.remove(arg);
+        visited.remove(name);
       }
     }
   }
@@ -140,23 +157,26 @@ public class ClassLoaderAgentRule extends AgentRule {
     public static final Mutex mutex = new Mutex();
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String arg, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
+    public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
+      if (isExcluded(thiz))
+        return;
+
       final Set<String> visited;
-      if (!(visited = mutex.get()).add(arg))
+      if (!(visited = mutex.get()).add(name))
         return;
 
       try {
-        final Enumeration<URL> resources = SpecialAgent.findResources(thiz, arg);
+        final Enumeration<URL> resources = SpecialAgent.findResources(thiz, name);
         if (resources == null)
           return;
 
         returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> ClassLoaderAgent.FindResources#exit", t);
+        log("<><><><> ClassLoaderAgent.FindResources#exit", t, DefaultLevel.SEVERE);
       }
       finally {
-        visited.remove(arg);
+        visited.remove(name);
       }
     }
   }

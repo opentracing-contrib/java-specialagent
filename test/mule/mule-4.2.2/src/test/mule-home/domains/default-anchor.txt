@@ -1,0 +1,1 @@
+Delete this file while Mule is running to remove the artifact in a clean way.

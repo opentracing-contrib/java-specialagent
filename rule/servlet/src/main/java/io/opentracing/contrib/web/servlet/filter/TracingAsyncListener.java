@@ -1,0 +1,76 @@
+/* Copyright 2019 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.opentracing.contrib.web.servlet.filter;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import io.opentracing.Span;
+
+public class TracingAsyncListener implements AsyncListener {
+  private final Span span;
+  private final List<ServletFilterSpanDecorator> spanDecorators;
+
+  public TracingAsyncListener(final Span span, final List<ServletFilterSpanDecorator> spanDecorators) {
+    this.span = span;
+    this.spanDecorators = spanDecorators;
+  }
+
+  @Override
+  public void onComplete(AsyncEvent event) throws IOException {
+      HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+      HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+      for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+              spanDecorator.onResponse(httpRequest,
+              httpResponse,
+              span);
+      }
+      span.finish();
+  }
+
+  @Override
+  public void onTimeout(AsyncEvent event) throws IOException {
+      HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+      HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+      for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+            spanDecorator.onTimeout(httpRequest,
+                httpResponse,
+                event.getAsyncContext().getTimeout(),
+                span);
+        }
+  }
+
+  @Override
+  public void onError(AsyncEvent event) throws IOException {
+      HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+      HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+      for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+          spanDecorator.onError(httpRequest,
+              httpResponse,
+              event.getThrowable(),
+              span);
+      }
+  }
+
+  @Override
+  public void onStartAsync(AsyncEvent event) throws IOException {
+  }
+}

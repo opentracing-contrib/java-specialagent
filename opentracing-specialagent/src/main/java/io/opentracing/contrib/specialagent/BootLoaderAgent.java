@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.DefaultAgentRule.*;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.io.IOException;
@@ -29,8 +30,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
 
+import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -45,6 +46,7 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class BootLoaderAgent {
+//  public static final Logger logger = Logger.getLogger(BootLoaderAgent.class);
   public static final CachedClassFileLocator cachedLocator;
 
   static {
@@ -53,7 +55,7 @@ public class BootLoaderAgent {
         // BootLoaderAgent @Advice classes
         FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
-        ClassLoaderAgentRule.FindClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
+        ClassLoaderAgentRule.DefineClass.class, ClassLoaderAgentRule.LoadClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
     }
@@ -75,48 +77,49 @@ public class BootLoaderAgent {
           BootLoaderAgent.jarFiles.add(jarFile);
 
     final AgentBuilder builder = new AgentBuilder.Default()
-      .ignore(none())
+      .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
+      .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE);
 
     final Narrowable j8 = builder.type(is(ClassLoader.class));
     j8.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class))))));
-        }})
-      .installOn(inst);
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(String.class))))));
+      }})
+    .installOn(inst);
 
     j8.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
-        }})
-      .installOn(inst);
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
+      }})
+    .installOn(inst);
 
     final Narrowable j9 = builder.type(named("jdk.internal.loader.BootLoader"));
     j9.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
-        }})
-      .installOn(inst);
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("findResource").and(returns(URL.class).and(takesArguments(String.class))))));
+      }})
+    .installOn(inst);
 
     j9.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
-        }})
-      .installOn(inst);
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class))))));
+      }})
+    .installOn(inst);
 
     final Narrowable instrumentation = builder.type(isSubTypeOf(Instrumentation.class));
     instrumentation.transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AppendToBootstrap.class, cachedLocator).on(named("appendToBootstrapClassLoaderSearch").and(takesArguments(JarFile.class))));
-        }})
-      .installOn(inst);
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder.visit(Advice.to(AppendToBootstrap.class, cachedLocator).on(named("appendToBootstrapClassLoaderSearch").and(takesArguments(JarFile.class))));
+      }})
+    .installOn(inst);
 
     loaded = true;
   }
@@ -139,17 +142,15 @@ public class BootLoaderAgent {
 
       try {
         URL resource = null;
-        if (jarFiles.size() > 0) {
-          for (final JarFile jarFile : jarFiles) {
-            final JarEntry entry = jarFile.getJarEntry(arg);
-            if (entry != null) {
-              try {
-                resource = new URL("jar:file:" + jarFile.getName() + "!/" + arg);
-                break;
-              }
-              catch (final MalformedURLException e) {
-                throw new UnsupportedOperationException(e);
-              }
+        for (final JarFile jarFile : jarFiles) {
+          final JarEntry entry = jarFile.getJarEntry(arg);
+          if (entry != null) {
+            try {
+              resource = new URL("jar:file:" + jarFile.getName() + "!/" + arg);
+              break;
+            }
+            catch (final MalformedURLException e) {
+              throw new UnsupportedOperationException(e);
             }
           }
         }
@@ -158,7 +159,7 @@ public class BootLoaderAgent {
           returned = resource;
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResource#exit", t);
+        log("<><><><> BootLoaderAgent.FindBootstrapResource#exit", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -200,7 +201,7 @@ public class BootLoaderAgent {
         returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.FindBootstrapResources#exit", t);
+        log("<><><><> BootLoaderAgent.FindBootstrapResources#exit", t, DefaultLevel.SEVERE);
       }
       finally {
         visited.remove(arg);
@@ -215,7 +216,7 @@ public class BootLoaderAgent {
         jarFiles.add(arg);
       }
       catch (final Throwable t) {
-        AgentRule.logger.log(Level.SEVERE, "<><><><> BootLoaderAgent.AppendToBootstrap#exit", t);
+        log("<><><><> BootLoaderAgent.AppendToBootstrap#exit", t, DefaultLevel.SEVERE);
       }
     }
   }

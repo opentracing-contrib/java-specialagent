@@ -19,18 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
@@ -39,47 +31,39 @@ import java.util.zip.ZipInputStream;
  * <li>{@link #isCompatible(ClassLoader)}: Determines whether the
  * instrumentation rule it repserents is compatible with a specified
  * {@code ClassLoader}.</li>
- * <li>{@link #markFindResource(ClassLoader,String)}: Keeps track of the names
- * of classes that have been loaded into a specified {@code ClassLoader}.</li>
  * </ol>
  *
  * @author Seva Safris
  */
 class RuleClassLoader extends URLClassLoader {
-  private static final Logger logger = Logger.getLogger(RuleClassLoader.class.getName());
+  private static final Logger logger = Logger.getLogger(RuleClassLoader.class);
   private static final String SKIP_FINGERPRINT = "sa.fingerprint.skip";
-  private static final boolean skipFingerprint;
-
-  static {
-    final String property = System.getProperty(SKIP_FINGERPRINT);
-    skipFingerprint = property != null && !"false".equalsIgnoreCase(property);
-  }
+  private static final boolean skipFingerprint = AssembleUtil.isSystemProperty(SKIP_FINGERPRINT);
 
   /**
    * Callback that is used to load a class by the specified resource path into
-   * the provided {@code ClassLoader}.
+   * the provided {@code ClassLoader}. The {@code ClassNotFoundException}
+   * invokes {@link ClassLoaderAgentRule.LoadClass#exit}.
    */
   private static final BiConsumer<String,ClassLoader> loadClass = new BiConsumer<String,ClassLoader>() {
     @Override
     public void accept(final String path, final ClassLoader classLoader) {
-      if (!path.endsWith(".class") || path.startsWith("META-INF/") || path.startsWith("module-info"))
-        return;
+      final String className = AssembleUtil.resourceToClassName(path);
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("Class#forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
 
-      final String className = path.substring(0, path.length() - 6).replace('/', '.');
       try {
         Class.forName(className, false, classLoader);
       }
       catch (final ClassNotFoundException e) {
-        logger.log(Level.SEVERE, "Failed to load class " + className + " in " + classLoader, e);
       }
     }
   };
 
-  private final Map<ClassLoader,Boolean> compatibility = new IdentityHashMap<>();
-  private final Map<ClassLoader,Set<String>> classLoaderToClassName = new IdentityHashMap<>();
+  private final ClassLoaderMap<Boolean> compatibility = new ClassLoaderMap<>();
+  private final ClassLoaderMap<Boolean> injected = new ClassLoaderMap<>();
   private final PluginManifest pluginManifest;
   private final IsoClassLoader isoClassLoader;
-  private boolean preLoaded;
 
   /**
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
@@ -95,57 +79,51 @@ class RuleClassLoader extends URLClassLoader {
     super(AssembleUtil.toURLs(files), parent);
     this.pluginManifest = pluginManifest;
     this.isoClassLoader = isoClassLoader;
-  }
-
-  @Override
-  protected Class<?> findClass(String name) throws ClassNotFoundException {
-    return super.findClass(name);
+    if (parent == null || parent == ClassLoader.getSystemClassLoader())
+      injected.put(parent, Boolean.TRUE);
   }
 
   /**
-   * Preloads classes in the {@code RuleClassLoader} by calling
-   * {@link Class#forName(String)} on all classes in this class loader. A
-   * side-effect of this procedure is that is will load all dependent classes
-   * that are also needed to be loaded, which may belong to a different class
-   * loader (i.e. the parent, or parent's parent, and so on).
+   * Injects classes of the {@code RuleClassLoader} into the specified
+   * {@link ClassLoader classLoader} by calling
+   * {@link Class#forName(String,boolean,ClassLoader)} on all classes belonging
+   * to this class loader to be attempted to be found by the specified
+   * {@link ClassLoader classLoader}. A side-effect of this procedure is that is
+   * will load all dependent classes that are also needed to be loaded, which
+   * may belong to a different class loader (i.e. the parent, or parent's
+   * parent, and so on).
    *
-   * @param classLoader The {@code ClassLoader}.
+   * @param classLoader The target {@code ClassLoader} of the injection.
    */
-  void preLoad(final ClassLoader classLoader) {
-    if (preLoaded)
+  void inject(final ClassLoader classLoader) {
+    if (injected.containsKey(classLoader))
       return;
 
-    preLoaded = true;
-    if (logger.isLoggable(Level.FINE))
-      logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">#preLoad(ClassLoader<" + AssembleUtil.getNameId(classLoader) + ">)");
+    synchronized (classLoader) {
+      if (injected.containsKey(classLoader))
+        return;
 
-    // Call Class.forName(...) for each class in ruleClassLoader to load in
-    // the caller's class loader
-    for (final URL pathUrl : getURLs()) {
-      if (pathUrl.toString().endsWith(".jar")) {
-        try (final ZipInputStream zip = new ZipInputStream(pathUrl.openStream())) {
-          for (ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
-            final String name = entry.getName();
-            loadClass.accept(name, classLoader);
-          }
-        }
-        catch (final IOException e) {
-          logger.log(Level.SEVERE, "Failed to read from JAR: " + pathUrl, e);
-        }
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("RuleClassLoader<" + AssembleUtil.getNameId(this) + ">.inject(" + AssembleUtil.getNameId(classLoader) + ")");
+
+      // Call Class.forName(...) for each class in ruleClassLoader to load in
+      // the caller's class loader.
+      try {
+        injected.put(classLoader, Boolean.FALSE);
+        AssembleUtil.<ClassLoader>forEachClass(getURLs(), classLoader, loadClass);
       }
-      else {
-        final File dir = new File(URI.create(pathUrl.toString()));
-        final Path path = dir.toPath();
-        AssembleUtil.recurseDir(dir, new Predicate<File>() {
-          @Override
-          public boolean test(final File file) {
-            final String name = path.relativize(file.toPath()).toString();
-            loadClass.accept(name, classLoader);
-            return true;
-          }
-        });
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+      finally {
+        injected.put(classLoader, Boolean.TRUE);
       }
     }
+  }
+
+  boolean isClosed(final ClassLoader classLoader) {
+    final Boolean preLoaded = injected.get(classLoader);
+    return preLoaded != null && preLoaded;
   }
 
   /**
@@ -157,8 +135,8 @@ class RuleClassLoader extends URLClassLoader {
    * compatibility via "fingerprinting".
    * <p>
    * Once "fingerprinting" has been performed, the resulting value is associated
-   * with the specified {@code ClassLoader} in the {@link #compatibility} map as
-   * a cache.
+   * with the specified {@code ClassLoader} in the {@link #compatibility}
+   * map as a cache.
    *
    * @param classLoader The {@code ClassLoader} for which the instrumentation
    *          rule represented by this {@code RuleClassLoader} is to be checked
@@ -176,15 +154,22 @@ class RuleClassLoader extends URLClassLoader {
     if (compatible != null)
       return compatible;
 
-    try {
-      if (!(compatible = isFingerprintCompatible(classLoader)))
-        close();
+    synchronized (classLoader) {
+      compatible = compatibility.get(classLoader);
+      if (compatible != null)
+        return compatible;
 
-      compatibility.put(classLoader, compatible);
-      return compatible;
-    }
-    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
-      throw new IllegalStateException(e);
+      try {
+        compatible = isFingerprintCompatible(classLoader);
+        if (!compatible)
+          close();
+
+        compatibility.put(classLoader, compatible);
+        return compatible;
+      }
+      catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
+        throw new IllegalStateException(e);
+      }
     }
   }
 
@@ -193,7 +178,6 @@ class RuleClassLoader extends URLClassLoader {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"-D" + SKIP_FINGERPRINT + "=true\"");
 
-      compatibility.put(classLoader, true);
       return true;
     }
 
@@ -202,12 +186,11 @@ class RuleClassLoader extends URLClassLoader {
     final Object fingerprint = fromFileMethod.invoke(null, pluginManifest.getFingerprint());
     if (fingerprint != null) {
       final Method isCompatibleMethod = libraryFingerprintClass.getDeclaredMethod("isCompatible", ClassLoader.class);
-      final Object[] errors = (Object[])isCompatibleMethod.invoke(fingerprint, classLoader);
+      final List<?> errors = (List<?>)isCompatibleMethod.invoke(fingerprint, classLoader);
       if (errors != null) {
         if (logger.isLoggable(Level.FINE))
           logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + "\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
-        compatibility.put(classLoader, false);
         return false;
       }
 
@@ -223,39 +206,8 @@ class RuleClassLoader extends URLClassLoader {
     return true;
   }
 
-  /**
-   * Marks the specified resource name with {@code true}, associated with the
-   * specified {@code ClassLoader}, and returns the previous value of the mark.
-   * <p>
-   * The first invocation of this method for a specified {@code ClassLoader} and
-   * resource name will return {@code false}.
-   * <p>
-   * Subsequent calls to this method for a specified {@code ClassLoader} and
-   * resource name will return {@code true}.
-   *
-   * @param classLoader The {@code ClassLoader} to which the value of the mark
-   *          for the specified resource name is associated.
-   * @param resourceName The name of the resource as the target of the mark.
-   * @return {@code false} if this method was never called with the specific
-   *         {@code ClassLoader} and resource name; {@code true} if this method
-   *         was previously called with the specific {@code ClassLoader} and
-   *         resource name.
-   */
-  boolean markFindResource(final ClassLoader classLoader, final String resourceName) {
-    Set<String> classNames = classLoaderToClassName.get(classLoader);
-    if (classNames == null)
-      classLoaderToClassName.put(classLoader, classNames = new HashSet<>());
-    else if (classNames.contains(resourceName))
-      return true;
-
-    classNames.add(resourceName);
-    return false;
-  }
-
   @Override
-  public void close() throws IOException {
-    super.close();
-    compatibility.clear();
-    classLoaderToClassName.clear();
+  public String toString() {
+    return Arrays.toString(getURLs());
   }
 }

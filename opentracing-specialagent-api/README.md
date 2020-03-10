@@ -28,7 +28,7 @@ This project provides the API for <ins>Instrumentation Plugins</ins> to integrat
 
 ### 2 Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>
 
-The [opentracing-contrib][opentracing-contrib] organization contains 40+ OpenTracing <ins>Instrumentation Plugins</ins> for Java. Only a handful of these plugins are currently [supported by SpecialAgent](#supported-instrumentation-plugins).
+The [opentracing-contrib][opentracing-contrib] organization contains 40+ OpenTracing <ins>Instrumentation Plugins</ins> for Java. Many of these plugins are currently [supported by SpecialAgent](https://github.com/opentracing-contrib/java-specialagent/#61-instrumentation-plugins).
 
 If you are interested in contributing to the <ins>SpecialAgent</ins> project by integrating support for existing plugins in the [opentracing-contrib][opentracing-contrib] organization, or by implementing a new plugin with support for <ins>SpecialAgent</ins>, the following guide is for you:...
 
@@ -50,7 +50,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
    <dependency>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>opentracing-specialagent-api</artifactId>
-     <version>1.3.2</version>
+     <version>1.5.9</version>
      <scope>provided</scope>
    </dependency>
    <dependency>
@@ -80,50 +80,50 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
    An example implementation for an <ins>Instrumentation Rule</ins> that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
 
    ```java
-     public class TargetAgentRule implements AgentRule {
-       public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
-         return Arrays.asList(new AgentBuilder.Default()
-           .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
-           .with(InitializationStrategy.NoOp.INSTANCE)   // Singleton instantiation of loaded type initializers.
-           .with(TypeStrategy.Default.REDEFINE)          // Allows loaded classes to be redefined.
-           .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
-                                                         // the class name is expressed in string form, as opposed
-                                                         // to is(com.example.TargetBuilder.class), or
-                                                         // named(com.example.TargetBuilder.class.getName()).
-                                                         // Directly referencing the class will cause the JVM to
-                                                         // attempt to load the class when the intercept rule is
-                                                         // being defined. Such an operation may fail, because the
-                                                         // class may not be present in the class loader from where
-                                                         // the intercept rule is being defined.
-           .transform(new Transformer() {
-             @Override
-             public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-               return builder.visit(Advice
-                 .to(TargetAgentRule.class)            // A class literal reference to this class.
-                 .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
-                   .and(takesArguments(String.class)))); // Additional specification for the method intercept.
-             }}));
-         }
-
-         // The @Advice method that defines the intercept callback. It is important this method does not require any
-         // classes of the 3rd-party library to be loaded, because the classes may not be present in the class loader
-         // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
-         // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
-         @Advice.OnMethodExit
-         public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-           if (AgentRuleUtil.isEnabled())              // Prevents the SpecialAgent from instrumenting the tracer itself.
-             returned = TargetAgentIntercept.exit(returned);
-         }
+   public class TargetAgentRule implements AgentRule {
+     public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
+       return Arrays.asList(new AgentBuilder.Default()
+         .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
+         .with(InitializationStrategy.NoOp.INSTANCE)   // Singleton instantiation of loaded type initializers.
+         .with(TypeStrategy.Default.REDEFINE)          // Allows loaded classes to be redefined.
+         .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
+                                                       // the class name is expressed in string form, as opposed
+                                                       // to is(com.example.TargetBuilder.class), or
+                                                       // named(com.example.TargetBuilder.class.getName()).
+                                                       // Directly referencing the class will cause the JVM to
+                                                       // attempt to load the class when the intercept rule is
+                                                       // being defined. Such an operation may fail, because the
+                                                       // class may not be present in the class loader from where
+                                                       // the intercept rule is being defined.
+         .transform(new Transformer() {
+           @Override
+           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+             return builder.visit(Advice
+               .to(TargetAgentRule.class)              // A class literal reference to this class.
+               .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
+                 .and(takesArguments(String.class)))); // Additional specification for the method intercept.
+           }}));
        }
 
-       // This class can reference 3rd-party library classes, because this class will only be loaded at intercept time,
-       // where the target object's class loader is guaranteed to have the 3rd-party classes either loaded or on the
-       // class path.
-       public class TargetAgentIntercept {
-         public static Builder exit(final Object returned) {
-           // The OpenTracing instrumentation logic goes here
-         }
-       }
+     // The @Advice method that defines the intercept callback. It is important this method does not require any
+     // classes of the 3rd-party library to be loaded, because the classes may not be present in the class loader
+     // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
+     // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
+     @Advice.OnMethodExit
+     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
+       if (AgentRuleUtil.isEnabled())                  // Prevents the SpecialAgent from instrumenting the tracer itself.
+         returned = TargetAgentIntercept.exit(returned);
+     }
+   }
+
+   // This class can reference 3rd-party library classes, because this class will only be loaded at intercept time,
+   // where the target object's class loader is guaranteed to have the 3rd-party classes either loaded or on the
+   // class path.
+   public class TargetAgentIntercept {
+     public static Builder exit(final Object returned) {
+       // The OpenTracing instrumentation logic goes here
+     }
+   }
    ```
 
 1. **Create a `otarules.mf` file**
@@ -142,7 +142,7 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
 
 1. **Implement a JUnit test that uses `AgentRunner`**
 
-   Please refer to the [Test Usage][test-usage] section in the <ins>SpecialAgent</ins>.
+   Please refer to the [`AgentRunner` Usage](#5-agentrunner-usage) section in the <ins>SpecialAgent</ins>.
 
 ## 5 `AgentRunner` Usage
 
@@ -158,7 +158,7 @@ The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> mo
 <dependency>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>opentracing-specialagent</artifactId>
-  <version>1.3.2</version>
+  <version>1.5.9</version>
   <type>test-jar</type>
   <scope>test</scope>
 </dependency>
@@ -215,6 +215,7 @@ The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotatio
 1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>**Default:** `WARNING`.
 1. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>**Default:** `{ERROR}`.
 1. `disable`<br>Names of plugins to disable during execution.<br>**Default:** `{}`.
+1. `properties`<br>System properties to be set in the test runtime.<br>Specification: `{"NAME_1=VALUE_1", "NAME_2=VALUE_2", ..., "NAME_N=VALUE_N"}`.<br>**Default:** `{}`.
 1. `verbose`<br>Sets verbose mode for the plugin being tested.<br>**Default:** `false`.
 1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>**Default:** `true`.
 
@@ -234,7 +235,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
         <artifactId>agentrule-maven-plugin</artifactId>
-        <version>1.3.2</version>
+        <version>1.5.9</version>
         <executions>
           <execution>
             <goals>
@@ -248,11 +249,24 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
         </executions>
       </plugin>
       ```
-      The `<name>` property is specifies the name of the plugin. This name will be used by users to configure the plugin.
+      The `<name>` property specifies the name of the plugin. This name will be used by users to configure the plugin. If the `<name>` property is not specified, the plugin's `artifactId` will be used as the plugin's name.
+1. Each plugin can declare a priority for order when plugins are loaded by the SpecialAgent. To declare a priority, the plugin's `pom.xml` must specify the following:
+   ```xml
+   <project>
+    ...
+    <properties>
+      <sa.rule.priority>VALUE</sa.rule.priority>
+    </properties>
+    ...
+   </project>
+   ```
+   The value of `sa.rule.priority` can be between `0` and `2147483647`. Plugins with the highest `sa.rule.priority` value are loaded last (i.e. the order for loading of plugins is as per inverse `sa.rule.priority`).
+
+   If the `sa.rule.priority` property is missing, a priority of `0` is used as default.
 
 #### 5.1.2 Testing
 
-The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [Test Usage](#test-usage) for instructions.
+The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [`AgentRunner` Usage](#5-agentrunner-usage) for instructions.
 
 #### 5.1.3 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
 
@@ -263,6 +277,8 @@ The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the
 The `-Dsa.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
 
 The `-Dsa.log.events` system property can be used to set the re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, the `ERROR` event is logged (only when run with `AgentRunner`).
+
+The `-Dsa.log.file` system property can be used to set the logging output file for <ins>SpecialAgent</ins>.
 
 ## 7 Contributing
 
@@ -275,8 +291,7 @@ Please make sure to update tests as appropriate.
 This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
 [bytebuddy]: http://bytebuddy.net/
-[mongodriver-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-mongo-driver/pom.xml#L37-L44
-[okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/specialagent-okhttp/pom.xml
+[mongodriver-pom]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rules/mongo-driver/pom.xml#L37-L44
+[okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/okhttp/pom.xml
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml
-[test-usage]: https://github.com/opentracing-contrib/java-specialagent/#test-usage

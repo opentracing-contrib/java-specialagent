@@ -18,13 +18,77 @@ package io.opentracing.contrib.specialagent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 public final class MavenUtil {
+  public static DefaultArtifact clone(final Artifact artifact) {
+    final DefaultArtifact clone = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getScope(), artifact.getType(), artifact.getClassifier(), artifact.getArtifactHandler());
+    clone.setAvailableVersions(artifact.getAvailableVersions());
+    clone.setBaseVersion(artifact.getBaseVersion());
+    clone.setDependencyFilter(artifact.getDependencyFilter());
+    clone.setDependencyTrail(artifact.getDependencyTrail());
+    clone.setDownloadUrl(artifact.getDownloadUrl());
+    clone.setFile(artifact.getFile());
+    clone.setOptional(artifact.isOptional());
+    clone.setRelease(artifact.isRelease());
+    clone.setRepository(artifact.getRepository());
+    clone.setResolved(artifact.isResolved());
+    clone.setVersionRange(artifact.getVersionRange());
+    return clone;
+  }
+
+  public static Dependency newDependency(final String groupId, final String artifactId, final String version) {
+    final Dependency dependency = new Dependency();
+    dependency.setGroupId(groupId);
+    dependency.setArtifactId(artifactId);
+    dependency.setVersion(version);
+    return dependency;
+  }
+
+  /**
+   * Returns the filesystem path of {@code artifact} located in
+   * {@code localRepository}.
+   *
+   * @param localRepository The local repository reference.
+   * @param artifact The artifact.
+   * @return The filesystem path of {@code dependency} located in
+   *         {@code localRepository}.
+   * @throws NullPointerException If {@code localRepository} or {@code artifact}
+   *           is null.
+   */
+  public static URL getPathOf(final ArtifactRepository localRepository, final Artifact artifact) {
+    final StringBuilder builder = new StringBuilder();
+    builder.append(localRepository.getBasedir());
+    builder.append(File.separatorChar);
+    builder.append(artifact.getGroupId().replace('.', File.separatorChar));
+    builder.append(File.separatorChar);
+    builder.append(artifact.getArtifactId());
+    builder.append(File.separatorChar);
+    builder.append(artifact.getVersion());
+    builder.append(File.separatorChar);
+    builder.append(artifact.getArtifactId());
+    builder.append('-').append(artifact.getVersion());
+    if (artifact.getClassifier() != null)
+      builder.append('-').append(artifact.getClassifier());
+
+    try {
+      return new URL("file", "", builder.append(".jar").toString());
+    }
+    catch (final MalformedURLException e) {
+      throw new UnsupportedOperationException(e);
+    }
+  }
+
   private static String getArtifactFile(final File dir) {
     try {
       final MavenXpp3Reader reader = new MavenXpp3Reader();

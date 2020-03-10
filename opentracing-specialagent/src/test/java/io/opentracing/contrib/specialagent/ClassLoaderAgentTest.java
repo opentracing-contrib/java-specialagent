@@ -69,19 +69,19 @@ public abstract class ClassLoaderAgentTest {
 
   @Test
   public void testAgentFindResource() {
-    assertNotNull(SpecialAgent.findResource(null, Span.class.getName().replace('.', '/').concat(".class")));
+    assertNotNull(SpecialAgent.findResource(null, AssembleUtil.classNameToResource(Span.class)));
   }
 
   @Test
   public void testClassLoaderFindResource() throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
-      assertNotNull(classLoader.findResource(Span.class.getName().replace('.', '/').concat(".class")));
+      assertNotNull(classLoader.findResource(AssembleUtil.classNameToResource(Span.class)));
     }
   }
 
   @Test
   public void testAgentFindResources() throws IOException {
-    final Enumeration<URL> resources = SpecialAgent.findResources(null, Tracer.class.getName().replace('.', '/').concat(".class"));
+    final Enumeration<URL> resources = SpecialAgent.findResources(null, AssembleUtil.classNameToResource(Tracer.class));
     assertNotNull(resources);
     assertTrue(resources.hasMoreElements());
   }
@@ -89,7 +89,7 @@ public abstract class ClassLoaderAgentTest {
   @Test
   public void testClassLoaderFindResources() throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
-      final Enumeration<URL> resources = classLoader.findResources(Tracer.class.getName().replace('.', '/').concat(".class"));
+      final Enumeration<URL> resources = classLoader.findResources(AssembleUtil.classNameToResource(Tracer.class));
       assertNotNull(resources);
       assertTrue(resources.hasMoreElements());
     }

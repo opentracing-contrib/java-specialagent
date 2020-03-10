@@ -15,6 +15,8 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.util.Objects;
+
 /**
  * A {@link Fingerprint} that represents the fingerprint of a {@code Field}.
  *
@@ -29,11 +31,11 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
    * Creates a new {@code FieldFingerprint} for the specified name and type.
    *
    * @param name The name of the field.
-   * @param type THe class name of the field's type.
+   * @param type The class name of the field's type.
    */
   FieldFingerprint(final String name, final String type) {
     super(name);
-    this.type = type;
+    this.type = Objects.requireNonNull(type);
   }
 
   @Override
@@ -49,7 +51,15 @@ class FieldFingerprint extends NamedFingerprint<FieldFingerprint> {
   }
 
   @Override
+  public int hashCode() {
+    int hashCode = 0;
+    hashCode = hashCode * 37 + getName().hashCode();
+    hashCode = hashCode * 37 + type.hashCode();
+    return hashCode;
+  }
+
+  @Override
   public String toString() {
-    return (type != null ? type : "java.lang.Object") + " " + getName();
+    return getName() + ":" + type;
   }
 }

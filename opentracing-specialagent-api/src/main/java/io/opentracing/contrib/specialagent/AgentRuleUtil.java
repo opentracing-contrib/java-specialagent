@@ -15,7 +15,16 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
+import net.bytebuddy.description.method.MethodDescription.AbstractBase;
+import net.bytebuddy.description.type.TypeDefinition;
 
 /**
  * Utility functions for subclasses of {@link AgentRule}.
@@ -23,7 +32,7 @@ import java.lang.reflect.Array;
  * @author Seva Safris
  */
 public final class AgentRuleUtil {
-  static ClassLoader tracerClassLoader;
+  public static ClassLoader tracerClassLoader;
 
   /**
    * Returns the name of the class of the specified object suffixed with
@@ -240,6 +249,112 @@ public final class AgentRuleUtil {
     }
 
     return false;
+  }
+
+  /**
+   * Tests the specified {@link TypeDefinition typeDefinition} whether it or
+   * its superclasses define a method by the provided {@code methodName}.
+   *
+   * @param typeDefinition The {@link TypeDefinition}.
+   * @param methodName The method name.
+   * @return {@code true} if the specified {@link TypeDefinition
+   *         typeDefinition} or its superclasses define a method by the
+   *         provided {@code methodName}, otherwise {@code false}.
+   */
+  public static boolean hasMethodNamed(TypeDefinition typeDefinition, final String methodName) {
+    do {
+      for (final Object method : typeDefinition.getDeclaredMethods()) {
+        if (methodName.equals(((AbstractBase)method).getActualName())) {
+          return true;
+        }
+      }
+    }
+    while (typeDefinition.getSuperClass() != null && !"java.lang.Object".equals((typeDefinition = typeDefinition.getSuperClass()).getActualName()));
+    return false;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T>T getFieldInBootstrapClass(final Class<?> cls, final String fieldName) {
+    try {
+      return (T)BootProxyClassLoader.INSTANCE.loadClass(cls.getName()).getField(fieldName).get(null);
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+      throw new ExceptionInInitializerError(e);
+    }
+  }
+
+  /**
+   * Tests whether the specified execution {@code callStack} stems from a class
+   * belonging to the provided {@link ClassLoader classLoader}.
+   *
+   * @param callStack The call stack, as provided by
+   *          {@link SecurityManager#getClassContext}.
+   * @param classLoader The {@link ClassLoader}.
+   * @return {@code true} if the specified execution {@code callStack} stems
+   *         from a class belonging to the provided {@link ClassLoader
+   *         classLoader}, otherwise {@code false}.
+   */
+  public static boolean isFromClassLoader(final Class<?>[] callStack, final ClassLoader classLoader) {
+    ClassLoader parent;
+    for (final Class<?> cls : callStack) {
+      parent = cls.getClassLoader();
+      do {
+        if (parent == classLoader)
+          return true;
+
+        if (parent == null)
+          break;
+
+        parent = parent.getParent();
+      }
+      while (true);
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns an array of {@code URL} objects representing each path entry in the
+   * specified {@code classpath}.
+   *
+   * @param classpath The classpath which to convert to an array of {@code URL}
+   *          objects.
+   * @return An array of {@code URL} objects representing each path entry in the
+   *         specified {@code classpath}.
+   */
+  public static URL[] classPathToURLs(final String classpath) {
+    if (classpath == null)
+      return null;
+
+    try {
+      final String[] paths = classpath.split(File.pathSeparator);
+      final URL[] files = new URL[paths.length];
+      for (int i = 0; i < paths.length; ++i)
+        files[i] = new URL("file", "", paths[i].endsWith(".jar") || paths[i].endsWith("/") ? paths[i] : paths[i] + "/");
+
+      return files;
+    }
+    catch (final MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * Sets {@link Tags#ERROR} on the specified {@link Span span}, and logs the
+   * provided {@link Throwable} if not null.
+   *
+   * @param span The {@link Span} to which {@link Tags#ERROR} is to be set.
+   * @param t The {@link Throwable} is to be logged in the specified {@link Span span}, which can be null.
+   * @throws NullPointerException If {@code span} is null.
+   */
+  public static void setErrorTag(final Span span, final Throwable t) {
+    span.setTag(Tags.ERROR, Boolean.TRUE);
+    if (t != null) {
+      final HashMap<String,Object> errorLogs = new HashMap<>(2);
+      errorLogs.put("event", Tags.ERROR.getKey());
+      errorLogs.put("error.object", t);
+      span.log(errorLogs);
+    }
   }
 
   private AgentRuleUtil() {

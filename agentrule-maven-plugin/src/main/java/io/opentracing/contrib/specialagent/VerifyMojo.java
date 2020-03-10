@@ -45,6 +45,8 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 @Mojo(name = "verify", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "verify")
 public final class VerifyMojo extends AbstractMojo {
+  private static final boolean ignoreMissingTestManifest = AssembleUtil.isSystemProperty("ignoreMissingTestManifest");
+
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
   private MavenProject project;
 
@@ -79,7 +81,7 @@ public final class VerifyMojo extends AbstractMojo {
         boolean hasFingerprintBin = false;
         boolean hasDependenciesTgf = false;
         boolean hasTestManifest = false;
-        String name = null;
+        boolean hasPluginName = false;
         try (final JarFile jarFile = new JarFile(file)) {
           final Enumeration<JarEntry> entries = jarFile.entries();
           while (entries.hasMoreElements()) {
@@ -92,8 +94,8 @@ public final class VerifyMojo extends AbstractMojo {
               hasDependenciesTgf = true;
             else if (UtilConstants.META_INF_TEST_MANIFEST.equals(entry))
               hasTestManifest = true;
-            else if (entry.startsWith("sa.plugin.name."))
-              name = entry.substring(15);
+            else if (entry.startsWith("sa.rule.name."))
+              hasPluginName = true;
           }
         }
 
@@ -111,11 +113,16 @@ public final class VerifyMojo extends AbstractMojo {
         if (!hasDependenciesTgf)
           throw new MojoExecutionException(file.getName() + " does not have dependencies.tgf");
 
-        if (!hasTestManifest)
-          throw new MojoExecutionException(file.getName() + " does not have AgentRunner tests");
+        if (!hasTestManifest) {
+          final String message = file.getName() + " does not have AgentRunner tests";
+          if (ignoreMissingTestManifest)
+            getLog().warn(message);
+          else
+            throw new MojoExecutionException(message);
+        }
 
-        if (name == null)
-          throw new MojoExecutionException(file.getName() + " does not have sa.plugin.name.<name>");
+        if (!hasPluginName)
+          throw new MojoExecutionException(file.getName() + " does not have Plugin Name file");
       }
     }
     catch (final IOException | XmlPullParserException e) {

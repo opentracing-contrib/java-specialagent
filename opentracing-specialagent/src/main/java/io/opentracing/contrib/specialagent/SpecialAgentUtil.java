@@ -39,11 +39,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-
-import io.opentracing.contrib.specialagent.Manager.Event;
 
 /**
  * Utility functions for the SpecialAgent.
@@ -51,7 +47,7 @@ import io.opentracing.contrib.specialagent.Manager.Event;
  * @author Seva Safris
  */
 public final class SpecialAgentUtil {
-  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class.getName());
+//  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
 
   static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();
@@ -86,7 +82,7 @@ public final class SpecialAgentUtil {
     return new JarFile(file);
   }
 
-  static String getInputArguments() {
+  static StringBuilder getInputArguments() {
     final StringBuilder builder = new StringBuilder();
     final Iterator<String> iterator = ManagementFactory.getRuntimeMXBean().getInputArguments().iterator();
     for (int i = 0; iterator.hasNext(); ++i) {
@@ -96,18 +92,30 @@ public final class SpecialAgentUtil {
       builder.append(iterator.next());
     }
 
-    return builder.toString();
+    return builder;
+  }
+
+  private static URL getJavaAgentJar(final String arg) throws MalformedURLException {
+    final int argsIndex = arg.indexOf(".jar=");
+    return new URL("file", null, argsIndex == -1 ? arg : arg.substring(0, argsIndex + 4));
   }
 
   private static URL getLocation(final Class<?> cls) {
     final CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+//    if (logger.isLoggable(Level.FINEST))
+//      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [CodeSource] -> " + (codeSource == null ? null : codeSource.getLocation()));
+
     if (codeSource != null)
       return codeSource.getLocation();
 
     for (final String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
       if (arg.startsWith("-javaagent:")) {
         try {
-          return new URL("file", null, arg.substring(11));
+          final URL location = getJavaAgentJar(arg.substring(11));
+//          if (logger.isLoggable(Level.FINEST))
+//            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [MXBean] -> " + location);
+
+          return location;
         }
         catch (final MalformedURLException e) {
           throw new IllegalStateException(e);
@@ -119,12 +127,16 @@ public final class SpecialAgentUtil {
     if (sunJavaCommand == null)
       return null;
 
-    final String[] parts = sunJavaCommand.split("\\s+-");
-    for (int i = 0; i < parts.length; ++i) {
-      final String part = parts[i];
-      if (part.startsWith("javaagent:")) {
+    final String[] args = sunJavaCommand.split("\\s+-");
+    for (int i = 0; i < args.length; ++i) {
+      final String arg = args[i];
+      if (arg.startsWith("javaagent:")) {
         try {
-          return new URL("file", null, part.substring(10));
+          final URL location = getJavaAgentJar(arg.substring(10));
+//          if (logger.isLoggable(Level.FINEST))
+//            logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getLocation(" + cls.getName() + "): [sun.java.command] -> " + location);
+
+          return location;
         }
         catch (final MalformedURLException e) {
           throw new IllegalStateException(e);
@@ -136,6 +148,9 @@ public final class SpecialAgentUtil {
   }
 
   private static Manifest getManifest(final URL location) throws IOException {
+//    if (logger.isLoggable(Level.FINEST))
+//      logger.finest(SpecialAgentUtil.class.getSimpleName() + "#getManifest(\"" + location + "\")");
+
     try (final JarInputStream in = new JarInputStream(location.openStream())) {
       return in.getManifest();
     }
@@ -163,13 +178,14 @@ public final class SpecialAgentUtil {
     try {
       final URL location = getLocation(SpecialAgent.class);
       if (location == null) {
-        logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+//        if (logger.isLoggable(Level.FINE))
+//          logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
       }
       else {
         final String bootClassPathManifestEntry = getBootClassPathManifestEntry(location);
         if (bootClassPathManifestEntry == null) {
-          if (logger.isLoggable(Level.FINE))
-            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
+//          if (logger.isLoggable(Level.FINE))
+//            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
         }
         else {
           final String jarName = getName(location.getPath());
@@ -179,7 +195,7 @@ public final class SpecialAgentUtil {
       }
     }
     catch (final IOException e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+//      logger.log(Level.WARNING, e.getMessage(), e);
     }
   }
 
@@ -237,13 +253,13 @@ public final class SpecialAgentUtil {
   }
 
   /**
-   * Returns an array of {@code URL} objects representing each path entry in the
-   * specified {@code classpath}.
+   * Returns an array of {@link File} objects representing each path entry in
+   * the specified {@code classpath}.
    *
-   * @param classpath The classpath which to convert to an array of {@code URL}
+   * @param classpath The classpath which to convert to an array of {@link File}
    *          objects.
-   * @return An array of {@code URL} objects representing each path entry in the
-   *         specified {@code classpath}.
+   * @return An array of {@link File} objects representing each path entry in
+   *         the specified {@code classpath}.
    */
   public static File[] classPathToFiles(final String classpath) {
     if (classpath == null)
@@ -252,7 +268,7 @@ public final class SpecialAgentUtil {
     final String[] paths = classpath.split(File.pathSeparator);
     final File[] files = new File[paths.length];
     for (int i = 0; i < paths.length; ++i)
-      files[i] = new File(paths[i]);
+      files[i] = new File(paths[i]).getAbsoluteFile();
 
     return files;
   }
@@ -315,11 +331,16 @@ public final class SpecialAgentUtil {
         if (!(connection instanceof JarURLConnection))
           continue;
 
-        if (logger.isLoggable(Level.FINEST))
-          logger.finest("SpecialAgent Rule Path: " + resource);
+//        if (logger.isLoggable(Level.FINEST))
+//          logger.finest("SpecialAgent Rule Path: " + resource);
 
         if (outDir == null)
           outDir = destDir.get();
+
+        if (outDir == null) {
+//          logger.severe("Unable to continue with null output directory");
+          return;
+        }
 
         final JarURLConnection jarURLConnection = (JarURLConnection)connection;
         jarURLConnection.setUseCaches(false);
@@ -349,24 +370,39 @@ public final class SpecialAgentUtil {
       }
       while (resources.hasMoreElements());
 
-      if (outDir != null) {
-        final File targetDir = outDir;
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-          @Override
-          public void run() {
-            AssembleUtil.recurseDir(targetDir, new Predicate<File>() {
-              @Override
-              public boolean test(final File t) {
-                return t.delete();
-              }
-            });
-          }
-        });
-      }
+      if (outDir != null)
+        deleteOnShutdown(outDir);
     }
     catch (final IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static Set<File> deleteDirs;
+
+  private static final Predicate<File> deletePredicate = new Predicate<File>() {
+    @Override
+    public boolean test(final File t) {
+      return t.delete();
+    }
+  };
+
+  private static class ShutdownHook extends Thread {
+    @Override
+    public void run() {
+      for (final File deleteDir : deleteDirs) {
+        AssembleUtil.recurseDir(deleteDir, deletePredicate);
+      }
+    }
+  }
+
+  private static void deleteOnShutdown(final File dir) {
+    if (deleteDirs == null) {
+      deleteDirs = new HashSet<>();
+      Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+    }
+
+    deleteDirs.add(dir);
   }
 
   /**
@@ -410,15 +446,15 @@ public final class SpecialAgentUtil {
     return names;
   }
 
-  private static final Event[] DEFAULT_EVENTS = new Event[5];
+  private static final Manager.Event[] DEFAULT_EVENTS = new Manager.Event[5];
 
-  static Event[] digestEventsProperty(final String eventsProperty) {
+  static Manager.Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)
       return DEFAULT_EVENTS;
 
     final String[] parts = eventsProperty.split(",");
     Arrays.sort(parts);
-    final Event[] events = Event.values();
+    final Manager.Event[] events = Manager.Event.values();
     for (int i = 0, j = 0; i < events.length;) {
       final int comparison = j < parts.length ? events[i].name().compareTo(parts[j]) : -1;
       if (comparison < 0) {
@@ -435,6 +471,32 @@ public final class SpecialAgentUtil {
     }
 
     return events;
+  }
+
+  public static String convertToNameRegex(String pattern) {
+    if (pattern.length() == 0)
+      throw new IllegalArgumentException("Empty pattern");
+
+    final char lastCh = pattern.charAt(pattern.length() - 1);
+    if (lastCh == '*')
+      pattern = pattern.substring(0, pattern.length() - 1);
+
+    final String regex = "^" + AssembleUtil.convertToRegex(pattern).replace(".*", "[^:]*");
+    boolean hasDigit = false;
+    for (int i = regex.length() - 2; i >= 0; --i) {
+      if (regex.charAt(i) == ':') {
+        hasDigit = Character.isDigit(regex.charAt(i + 1));
+        break;
+      }
+    }
+
+    if (lastCh == '?')
+      return regex;
+
+    if (hasDigit || regex.length() == 1 || regex.endsWith(":"))
+      return regex + ".*";
+
+    return "(" + regex + "$|" + regex + ":.*)";
   }
 
   private SpecialAgentUtil() {

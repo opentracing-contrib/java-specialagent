@@ -73,4 +73,47 @@ public class SpecialAgentUtilTest {
     assertEquals(name, SpecialAgentUtil.getName("." + s + name));
     assertEquals(name, SpecialAgentUtil.getName("foo" + s + "bar" + s + name));
   }
+
+  private static void testRegexMatch(final String pluginName, final String expectedRegex, final String ... tests) {
+    assertEquals(expectedRegex, SpecialAgentUtil.convertToNameRegex(pluginName));
+    for (final String test : tests)
+      assertTrue(test.matches(expectedRegex));
+  }
+
+  @Test
+  public void testConvertToNameRegex() {
+    try {
+      SpecialAgentUtil.convertToNameRegex(null);
+      fail("Expected NullPointerException");
+    }
+    catch (final NullPointerException e) {
+    }
+
+    try {
+      SpecialAgentUtil.convertToNameRegex("");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
+
+    testRegexMatch("*", "^.*", "spring:webmvc",
+      "okhttp", "lettuce", "jdbc", "spring:boot", "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:*", "^spring:.*",
+      "spring:boot", "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:*:*", "^spring:[^:]*:.*",
+      "spring:web:3", "spring:web:4", "spring:web:5", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:boot", "(^spring:boot$|^spring:boot:.*)",
+      "spring:boot");
+    testRegexMatch("spring:webmvc", "(^spring:webmvc$|^spring:webmvc:.*)",
+      "spring:webmvc", "spring:webmvc:3", "spring:webmvc:4", "spring:webmvc:5");
+    testRegexMatch("spring:web", "(^spring:web$|^spring:web:.*)",
+      "spring:web:3", "spring:web:4", "spring:web:5");
+
+    testRegexMatch("lettuce:5.?", "^lettuce:5\\..",
+      "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
+    testRegexMatch("lettuce:5", "^lettuce:5.*",
+      "lettuce:5", "lettuce:5.1", "lettuce:5.2");
+    testRegexMatch("lettuce", "(^lettuce$|^lettuce:.*)",
+      "lettuce:5", "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
+  }
 }

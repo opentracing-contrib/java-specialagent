@@ -15,10 +15,6 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.lang.reflect.Field;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.ProxyMockTracer;
@@ -32,9 +28,9 @@ import io.opentracing.util.GlobalTracer;
  * @author Seva Safris
  */
 public class AgentRunnerUtil {
-  private static final Logger logger = Logger.getLogger(AgentRunnerUtil.class.getName());
-  private static Tracer tracer = null;
+  private static final Logger logger = Logger.getLogger(AgentRunnerUtil.class);
   private static final Object tracerMutex = new Object();
+  private static volatile Tracer tracer;
 
   /**
    * Returns the OpenTracing {@link Tracer} to be used for the duration of the
@@ -59,25 +55,18 @@ public class AgentRunnerUtil {
       final Tracer deferredTracer = SpecialAgent.getDeferredTracer();
       final MockTracer tracer;
       if (GlobalTracer.isRegistered()) {
-        try {
-          final Field field = GlobalTracer.class.getDeclaredField("tracer");
-          field.setAccessible(true);
-          final Tracer registered = (Tracer)field.get(null);
-          if (deferredTracer == null) {
-            tracer = registered instanceof MockTracer ? (MockTracer)registered : new ProxyMockTracer(registered);
-          }
-          else if (registered instanceof MockTracer) {
-            tracer = new ProxyMockTracer((MockTracer)registered, deferredTracer);
-          }
-          else {
-            throw new IllegalStateException("There is already a registered global Tracer.");
-          }
+        final Tracer registered = TestUtil.getGlobalTracer();
+        if (deferredTracer == null) {
+          tracer = registered instanceof MockTracer ? (MockTracer)registered : new ProxyMockTracer(registered);
+        }
+        else if (registered instanceof MockTracer) {
+          tracer = new ProxyMockTracer((MockTracer)registered, deferredTracer);
+        }
+        else {
+          throw new IllegalStateException("There is already a registered global Tracer.");
+        }
 
-          field.set(null, tracer);
-        }
-        catch (final IllegalAccessException | NoSuchFieldException e) {
-          throw new IllegalStateException(e);
-        }
+        TestUtil.setGlobalTracer(tracer);
       }
       else {
         tracer = deferredTracer != null ? new ProxyMockTracer(deferredTracer) : new MockTracer();
@@ -88,9 +77,9 @@ public class AgentRunnerUtil {
       if (logger.isLoggable(Level.FINER)) {
         logger.finer("Registering tracer for AgentRunner: " + tracer);
         logger.finer("  Tracer ClassLoader: " + tracer.getClass().getClassLoader());
-        logger.finer("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(tracer.getClass().getName().replace('.', '/').concat(".class")));
+        logger.finer("  Tracer Location: " + ClassLoader.getSystemClassLoader().getResource(AssembleUtil.classNameToResource(tracer.getClass())));
         logger.finer("  GlobalTracer ClassLoader: " + GlobalTracer.class.getClassLoader());
-        logger.finer("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(GlobalTracer.class.getName().replace('.', '/').concat(".class")));
+        logger.finer("  GlobalTracer Location: " + ClassLoader.getSystemClassLoader().getResource(AssembleUtil.classNameToResource(GlobalTracer.class)));
       }
 
       return AgentRunnerUtil.tracer = tracer;

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -61,26 +62,39 @@ public abstract class Manager {
   }
 
   /**
-   * Execute the {@code premain} instructions.
+   * Scans the rules from {@code agentRules}, prepares the provided arguments to
+   * be used in a subsequent calls to
+   * {@link #loadRules(Instrumentation,Map,Event[])}, and returns a map of
+   * {@link AgentRule} that are identified to be deferrers via
+   * {@link AgentRule#isDeferrable(Instrumentation)}.
    *
-   * @param agentArgs The agent arguments.
-   * @param instrumentation The {@link Instrumentation}.
-   * @throws Exception If an error has occurred.
+   * @param inst The {@code Instrumentation} instance.
+   * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
+   *          entries to be filled with rules to be later loaded in
+   *          {@link #loadRules(Instrumentation,Map,Event[])}.
+   * @param allRulesClassLoader The {@code ClassLoader} having a classpath with
+   *          all rule JARs.
+   * @param ruleJarToIndex A {@link Map} of rule JAR path to its index in the
+   *          {@code allRulesClassLoader} classpath to be filled by this method.
+   * @param classNameToName A {@link Map} of class names to plugin names to be
+   *          filled by this method.
+   * @param pluginManifestDirectory Map between a JAR file and the associated
+   *          {@link PluginManifest}.
+   * @return A {@link LinkedHashMap} of {@link AgentRule}-to-index entries with
+   *         deferrers to be loaded in
+   *         {@link #loadRules(Instrumentation,Map,Event[])}.
+   * @throws IOException If an I/O error has occurred.
    */
-  abstract void premain(String agentArgs, Instrumentation instrumentation) throws Exception;
+  abstract LinkedHashMap<AgentRule,Integer> scanRules(Instrumentation inst, LinkedHashMap<AgentRule,Integer> agentRules, ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in
    * the specified arguments.
    *
-   * @param allRulesClassLoader The {@code ClassLoader} having a classpath with
-   *          all rule JARs.
-   * @param ruleJarToIndex A {@code Map} of rule JAR path to its index in the
-   *          {@code allRulesClassLoader} classpath.
+   * @param inst The {@code Instrumentation} instance.
+   * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
+   *          entries filled with rules to be loaded.
    * @param events Manager events to log.
-   * @param fileToPluginManifest Map between a JAR file and the associated
-   *          {@link PluginManifest}.
-   * @throws IOException If an I/O error has occurred.
    */
-  abstract void loadRules(ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Event[] events, Map<File,PluginManifest> fileToPluginManifest) throws IOException;
+  abstract void loadRules(Instrumentation inst, Map<AgentRule,Integer> agentRules, Event[] events);
 }
