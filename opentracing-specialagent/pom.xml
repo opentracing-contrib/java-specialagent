@@ -232,6 +232,12 @@
           <version>${project.version}</version>
           <scope>provided</scope>
         </dependency>
+	<dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>dubbo</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
           <artifactId>lettuce-5.2</artifactId>

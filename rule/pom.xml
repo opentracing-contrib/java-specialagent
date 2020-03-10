@@ -42,6 +42,7 @@
         <module>okhttp</module>
         <module>jdbc</module>
         <module>concurrent</module>
+        <module>dubbo</module>
         <module>mongo-driver</module>
         <module>servlet</module>
         <module>camel</module>
