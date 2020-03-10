@@ -10,7 +10,7 @@ public class MockClient {
         client = new ReferenceConfig<>();
         client.setApplication(new ApplicationConfig("test"));
         client.setInterface(GreeterService.class);
-       // client.setFilter("traceFilter");
+        client.setFilter("traceFilter");
         client.setUrl("dubbo://" + ip + ":" + port + "?scope=remote");
     }
 
