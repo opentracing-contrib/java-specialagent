@@ -21,11 +21,12 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.5.7</version>
+    <version>1.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>dubbo</artifactId>
   <name>SpecialAgent Rule for dubbo</name>
   <properties>
+      <sa.rule.name>dubbo</sa.rule.name>
       <version.dubbo-rpc>2.6.7</version.dubbo-rpc>
       <version.dubbo>2.7.3</version.dubbo>
       <netty.version>4.1.42.Final</netty.version>
