@@ -21,6 +21,7 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.MockSpan.LogEntry;
@@ -53,7 +54,7 @@ public class CXFITest {
   }
 
   private static void checkSpans(int counts) {
-    final Tracer tracer = GlobalTracer.get();
+    final Tracer tracer = TestUtil.getGlobalTracer();
     if (tracer instanceof MockTracer) {
       final MockTracer mockTracer = (MockTracer) tracer;
       final List<MockSpan> spans = mockTracer.finishedSpans();

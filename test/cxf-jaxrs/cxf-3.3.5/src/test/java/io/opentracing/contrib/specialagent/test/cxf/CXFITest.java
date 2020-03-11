@@ -21,11 +21,11 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.MockSpan.LogEntry;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 
 public class CXFITest {
   private static final String BASE_URI = "http://127.0.0.1:48080";
@@ -53,7 +53,7 @@ public class CXFITest {
   }
 
   private static void checkSpans(int counts) {
-    final Tracer tracer = GlobalTracer.get();
+    final Tracer tracer = TestUtil.getGlobalTracer();
     if (tracer instanceof MockTracer) {
       final MockTracer mockTracer = (MockTracer) tracer;
       final List<MockSpan> spans = mockTracer.finishedSpans();
@@ -86,7 +86,6 @@ public class CXFITest {
   }
 
   public static class EchoImpl implements Echo {
-
     @Override
     public String echo(String msg) {
       return msg;
