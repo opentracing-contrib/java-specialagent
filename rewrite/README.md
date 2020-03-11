@@ -20,12 +20,14 @@ Rules contain `input` (required) and `output` (optional) properties.
 
 The `input` property is required, as it defines the rule by which span data is matched. The `input` object contains 3 properties:
 
-* `type`: The type of data to match (`tag`, `log`, or `operationName`).
-* `key`: The `key` of the data (a **string**).
-* `value`: The `value` of the data (a **boolean**, **number**, or **string** -- if a **string**, then the `value` is interpreted as a regular expression).
+1. `type`: The type of data to match (`tag`, `log`, or `operationName`).
+1. `key`: The `key` of the data (a **string**).
+1. `value`: The `value` of the data (a **boolean**, **number**, or **string** -- if a **string**, then the `value` is interpreted as a regular expression).
 
-**Note:** Depending on the `type`, the `key` or `value` may or may not be relevant. See the use-case examples below for further direction.
-**Note:** The `input` property can contain a value with a single `input` object, or an array with multiple `input` objects. If multiple `input` objects are provided, they will be considered with **OR** behavior.
+**Note:**
+
+* Depending on the `type`, the `key` or `value` may or may not be relevant. See the use-case examples below for further direction.
+* The `input` property can contain a value with a single `input` object, or an array with multiple `input` objects. If multiple `input` objects are provided, they will be considered with **OR** relationship.
 
 #### Output (optional)
 
@@ -35,11 +37,13 @@ If `output` is provided, then the matched data will be rewritten.
 
 Like the `input` object, the `output` object follows the same schema:
 
-* `type`: The type of data to which the matched data is to be rewritten (`tag`, `log`, or `operationName`).
-* `key`: The `key` of the data to which the matched data is to be rewritten (a **string**).<br>If `key` is omitted, then the key of the matched data will not be changed.
-* `value`: The `value` of the data (a **boolean**, **number**, or **string** -- if a **string**, then the `value` is interpreted as a regular expression).<br>If `value` is omitted, then the value of the matched data will not be changed.<br>The `value` string may contain back references (i.e. `$1`, `$2`, etc) if the `value` in the `input` defines a regular expression with matching groups.
+1. `type`: The type of data to which the matched data is to be rewritten (`tag`, `log`, or `operationName`).
+1. `key`: The `key` of the data to which the matched data is to be rewritten (a **string**).<br>If `key` is omitted, then the key of the matched data will not be changed.
+1. `value`: The `value` of the data (a **boolean**, **number**, or **string** -- if a **string**, then the `value` is interpreted as a regular expression).<br>If `value` is omitted, then the value of the matched data will not be changed.<br>The `value` string may contain back references (i.e. `$1`, `$2`, etc) if the `value` in the `input` defines a regular expression with matching groups.
 
-**Note:** The `output` property can contain a value with a single `output` object, or an array with multiple `output` objects. If multiple `output` objects are provided, they will be considered with **AND** behavior.
+**Note:**
+
+* The `output` property can contain a value with a single `output` object, or an array with multiple `output` objects. If multiple `output` objects are provided, they will be considered with **AND** relationship.
 
 # Use-Cases
 
