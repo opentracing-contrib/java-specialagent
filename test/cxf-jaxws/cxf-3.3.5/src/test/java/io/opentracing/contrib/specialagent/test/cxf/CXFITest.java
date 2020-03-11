@@ -23,6 +23,8 @@ import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
+import io.opentracing.mock.MockSpan.LogEntry;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class CXFITest {
@@ -55,12 +57,28 @@ public class CXFITest {
     if (tracer instanceof MockTracer) {
       final MockTracer mockTracer = (MockTracer) tracer;
       final List<MockSpan> spans = mockTracer.finishedSpans();
-      if (counts != spans.size()) {
+      int matchSpans = 0;
+      for (final MockSpan span : spans) {
+        printSpan(span);
+        if (span.tags().get(Tags.COMPONENT.getKey()) == null) {
+          matchSpans++;
+        }
+      }
+      if (counts != matchSpans) {
         throw new AssertionError("spans not matched counts");
       }
     }
   }
-  
+
+  private static void printSpan(MockSpan span) {
+    System.out.println("Span: " + span);
+    System.out.println("\tComponent: " + span.tags().get(Tags.COMPONENT.getKey()));
+    System.out.println("\tTags: " + span.tags());
+    System.out.println("\tLogs: ");
+    for (final LogEntry logEntry : span.logEntries())
+      System.out.println("\t" + logEntry.fields());
+  }
+
   @WebService
   public static interface Echo {
     String echo(String msg);
