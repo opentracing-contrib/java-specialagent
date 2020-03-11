@@ -31,14 +31,12 @@ public class SpringWebSocketAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(named("org.springframework.messaging.simp.config.AbstractMessageBrokerConfiguration"))
+      .type(not(isInterface()).and(hasSuperType(named("org.springframework.messaging.support.AbstractMessageChannel"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder
-            .visit(Advice.to(InboundChannel.class).on(named("clientInboundChannel")))
-            .visit(Advice.to(OutboundChannel.class).on(named("clientOutboundChannel")));
-        }}), builder
+          return builder.visit(Advice.to(MessageChannelSend.class).on(named("send").and(takesArguments(2))));
+        }})
       .type(not(isInterface()).and(hasSuperType(named("org.springframework.messaging.simp.stomp.StompSession"))))
       .transform(new Transformer() {
         @Override
@@ -48,19 +46,11 @@ public class SpringWebSocketAgentRule extends AgentRule {
     );
   }
 
-  public static class InboundChannel {
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
+  public static class MessageChannelSend {
+    @Advice.OnMethodEnter
+    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
       if (isEnabled("SpringWebSocketAgentRule", origin))
-        SpringWebSocketAgentIntercept.clientInboundChannel(returned);
-    }
-  }
-
-  public static class OutboundChannel {
-    @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-      if (isEnabled("SpringWebSocketAgentRule", origin))
-        SpringWebSocketAgentIntercept.clientOutboundChannel(returned);
+        SpringWebSocketAgentIntercept.messageChannelSend(thiz);
     }
   }
 
