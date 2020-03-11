@@ -28,7 +28,7 @@ import com.grack.nanojson.JsonObject;
 import com.grack.nanojson.JsonParser;
 import com.grack.nanojson.JsonParserException;
 
-final class RewriteRules implements Cloneable {
+public final class RewriteRules implements Cloneable {
   public static List<RewriteRules> parseRules(final InputStream inputStream) {
     try {
       List<RewriteRules> result = null;
@@ -51,7 +51,7 @@ final class RewriteRules implements Cloneable {
     }
   }
 
-  static RewriteRules parseRules(final JsonArray jsonRules, final String key) {
+  public static RewriteRules parseRules(final JsonArray jsonRules, final String key) {
     final RewriteRules rules = new RewriteRules(AssembleUtil.convertToNameRegex(key));
     final int size = jsonRules.size();
     for (int i = 0; i < size; ++i) {

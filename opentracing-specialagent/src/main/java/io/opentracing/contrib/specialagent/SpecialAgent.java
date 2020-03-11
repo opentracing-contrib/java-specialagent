@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -589,7 +591,7 @@ public class SpecialAgent extends SpecialAgentBase {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Resolving tracer:\n  " + tracerProperty);
 
-      final Tracer tracer;
+      Tracer tracer;
       if ("mock".equals(tracerProperty)) {
         tracer = new MockTracer();
       }
@@ -632,13 +634,14 @@ public class SpecialAgent extends SpecialAgentBase {
         return null;
       }
 
+      tracer = initRewritableTracer(tracer);
       if (!isAgentRunner() && !GlobalTracer.registerIfAbsent(tracer))
         throw new IllegalStateException("There is already a registered global Tracer.");
 
       if (logger.isLoggable(Level.FINE))
         logger.fine("Tracer was resolved and " + (isAgentRunner() ? "deferred to be registered" : "registered") + " with GlobalTracer:\n  " + tracer.getClass().getName() + " from " + (tracer.getClass().getProtectionDomain().getCodeSource() == null ? "null" : tracer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()));
 
-      return initRewritableTracer(tracer);
+      return tracer;
     }
     finally {
       if (logger.isLoggable(Level.FINE))
@@ -646,6 +649,7 @@ public class SpecialAgent extends SpecialAgentBase {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static Tracer initRewritableTracer(final Tracer tracer) throws IOException {
     final String rewriteProperty = System.getProperty(REWRITE_ARG);
     if (rewriteProperty == null)
@@ -655,8 +659,18 @@ public class SpecialAgent extends SpecialAgentBase {
       logger.fine("\n<<<<<<<<<<<<<<<<<<< Loading Rewritable Tracer >>>>>>>>>>>>>>>>>>\n");
 
     try (final InputStream in = new FileInputStream(rewriteProperty)) {
-      final List<RewriteRules> rulesManifest = RewriteRules.parseRules(in);
-      return rulesManifest.isEmpty() ? tracer : new RewritableTracer(tracer, rulesManifest);
+      final Class<?> rewriteRulesClass = Class.forName("io.opentracing.contrib.specialagent.RewriteRules", true, isoClassLoader);
+      final Method parseRulesMethod = rewriteRulesClass.getMethod("parseRules", InputStream.class);
+      final List<?> rules = (List<?>)parseRulesMethod.invoke(null, in);
+      if (rules.isEmpty())
+        return tracer;
+
+      final Class<Tracer> rewritableTracerClass = (Class<Tracer>)Class.forName("io.opentracing.contrib.specialagent.RewritableTracer", true, isoClassLoader);
+      final Constructor<? extends Tracer> constructor = rewritableTracerClass.getConstructor(Tracer.class, List.class);
+      return constructor.newInstance(tracer, rules);
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
     }
     finally {
       if (logger.isLoggable(Level.FINE))

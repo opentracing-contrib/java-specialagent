@@ -52,7 +52,7 @@ public class RewriteRuleTest {
 
   @Test
   public void specificRulesHavePriorityOverGlobalRules() throws IOException {
-    try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("spanRules.json")) {
+    try (final InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("rewrite.json")) {
       final List<RewriteRules> nameToRules = RewriteRules.parseRules(in);
       final MockTracer mockTracer = new MockTracer();
       try (final RewritableTracer tracer = new RewritableTracer(mockTracer, nameToRules)) {

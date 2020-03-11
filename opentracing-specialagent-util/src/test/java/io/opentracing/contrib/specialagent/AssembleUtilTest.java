@@ -280,7 +280,7 @@ public class AssembleUtilTest {
   }
 
   private static void testRegexMatch(final String pluginName, final String expectedRegex, final String ... tests) {
-    assertEquals(expectedRegex, AssembleUtil.convertToNameRegex(pluginName));
+    assertEquals(expectedRegex, AssembleUtil.convertToNameRegex(pluginName).pattern());
     for (final String test : tests)
       assertTrue(test.matches(expectedRegex));
   }

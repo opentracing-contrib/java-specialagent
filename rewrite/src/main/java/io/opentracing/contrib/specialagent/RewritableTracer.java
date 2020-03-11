@@ -15,8 +15,10 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -29,7 +31,7 @@ public class RewritableTracer implements Tracer {
   final Tracer target;
   final List<RewriteRules> rulesManifest;
 
-  RewritableTracer(final Tracer target, final List<RewriteRules> rulesManifest) {
+  public RewritableTracer(final Tracer target, final List<RewriteRules> rulesManifest) {
     this.target = target;
     this.rulesManifest = rulesManifest;
   }
@@ -37,7 +39,7 @@ public class RewritableTracer implements Tracer {
   private static final HashMap<String,RewriteRules> nameToRules = new HashMap<>();
 
   private RewriteRules getRulesForCurrentPlugin() {
-    final String currentPluginName = AgentRule.getCurrentPluginName();
+    final String currentPluginName = Objects.requireNonNull(AgentRule.getCurrentPluginName());
     if (nameToRules.containsKey(currentPluginName))
       return nameToRules.get(currentPluginName);
 

@@ -134,7 +134,12 @@ public abstract class AgentRule {
   }
 
   public static String getCurrentPluginName() {
-    return classNameToName.get(currentAgentRuleClass.get());
+    // FIXME: This is a big performance hit!
+    for (final Map.Entry<String,String> entry : classNameToName.entrySet())
+      if (entry.getKey() == null ? currentAgentRuleClass.get() == null : entry.getKey().endsWith("." + currentAgentRuleClass.get()))
+        return entry.getValue();
+
+    return null;
   }
 
   public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {

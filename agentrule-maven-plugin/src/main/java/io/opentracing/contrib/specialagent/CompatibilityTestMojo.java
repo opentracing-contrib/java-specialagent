@@ -75,6 +75,12 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   @Parameter(defaultValue="${localRepository}", required=true, readonly=true)
   private ArtifactRepository localRepository;
 
+  @Parameter(property="maven.test.skip")
+  private boolean mavenTestSkip = false;
+
+  @Parameter(property="skipTests")
+  private boolean skipTests = false;
+
   @Parameter(property = "failAtEnd")
   private boolean failAtEnd;
 
@@ -275,6 +281,11 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     isRunning = true;
     if ("pom".equalsIgnoreCase(project.getPackaging())) {
       getLog().info("Skipping for \"pom\" module.");
+      return;
+    }
+
+    if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests)) {
+      getLog().info("Tests are skipped (" + (mavenTestSkip ? "maven.test.skip" : "skipTests") + "=true)");
       return;
     }
 
