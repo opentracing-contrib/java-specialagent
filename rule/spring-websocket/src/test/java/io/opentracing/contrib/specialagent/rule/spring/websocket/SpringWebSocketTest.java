@@ -14,15 +14,14 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.websocket;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.TestUtil;
-import java.util.HashMap;
-
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +33,11 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.socket.config.annotation.DelegatingWebSocketMessageBrokerConfiguration;
+import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockTracer;
-import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler;
 
 @RunWith(AgentRunner.class)
 public class SpringWebSocketTest {
@@ -49,8 +49,10 @@ public class SpringWebSocketTest {
   @Test
   public void testInterceptors(final MockTracer tracer) {
     final DelegatingWebSocketMessageBrokerConfiguration configuration = new DelegatingWebSocketMessageBrokerConfiguration();
+
     final AbstractSubscribableChannel inboundChannel = configuration.clientInboundChannel();
     inboundChannel.setBeanName("clientInboundChannel");
+
     final AbstractSubscribableChannel outboundChannel = configuration.clientOutboundChannel();
     outboundChannel.setBeanName("clientOutboundChannel");
 
@@ -60,21 +62,18 @@ public class SpringWebSocketTest {
     configuration.clientInboundChannelExecutor().initialize();
     configuration.clientOutboundChannelExecutor().initialize();
 
-    Map<String, Object> headers = new HashMap<>();
-    headers.put("simpMessageType", SimpMessageType.MESSAGE);
+    final Map<String,Object> headers = Collections.<String,Object>singletonMap("simpMessageType", SimpMessageType.MESSAGE);
     final GenericMessage<String> message = new GenericMessage<>("test", headers);
     outboundChannel.send(message);
     inboundChannel.send(message);
 
     await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(2));
-
     assertEquals(2, tracer.finishedSpans().size());
   }
 
   @Test
   public void testSend(final MockTracer tracer) {
     final StompSession stompSession = new DefaultStompSession(new StompSessionHandlerAdapter() {}, new StompHeaders());
-
     try {
       stompSession.send("endpoint", "Hello");
     }

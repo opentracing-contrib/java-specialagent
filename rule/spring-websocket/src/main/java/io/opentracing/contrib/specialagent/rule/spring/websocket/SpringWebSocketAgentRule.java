@@ -42,8 +42,7 @@ public class SpringWebSocketAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(Advice.to(StompSessionSend.class).on(named("send").and(takesArguments(2).and(takesArgument(0, named("org.springframework.messaging.simp.stomp.StompHeaders"))))));
-        }})
-    );
+        }}));
   }
 
   public static class MessageChannelSend {

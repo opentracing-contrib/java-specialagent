@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.websocket;
 
-
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.AbstractMessageChannel;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -32,18 +31,19 @@ public class SpringWebSocketAgentIntercept {
 
   public static void messageChannelSend(final Object thiz) {
     final AbstractMessageChannel channel = (AbstractMessageChannel)thiz;
-    for (ChannelInterceptor interceptor : channel.getInterceptors()) {
-      if(interceptor instanceof TracingChannelInterceptor)
+    for (final ChannelInterceptor interceptor : channel.getInterceptors())
+      if (interceptor instanceof TracingChannelInterceptor)
         return;
-    }
-    TracingChannelInterceptor tracingChannelInterceptor = null;
-    if(channel.getBeanName().equals("clientOutboundChannel"))
-      tracingChannelInterceptor = new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_CLIENT);
-    else if(channel.getBeanName().equals("clientInboundChannel"))
-      tracingChannelInterceptor = new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_SERVER);
 
-    if(tracingChannelInterceptor != null)
-      channel.addInterceptor(tracingChannelInterceptor);
+    final TracingChannelInterceptor tracingChannelInterceptor;
+    if (channel.getBeanName().equals("clientOutboundChannel"))
+      tracingChannelInterceptor = new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_CLIENT);
+    else if (channel.getBeanName().equals("clientInboundChannel"))
+      tracingChannelInterceptor = new TracingChannelInterceptor(GlobalTracer.get(), Tags.SPAN_KIND_SERVER);
+    else
+      return;
+
+    channel.addInterceptor(tracingChannelInterceptor);
   }
 
   public static void sendEnter(final Object arg) {
