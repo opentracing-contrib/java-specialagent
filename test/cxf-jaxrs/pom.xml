@@ -26,7 +26,7 @@
   <groupId>io.opentracing.contrib.specialagent.test.cxf</groupId>
   <artifactId>cxf-jaxrs</artifactId>
   <packaging>pom</packaging>
-  <name>SpecialAgent Tests for Apache CXF</name>
+  <name>SpecialAgent Tests for Apache CXF JAX-RS</name>
   <modules>
     <module>cxf-3.3.5</module>
   </modules>
