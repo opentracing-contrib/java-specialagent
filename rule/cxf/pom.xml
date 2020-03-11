@@ -30,7 +30,6 @@
     <min.version>3.3.3</min.version>
     <version.cxf>3.3.5</version.cxf>
     <passCompatibility>org.apache.cxf:cxf-core:[${min.version},]</passCompatibility>
-    <passCompatibility>org.apache.cxf:cxf-rt-management:[${min.version},]</passCompatibility>
   </properties>
   <dependencies>
     <!-- https://github.com/apache/cxf/tree/master/integration/tracing/tracing-opentracing -->
@@ -43,9 +42,8 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-management</artifactId>
       <version>${version.cxf}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
     </dependency>
+
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-core</artifactId>
