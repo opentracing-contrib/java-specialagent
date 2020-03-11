@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -52,7 +53,6 @@ import org.apache.maven.project.DefaultDependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
-import org.apache.maven.project.artifact.ProjectArtifactsCache;
 
 @Mojo(name = "test-compatibility", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "test-compatibility")
@@ -145,7 +145,25 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     return builder.toString();
   }
 
+  private void flushProjectArtifactsCache() {
+    try {
+      final Field lifeCycleDependencyResolverField = mojoExecutor.getClass().getDeclaredField("lifeCycleDependencyResolver");
+      lifeCycleDependencyResolverField.setAccessible(true);
+      final Object lifeCycleDependencyResolver = lifeCycleDependencyResolverField.get(mojoExecutor);
+      final Field projectArtifactsCacheField = lifeCycleDependencyResolver.getClass().getDeclaredField("projectArtifactsCache");
+      projectArtifactsCacheField.setAccessible(true);
+      final Object projectArtifactsCache = projectArtifactsCacheField.get(lifeCycleDependencyResolver);
+      final Method flushMethod = projectArtifactsCache.getClass().getDeclaredMethod("flush");
+      flushMethod.invoke(projectArtifactsCache);
+    }
+    catch (final IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void resolveDependencies(final MavenProject project) throws DependencyResolutionException, LifecycleExecutionException {
+    flushProjectArtifactsCache();
+
     final Set<Artifact> dependencyArtifacts = project.getDependencyArtifacts();
     final Map<String,List<MojoExecution>> executions = new LinkedHashMap<>(execution.getForkedExecutions());
     final ExecutionListener executionListener = session.getRequest().getExecutionListener();
@@ -164,13 +182,9 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     projectDependenciesResolver.resolve(newDefaultDependencyResolutionRequest(project));
   }
 
-  @Inject
-  private ProjectArtifactsCache projectArtifactsCache;
-
   private List<String> errors = new ArrayList<>();
 
   private void assertCompatibility(final Dependency[] dependencies, final boolean shouldPass) throws DependencyResolutionException, IOException, LifecycleExecutionException, MojoExecutionException {
-    projectArtifactsCache.flush();
     final Dependency[] rollback = updateArtifactVersion(project.getDependencies(), dependencies);
 
     getLog().info("|-- " + print(dependencies));
