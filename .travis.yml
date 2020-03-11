@@ -58,17 +58,6 @@ jobs:
         eval "$SIGNING_KEY" &> /dev/null &&
         travis_retry mvn -B -Dassemble -P deploy deploy;
       fi'
-
-  - name: "Spring Messaging [openjdk8]"
-    stage: test
-    jdk: openjdk8
-    install: true
-    script: travis_retry bash -c "mvn -B -P test -pl test/spring-messaging -amd integration-test || (mvn -B -P test -pl test/spring-messaging -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
-  - name: "Spring Messaging [openjdk11]"
-    stage: test
-    jdk: openjdk11
-    install: true
-    script: travis_retry bash -c "mvn -B -P test -pl test/spring-messaging -amd integration-test || (mvn -B -P test -pl test/spring-messaging -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "Akka Actor [openjdk8]"
     stage: test
     jdk: openjdk8
@@ -489,6 +478,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/redisson -amd integration-test || (mvn -B -P test -pl test/redisson -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Rewrite [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/rewrite -amd integration-test || (mvn -B -P test -pl test/rewrite -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Rewrite [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/rewrite -amd integration-test || (mvn -B -P test -pl test/rewrite -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "RxJava [openjdk8]"
     stage: test
     jdk: openjdk8
@@ -539,6 +538,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/spring-kafka -amd integration-test || (mvn -B -P test -pl test/spring-kafka -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Spring Messaging [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/spring-messaging -amd integration-test || (mvn -B -P test -pl test/spring-messaging -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Spring Messaging [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/spring-messaging -amd integration-test || (mvn -B -P test -pl test/spring-messaging -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "Spring RabbitMQ [openjdk8]"
     stage: test
     jdk: openjdk8

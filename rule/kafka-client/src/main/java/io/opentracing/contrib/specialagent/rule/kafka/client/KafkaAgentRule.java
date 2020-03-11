@@ -32,11 +32,11 @@ public class KafkaAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
     return Arrays.asList(builder
-      .type(not(isInterface()).and(hasSuperType(named("org.apache.kafka.clients.consumer.Consumer"))))
+      .type(named("org.apache.kafka.clients.consumer.internals.ConsumerInterceptors"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Consumer.class).on(named("poll").and(takesArguments(1))));
+          return builder.visit(Advice.to(Consumer.class).on(named("onConsume")));
         }})
       .type(named("org.apache.kafka.clients.producer.KafkaProducer"))
       .transform(new Transformer() {
