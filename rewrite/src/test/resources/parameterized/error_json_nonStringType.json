@@ -1,0 +1,10 @@
+{
+  "expectedError": "test.rules[0].input.type: Is not a string",
+  "rules": [
+    {
+      "input": {
+        "type": 1
+      }
+    }
+  ]
+}

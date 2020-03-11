@@ -1,0 +1,19 @@
+{
+  "scenario": "tagHttpUrl",
+  "rules": [
+    {
+      "input": {
+        "type": "tag",
+        "key": "http.url"
+      }
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation"
+    },
+    {
+      "operationName": "operation"
+    }
+  ]
+}

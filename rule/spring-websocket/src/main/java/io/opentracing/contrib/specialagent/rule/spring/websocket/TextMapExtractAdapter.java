@@ -35,9 +35,8 @@ public final class TextMapExtractAdapter implements TextMap {
   private final Map<String,String> headers = new HashMap<>();
 
   public TextMapExtractAdapter(final MessageHeaders headers) {
-    for (Map.Entry<String,Object> entry : headers.entrySet()) {
+    for (Map.Entry<String,Object> entry : headers.entrySet())
       this.headers.put(entry.getKey(), entry.getValue().toString());
-    }
   }
 
   @Override

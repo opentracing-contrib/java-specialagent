@@ -1,0 +1,15 @@
+{
+  "expectedError": "test.rules[0].output[0]: Missing output key for log fields",
+  "rules": [
+    {
+      "input": {
+        "type": "operationName"
+      },
+      "output": [
+        {
+          "type": "log"
+        }
+      ]
+    }
+  ]
+}

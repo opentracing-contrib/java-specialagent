@@ -1,0 +1,10 @@
+{
+  "expectedError": "test.rules[0]: Tag without a key is not allowed",
+  "rules": [
+    {
+      "input": {
+       "type": "tag"
+      }
+    }
+  ]
+}

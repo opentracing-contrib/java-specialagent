@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -884,6 +885,32 @@ public final class AssembleUtil {
   public static boolean isSystemProperty(final String key) {
     final String value = System.getProperty(key);
     return value != null && !"false".equals(value);
+  }
+
+  public static Pattern convertToNameRegex(String pattern) {
+    if (pattern.length() == 0)
+      throw new IllegalArgumentException("Empty pattern");
+
+    final char lastCh = pattern.charAt(pattern.length() - 1);
+    if (lastCh == '*')
+      pattern = pattern.substring(0, pattern.length() - 1);
+
+    final String regex = "^" + AssembleUtil.convertToRegex(pattern).replace(".*", "[^:]*");
+    boolean hasDigit = false;
+    for (int i = regex.length() - 2; i >= 0; --i) {
+      if (regex.charAt(i) == ':') {
+        hasDigit = Character.isDigit(regex.charAt(i + 1));
+        break;
+      }
+    }
+
+    if (lastCh == '?')
+      return Pattern.compile(regex);
+
+    if (hasDigit || regex.length() == 1 || regex.endsWith(":"))
+      return Pattern.compile(regex + ".*");
+
+    return Pattern.compile("(" + regex + "$|" + regex + ":.*)");
   }
 
   private AssembleUtil() {

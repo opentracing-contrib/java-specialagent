@@ -1,0 +1,27 @@
+{
+  "scenario": "logFields",
+  "rules": [
+    {
+      "input": {
+        "type": "log",
+        "key": "key"
+      },
+      "output": {
+        "type": "log"
+      }
+    }
+  ],
+  "expectedMapAllocations": 1,
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "logs": [
+        {
+          "fields": {
+            "key": "value"
+          }
+        }
+      ]
+    }
+  ]
+}

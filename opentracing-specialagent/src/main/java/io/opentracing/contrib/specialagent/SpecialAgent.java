@@ -16,8 +16,12 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 import com.sun.tools.attach.VirtualMachine;
 
@@ -44,7 +49,6 @@ import io.opentracing.util.GlobalTracer;
  *
  * @author Seva Safris
  */
-@SuppressWarnings("restriction")
 public class SpecialAgent extends SpecialAgentBase {
   private enum AttachMode {
     STATIC,
@@ -269,16 +273,16 @@ public class SpecialAgent extends SpecialAgentBase {
           enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
           final HashMap<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
           for (final String pluginName : verbosePluginNames) {
-            final String namePattern = SpecialAgentUtil.convertToNameRegex(pluginName);
-            if (pluginManifest.name.equals(pluginName) || pluginManifest.name.matches(namePattern)) {
+            final Pattern namePattern = AssembleUtil.convertToNameRegex(pluginName);
+            if (pluginManifest.name.equals(pluginName) || namePattern.matcher(pluginManifest.name).matches()) {
               System.setProperty("sa." + (isInstruPlugin ? "instrumentation" : "tracer") + ".plugin." + pluginManifest.name + ".verbose", "true");
               break;
             }
           }
 
           for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
-            final String namePattern = SpecialAgentUtil.convertToNameRegex(entry.getKey());
-            if (pluginManifest.name.equals(entry.getKey()) || pluginManifest.name.matches(namePattern)) {
+            final Pattern namePattern = AssembleUtil.convertToNameRegex(entry.getKey());
+            if (pluginManifest.name.equals(entry.getKey()) || namePattern.matcher(pluginManifest.name).matches()) {
               enablePlugin = entry.getValue();
               if (logger.isLoggable(Level.FINER))
                 logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginManifest.name + " is " + (enablePlugin ? "en" : "dis") + "abled");
@@ -587,7 +591,7 @@ public class SpecialAgent extends SpecialAgentBase {
       if (logger.isLoggable(Level.FINE))
         logger.fine("Resolving tracer:\n  " + tracerProperty);
 
-      final Tracer tracer;
+      Tracer tracer;
       if ("mock".equals(tracerProperty)) {
         tracer = new MockTracer();
       }
@@ -630,6 +634,7 @@ public class SpecialAgent extends SpecialAgentBase {
         return null;
       }
 
+      tracer = initRewritableTracer(tracer);
       if (!isAgentRunner() && !GlobalTracer.registerIfAbsent(tracer))
         throw new IllegalStateException("There is already a registered global Tracer.");
 
@@ -640,7 +645,36 @@ public class SpecialAgent extends SpecialAgentBase {
     }
     finally {
       if (logger.isLoggable(Level.FINE))
-        logger.fine("\n>>>>>>>>>>>>>>>>>>>> Loaded Tracer Plugin <<<<<<<<<<<<<<<<<<<<<<\n");
+        logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded Tracer Plugin <<<<<<<<<<<<<<<<<<<<<\n");
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Tracer initRewritableTracer(final Tracer tracer) throws IOException {
+    final String rewriteProperty = System.getProperty(REWRITE_ARG);
+    if (rewriteProperty == null)
+      return tracer;
+
+    if (logger.isLoggable(Level.FINE))
+      logger.fine("\n<<<<<<<<<<<<<<<<<<< Loading Rewritable Tracer >>>>>>>>>>>>>>>>>>\n");
+
+    try (final InputStream in = new FileInputStream(rewriteProperty)) {
+      final Class<?> rewriteRulesClass = Class.forName("io.opentracing.contrib.specialagent.RewriteRules", true, isoClassLoader);
+      final Method parseRulesMethod = rewriteRulesClass.getMethod("parseRules", InputStream.class);
+      final List<?> rules = (List<?>)parseRulesMethod.invoke(null, in);
+      if (rules.isEmpty())
+        return tracer;
+
+      final Class<Tracer> rewritableTracerClass = (Class<Tracer>)Class.forName("io.opentracing.contrib.specialagent.RewritableTracer", true, isoClassLoader);
+      final Constructor<? extends Tracer> constructor = rewritableTracerClass.getConstructor(Tracer.class, List.class);
+      return constructor.newInstance(tracer, rules);
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+    finally {
+      if (logger.isLoggable(Level.FINE))
+        logger.fine("\n>>>>>>>>>>>>>>>>>>> Loaded Rewritable Tracer <<<<<<<<<<<<<<<<<<<\n");
     }
   }
 

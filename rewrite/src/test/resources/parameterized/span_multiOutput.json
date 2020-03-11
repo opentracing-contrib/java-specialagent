@@ -1,0 +1,42 @@
+{
+  "scenario": "operationName",
+  "rules": [
+    {
+      "input": {
+        "type": "operationName"
+      },
+      "output": [
+        {
+          "type": "log",
+          "key": "lop",
+          "value": "serviceName"
+        },
+        {
+          "type": "operationName",
+          "value": "serviceName"
+        },
+        {
+          "type": "tag",
+          "key": "top",
+          "value": "serviceName"
+        }
+      ]
+    }
+  ],
+  "expectedListAllocations": 1,
+  "expectedSpans": [
+    {
+      "operationName": "serviceName",
+      "tags": {
+        "top": "serviceName"
+      },
+      "logs": [
+        {
+          "fields": {
+            "lop": "serviceName"
+          }
+        }
+      ]
+    }
+  ]
+}
