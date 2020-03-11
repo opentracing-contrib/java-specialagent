@@ -1,0 +1,28 @@
+{
+  "scenario": "complex",
+  "rules": [],
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "tags": {
+        "t1": "tv1",
+        "t2": 1,
+        "t3": true
+      },
+      "logs": [
+        {
+          "event": "event",
+          "timestampMicros": 1
+        },
+        {
+          "fields": {
+            "k1": "v1",
+            "k2": 1,
+            "k3": false
+          },
+          "timestampMicros": 2
+        }
+      ]
+    }
+  ]
+}

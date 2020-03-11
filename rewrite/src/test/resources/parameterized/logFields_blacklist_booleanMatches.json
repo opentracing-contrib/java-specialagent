@@ -1,0 +1,17 @@
+{
+  "scenario": "logFieldsBoolean",
+  "rules": [
+    {
+      "input": {
+        "type": "log",
+        "key": "key",
+        "value": true
+      }
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation"
+    }
+  ]
+}

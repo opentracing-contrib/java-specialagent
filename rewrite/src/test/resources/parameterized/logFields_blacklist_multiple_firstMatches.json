@@ -1,0 +1,32 @@
+{
+  "scenario": "logFieldsTypes",
+  "rules": [
+    {
+      "input": {
+        "type": "tag",
+        "key": "k1"
+      }
+    },
+    {
+      "input": {
+        "type": "log",
+        "key": "k1"
+      }
+    }
+  ],
+  "expectedMapAllocations": 1,
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "logs": [
+        {
+          "fields": {
+            "k2": 1,
+            "k3": false
+          },
+          "timestampMicros": 1
+        }
+      ]
+    }
+  ]
+}

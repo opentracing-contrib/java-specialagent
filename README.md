@@ -11,7 +11,7 @@
 
 ## What is SpecialAgent?
 
-<ins>SpecialAgent</ins> automatically instruments 3rd-party libraries in Java applications. The architecture of <ins>SpecialAgent</ins> was designed to involve contributions from the community, whereby its platform integrates and automates OpenTracing <ins>Instrumentation Plugins</ins> written by individual contributors. In addition to <ins>Instrumentation Plugins</ins>, the <ins>SpecialAgent</ins> also supports <ins>Tracer Plugins</ins>, which connect an instrumented runtime to OpenTracing-compliant tracer vendors, such as LightStep, Wavefront, or Jaeger. Both the <ins>Instrumentation Plugins</ins> and the <ins>Tracer Plugins</ins> are decoupled from <ins>SpecialAgent</ins> -- i.e. neither kinds of plugins need to know anything about <ins>SpecialAgent</ins>. At its core, the <ins>SpecialAgent</ins> is itself nothing more than an engine that abstracts the functionality for automatic installation of <ins>Instrumentation Plugins</ins>, and then connecting them to <ins>Tracer Plugins</ins>. A benefit of this approach is that the <ins>SpecialAgent</ins> intrinsically embodies and encourages community involvement.
+<ins>SpecialAgent</ins> automatically instruments 3rd-party libraries in Java applications. The architecture of <ins>SpecialAgent</ins> was designed to involve contributions from the community, whereby its platform integrates and automates OpenTracing <ins>Instrumentation Plugins</ins> written by individual contributors. In addition to <ins>Instrumentation Plugins</ins>, the <ins>SpecialAgent</ins> also supports <ins>Tracer Plugins</ins>, which connect an instrumented runtime to OpenTracing-compliant tracer vendors, such as [LightStep][lightstep], [Wavefront][wavefront], or [Jaeger][jaeger]. Both the <ins>Instrumentation Plugins</ins> and the <ins>Tracer Plugins</ins> are decoupled from <ins>SpecialAgent</ins> -- i.e. neither kinds of plugins need to know anything about <ins>SpecialAgent</ins>. At its core, the <ins>SpecialAgent</ins> is itself nothing more than an engine that abstracts the functionality for automatic installation of <ins>Instrumentation Plugins</ins>, and then connecting them to <ins>Tracer Plugins</ins>. A benefit of this approach is that the <ins>SpecialAgent</ins> intrinsically embodies and encourages community involvement.
 
 In addition to its engine, the <ins>SpecialAgent</ins> packages a set of pre-supported [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) and [<ins>Tracer Plugins</ins>](#62-tracer-plugins).
 
@@ -78,7 +78,7 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is contained in a single JAR fil
 
 To use the [<ins>SpecialAgent</ins>](#41-specialagent) on an application, please download the [stable](#2111-stable) or [development](#2112-development) **main** artifact.
 
-The artifact JAR can be provided to an application with the `-javaagent:${SPECIAL_AGENT_JAR}` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach). The artifact JAR can also be executed in standalone fashion, which requires an argument to be passed for the PID of a target process to which [<ins>SpecialAgent</ins>](#41-specialagent) should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#usage) section for usage instructions.
+The artifact JAR can be provided to an application with the `-javaagent:${SPECIAL_AGENT_JAR}` vm argument for [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Static Deferred Attach</ins>](#223-static-deferred-attach). The artifact JAR can also be executed in standalone fashion, which requires an argument to be passed for the PID of a target process to which [<ins>SpecialAgent</ins>](#41-specialagent) should [<ins>dynamically attach</ins>](#222-dynamic-attach). Please refer to [Usage](#22-usage) section for usage instructions.
 
 ##### 2.1.1.1 Stable
 
@@ -358,6 +358,8 @@ sa.instrumentation.plugin.${RULE_NAME_PATTERN}.enable
 ```
 <sup>The suffix `.enable` is interchangeable with `.disable=false`.</sup>
 
+##### Rule Name Pattern
+
 The value of `${RULE_NAME_PATTERN}` represents the Rule Name, as specified in [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) ("SpecialAgent Rule" column). The `${RULE_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
 1. `lettuce:5.?`<br>Matches all <ins>Lettuce</ins> rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
@@ -413,13 +415,57 @@ Custom plugins and `AgentRule`s can be implemented by following the [SpecialAgen
 
 Here, `<JARs>` refers to a pathSeparator-delimited (`:` for \*NIX, `;` for Windows) string of JARs containing the custom rules.
 
+### 3.7 Rewritable Tracer
+
+The [<ins>Rewritable Tracer</ins>](#37-rewritable-tracer) allows one to rewrite data in the spans created by [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) without having to modify the source code.
+
+The [<ins>Rewritable Tracer</ins>](#37-rewritable-tracer) is a rules engine that is configured via JSON files [that conform to a specification][rewrite].
+
+For example:
+
+* The following JSON defines a rule for all [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) to drop all **tag**s in spans matching `key` literal `http.url` and `value` regex `.*secret.*`.
+
+  ```json
+  {
+    "*": [
+      {
+        "input": {
+          "type": "tag",
+          "key": "http.url",
+          "value": ".*secret.*"
+        }
+      }
+    ]
+  }
+  ```
+
+* The following JSON defines a rule for the `jedis` [<ins>Instrumentation Plugin</ins>](#61-instrumentation-plugins) to rewrite all **log**s matching `key` literal `http.method` as a **tag**.
+
+```json
+{
+  "jedis": [
+    {
+      "input": {
+        "type": "log",
+        "key": "http.method",
+      },
+      "output": {
+        "type": "tag"
+      }
+    }
+  ]
+}
+```
+
+For a configuration spec and other use-case examples, please refer to the [`rewrite` plugin][rewrite].
+
 ## 4 Definitions
 
 The following terms are used throughout this documentation.
 
 #### 4.1 <ins>SpecialAgent</ins>
 
-The [<ins>SpecialAgent</ins>](#41-specialagent) is software that attaches to Java applications, and automatically instruments 3rd-party libraries integrated in the application. The [<ins>SpecialAgent</ins>](#41-specialagent) uses the OpenTracing API for [<ins>Instrumentation Plugins</ins>](#supported-instrumentation-plugins) that instrument 3rd-party libraries, as well as [<ins>Tracer Plugins</ins>](#supported-tracer-plugins) that implement OpenTracing tracer service providers. Both the [<ins>Instrumentation Plugins</ins>](#supported-instrumentation-plugins), as well as the [<ins>Tracer Plugins</ins>](#supported-tracer-plugins) are open-source, and are developed and supported by the OpenTracing community.
+The [<ins>SpecialAgent</ins>](#41-specialagent) is software that attaches to Java applications, and automatically instruments 3rd-party libraries integrated in the application. The [<ins>SpecialAgent</ins>](#41-specialagent) uses the OpenTracing API for [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) that instrument 3rd-party libraries, as well as [<ins>Tracer Plugins</ins>](#62-tracer-plugins) that implement OpenTracing tracer service providers. Both the [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins), as well as the [<ins>Tracer Plugins</ins>](#62-tracer-plugins) are open-source, and are developed and supported by the OpenTracing community.
 
 The [<ins>SpecialAgent</ins>](#41-specialagent) supports Oracle Java and OpenJDK.
 
@@ -428,9 +474,9 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) supports Oracle Java and OpenJDK
 Service provider of the OpenTracing standard, providing an implementation of the `io.opentracing.Tracer` interface.
 
 Examples:
-* [Jaeger Tracer](https://github.com/jaegertracing/jaeger)
-* [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-java)
-* [Wavefront Tracer](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java)
+* [Jaeger Tracer][jaeger]
+* [LightStep Tracer][lightstep]
+* [Wavefront Tracer][wavefront]
 
 <sub>_[<ins>Tracers</ins>](#42-tracer) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -667,6 +713,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [rabbitmq-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rabbitmq-client
 [reactor]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/reactor
 [redisson]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/redisson
+[rewrite]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rewrite
 [rxjava-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rxjava-2
 [rxjava-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/rxjava-3
 [servlet]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet
@@ -688,6 +735,10 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [thread]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thread
 [thrift]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thrift
 [zuul]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/zuul
+
+[jaeger]: https://github.com/jaegertracing/jaeger
+[lightstep]: https://github.com/lightstep/lightstep-tracer-java
+[wavefront]: https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java
 
 [agentrunner-config]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api#51-configuring-agentrunner
 [api]: https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api

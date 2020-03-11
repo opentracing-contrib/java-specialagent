@@ -27,6 +27,7 @@ abstract class SpecialAgentBase {
   static final String CONFIG_ARG = "sa.config";
   static final String AGENT_RUNNER_ARG = "sa.agentrunner";
   static final String INIT_DEFER = "sa.init.defer";
+  static final String REWRITE_ARG = "sa.rewrite";
   static final String RULE_PATH_ARG = "sa.rulepath";
   static final String TRACER_PROPERTY = "sa.tracer";
   static final String LOG_EVENTS_PROPERTY = "sa.log.events";

@@ -1,0 +1,23 @@
+{
+  "scenario": "tag",
+  "rules": [
+    {
+      "input": {
+        "type": "tag",
+        "key": "key"
+      },
+      "output": {
+        "type": "tag",
+        "key": "newKey"
+      }
+    }
+  ],
+  "expectedSpans": [
+    {
+      "operationName": "operation",
+      "tags": {
+        "newKey": "value"
+      }
+    }
+  ]
+}

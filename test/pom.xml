@@ -71,6 +71,7 @@
     <module>ratpack</module>
     <module>reactor</module>
     <module>redisson</module>
+    <module>rewrite</module>
     <module>rxjava</module>
     <module>servlet-jetty</module>
     <module>servlet-tomcat</module>

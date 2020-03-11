@@ -305,7 +305,7 @@
                 <goals>
                   <goal>test-compatibility</goal>
                 </goals>
-                <phase>process-classes</phase>
+                <phase>test</phase>
                 <configuration>
                   <passCompatibility>${passCompatibility}</passCompatibility>
                   <failCompatibility>${failCompatibility}</failCompatibility>

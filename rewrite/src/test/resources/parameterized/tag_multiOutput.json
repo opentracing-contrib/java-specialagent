@@ -1,0 +1,51 @@
+{
+  "scenario": "tag2Spans",
+  "rules": [
+    {
+      "input": {
+        "type": "tag",
+        "key": "key"
+      },
+      "output": [
+        {
+          "type": "log"
+        },
+        {
+          "type": "operationName"
+        },
+        {
+          "type": "tag"
+        }
+      ]
+    }
+  ],
+  "expectedListAllocations": 1,
+  "expectedSpans": [
+    {
+      "operationName": "value",
+      "tags": {
+        "key": "value"
+      },
+      "logs": [
+        {
+          "fields": {
+            "key": "value"
+          }
+        }
+      ]
+    },
+    {
+      "operationName": "value",
+      "tags": {
+        "key": "value"
+      },
+      "logs": [
+        {
+          "fields": {
+            "key": "value"
+          }
+        }
+      ]
+    }
+  ]
+}
