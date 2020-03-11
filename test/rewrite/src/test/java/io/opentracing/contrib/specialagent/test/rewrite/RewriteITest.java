@@ -1,4 +1,4 @@
-/* Copyright 2019 The OpenTracing Authors
+/* Copyright 2020 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.test.okhttp;
+package io.opentracing.contrib.specialagent.test.rewrite;
 
 import java.io.IOException;
 
