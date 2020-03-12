@@ -29,11 +29,18 @@
   <dependencies>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>opentracing-specialagent-api</artifactId>
+      <artifactId>opentracing-specialagent-util</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>opentracing-specialagent-util</artifactId>
+      <artifactId>opentracing-specialagent-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.grack</groupId>
+      <artifactId>nanojson</artifactId>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing</groupId>
