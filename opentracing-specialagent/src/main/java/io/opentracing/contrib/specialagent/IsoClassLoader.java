@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-class IsoClassLoader extends URLClassLoader {
+public class IsoClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(IsoClassLoader.class);
 
   private static class IsoParentClassLoader extends ClassLoader {

@@ -28,7 +28,6 @@ import java.util.Set;
 import io.opentracing.contrib.specialagent.BootLoaderAgent.Mutex;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -53,9 +52,8 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
     log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
 //    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(nameStartsWith(RuleClassLoader.class.getName()))).and(not(nameStartsWith(PluginsClassLoader.class.getName()))));
-    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class));
     final List<Extendable> builders = Arrays.asList(
-      narrowable.transform(new Transformer() {
+      builder.type(isSubTypeOf(ClassLoader.class)).transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
@@ -89,11 +87,12 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-      if (isExcluded(thiz))
+      System.err.println("LoadClass: " + thiz.getClass().getName());
+      if (returned != null || isExcluded(thiz))
         return;
 
       final Set<String> visited;
-      if (returned != null || !(visited = mutex.get()).add(name))
+      if (!(visited = mutex.get()).add(name))
         return;
 
       try {
@@ -104,6 +103,16 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
           returned = bootstrapClass;
           thrown = null;
           return;
+        }
+
+        if (name.startsWith("io.opentracing.")) {
+          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClass(name);
+          System.err.println("LoadClass: " + name + " " + isoClass);
+          if (isoClass != null) {
+            returned = isoClass;
+            thrown = null;
+            return;
+          }
         }
 
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
@@ -132,11 +141,11 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (isExcluded(thiz))
+      if (returned != null || isExcluded(thiz))
         return;
 
       final Set<String> visited;
-      if (returned != null || !(visited = mutex.get()).add(name))
+      if (!(visited = mutex.get()).add(name))
         return;
 
       try {

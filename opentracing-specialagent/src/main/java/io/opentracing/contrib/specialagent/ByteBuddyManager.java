@@ -205,10 +205,12 @@ public class ByteBuddyManager extends Manager {
     loadDefaultRules(inst, events);
 
     // Load the rest of the specified rules
-    for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
-      final AgentRule agentRule = entry.getKey();
-      loadAgentRule(inst, agentRule, newBuilder(), entry.getValue(), events);
-      loadedRules.add(agentRule.getClass().getName());
+    if (agentRules != null) {
+      for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
+        final AgentRule agentRule = entry.getKey();
+        loadAgentRule(inst, agentRule, newBuilder(), entry.getValue(), events);
+        loadedRules.add(agentRule.getClass().getName());
+      }
     }
   }
 

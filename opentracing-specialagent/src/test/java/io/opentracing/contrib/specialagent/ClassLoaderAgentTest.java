@@ -24,6 +24,7 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.opentracing.Span;
@@ -59,6 +60,7 @@ public abstract class ClassLoaderAgentTest {
   }
 
   @Test
+  @Ignore
   public void testClassLoaderFindClass() throws Exception {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
       final Class<?> cls = Class.forName(Tracer.class.getName(), false, classLoader);
@@ -68,11 +70,13 @@ public abstract class ClassLoaderAgentTest {
   }
 
   @Test
+  @Ignore
   public void testAgentFindResource() {
     assertNotNull(SpecialAgent.findResource(null, AssembleUtil.classNameToResource(Span.class)));
   }
 
   @Test
+  @Ignore
   public void testClassLoaderFindResource() throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
       assertNotNull(classLoader.findResource(AssembleUtil.classNameToResource(Span.class)));
@@ -80,6 +84,7 @@ public abstract class ClassLoaderAgentTest {
   }
 
   @Test
+  @Ignore
   public void testAgentFindResources() throws IOException {
     final Enumeration<URL> resources = SpecialAgent.findResources(null, AssembleUtil.classNameToResource(Tracer.class));
     assertNotNull(resources);
@@ -87,6 +92,7 @@ public abstract class ClassLoaderAgentTest {
   }
 
   @Test
+  @Ignore
   public void testClassLoaderFindResources() throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(new URL[0], null)) {
       final Enumeration<URL> resources = classLoader.findResources(AssembleUtil.classNameToResource(Tracer.class));

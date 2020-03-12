@@ -41,6 +41,10 @@ public class MutexAgentRule extends DefaultAgentRule {
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     log("\n<<<<<<<<<<<<<<<<<< Installing MutexAgentRule >>>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
+    System.err.println(MutexAgentRule.class.getClassLoader());
+    final Class<?> x = ClassLoader.getSystemClassLoader().loadClass("io.opentracing.Tracer");
+    final Class<?> y = Class.forName("io.opentracing.Tracer");
+    System.err.println(x);
     final List<Extendable> builders = Arrays.asList(builder
       .type(isSubTypeOf(Tracer.class)
         .or(isSubTypeOf(Scope.class))

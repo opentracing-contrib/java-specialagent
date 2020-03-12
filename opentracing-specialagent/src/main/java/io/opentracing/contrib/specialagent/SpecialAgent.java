@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import com.sun.tools.attach.VirtualMachine;
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.specialagent.Manager.Event;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
@@ -64,7 +65,7 @@ public class SpecialAgent extends SpecialAgentBase {
   private static final HashMap<File,File[]> pluginFileToDependencies = new HashMap<>();
 
   private static PluginsClassLoader pluginsClassLoader;
-  private static IsoClassLoader isoClassLoader;
+  public static IsoClassLoader isoClassLoader;
 
   // FIXME: ByteBuddy is now the only Instrumenter. Should this complexity be removed?
   private static final Instrumenter instrumenter = Instrumenter.BYTEBUDDY;
@@ -338,8 +339,10 @@ public class SpecialAgent extends SpecialAgentBase {
     if (count == 0)
       logger.log(Level.SEVERE, "Could not find " + DEPENDENCIES_TGF + " in any rule JARs");
 
+    final Manager.Event[] events = SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY));
+    manager.loadRules(inst, null, events);
     deferredTracer = loadTracer();
-    loadRules(manager);
+    loadRules(manager, events);
   }
 
   /**
@@ -457,7 +460,7 @@ public class SpecialAgent extends SpecialAgentBase {
    * This method loads any OpenTracing {@code AgentRule}s, delegated to the
    * instrumentation {@link Manager} in the runtime.
    */
-  private static void loadRules(final Manager manager) {
+  private static void loadRules(final Manager manager, final Event[] events) {
     AttachMode attachMode = AttachMode.STATIC_DEFERRED;
     try {
       if (logger.isLoggable(Level.FINE))
@@ -473,7 +476,6 @@ public class SpecialAgent extends SpecialAgentBase {
           ruleJarToIndex.put(pluginsClassLoader.getFiles()[i], i);
 
         final LinkedHashMap<AgentRule,Integer> agentRules = new LinkedHashMap<>();
-        final Manager.Event[] events = SpecialAgentUtil.digestEventsProperty(System.getProperty(LOG_EVENTS_PROPERTY));
         final Map<String,String> classNameToName = new HashMap<>();
         AgentRule.$Access.configure(new Runnable() {
           @Override
