@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -33,7 +34,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.noop.NoopTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class TestUtil {
   private static final int MIN_PORT = 15000;
@@ -41,10 +41,9 @@ public final class TestUtil {
   private static final AtomicInteger port = new AtomicInteger(MIN_PORT);
 
   public static int nextFreePort() {
-    int portProbe;
-    while ((portProbe = port.getAndIncrement()) <= MAX_PORT) {
-      try (final ServerSocket socket = new ServerSocket(portProbe)) {
-        return portProbe;
+    for (int p; (p = port.getAndIncrement()) <= MAX_PORT;) {
+      try (final ServerSocket socket = new ServerSocket(p)) {
+        return p;
       }
       catch (final Exception ignore) {
       }
