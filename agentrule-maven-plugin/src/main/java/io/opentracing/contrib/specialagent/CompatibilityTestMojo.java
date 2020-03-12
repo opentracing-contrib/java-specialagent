@@ -168,7 +168,7 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   }
 
   private void resolveDependencies(final MavenProject project) throws DependencyResolutionException, LifecycleExecutionException {
-    flushProjectArtifactsCache();
+//    flushProjectArtifactsCache();
 
     final Set<Artifact> dependencyArtifacts = project.getDependencyArtifacts();
     final Map<String,List<MojoExecution>> executions = new LinkedHashMap<>(execution.getForkedExecutions());
