@@ -24,10 +24,11 @@
     <version>1.6.0-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test.cxf</groupId>
-  <artifactId>cxf-jaxrs</artifactId>
+  <artifactId>cxf</artifactId>
   <packaging>pom</packaging>
-  <name>SpecialAgent Tests for Apache CXF JAX-RS</name>
+  <name>SpecialAgent Tests for Apache CXF</name>
   <modules>
-    <module>cxf-3.3.5</module>
+    <module>cxf-jaxrs-3.3.5</module>
+    <module>cxf-jaxws-3.3.5</module>
   </modules>
 </project>

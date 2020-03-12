@@ -541,6 +541,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka-actor] | 2.5.0 | LATEST |
 | Akka Http | [`akka:http`][akka-http] | 10.1.0 | LATEST |
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
+| Apache CXF | [`cxf`][cxf] | 3.3.3 | LATEST |
 | [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | LATEST |
 | [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | LATEST |
 | [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | LATEST |
@@ -636,6 +637,8 @@ Thank you to the following contributors for developing instrumentation plugins:
 * [Sergei Malafeev](https://github.com/malafeev)
 * [Jose Montoya](https://github.com/jam01)
 * [Przemyslaw Maciolek](https://github.com/pmaciolek)
+* [Jianshao Wu](https://github.com/jianshaow)
+* [Gregor Zeitlinger](https://github.com/zeitlinger)
 
 Thank you to the following contributors for developing tracer plugins:
 
@@ -650,7 +653,6 @@ Thank you to the following developers for filing issues and helping us fix them:
 * [@deepakgoenka](https://github.com/deepakgoenka)
 * [Prometheus](https://github.com/etsangsplk)
 * [Randall Theobald](https://github.com/randallt)
-* [Jianshao Wu](https://github.com/jianshaow)
 
 Thank you to the following individuals for all other general contributions to the codebase:
 
@@ -677,6 +679,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [aws-sdk-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-1
 [aws-sdk-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-2
 [camel]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/camel
+[cxf]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cxf
 [cassandra-driver-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-3
 [cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-4
 [concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent
