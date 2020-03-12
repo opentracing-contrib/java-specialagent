@@ -41,8 +41,7 @@
     <module>cassandra-driver</module>
     <module>concurrent</module>
     <module>couchbase-client</module>
-    <module>cxf-jaxrs</module>
-    <module>cxf-jaxws</module>
+    <module>cxf</module>
     <module>dynamic</module>
     <module>elasticsearch-client</module>
     <module>feign</module>
@@ -73,6 +72,7 @@
     <module>ratpack</module>
     <module>reactor</module>
     <module>redisson</module>
+    <module>rewrite</module>
     <module>rxjava</module>
     <module>servlet-jetty</module>
     <module>servlet-tomcat</module>

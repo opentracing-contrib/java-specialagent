@@ -1,4 +1,4 @@
-/* Copyright 2019 The OpenTracing Authors
+/* Copyright 2020 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 
 package io.opentracing.contrib.specialagent.rule.cxf;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
 import javax.jws.WebService;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
@@ -29,17 +31,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(disable = "*", isolateClassLoader = false)
 public class CxfTest {
-
   private static final String BASE_URI = "http://127.0.0.1:48080";
 
   @BeforeClass
-  public static void beforeClass(final MockTracer tracer) {
+  public static void beforeClass() {
     Thread.currentThread().setContextClassLoader(CxfTest.class.getClassLoader());
   }
 
@@ -84,7 +86,7 @@ public class CxfTest {
     final String msg = "hello";
 
     // prepare server
-    JaxWsServerFactoryBean serverFactory = new JaxWsServerFactoryBean();
+    final JaxWsServerFactoryBean serverFactory = new JaxWsServerFactoryBean();
     serverFactory.setServiceClass(Echo.class);
     serverFactory.setAddress(BASE_URI);
     serverFactory.setServiceBean(new EchoImpl());
@@ -113,9 +115,8 @@ public class CxfTest {
   }
 
   public static class EchoImpl implements Echo {
-
     @Override
-    public String echo(String msg) {
+    public String echo(final String msg) {
       return msg;
     }
   }

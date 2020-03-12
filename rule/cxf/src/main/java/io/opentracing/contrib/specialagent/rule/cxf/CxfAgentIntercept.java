@@ -1,4 +1,4 @@
-/* Copyright 2019 The OpenTracing Authors
+/* Copyright 2020 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@ package io.opentracing.contrib.specialagent.rule.cxf;
 import org.apache.cxf.endpoint.AbstractEndpointFactory;
 import org.apache.cxf.tracing.opentracing.OpenTracingClientFeature;
 import org.apache.cxf.tracing.opentracing.OpenTracingFeature;
+
 import io.opentracing.util.GlobalTracer;
 
 public class CxfAgentIntercept {
-
   public static void addClientTracingFeature(final Object thiz) {
-    final AbstractEndpointFactory factory = (AbstractEndpointFactory) thiz;
+    final AbstractEndpointFactory factory = (AbstractEndpointFactory)thiz;
     factory.getFeatures().add(new OpenTracingClientFeature(GlobalTracer.get()));
   }
 
   public static void addServerTracingFeauture(final Object thiz) {
-    final AbstractEndpointFactory factory = (AbstractEndpointFactory) thiz;
+    final AbstractEndpointFactory factory = (AbstractEndpointFactory)thiz;
     factory.getFeatures().add(new OpenTracingFeature(GlobalTracer.get()));
   }
 }

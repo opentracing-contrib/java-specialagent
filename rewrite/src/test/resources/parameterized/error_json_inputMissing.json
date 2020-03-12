@@ -1,0 +1,8 @@
+{
+  "expectedError": "test.rules[0].input: Not an object",
+  "rules": [
+    {
+      "type": "log"
+    }
+  ]
+}

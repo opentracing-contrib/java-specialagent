@@ -473,32 +473,6 @@ public final class SpecialAgentUtil {
     return events;
   }
 
-  public static String convertToNameRegex(String pattern) {
-    if (pattern.length() == 0)
-      throw new IllegalArgumentException("Empty pattern");
-
-    final char lastCh = pattern.charAt(pattern.length() - 1);
-    if (lastCh == '*')
-      pattern = pattern.substring(0, pattern.length() - 1);
-
-    final String regex = "^" + AssembleUtil.convertToRegex(pattern).replace(".*", "[^:]*");
-    boolean hasDigit = false;
-    for (int i = regex.length() - 2; i >= 0; --i) {
-      if (regex.charAt(i) == ':') {
-        hasDigit = Character.isDigit(regex.charAt(i + 1));
-        break;
-      }
-    }
-
-    if (lastCh == '?')
-      return regex;
-
-    if (hasDigit || regex.length() == 1 || regex.endsWith(":"))
-      return regex + ".*";
-
-    return "(" + regex + "$|" + regex + ":.*)";
-  }
-
   private SpecialAgentUtil() {
   }
 }

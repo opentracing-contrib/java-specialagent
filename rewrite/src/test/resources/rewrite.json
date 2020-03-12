@@ -1,0 +1,29 @@
+{
+  "*": [
+    {
+      "input": {
+        "type": "log",
+        "key": "db.statement"
+      },
+      "output": {
+        "type": "log",
+        "key": "*"
+      }
+    }
+  ],
+  "jedis": [
+    {
+      "input": {
+        "type": "log",
+        "key": "db.statement",
+        "value": "(select).*"
+      },
+      "output": [
+        {
+          "type": "log",
+          "key": "jedis"
+        }
+      ]
+    }
+  ]
+}

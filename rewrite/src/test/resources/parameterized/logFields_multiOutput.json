@@ -1,0 +1,39 @@
+{
+  "scenario": "logFieldsTimestamp",
+  "rules": [
+    {
+      "input": {
+        "type": "log",
+        "key": "key"
+      },
+      "output": [
+        {
+          "type": "log"
+        },
+        {
+          "type": "operationName"
+        },
+        {
+          "type": "tag"
+        }
+      ]
+    }
+  ],
+  "expectedMapAllocations": 1,
+  "expectedSpans": [
+    {
+      "operationName": "value",
+      "tags": {
+        "key": "value"
+      },
+      "logs": [
+        {
+          "fields": {
+            "key": "value"
+          },
+          "timestampMicros": 1
+        }
+      ]
+    }
+  ]
+}
