@@ -15,20 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.awaitility.Awaitility.*;
+import static org.hamcrest.core.IsEqual.*;
+import static org.junit.Assert.*;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
-import io.opentracing.contrib.specialagent.TestUtil;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.tag.Tags;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
 import org.apache.pulsar.broker.loadbalance.impl.SimpleLoadManagerImpl;
@@ -67,6 +58,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
 @Config(isolateClassLoader = false)
@@ -267,7 +269,7 @@ public class PulsarFunctionsTest {
     functionDetailsBuilder.setSource(sourceSpecBuilder);
 
     // set up sink spec
-    SinkSpec.Builder sinkSpecBuilder = SinkSpec.newBuilder();
+    final SinkSpec.Builder sinkSpecBuilder = SinkSpec.newBuilder();
     // sinkSpecBuilder.setClassName(PulsarSink.class.getName());
     sinkSpecBuilder.setTopic(sinkTopic);
     final Map<String,Object> sinkConfigMap = Maps.newHashMap();

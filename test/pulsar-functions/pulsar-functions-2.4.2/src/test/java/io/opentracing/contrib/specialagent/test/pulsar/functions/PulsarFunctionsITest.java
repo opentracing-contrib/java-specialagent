@@ -182,7 +182,7 @@ public class PulsarFunctionsITest {
     System.setProperty(JAVA_INSTANCE_JAR_PROPERTY, FutureUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 
     workerConfig = new WorkerConfig();
-    String pulsarFunctionsNamespace = tenant + "/pulsar-function-admin";
+    final String pulsarFunctionsNamespace = tenant + "/pulsar-function-admin";
     workerConfig.setPulsarFunctionsNamespace(pulsarFunctionsNamespace);
     workerConfig.setSchedulerClassName(org.apache.pulsar.functions.worker.scheduler.RoundRobinScheduler.class.getName());
     workerConfig.setThreadContainerFactory(new WorkerConfig.ThreadContainerFactory().setThreadGroupName("use"));

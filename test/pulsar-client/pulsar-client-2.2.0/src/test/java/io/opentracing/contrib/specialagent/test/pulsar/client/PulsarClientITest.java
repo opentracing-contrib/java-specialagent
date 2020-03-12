@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.pulsar.client;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Set;
@@ -37,6 +36,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class PulsarClientITest {
   private static final String CLUSTER_NAME = "test-cluster";
@@ -73,7 +73,7 @@ public class PulsarClientITest {
     try {
       setBrokerServicePortInt = config.getClass().getMethod("setBrokerServicePort", Integer.TYPE);
     }
-    catch (NoSuchMethodException ignore) {
+    catch (final NoSuchMethodException ignore) {
       setBrokerServicePortOpt = config.getClass().getMethod("setBrokerServicePort", Optional.class);
     }
 
@@ -97,10 +97,10 @@ public class PulsarClientITest {
 
       try (final PulsarClient client = PulsarClient.builder().serviceUrl(pulsarService.getBrokerServiceUrl()).build()) {
         try (final PulsarAdmin admin = pulsarService.getAdminClient()) {
-          ClusterData clusterData = new ClusterData(pulsarService.getBrokerServiceUrl());
+          final ClusterData clusterData = new ClusterData(pulsarService.getBrokerServiceUrl());
           admin.clusters().createCluster(CLUSTER_NAME, clusterData);
 
-          TenantInfo propAdmin = new TenantInfo();
+          final TenantInfo propAdmin = new TenantInfo();
           propAdmin.getAdminRoles().add("superUser");
           propAdmin.setAllowedClusters(Sets.newHashSet(Lists.newArrayList(CLUSTER_NAME)));
 

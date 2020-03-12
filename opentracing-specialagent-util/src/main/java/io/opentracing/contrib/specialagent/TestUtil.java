@@ -45,10 +45,64 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public final class TestUtil {
-  private static final int BASE_PORT = 15000;
+  private static final int MIN_PORT = 15000;
   private static final int MAX_PORT = 32000;
   private static final int MAX_PORT_CONFLICTS = 100;
   private static final String lockFilename = System.getProperty("java.io.tmpdir") + File.pathSeparator + "sa-port.lock";
+
+  /**
+   * Return a TCP port that is currently unused. Keeps track of assigned ports
+   * and avoid race condition between different processes.
+   *
+   * @return A TCP port that is currently unused.
+   */
+  public synchronized static int nextFreePort() {
+    final Path path = Paths.get(lockFilename);
+    try (final FileChannel channel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+      final FileLock lock = channel.lock();
+
+      final int lastUsedPort;
+      try (final FileReader reader = new FileReader(lockFilename)) {
+        final CharBuffer buffer = CharBuffer.allocate(16);
+        final int len = reader.read(buffer);
+        buffer.flip();
+
+        lastUsedPort = len > 0 ? Integer.parseInt(buffer.toString()) : MIN_PORT;
+      }
+
+      final int freePort = probeFreePort(lastUsedPort + 1);
+      try (final FileWriter writer = new FileWriter(lockFilename)) {
+        writer.write(Integer.toString(freePort));
+      }
+      finally {
+        lock.release();
+        channel.close();
+      }
+
+      return freePort;
+    }
+    catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private synchronized static int probeFreePort(int port) {
+    for (int i = 0; i < MAX_PORT_CONFLICTS; ++i) {
+      if (port >= MAX_PORT) {
+        // Rollover the port probe
+        port = MIN_PORT;
+      }
+
+      try (final ServerSocket socket = new ServerSocket(port)) {
+        socket.close();
+        return port;
+      }
+      catch (final Exception e) {
+      }
+    }
+
+    throw new RuntimeException("Unable to find a free port");
+  }
 
   public static CountDownLatch initExpectedSpanLatch(final int expectedSpans) {
     if (!(TestUtil.getGlobalTracer() instanceof MockTracer))
@@ -259,75 +313,6 @@ public final class TestUtil {
       this.componentName = componentName;
       this.count = count;
       this.sameTrace = sameTrace;
-    }
-  }
-
-  /**
-   * Return a TCP port that is currently unused.
-   *
-   * Keeps track of assigned ports and avoid race condition between different processes.
-   *
-   */
-  public synchronized static int nextFreePort() {
-    Path path = Paths.get(lockFilename);
-
-    try {
-      FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-      FileLock lock = fileChannel.lock();
-
-      try {
-
-        FileReader reader = new FileReader(lockFilename);
-        CharBuffer buffer = CharBuffer.allocate(16);
-        int len = reader.read(buffer);
-        buffer.flip();
-
-        int lastUsedPort = BASE_PORT;
-        if (len > 0) {
-          String lastUsedPortStr = buffer.toString();
-          lastUsedPort = Integer.parseInt(lastUsedPortStr);
-        }
-
-        int freePort = probeFreePort(lastUsedPort + 1);
-
-        FileWriter writer = new FileWriter(lockFilename);
-        writer.write(Integer.toString(freePort));
-
-        reader.close();
-        writer.close();
-
-        return freePort;
-
-      } finally {
-        lock.release();
-        fileChannel.close();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private synchronized static int probeFreePort(int port) {
-    int exceptionCount = 0;
-    while (true) {
-      if (port == MAX_PORT) {
-        // Rollover the port probe
-        port = BASE_PORT;
-      }
-
-      try (ServerSocket ss = new ServerSocket(port)) {
-        ss.close();
-        // Give it some time to truly close the connection
-        Thread.sleep(100);
-        return port;
-
-      } catch (Exception e) {
-        port++;
-        exceptionCount++;
-        if (exceptionCount > MAX_PORT_CONFLICTS) {
-          throw new RuntimeException(e);
-        }
-      }
     }
   }
 
