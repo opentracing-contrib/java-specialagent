@@ -24,6 +24,7 @@ import net.spy.memcached.MemcachedClient;
 
 public class SpymemcachedITest {
   public static void main(final String[] args) throws Exception {
+    System.err.println("[NOTE] `memcached` must be running for this test. For Mac OS: `brew install memcached && memcached`");
     final MemcachedClient client = new MemcachedClient(new InetSocketAddress("localhost", 11211));
     final boolean op = client.set("key", 120, "value").get(15, TimeUnit.SECONDS);
     if (!op)
