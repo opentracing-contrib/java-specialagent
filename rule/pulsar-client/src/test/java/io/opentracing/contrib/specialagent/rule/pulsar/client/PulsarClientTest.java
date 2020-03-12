@@ -70,8 +70,8 @@ public class PulsarClientTest {
     bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
     bkEnsemble.start();
 
-    int brokerWebServicePort = 8885;
-    int brokerServicePort = 8886;
+    final int brokerWebServicePort = 8885;
+    final int brokerServicePort = 8886;
 
     final ServiceConfiguration config = new ServiceConfiguration();
     config.setClusterName(CLUSTER_NAME);
@@ -88,10 +88,10 @@ public class PulsarClientTest {
     pulsarService.start();
 
     try (final PulsarAdmin admin = pulsarService.getAdminClient()) {
-      ClusterData clusterData = new ClusterData(pulsarService.getBrokerServiceUrl());
+      final ClusterData clusterData = new ClusterData(pulsarService.getBrokerServiceUrl());
       admin.clusters().createCluster(CLUSTER_NAME, clusterData);
 
-      TenantInfo propAdmin = new TenantInfo();
+      final TenantInfo propAdmin = new TenantInfo();
       propAdmin.getAdminRoles().add("superUser");
       propAdmin.setAllowedClusters(Sets.newHashSet(Lists.newArrayList(CLUSTER_NAME)));
 
@@ -140,7 +140,7 @@ public class PulsarClientTest {
       else
         producer.send("My message".getBytes());
 
-      Message<byte[]> message;
+      final Message<byte[]> message;
       if (async)
         message = consumer.receiveAsync().get(15, TimeUnit.SECONDS);
       else
