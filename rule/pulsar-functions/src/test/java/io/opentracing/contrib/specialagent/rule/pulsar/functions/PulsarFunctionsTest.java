@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.AgentRunner.Config;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -36,7 +37,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
 import org.apache.pulsar.broker.loadbalance.impl.SimpleLoadManagerImpl;
@@ -74,13 +74,12 @@ public class PulsarFunctionsTest {
   // Pulsar doesn't yet support the latest JDK versions. We are still on 1.8
   private static final boolean isJdkSupported = System.getProperty("java.version").startsWith("1.8.");
   private static final String CLUSTER_NAME = "use";
-  private static final int ZOOKEEPER_PORT = 8880;
-  private static final AtomicInteger port = new AtomicInteger(ZOOKEEPER_PORT);
+  private static final int ZOOKEEPER_PORT = TestUtil.nextFreePort();
   private static final String tenant = "external-repl-prop";
-  private static final int brokerWebServicePort = 8885;
-  private static final int brokerServicePort = 8886;
+  private static final int brokerWebServicePort = TestUtil.nextFreePort();
+  private static final int brokerServicePort = TestUtil.nextFreePort();
   private static final String pulsarFunctionsNamespace = tenant + "/use/pulsar-function-admin";
-  private static final int workerServicePort = 9999;
+  private static final int workerServicePort = TestUtil.nextFreePort();
   private static final String namespacePortion = "io";
   private static final String replNamespace = tenant + "/" + namespacePortion;
   private static final String sourceTopic = "persistent://" + replNamespace + "/my-topic1";
@@ -99,7 +98,7 @@ public class PulsarFunctionsTest {
     if (!isJdkSupported)
       return;
 
-    bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
+    bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, TestUtil::nextFreePort);
     bkEnsemble.start();
 
     final String brokerServiceUrl = "http://127.0.0.1:" + brokerWebServicePort;

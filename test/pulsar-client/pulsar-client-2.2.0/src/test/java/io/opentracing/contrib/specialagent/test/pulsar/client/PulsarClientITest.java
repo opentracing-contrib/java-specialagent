@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
@@ -41,8 +40,7 @@ import io.opentracing.contrib.specialagent.TestUtil;
 
 public class PulsarClientITest {
   private static final String CLUSTER_NAME = "test-cluster";
-  private static final int ZOOKEEPER_PORT = 8880;
-  private static final AtomicInteger port = new AtomicInteger(ZOOKEEPER_PORT);
+  private static final int ZOOKEEPER_PORT = TestUtil.nextFreePort();
 
   public static void main(final String[] args) throws Exception {
     if (!System.getProperty("java.version").startsWith("1.8.")) {
@@ -50,11 +48,11 @@ public class PulsarClientITest {
       return;
     }
 
-    final LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, port::incrementAndGet);
+    final LocalBookkeeperEnsemble bkEnsemble = new LocalBookkeeperEnsemble(3, ZOOKEEPER_PORT, TestUtil::nextFreePort);
     bkEnsemble.startStandalone();
 
-    final int brokerWebServicePort = 8885;
-    final int brokerServicePort = 8886;
+    final int brokerWebServicePort = TestUtil.nextFreePort();
+    final int brokerServicePort = TestUtil.nextFreePort();
 
     final ServiceConfiguration config = new ServiceConfiguration();
     config.setClusterName(CLUSTER_NAME);
