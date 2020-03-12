@@ -15,7 +15,18 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.ServerSocket;
+import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +45,11 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public final class TestUtil {
+  private static final int BASE_PORT = 15000;
+  private static final int MAX_PORT = 32000;
+  private static final int MAX_PORT_CONFLICTS = 100;
+  private static final String lockFilename = System.getProperty("java.io.tmpdir") + File.pathSeparator + "sa-port.lock";
+
   public static CountDownLatch initExpectedSpanLatch(final int expectedSpans) {
     if (!(TestUtil.getGlobalTracer() instanceof MockTracer))
       return null;
@@ -243,6 +259,75 @@ public final class TestUtil {
       this.componentName = componentName;
       this.count = count;
       this.sameTrace = sameTrace;
+    }
+  }
+
+  /**
+   * Return a TCP port that is currently unused.
+   *
+   * Keeps track of assigned ports and avoid race condition between different processes.
+   *
+   */
+  public synchronized static int nextFreePort() {
+    Path path = Paths.get(lockFilename);
+
+    try {
+      FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+      FileLock lock = fileChannel.lock();
+
+      try {
+
+        FileReader reader = new FileReader(lockFilename);
+        CharBuffer buffer = CharBuffer.allocate(16);
+        int len = reader.read(buffer);
+        buffer.flip();
+
+        int lastUsedPort = BASE_PORT;
+        if (len > 0) {
+          String lastUsedPortStr = buffer.toString();
+          lastUsedPort = Integer.parseInt(lastUsedPortStr);
+        }
+
+        int freePort = probeFreePort(lastUsedPort + 1);
+
+        FileWriter writer = new FileWriter(lockFilename);
+        writer.write(Integer.toString(freePort));
+
+        reader.close();
+        writer.close();
+
+        return freePort;
+
+      } finally {
+        lock.release();
+        fileChannel.close();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private synchronized static int probeFreePort(int port) {
+    int exceptionCount = 0;
+    while (true) {
+      if (port == MAX_PORT) {
+        // Rollover the port probe
+        port = BASE_PORT;
+      }
+
+      try (ServerSocket ss = new ServerSocket(port)) {
+        ss.close();
+        // Give it some time to truly close the connection
+        Thread.sleep(100);
+        return port;
+
+      } catch (Exception e) {
+        port++;
+        exceptionCount++;
+        if (exceptionCount > MAX_PORT_CONFLICTS) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 
