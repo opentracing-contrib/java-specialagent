@@ -81,6 +81,9 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   @Parameter(property="skipTests")
   private boolean skipTests = false;
 
+  @Parameter(property="skipCompatibilityTests")
+  private boolean skipCompatibilityTests = false;
+
   @Parameter(property = "failAtEnd")
   private boolean failAtEnd;
 
@@ -284,8 +287,21 @@ public final class CompatibilityTestMojo extends AbstractMojo {
       return;
     }
 
-    if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests)) {
-      getLog().info("Tests are skipped (" + (mavenTestSkip ? "maven.test.skip" : "skipTests") + "=true)");
+    if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests || skipCompatibilityTests)) {
+      final StringBuilder builder = new StringBuilder("Tests are skipped (");
+      if (mavenTestSkip)
+        builder.append("maven.test.skip=true; ");
+
+      if (skipTests)
+        builder.append("skipTests=true; ");
+
+      if (skipCompatibilityTests)
+        builder.append("skipCompatibilityTests=true; ");
+
+      builder.setLength(builder.length() - 2);
+      builder.append(")");
+
+      getLog().info(builder.toString());
       return;
     }
 

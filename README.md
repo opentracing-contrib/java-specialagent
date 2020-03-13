@@ -114,6 +114,8 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely o
     mvn clean install
     ```
 
+    _**Note**: If you skip tests, the `assemble` profile will display an error stating that tests have not been run. See [Convenient One-Liners](#convenient-one-liners) for quick ways to build and package [<ins>SpecialAgent</ins>](#41-specialagent)_.
+
 1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.9.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.9.jar`][main-release] will contain the built rules inside it.
 
     _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.9.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)!_
@@ -130,6 +132,26 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely o
     ```bash
     mvn clean install && mvn -Dassemble install
     ```
+
+##### Convenient One-Liners
+
+1. Skipping tests when building [<ins>SpecialAgent</ins>](#41-specialagent).
+
+   ```bash
+   mvn -DskipTests clean install
+   ```
+
+1. Skipping compatibility tests when building [<ins>SpecialAgent</ins>](#41-specialagent) rules.
+
+   ```bash
+   mvn -DskipCompatibilityTests clean install
+   ```
+
+1. Packaging [<ins>SpecialAgent</ins>](#41-specialagent) with rules that skipped test execution.
+
+   ```bash
+   mvn -Dassemble -DignoreMissingTestManifest install
+   ```
 
 ##### 2.1.2.1 [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
 
@@ -541,6 +563,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Akka Actor](https://github.com/opentracing-contrib/java-akka) | [`akka:actor`][akka-actor] | 2.5.0 | LATEST |
 | Akka Http | [`akka:http`][akka-http] | 10.1.0 | LATEST |
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
+| Apache CXF | [`cxf`][cxf] | 3.3.3 | LATEST |
 | [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | LATEST |
 | [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | LATEST |
 | [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | LATEST |
@@ -636,6 +659,8 @@ Thank you to the following contributors for developing instrumentation plugins:
 * [Sergei Malafeev](https://github.com/malafeev)
 * [Jose Montoya](https://github.com/jam01)
 * [Przemyslaw Maciolek](https://github.com/pmaciolek)
+* [Jianshao Wu](https://github.com/jianshaow)
+* [Gregor Zeitlinger](https://github.com/zeitlinger)
 
 Thank you to the following contributors for developing tracer plugins:
 
@@ -650,7 +675,6 @@ Thank you to the following developers for filing issues and helping us fix them:
 * [@deepakgoenka](https://github.com/deepakgoenka)
 * [Prometheus](https://github.com/etsangsplk)
 * [Randall Theobald](https://github.com/randallt)
-* [Jianshao Wu](https://github.com/jianshaow)
 
 Thank you to the following individuals for all other general contributions to the codebase:
 
@@ -677,6 +701,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [aws-sdk-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-1
 [aws-sdk-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/aws-sdk-2
 [camel]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/camel
+[cxf]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cxf
 [cassandra-driver-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-3
 [cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-4
 [concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent

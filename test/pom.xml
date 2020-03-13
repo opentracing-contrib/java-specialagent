@@ -41,6 +41,7 @@
     <module>cassandra-driver</module>
     <module>concurrent</module>
     <module>couchbase-client</module>
+    <module>cxf</module>
     <module>dynamic</module>
     <module>elasticsearch-client</module>
     <module>feign</module>

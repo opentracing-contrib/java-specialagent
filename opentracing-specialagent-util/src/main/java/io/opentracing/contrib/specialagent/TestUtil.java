@@ -15,18 +15,8 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.ServerSocket;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -47,57 +38,14 @@ import io.opentracing.util.GlobalTracer;
 public final class TestUtil {
   private static final int MIN_PORT = 15000;
   private static final int MAX_PORT = 32000;
-  private static final int MAX_PORT_CONFLICTS = 100;
-  private static final String lockFilename = System.getProperty("java.io.tmpdir") + File.pathSeparator + "sa-port.lock";
+  private static final AtomicInteger port = new AtomicInteger(MIN_PORT);
 
-  /**
-   * Return a TCP port that is currently unused. Keeps track of assigned ports
-   * and avoid race condition between different processes.
-   *
-   * @return A TCP port that is currently unused.
-   */
-  public synchronized static int nextFreePort() {
-    final Path path = Paths.get(lockFilename);
-    try (final FileChannel channel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
-      final FileLock lock = channel.lock();
-
-      final int lastUsedPort;
-      try (final FileReader reader = new FileReader(lockFilename)) {
-        final CharBuffer buffer = CharBuffer.allocate(16);
-        final int len = reader.read(buffer);
-        buffer.flip();
-
-        lastUsedPort = len > 0 ? Integer.parseInt(buffer.toString()) : MIN_PORT;
+  public static int nextFreePort() {
+    for (int p; (p = port.getAndIncrement()) <= MAX_PORT;) {
+      try (final ServerSocket socket = new ServerSocket(p)) {
+        return p;
       }
-
-      final int freePort = probeFreePort(lastUsedPort + 1);
-      try (final FileWriter writer = new FileWriter(lockFilename)) {
-        writer.write(Integer.toString(freePort));
-      }
-      finally {
-        lock.release();
-        channel.close();
-      }
-
-      return freePort;
-    }
-    catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private synchronized static int probeFreePort(int port) {
-    for (int i = 0; i < MAX_PORT_CONFLICTS; ++i) {
-      if (port >= MAX_PORT) {
-        // Rollover the port probe
-        port = MIN_PORT;
-      }
-
-      try (final ServerSocket socket = new ServerSocket(port)) {
-        socket.close();
-        return port;
-      }
-      catch (final Exception e) {
+      catch (final Exception ignore) {
       }
     }
 
