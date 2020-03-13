@@ -114,6 +114,8 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely o
     mvn clean install
     ```
 
+    _**Note**: If you skip tests, the `assemble` profile will display an error stating that tests have not been run. See [Convenient One-Liners](#convenient-one-liners) for quick ways to build and package [<ins>SpecialAgent</ins>](#41-specialagent)_.
+
 1. The `assemble` profile is used to bundle the [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) into [`opentracing-specialagent-1.5.9.jar`][main-release]. It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the [`opentracing-specialagent-1.5.9.jar`][main-release] will contain the built rules inside it.
 
     _**Note**: If you do not run this step, the [`opentracing-specialagent-1.5.9.jar`][main-release] from the previous step will not contain any [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)!_
@@ -130,6 +132,26 @@ The [<ins>SpecialAgent</ins>](#41-specialagent) is built in 2 passes that rely o
     ```bash
     mvn clean install && mvn -Dassemble install
     ```
+
+##### Convenient One-Liners
+
+1. Skipping tests when building [<ins>SpecialAgent</ins>](#41-specialagent).
+
+   ```bash
+   mvn -DskipTests clean install
+   ```
+
+1. Skipping compatibility tests when building [<ins>SpecialAgent</ins>](#41-specialagent) rules.
+
+   ```bash
+   mvn -DskipCompatibilityTests clean install
+   ```
+
+1. Packaging [<ins>SpecialAgent</ins>](#41-specialagent) with rules that skipped test execution.
+
+   ```bash
+   mvn -Dassemble -DignoreMissingTestManifest install
+   ```
 
 ##### 2.1.2.1 [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin)
 
