@@ -13,7 +13,6 @@ public class MockServer {
 
     MockServer() {
         linkLocalIp = NetUtils.getLocalAddress().getHostAddress();
-        linkLocalIp = "10.0.0.2";
         if (linkLocalIp != null) {
             // avoid dubbo's logic which might pick docker ip
             System.setProperty(Constants.DUBBO_IP_TO_BIND, linkLocalIp);
