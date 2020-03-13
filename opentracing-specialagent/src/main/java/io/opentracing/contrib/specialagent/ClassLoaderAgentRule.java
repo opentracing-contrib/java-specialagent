@@ -87,7 +87,6 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
     @SuppressWarnings("unused")
     @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
     public static void exit(final @Advice.This ClassLoader thiz, final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-      System.err.println("LoadClass: " + thiz.getClass().getName());
       if (returned != null || isExcluded(thiz))
         return;
 
@@ -105,9 +104,8 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
           return;
         }
 
-        if (name.startsWith("io.opentracing.")) {
+        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
           final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClass(name);
-          System.err.println("LoadClass: " + name + " " + isoClass);
           if (isoClass != null) {
             returned = isoClass;
             thrown = null;
@@ -150,8 +148,18 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
 
       try {
         final URL resource = SpecialAgent.findResource(thiz, name);
-        if (resource != null)
+        if (resource != null) {
           returned = resource;
+          return;
+        }
+
+        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+          final URL isoResource = SpecialAgent.isoClassLoader.findResource(name);
+          if (isoResource != null) {
+            returned = isoResource;
+            return;
+          }
+        }
       }
       catch (final Throwable t) {
         log("<><><><> ClassLoaderAgent.FindResource#exit", t, DefaultLevel.SEVERE);
@@ -176,10 +184,14 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
 
       try {
         final Enumeration<URL> resources = SpecialAgent.findResources(thiz, name);
-        if (resources == null)
-          return;
+        if (resources != null)
+          returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
 
-        returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
+        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+          final Enumeration<URL> isoResources = SpecialAgent.isoClassLoader.findResources(name);
+          if (isoResources != null)
+            returned = returned == null ? isoResources : new CompoundEnumeration<>(returned, isoResources);
+        }
       }
       catch (final Throwable t) {
         log("<><><><> ClassLoaderAgent.FindResources#exit", t, DefaultLevel.SEVERE);
