@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.zuul</groupId>
     <artifactId>zuul</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.0</version>
   </parent>
   <artifactId>zuul-1.0.0</artifactId>
   <name>SpecialAgent Test for Netflix Zuul 1.0.0</name>
