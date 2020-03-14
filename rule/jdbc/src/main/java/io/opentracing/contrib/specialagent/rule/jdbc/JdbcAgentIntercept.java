@@ -52,6 +52,7 @@ public class JdbcAgentIntercept {
       }
     }
 
+    System.out.println("JdbcAgentIntercept: " + JdbcAgentIntercept.class.getClassLoader());
     return tracingDriver.get().connect(url, info);
   }
 

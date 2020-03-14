@@ -4,9 +4,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 public class AgentRunnerClassLoader extends URLClassLoader {
-  public final URL[] iso;
-  public AgentRunnerClassLoader(final URL[] urls, final URL[] iso, final ClassLoader parent) {
+  public final IsoClassLoader isoClassLoader;
+
+  public AgentRunnerClassLoader(final URL[] urls, final URL[] isoUrls, final ClassLoader parent) {
     super(urls, parent);
-    this.iso = iso;
+    this.isoClassLoader = new IsoClassLoader(isoUrls, this);
   }
 }

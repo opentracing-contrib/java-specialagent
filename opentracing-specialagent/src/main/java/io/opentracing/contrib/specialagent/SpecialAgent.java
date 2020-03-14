@@ -115,16 +115,16 @@ public class SpecialAgent {
    * @param inst The {@code Instrumentation}.
    */
   public static void premain(final String agentArgs, final Instrumentation inst) {
-    premain(agentArgs, inst, null, ClassLoader.getSystemClassLoader());
+    premain(agentArgs, inst, null);
   }
 
-  public static void premain(final String agentArgs, final Instrumentation inst, final URL[] isoUrls, final ClassLoader appClassLoader) {
+  public static void premain(final String agentArgs, final Instrumentation inst, final IsoClassLoader isoClassLoader) {
     SpecialAgent.inst = inst;
     try {
       if (agentArgs != null)
         AssembleUtil.absorbProperties(agentArgs);
 
-      init(isoUrls, appClassLoader);
+      init(isoClassLoader);
     }
     catch (final Throwable t) {
       logger.log(Level.SEVERE, "Terminating initialization of SpecialAgent due to:", t);
@@ -132,7 +132,7 @@ public class SpecialAgent {
   }
 
   /** Initialize the SpecialAgent in a sequence of steps. */
-  private static void init(final URL[] isoUrls, final ClassLoader appClassLoader) throws IOException, ReflectiveOperationException {
+  private static void init(final IsoClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
     if (logger.isLoggable(Level.FINE))
       logger.fine("Initializing SpecialAgent\n");
 
@@ -155,7 +155,7 @@ public class SpecialAgent {
 
     // Finally, load the Instrumentation Plugins and Tracer Plugins with the
     // provided `Manager`.
-    load(instrumenter.manager, isoUrls, appClassLoader);
+    load(instrumenter.manager, isoClassLoader);
 
     final long startupTime = (System.currentTimeMillis() - startTime) / 10;
     if (logger.isLoggable(Level.FINE))
@@ -171,7 +171,7 @@ public class SpecialAgent {
    * @throws ReflectiveOperationException If a reflective operation error has
    *           occurred.
    */
-  private static void load(final Manager manager, final URL[] iso, final ClassLoader appClassLoader) throws IOException, ReflectiveOperationException {
+  private static void load(final Manager manager, final IsoClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("SpecialAgent#load(" + manager.getClass().getSimpleName() + ") java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
@@ -237,23 +237,28 @@ public class SpecialAgent {
       }
     };
 
-    final ArrayList<URL> isoUrls = new ArrayList<>();
+    if (isoClassLoader != null) {
+      SpecialAgent.isoClassLoader = isoClassLoader;
+    }
+    else {
+      final ArrayList<URL> isoUrls = new ArrayList<>();
 
-    // Process the ext JARs from AssembleUtil#META_INF_EXT_PATH
-    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_ISO_PATH, destDir, new Predicate<File>() {
-      @Override
-      public boolean test(final File file) {
-        try {
-          isoUrls.add(new URL("file", "", file.getAbsolutePath()));
-          return true;
+      // Process the ext JARs from AssembleUtil#META_INF_EXT_PATH
+      SpecialAgentUtil.findJarResources(UtilConstants.META_INF_ISO_PATH, destDir, new Predicate<File>() {
+        @Override
+        public boolean test(final File file) {
+          try {
+            isoUrls.add(new URL("file", "", file.getAbsolutePath()));
+            return true;
+          }
+          catch (final MalformedURLException e) {
+            throw new IllegalStateException(e);
+          }
         }
-        catch (final MalformedURLException e) {
-          throw new IllegalStateException(e);
-        }
-      }
-    });
+      });
 
-    isoClassLoader = new IsoClassLoader(iso != null && isoUrls.size() == 0 ? iso : isoUrls.toArray(new URL[isoUrls.size()]), appClassLoader);
+      SpecialAgent.isoClassLoader = new IsoClassLoader(isoUrls.toArray(new URL[isoUrls.size()]), ClassLoader.getSystemClassLoader());
+    }
 
     // Process the plugin JARs from AssembleUtil#META_INF_PLUGIN_PATH
     final Predicate<File> loadPluginPredicate = new Predicate<File>() {

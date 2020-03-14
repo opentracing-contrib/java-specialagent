@@ -106,9 +106,6 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
         if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
           final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
           if (isoClass != null) {
-            if (name.contains("OkHttpAgentIntercept"))
-              System.out.println("XXX: " + isoClass.getClassLoader());
-
             returned = isoClass;
             thrown = null;
             return;

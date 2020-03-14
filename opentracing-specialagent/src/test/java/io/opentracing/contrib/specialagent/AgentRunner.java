@@ -108,7 +108,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       final File[] classpath = AssembleUtil.classPathToFiles(System.getProperty("java.class.path"));
       final String dependenciesTgf = new String(AssembleUtil.readBytes(dependenciesUrl));
       final File[] bootstrapFiles = SpecialAgentUtil.filterRuleURLs(classpath, dependenciesTgf, true, "compile");
-
+      System.out.println("Bootstrap1: " + Arrays.toString(bootstrapFiles));
       inst = Elevator.install(bootstrapFiles);
     }
     catch (final IOException e) {
@@ -258,15 +258,16 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       testRulePaths.add(0, new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
       final Set<String> testClasses = AgentUtil.getClassFiles(testRulePaths);
 
-      final URL[] isoUrls = AssembleUtil.toURLs(SpecialAgentUtil.filterRuleURLs(classpath, dependenciesTgf, false, "provided"));
+      final File[] isoUrls = SpecialAgentUtil.filterRuleURLs(classpath, dependenciesTgf, false, "provided");
       System.out.println("Iso: " + Arrays.toString(isoUrls));
+      final Set<String> isoClasses = AgentUtil.getClassFiles(Arrays.asList(isoUrls));
 
       final File[] bootstrapFiles = SpecialAgentUtil.filterRuleURLs(classpath, dependenciesTgf, true, "compile");
-      System.out.println("Bootstrap: " + Arrays.toString(bootstrapFiles));
+      System.out.println("Bootstrap2: " + Arrays.toString(bootstrapFiles));
       final Set<String> bootstrapClasses = AgentUtil.getClassFiles(Arrays.asList(bootstrapFiles));
 
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-      final AgentRunnerClassLoader isolatedClassLoader = new AgentRunnerClassLoader(AssembleUtil.toURLs(classpath), isoUrls, parent) {
+      final AgentRunnerClassLoader isolatedClassLoader = new AgentRunnerClassLoader(AssembleUtil.toURLs(classpath), AssembleUtil.toURLs(isoUrls), parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           final String resourceName = AssembleUtil.classNameToResource(name);
@@ -277,6 +278,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
         protected Class<?> foo(final String name, final boolean resolve) throws ClassNotFoundException {
           final String resourceName = AssembleUtil.classNameToResource(name);
+          if (isoClasses.contains(resourceName))
+            return isoClassLoader.loadClass(name);
+
           if (bootstrapClasses.contains(resourceName))
             return BootProxyClassLoader.INSTANCE.loadClass(name);
 
@@ -454,18 +458,16 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
 
     try {
-      final URL[] iso;
-      final ClassLoader appClassLoader;
+      final IsoClassLoader isoClassLoader;
       if (testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader()) {
-        appClassLoader = getTestClass().getJavaClass().getClassLoader();
-        iso = ((AgentRunnerClassLoader)appClassLoader).iso;
+        final AgentRunnerClassLoader appClassLoader = (AgentRunnerClassLoader)getTestClass().getJavaClass().getClassLoader();
+        isoClassLoader = appClassLoader.isoClassLoader;
       }
       else {
-        appClassLoader = ClassLoader.getSystemClassLoader();
-        iso = null;
+        isoClassLoader = null;
       }
 
-      SpecialAgent.premain(null, inst, iso, appClassLoader);
+      SpecialAgent.premain(null, inst, isoClassLoader);
     }
     catch (final Throwable e) {
       e.printStackTrace();

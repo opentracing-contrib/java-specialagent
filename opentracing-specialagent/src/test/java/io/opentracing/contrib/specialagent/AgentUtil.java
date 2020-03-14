@@ -40,7 +40,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  *
  * @author Seva Safris
  */
-final class AgentUtil {
+public final class AgentUtil {
   private static final Predicate<String> predicate = new Predicate<String>() {
     @Override
     public boolean test(final String t) {
@@ -58,7 +58,7 @@ final class AgentUtil {
    *         well as subpaths of the paths.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<String> getClassFiles(final List<File> files) throws IOException {
+  public static Set<String> getClassFiles(final List<File> files) throws IOException {
     final Set<String> classFiles = new HashSet<>();
     for (final File file : files) {
       if (file.isDirectory()) {
