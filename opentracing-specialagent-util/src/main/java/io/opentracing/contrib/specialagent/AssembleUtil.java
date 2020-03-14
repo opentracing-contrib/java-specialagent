@@ -15,10 +15,15 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.Constants.*;
+
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -154,6 +160,9 @@ public final class AssembleUtil {
           continue;
 
         token = token.substring(0, token.length() - 11);
+      }
+      else if (includeOptional) {
+        continue;
       }
 
       // groupId
@@ -911,6 +920,131 @@ public final class AssembleUtil {
       return Pattern.compile(regex + ".*");
 
     return Pattern.compile("(" + regex + "$|" + regex + ":.*)");
+  }
+
+  /**
+   * Returns the source location of the specified resource in the specified URL.
+   *
+   * @param url The {@code URL} from which to find the source location.
+   * @param resourcePath The resource path that is the suffix of the specified
+   *          URL.
+   * @return The source location of the specified resource in the specified URL.
+   * @throws MalformedURLException If no protocol is specified, or an unknown
+   *           protocol is found, or spec is null.
+   * @throws IllegalArgumentException If the specified resource path is not the
+   *           suffix of the specified URL.
+   */
+  public static File getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
+    final String string = url.toString();
+    if (!string.endsWith(resourcePath))
+      throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
+
+    if (string.startsWith("jar:file:"))
+      return new File(string.substring(9, string.lastIndexOf('!')));
+
+    if (string.startsWith("file:"))
+      return new File(string.substring(5, string.length() - resourcePath.length()));
+
+    throw new UnsupportedOperationException("Unsupported protocol: " + url.getProtocol());
+  }
+
+  /**
+   * Returns the name of the file or directory denoted by the specified
+   * pathname. This is just the last name in the name sequence of {@code path}.
+   * If the name sequence of {@code path} is empty, then the empty string is
+   * returned.
+   *
+   * @param path The path string.
+   * @return The name of the file or directory denoted by the specified
+   *         pathname, or the empty string if the name sequence of {@code path}
+   *         is empty.
+   * @throws NullPointerException If {@code path} is null.
+   * @throws IllegalArgumentException If {@code path} is an empty string.
+   */
+  public static String getName(final String path) {
+    if (path.length() == 0)
+      throw new IllegalArgumentException("Empty path");
+
+    if (path.length() == 0)
+      return path;
+
+    final boolean end = path.charAt(path.length() - 1) == File.separatorChar;
+    final int start = end ? path.lastIndexOf(File.separatorChar, path.length() - 2) : path.lastIndexOf(File.separatorChar);
+    return start == -1 ? (end ? path.substring(0, path.length() - 1) : path) : end ? path.substring(start + 1, path.length() - 1) : path.substring(start + 1);
+  }
+
+  private static boolean propertiesLoaded = false;
+
+  private static void loadProperties(final Map<String,String> properties, final BufferedReader reader) throws IOException {
+    for (String line; (line = reader.readLine()) != null;) {
+      line = line.trim();
+      char ch;
+      if (line.length() == 0 || (ch = line.charAt(0)) == '#' || ch == '!')
+        continue;
+
+      final int eq = line.indexOf('=');
+      if (eq == -1) {
+        properties.put(line, "");
+      }
+      else if (eq > 0) {
+        final String key = line.substring(0, eq).trim();
+        final String value = line.substring(eq + 1).trim();
+        if (key.length() > 0)
+          properties.put(key, value);
+      }
+    }
+  }
+
+  static void loadProperties() {
+    if (propertiesLoaded)
+      return;
+
+    propertiesLoaded = true;
+    final String configProperty = System.getProperty(CONFIG_ARG);
+    try (
+      final InputStream defaultConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream("default.properties");
+      final FileReader userConfig = configProperty == null ? null : new FileReader(configProperty);
+    ) {
+      final Map<String,String> properties = new HashMap<>();
+
+      // Load default config properties
+      loadProperties(properties, new BufferedReader(new InputStreamReader(defaultConfig)));
+
+      // Load user config properties
+      if (userConfig != null)
+        loadProperties(properties, new BufferedReader(userConfig));
+
+      // Set config properties as system properties
+      for (final Map.Entry<String,String> entry : properties.entrySet())
+        if (System.getProperty(entry.getKey()) == null)
+          System.setProperty(entry.getKey(), entry.getValue());
+
+      Logger.refreshLoggers();
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * Returns an array of {@link File} objects representing each path entry in
+   * the specified {@code classpath}.
+   *
+   * @param classpath The classpath which to convert to an array of {@link File}
+   *          objects.
+   * @return An array of {@link File} objects representing each path entry in
+   *         the specified {@code classpath}.
+   */
+  public static File[] classPathToFiles(final String classpath) {
+    if (classpath == null)
+      return null;
+
+    final String[] paths = classpath.split(File.pathSeparator);
+    final File[] files = new File[paths.length];
+    for (int i = 0; i < paths.length; ++i)
+      files[i] = new File(paths[i]).getAbsoluteFile();
+
+    return files;
   }
 
   private AssembleUtil() {

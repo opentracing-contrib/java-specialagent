@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -226,8 +228,21 @@ public final class FingerprintMojo extends TreeMojo {
     final String pluginName = "sa.rule.name." + name;
     getLog().info("--> " + pluginName + " <--");
     final File nameFile = new File(getProject().getBuild().getOutputDirectory(), pluginName);
-    if (!nameFile.exists() && !nameFile.createNewFile())
-      throw new MojoExecutionException("Unable to create file: " + nameFile.getAbsolutePath());
+    for (final Artifact artifact : getProject().getDependencyArtifacts()) {
+      final String adapterClassName = AssembleUtil.readFileFromJar(artifact.getFile(), "META-INF/services/io.opentracing.contrib.specialagent.Adapter");
+      if (adapterClassName != null) {
+        final String[] lines = adapterClassName.split("\n");
+        for (String line : lines) {
+          line = line.trim();
+          if (line.length() > 0 && line.charAt(0) != '#') {
+            Files.write(nameFile.toPath(), line.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return;
+          }
+        }
+      }
+    }
+
+    throw new MojoExecutionException("Dependency with adapter implementation was not found");
   }
 
   private String apiVersion;

@@ -20,7 +20,7 @@ import java.util.List;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import play.shaded.ahc.io.netty.channel.Channel;
@@ -67,7 +67,7 @@ public class TracingAsyncHandler implements AsyncHandler<Object> {
 
   @Override
   public void onThrowable(final Throwable throwable) {
-    AgentRuleUtil.setErrorTag(span, throwable);
+    OpenTracingApiUtil.setErrorTag(span, throwable);
     try {
       asyncHandler.onThrowable(throwable);
     }

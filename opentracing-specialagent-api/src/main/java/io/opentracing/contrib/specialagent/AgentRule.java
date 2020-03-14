@@ -94,10 +94,10 @@ public abstract class AgentRule {
         parentValue = Boolean.TRUE;
       }
 
-      if (!parentValue || AgentRuleUtil.tracerClassLoader == null)
+      if (!parentValue || Adapter.tracerClassLoader == null)
         return parentValue;
 
-      return !AgentRuleUtil.isFromClassLoader(AgentRuleUtil.getExecutionStack(), AgentRuleUtil.tracerClassLoader);
+      return !AgentRuleUtil.isFromClassLoader(AgentRuleUtil.getExecutionStack(), Adapter.tracerClassLoader);
     }
 
     @Override

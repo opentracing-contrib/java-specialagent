@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
@@ -26,6 +27,10 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+
 /**
  * Utility functions for the {@code AgentRunner}. This class was created as an
  * indirection from {@code AgentRunner} in order to solve class loading problems
@@ -35,7 +40,7 @@ import java.util.jar.JarFile;
  *
  * @author Seva Safris
  */
-class AgentUtil {
+final class AgentUtil {
   private static final Predicate<String> predicate = new Predicate<String>() {
     @Override
     public boolean test(final String t) {
@@ -56,17 +61,7 @@ class AgentUtil {
   static Set<String> getClassFiles(final List<File> files) throws IOException {
     final Set<String> classFiles = new HashSet<>();
     for (final File file : files) {
-      if (file.getName().endsWith(".jar")) {
-        try (final JarFile jarFile = new JarFile(file)) {
-          final Enumeration<JarEntry> entries = jarFile.entries();
-          while (entries.hasMoreElements()) {
-            final JarEntry entry = entries.nextElement();
-            if (predicate.test(entry.getName()))
-              classFiles.add(entry.getName());
-          }
-        }
-      }
-      else {
+      if (file.isDirectory()) {
         final Path filePath = file.toPath();
         AssembleUtil.recurseDir(file, new Predicate<File>() {
           @Override
@@ -79,8 +74,24 @@ class AgentUtil {
           }
         });
       }
+      else if (file.getName().endsWith(".jar")) {
+        try (final JarFile jarFile = new JarFile(file)) {
+          final Enumeration<JarEntry> entries = jarFile.entries();
+          while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            if (predicate.test(entry.getName()))
+              classFiles.add(entry.getName());
+          }
+        }
+      }
+      else {
+        throw new IOException("Unknown file type: " + file);
+      }
     }
 
     return classFiles;
+  }
+
+  private AgentUtil() {
   }
 }

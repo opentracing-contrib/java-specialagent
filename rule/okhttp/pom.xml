@@ -26,6 +26,8 @@
   <artifactId>okhttp</artifactId>
   <name>SpecialAgent Rule for OkHttp</name>
   <properties>
+    <maven.compiler.source>13</maven.compiler.source>
+    <maven.compiler.target>13</maven.compiler.target>
     <sa.rule.name>okhttp</sa.rule.name>
     <min.version>3.5.0</min.version>
     <passCompatibility>com.squareup.okhttp3:okhttp:[${min.version},]</passCompatibility>

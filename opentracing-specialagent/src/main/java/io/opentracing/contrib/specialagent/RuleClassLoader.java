@@ -63,7 +63,7 @@ class RuleClassLoader extends URLClassLoader {
   private final ClassLoaderMap<Boolean> compatibility = new ClassLoaderMap<>();
   private final ClassLoaderMap<Boolean> injected = new ClassLoaderMap<>();
   private final PluginManifest pluginManifest;
-  private final IsoClassLoader isoClassLoader;
+  private final ClassLoader isoClassLoader;
 
   /**
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
@@ -75,7 +75,7 @@ class RuleClassLoader extends URLClassLoader {
    * @param parent The parent {@code ClassLoader}.
    * @param files The classpath URLs.
    */
-  RuleClassLoader(final PluginManifest pluginManifest, final IsoClassLoader isoClassLoader, final ClassLoader parent, final File ... files) {
+  RuleClassLoader(final PluginManifest pluginManifest, final ClassLoader isoClassLoader, final ClassLoader parent, final File ... files) {
     super(AssembleUtil.toURLs(files), parent);
     this.pluginManifest = pluginManifest;
     this.isoClassLoader = isoClassLoader;

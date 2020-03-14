@@ -26,6 +26,8 @@
   <artifactId>spring-webmvc</artifactId>
   <name>SpecialAgent Rule for Spring Web MVC</name>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <version.spring>3.0.2.RELEASE</version.spring>
     <version.jetty>9.3.15.v20161220</version.jetty>
     <sa.rule.name>spring:webmvc</sa.rule.name>

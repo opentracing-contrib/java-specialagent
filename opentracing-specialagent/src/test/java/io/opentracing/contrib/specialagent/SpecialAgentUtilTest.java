@@ -17,11 +17,7 @@ package io.opentracing.contrib.specialagent;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-
 import org.junit.Test;
-
-import io.opentracing.contrib.specialagent.Manager.Event;
 
 /**
  * Tests for methods in {@link SpecialAgentUtil}.
@@ -56,21 +52,5 @@ public class SpecialAgentUtilTest {
     assertNull(events[Event.DISCOVERY.ordinal()]);
     assertNull(events[Event.ERROR.ordinal()]);
     assertNull(events[Event.IGNORED.ordinal()]);
-  }
-
-  @Test
-  public void testGetName() {
-    try {
-      SpecialAgentUtil.getName("");
-      fail("Expected IllegalArgumentException");
-    }
-    catch (final IllegalArgumentException e) {
-    }
-
-    final String name = "opentracing-specialagent-1.3.3-SNAPSHOT.jar";
-    final String s = File.separator;
-    assertEquals(name, SpecialAgentUtil.getName(name));
-    assertEquals(name, SpecialAgentUtil.getName("." + s + name));
-    assertEquals(name, SpecialAgentUtil.getName("foo" + s + "bar" + s + name));
   }
 }

@@ -36,7 +36,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     /**
      * Find the _Fields constant that matches fieldId, or null if its not found.
      */
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
         case 1: // NAME
@@ -61,7 +61,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     /**
      * Find the _Fields constant that matches name, or null if its not found.
      */
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public static _Fields findByName(String name) {
       return byName.get(name);
     }
@@ -132,7 +132,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     this.age = 0;
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public String getName() {
     return this.name;
   }
@@ -201,7 +201,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case NAME:
@@ -309,7 +309,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
     return 0;
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public _Fields fieldForId(int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
@@ -383,7 +383,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
           break;
         }
         switch (schemeField.id) {
@@ -391,7 +391,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.name = iprot.readString();
               struct.setNameIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -399,7 +399,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.age = iprot.readI32();
               struct.setAgeIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;

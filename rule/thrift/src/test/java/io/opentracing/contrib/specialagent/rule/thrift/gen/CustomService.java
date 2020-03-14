@@ -1204,7 +1204,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 1: // TEXT
@@ -1229,7 +1229,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -1297,7 +1297,7 @@ public class CustomService {
       this.text2 = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getText() {
       return this.text;
     }
@@ -1322,7 +1322,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getText2() {
       return this.text2;
     }
@@ -1368,7 +1368,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TEXT:
@@ -1478,7 +1478,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -1673,7 +1673,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 0: // SUCCESS
@@ -1696,7 +1696,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -1756,7 +1756,7 @@ public class CustomService {
       this.success = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getSuccess() {
       return this.success;
     }
@@ -1794,7 +1794,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -1876,7 +1876,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -2040,7 +2040,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 1: // DELAY
@@ -2063,7 +2063,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -2162,7 +2162,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case DELAY:
@@ -2242,7 +2242,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -2402,7 +2402,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 0: // SUCCESS
@@ -2425,7 +2425,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -2485,7 +2485,7 @@ public class CustomService {
       this.success = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getSuccess() {
       return this.success;
     }
@@ -2523,7 +2523,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -2605,7 +2605,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -2767,7 +2767,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           default:
@@ -2788,7 +2788,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -2838,7 +2838,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       }
@@ -2892,7 +2892,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -3023,7 +3023,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 0: // SUCCESS
@@ -3046,7 +3046,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -3106,7 +3106,7 @@ public class CustomService {
       this.success = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getSuccess() {
       return this.success;
     }
@@ -3144,7 +3144,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -3226,7 +3226,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -3388,7 +3388,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           default:
@@ -3409,7 +3409,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -3459,7 +3459,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       }
@@ -3513,7 +3513,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -3644,7 +3644,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 0: // SUCCESS
@@ -3667,7 +3667,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -3727,7 +3727,7 @@ public class CustomService {
       this.success = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getSuccess() {
       return this.success;
     }
@@ -3765,7 +3765,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -3847,7 +3847,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -4011,7 +4011,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 3333: // INPUT
@@ -4034,7 +4034,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -4094,7 +4094,7 @@ public class CustomService {
       this.input = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getInput() {
       return this.input;
     }
@@ -4132,7 +4132,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case INPUT:
@@ -4214,7 +4214,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -4378,7 +4378,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 0: // SUCCESS
@@ -4401,7 +4401,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -4461,7 +4461,7 @@ public class CustomService {
       this.success = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public String getSuccess() {
       return this.success;
     }
@@ -4499,7 +4499,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -4581,7 +4581,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -4743,7 +4743,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           default:
@@ -4764,7 +4764,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -4814,7 +4814,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       }
@@ -4868,7 +4868,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -4997,7 +4997,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           default:
@@ -5018,7 +5018,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -5068,7 +5068,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       }
@@ -5122,7 +5122,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -5256,7 +5256,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 1: // USER
@@ -5281,7 +5281,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -5349,7 +5349,7 @@ public class CustomService {
       this.address = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public User getUser() {
       return this.user;
     }
@@ -5374,7 +5374,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Address getAddress() {
       return this.address;
     }
@@ -5420,7 +5420,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case USER:
@@ -5530,7 +5530,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -5718,7 +5718,7 @@ public class CustomService {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new save_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new save_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable
+//    public @org.apache.thrift.annotation.Nullable
     UserWithAddress success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -5736,7 +5736,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
           case 0: // SUCCESS
@@ -5759,7 +5759,7 @@ public class CustomService {
       /**
        * Find the _Fields constant that matches name, or null if its not found.
        */
-      @org.apache.thrift.annotation.Nullable
+//      @org.apache.thrift.annotation.Nullable
       public static _Fields findByName(String name) {
         return byName.get(name);
       }
@@ -5819,7 +5819,7 @@ public class CustomService {
       this.success = null;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public UserWithAddress getSuccess() {
       return this.success;
     }
@@ -5857,7 +5857,7 @@ public class CustomService {
       }
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -5939,7 +5939,7 @@ public class CustomService {
       return 0;
     }
 
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
@@ -6006,7 +6006,7 @@ public class CustomService {
         while (true)
         {
           schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
             break;
           }
           switch (schemeField.id) {
@@ -6015,7 +6015,7 @@ public class CustomService {
                 struct.success = new UserWithAddress();
                 struct.success.read(iprot);
                 struct.setSuccessIsSet(true);
-              } else { 
+              } else {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;

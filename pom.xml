@@ -239,6 +239,7 @@
         </property>
       </activation>
       <modules>
+        <module>opentracing-adapter</module>
         <module>opentracing-specialagent-api</module>
         <module>opentracing-specialagent-util</module>
         <module>fingerprint</module>
@@ -533,6 +534,16 @@
   </build>
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>opentracing-adapter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>fingerprint</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>io.opentracing.contrib.specialagent</groupId>
         <artifactId>opentracing-specialagent-api</artifactId>

@@ -78,6 +78,7 @@ public final class VerifyMojo extends AbstractMojo {
           throw new IllegalStateException("Unexpected file: " + file.getAbsolutePath());
 
         boolean hasOtaRulesMf = false;
+        boolean hasAdapterMf = false;
         boolean hasFingerprintBin = false;
         boolean hasDependenciesTgf = false;
         boolean hasTestManifest = false;
@@ -88,6 +89,8 @@ public final class VerifyMojo extends AbstractMojo {
             final String entry = entries.nextElement().getName();
             if ("otarules.mf".equals(entry)) // Deliberately unlinked from ByteBuddyManager#RULES_FILE
               hasOtaRulesMf = true;
+            else if ("adapter.mf".equals(entry))
+              hasAdapterMf = true;
             else if ("fingerprint.bin".equals(entry))
               hasFingerprintBin = true;
             else if ("dependencies.tgf".equals(entry))
@@ -106,6 +109,9 @@ public final class VerifyMojo extends AbstractMojo {
 
           continue;
         }
+
+        if (!hasAdapterMf)
+          throw new MojoExecutionException(file.getName() + " does not have adapter.mf");
 
         if (!hasFingerprintBin)
           throw new MojoExecutionException(file.getName() + " does not have fingerprint.bin");

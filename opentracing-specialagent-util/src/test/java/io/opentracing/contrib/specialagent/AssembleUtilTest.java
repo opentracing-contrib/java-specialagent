@@ -22,9 +22,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
-
-import io.opentracing.noop.NoopTracer;
 
 /**
  * Tests for methods in {@link AssembleUtil}.
@@ -265,16 +264,17 @@ public class AssembleUtilTest {
 
   @Test
   public void testGetRulePathsCompileExclude() throws IOException {
-    final Set<String> expected = new HashSet<>();
-    expected.add("opentracing-concurrent-0.1.0.jar");
-    expected.add("opentracing-okhttp3-0.1.0.jar");
-    expected.add("specialagent-okhttp-0.0.0-SNAPSHOT.jar");
-    expected.add("lightstep-tracer-jre-bundle-0.16.1.jar");
-    expected.add("opentracing-specialagent2-0.0.0-SNAPSHOT-tests.jar");
-    expected.add("opentracing-api-0.32.0.jar");
+    final HashSet<String> expected = new HashSet<>();
+    expected.add("mockwebserver-3.6.0.jar");
+    expected.add("bcprov-jdk15on-1.50.jar");
+    expected.add("opentracing-mock-0.32.0.jar");
+    expected.add("opentracing-util-0.32.0.jar");
+    expected.add("opentracing-specialagent1-0.0.0-SNAPSHOT-tests.jar");
+    expected.add("hamcrest-core-1.3.jar");
 
-    final String test = new String(AssembleUtil.readBytes(new File("src/test/resources/test.tgf").toURI().toURL()));
-    final Set<File> files = AssembleUtil.selectFromTgf(test, false, new String[] {"compile"}, NoopTracer.class);
+    final String tgf = new String(AssembleUtil.readBytes(new File("src/test/resources/test.tgf").toURI().toURL()));
+    final Set<File> files = AssembleUtil.selectFromTgf(tgf, false, new String[] {"test"}, Ignore.class);
+    assertEquals(expected.size(), files.size());
     for (final File file : files)
       assertTrue(file.getName(), expected.contains(file.getName()));
   }
@@ -320,5 +320,21 @@ public class AssembleUtilTest {
       "lettuce:5", "lettuce:5.1", "lettuce:5.2");
     testRegexMatch("lettuce", "(^lettuce$|^lettuce:.*)",
       "lettuce:5", "lettuce:5.0", "lettuce:5.1", "lettuce:5.2");
+  }
+
+  @Test
+  public void testGetName() {
+    try {
+      AssembleUtil.getName("");
+      fail("Expected IllegalArgumentException");
+    }
+    catch (final IllegalArgumentException e) {
+    }
+
+    final String name = "opentracing-specialagent-1.3.3-SNAPSHOT.jar";
+    final String s = File.separator;
+    assertEquals(name, AssembleUtil.getName(name));
+    assertEquals(name, AssembleUtil.getName("." + s + name));
+    assertEquals(name, AssembleUtil.getName("foo" + s + "bar" + s + name));
   }
 }

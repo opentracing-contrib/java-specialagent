@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -49,6 +48,8 @@ import net.bytebuddy.utility.JavaModule;
 public class BootLoaderAgent {
 //  public static final Logger logger = Logger.getLogger(BootLoaderAgent.class);
   public static final CachedClassFileLocator cachedLocator;
+  public static final List<JarFile> jarFiles = new ArrayList<>();
+  private static boolean loaded = false;
 
   static {
     try {
@@ -64,9 +65,6 @@ public class BootLoaderAgent {
       throw new ExceptionInInitializerError(e);
     }
   }
-
-  public static final List<JarFile> jarFiles = new ArrayList<>();
-  private static boolean loaded = false;
 
   public static void premain(final Instrumentation inst, final JarFile ... jarFiles) {
     if (loaded)
@@ -123,8 +121,6 @@ public class BootLoaderAgent {
     .installOn(inst);
 
     loaded = true;
-//    final Class<?> x = ClassLoader.getSystemClassLoader().loadClass("io.opentracing.Tracer");
-    Tracer.class.getName();
   }
 
   public static class Mutex extends ThreadLocal<Set<String>> {
@@ -153,6 +149,7 @@ public class BootLoaderAgent {
           if (entry != null) {
             try {
               resource = new URL("jar:file:" + jarFile.getName() + "!/" + name);
+              System.out.println("BL: " + name + " " + resource);
               break;
             }
             catch (final MalformedURLException e) {

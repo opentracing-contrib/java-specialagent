@@ -158,6 +158,10 @@
           <groupId>io.opentracing.contrib.specialagent</groupId>
           <artifactId>opentracing-specialagent-util</artifactId>
         </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent</groupId>
+          <artifactId>opentracing-adapter</artifactId>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>

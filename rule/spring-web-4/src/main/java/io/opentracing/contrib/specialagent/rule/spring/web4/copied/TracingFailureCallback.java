@@ -1,9 +1,10 @@
 package io.opentracing.contrib.specialagent.rule.spring.web4.copied;
 
+import org.springframework.util.concurrent.FailureCallback;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import org.springframework.util.concurrent.FailureCallback;
 
 public class TracingFailureCallback implements FailureCallback {
   private final FailureCallback callback;

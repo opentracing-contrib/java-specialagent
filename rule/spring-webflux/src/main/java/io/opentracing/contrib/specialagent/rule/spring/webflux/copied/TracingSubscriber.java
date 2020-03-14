@@ -15,15 +15,16 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
-import io.opentracing.Span;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Subscription;
 import org.springframework.web.server.ServerWebExchange;
+
+import io.opentracing.Span;
 import reactor.core.CoreSubscriber;
 import reactor.util.context.Context;
-
-import java.util.List;
 
 /**
  * Similar to {@code WebFilterTraceSubscriber} from spring-could-sleuth-core.

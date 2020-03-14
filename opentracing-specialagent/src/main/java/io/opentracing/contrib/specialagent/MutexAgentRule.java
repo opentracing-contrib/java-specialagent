@@ -20,12 +20,6 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 import java.util.Arrays;
 import java.util.List;
 
-import io.opentracing.Scope;
-import io.opentracing.ScopeManager;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -41,17 +35,13 @@ public class MutexAgentRule extends DefaultAgentRule {
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     log("\n<<<<<<<<<<<<<<<<<< Installing MutexAgentRule >>>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
-    System.err.println(MutexAgentRule.class.getClassLoader());
-    final Class<?> x = ClassLoader.getSystemClassLoader().loadClass("io.opentracing.Tracer");
-    final Class<?> y = Class.forName("io.opentracing.Tracer");
-    System.err.println(x);
     final List<Extendable> builders = Arrays.asList(builder
-      .type(isSubTypeOf(Tracer.class)
-        .or(isSubTypeOf(Scope.class))
-        .or(isSubTypeOf(ScopeManager.class))
-        .or(isSubTypeOf(Span.class))
-        .or(isSubTypeOf(SpanBuilder.class))
-        .or(isSubTypeOf(SpanContext.class)))
+      .type(hasSuperType(named("io.opentracing.Tracer")))
+        .or(hasSuperType(named("io.opentracing.Scope")))
+        .or(hasSuperType(named("io.opentracing.ScopeManager")))
+        .or(hasSuperType(named("io.opentracing.Span")))
+        .or(hasSuperType(named("io.opentracing.SpanBuilder")))
+        .or(hasSuperType(named("io.opentracing.SpanContext")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {

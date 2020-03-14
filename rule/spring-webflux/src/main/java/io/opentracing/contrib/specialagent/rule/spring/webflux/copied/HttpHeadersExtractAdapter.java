@@ -13,14 +13,15 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
-import io.opentracing.propagation.TextMap;
-import org.springframework.http.HttpHeaders;
-
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import org.springframework.http.HttpHeaders;
+
+import io.opentracing.propagation.TextMap;
 
 /**
  * Tracer extract adapter for {@link HttpHeaders}.

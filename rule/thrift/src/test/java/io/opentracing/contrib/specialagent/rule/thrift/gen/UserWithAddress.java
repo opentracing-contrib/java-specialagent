@@ -36,7 +36,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     /**
      * Find the _Fields constant that matches fieldId, or null if its not found.
      */
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
         case 1: // USER
@@ -61,7 +61,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     /**
      * Find the _Fields constant that matches name, or null if its not found.
      */
-    @org.apache.thrift.annotation.Nullable
+//    @org.apache.thrift.annotation.Nullable
     public static _Fields findByName(String name) {
       return byName.get(name);
     }
@@ -129,7 +129,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     this.address = null;
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public User getUser() {
     return this.user;
   }
@@ -154,7 +154,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public Address getAddress() {
     return this.address;
   }
@@ -200,7 +200,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case USER:
@@ -310,7 +310,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
     return 0;
   }
 
-  @org.apache.thrift.annotation.Nullable
+//  @org.apache.thrift.annotation.Nullable
   public _Fields fieldForId(int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
@@ -394,7 +394,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
           break;
         }
         switch (schemeField.id) {
@@ -403,7 +403,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
               struct.user = new User();
               struct.user.read(iprot);
               struct.setUserIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -412,7 +412,7 @@ public class UserWithAddress implements org.apache.thrift.TBase<UserWithAddress,
               struct.address = new Address();
               struct.address.read(iprot);
               struct.setAddressIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;

@@ -35,7 +35,7 @@ import io.opentracing.Tracer;
  * @author Seva Safris
  */
 public abstract class ClassLoaderAgentTest {
-  private static final Instrumentation inst = AgentRunner.install();
+  private static final Instrumentation inst = Elevator.install(null);
 
   static {
     try {

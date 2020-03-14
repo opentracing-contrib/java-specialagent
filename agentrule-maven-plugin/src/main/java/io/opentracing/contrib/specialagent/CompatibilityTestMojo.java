@@ -259,7 +259,7 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   private List<Dependency> getFingerprintedDependencies() {
     final List<Dependency> dependencies = new ArrayList<>();
     for (final Dependency dependency : project.getDependencies())
-      if (dependency.isOptional())
+      if (dependency.isOptional() && "provided".equals(dependency.getScope()))
         dependencies.add(dependency);
 
     return dependencies;

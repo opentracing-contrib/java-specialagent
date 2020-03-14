@@ -14,14 +14,16 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.web40.copied;
 
-import io.opentracing.Span;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 //import org.springframework.util.concurrent.FailureCallback;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 //import org.springframework.util.concurrent.SuccessCallback;
+
+import io.opentracing.Span;
 
 public class TracingListenableFuture implements ListenableFuture {
   private final ListenableFuture listenableFuture;

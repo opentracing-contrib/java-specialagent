@@ -14,14 +14,11 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.web5.copied;
 
+import org.springframework.util.concurrent.ListenableFutureCallback;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 public class TracingListenableFutureCallback implements ListenableFutureCallback {
   private final ListenableFutureCallback callback;

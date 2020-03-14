@@ -27,8 +27,8 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingAsyncRequestCallback;
 import io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingListenableFuture;
 import io.opentracing.contrib.specialagent.rule.spring.web4.copied.TracingListenableFutureCallback;
@@ -71,7 +71,7 @@ public class SpringWebAgentIntercept {
       return response;
 
     if (thrown != null) {
-      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+      OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);
       context.closeAndFinish();
       return response;
     }

@@ -30,7 +30,8 @@ public class IsoClassLoader extends URLClassLoader {
     private final AtomicReference<Set<String>> isoNames = new AtomicReference<>();
     private final URL[] isoClassPaths;
 
-    private IsoParentClassLoader(final URL[] isoClassPaths) {
+    private IsoParentClassLoader(final URL[] isoClassPaths, final ClassLoader parent) {
+      super(parent);
       this.isoClassPaths = isoClassPaths;
       if (logger.isLoggable(Level.FINEST))
         logger.finest("new IsoParentClassLoader(" + AssembleUtil.toIndentedString(isoClassPaths) + ")");
@@ -50,6 +51,7 @@ public class IsoClassLoader extends URLClassLoader {
             @Override
             public void accept(final String name, final Void arg) {
               names.add(name);
+//              System.out.println("### " + name);
             }
           });
 
@@ -66,8 +68,8 @@ public class IsoClassLoader extends URLClassLoader {
     protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
       final boolean isNameIso = getNames().contains(AssembleUtil.classNameToResource(name));
       final Class<?> cls = isNameIso ? null : super.loadClass(name, resolve);
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("~~~~~~~~ IsoParentClassLoader.loadClass(\"" + name + "\", " + resolve + ") [" + isNameIso + "]: " + cls);
+//      if (logger.isLoggable(Level.FINEST))
+        System.out.println("~~~~~~~~ IsoParentClassLoader.loadClass(\"" + name + "\", " + resolve + ") [" + isNameIso + "]: " + cls);
 
       return cls;
     }
@@ -83,7 +85,16 @@ public class IsoClassLoader extends URLClassLoader {
     }
   }
 
-  IsoClassLoader(final URL[] urls) {
-    super(urls, new IsoParentClassLoader(urls));
+  IsoClassLoader(final URL[] urls, final ClassLoader parent) {
+    super(urls, new IsoParentClassLoader(urls, parent));
+  }
+
+  public Class<?> loadClassOrNull(final String name) {
+    try {
+      return loadClass(name);
+    }
+    catch (final ClassNotFoundException e) {
+      return null;
+    }
   }
 }
