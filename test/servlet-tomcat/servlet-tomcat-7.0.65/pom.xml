@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.servlet-tomcat</groupId>
     <artifactId>servlet-tomcat</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1-SNAPSHOT</version>
   </parent>
   <artifactId>servlet-tomcat-7.0.65</artifactId>
   <name>SpecialAgent Test for Tomcat 7.0.65</name>

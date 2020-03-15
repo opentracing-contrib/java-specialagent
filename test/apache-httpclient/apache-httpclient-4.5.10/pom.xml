@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.apache-httpclient</groupId>
     <artifactId>apache-httpclient</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1-SNAPSHOT</version>
   </parent>
   <artifactId>apache-httpclient-4.5.10</artifactId>
   <name>SpecialAgent Test for Apache HttpClient 4.5.10</name>
