@@ -1,5 +1,18 @@
 # Changes by Version
 
+## v1.6.0 (2020-03-14)
+* [Rewritable Tracer](https://github.com/opentracing-contrib/java-specialagent#37-rewritable-tracer) (#407 #415 #437 #479 #486)
+* Support "optional deferrable" rule attibute (#445)
+* Static Deferred Attach: Fix spring-kafka (#461)
+* Static Deferred Attach: Fix spring-messaging (#460 #470)
+* Static Deferred Attach: Fix spring-websocket (#474 #478)
+* Static Deferred Attach: Fix spring-messaging and spring-kafka (#481)
+* Auto-Compatibility Test: Auto-assert compatibility of instrumentation plugins (#462)
+* Auto-Compatibility Test: Support multiple pass/fail compatibility specs (#469)
+* Auto-Compatibility Test: Support complex pass/fail compatibility specs (#472)
+* Fix generated classes in Thrift rule (#489)
+* [Implement Apache CXF Instrumentation Plugin](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cxf) (#476)
+
 ## v1.5.9 (2020-02-28)
 * Enable Static Deferred Attach for `spring-kafka` integration test (#425)
 * Fix failing Pulsar Functions integration test (#418)
