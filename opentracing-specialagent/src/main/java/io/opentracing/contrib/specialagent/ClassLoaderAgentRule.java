@@ -68,7 +68,7 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
 
   public static boolean isExcluded(final ClassLoader thiz) {
     final String className = thiz.getClass().getName();
-    return className.startsWith("io.opentracing.contrib.specialagent.RuleClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader");
+    return className.startsWith("io.opentracing.contrib.specialagent.RuleClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.AgentRunnerClassLoader");
   }
 
   public static class DefineClass {

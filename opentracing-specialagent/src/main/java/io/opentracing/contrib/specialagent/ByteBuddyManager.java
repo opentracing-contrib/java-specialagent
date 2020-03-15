@@ -136,7 +136,7 @@ public class ByteBuddyManager extends Manager {
               continue;
             }
 
-            final Class<?> agentClass = Class.forName(line, true, pluginsClassLoader);
+            final Class<?> agentClass = pluginsClassLoader.loadClass(line);
             if (!AgentRule.class.isAssignableFrom(agentClass)) {
               logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
               continue;

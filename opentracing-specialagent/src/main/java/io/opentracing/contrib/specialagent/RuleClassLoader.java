@@ -53,7 +53,8 @@ class RuleClassLoader extends URLClassLoader {
         logger.finest("Class#forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
 
       try {
-        Class.forName(className, false, classLoader);
+        classLoader.loadClass(className);
+//        Class.forName(className, false, classLoader);
       }
       catch (final ClassNotFoundException e) {
       }
@@ -181,7 +182,7 @@ class RuleClassLoader extends URLClassLoader {
       return true;
     }
 
-    final Class<?> libraryFingerprintClass = Class.forName("io.opentracing.contrib.specialagent.LibraryFingerprint", true, isoClassLoader);
+    final Class<?> libraryFingerprintClass = isoClassLoader.loadClass("io.opentracing.contrib.specialagent.LibraryFingerprint");
     final Method fromFileMethod = libraryFingerprintClass.getDeclaredMethod("fromFile", URL.class);
     final Object fingerprint = fromFileMethod.invoke(null, pluginManifest.getFingerprint());
     if (fingerprint != null) {

@@ -272,7 +272,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           final String resourceName = AssembleUtil.classNameToResource(name);
           final Class<?> cls = foo(name, resolve);
-          System.err.println("CL: " + name + " " + bootstrapClasses.contains(resourceName) + " " + pluginClasses.contains(resourceName) + " " + testClasses.contains(resourceName) + " " + (cls != null) + (cls != null ? " " + cls.getClassLoader() : ""));
+          System.err.println("AgentRunnerClassLoader: " + name + " " + bootstrapClasses.contains(resourceName) + " " + pluginClasses.contains(resourceName) + " " + testClasses.contains(resourceName) + " " + (cls != null) + (cls != null ? " " + cls.getClassLoader() : ""));
           return cls;
         }
 

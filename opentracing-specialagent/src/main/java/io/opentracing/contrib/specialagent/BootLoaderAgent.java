@@ -55,7 +55,7 @@ public class BootLoaderAgent {
     try {
       cachedLocator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(),
         // BootLoaderAgent @Advice classes
-        FindBootstrapClassOrNull.class, FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
+        ForName1.class, ForName2.class, FindBootstrapClassOrNull.class, FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         ClassLoaderAgentRule.DefineClass.class, ClassLoaderAgentRule.LoadClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
@@ -81,6 +81,17 @@ public class BootLoaderAgent {
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE);
+
+    final Narrowable forName = builder.type(is(Class.class));
+    forName.transform(new Transformer() {
+      @Override
+      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+        return builder
+          .visit(Advice.to(ForName1.class, cachedLocator).on(isStatic().and(named("forName").and(returns(Class.class).and(takesArguments(1).and(takesArgument(0, String.class)))))))
+          .visit(Advice.to(ForName1.class, cachedLocator).on(isStatic().and(named("forName").and(returns(Class.class).and(takesArguments(3).and(takesArgument(0, String.class)))))))
+          .visit(Advice.to(ForName2.class, cachedLocator).on(isStatic().and(named("forName").and(returns(Class.class).and(takesArguments(2).and(takesArgument(1, String.class)))))));
+      }})
+    .installOn(inst);
 
     final Narrowable j8 = builder.type(isSubTypeOf(ClassLoader.class));
     j8.transform(new Transformer() {
@@ -144,6 +155,70 @@ public class BootLoaderAgent {
     }
   }
 
+  public static class ForName1 {
+    public static final Mutex mutex = new Mutex();
+
+    @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
+    public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
+      if (returned != null || jarFiles.size() == 0)
+        return;
+
+      final Set<String> visited;
+      if (!(visited = mutex.get()).add(name))
+        return;
+
+      try {
+        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
+          System.out.println("BootLoaderAgent.ForName1: " + name + " " + isoClass);
+          if (isoClass != null) {
+            returned = isoClass;
+            thrown = null;
+            return;
+          }
+        }
+      }
+      catch (final Throwable t) {
+        log("<><><><> BootLoaderAgent.ForName1#exit", t, DefaultLevel.SEVERE);
+      }
+      finally {
+        visited.remove(name);
+      }
+    }
+  }
+
+  public static class ForName2 {
+    public static final Mutex mutex = new Mutex();
+
+    @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
+    public static void exit(final @Advice.Argument(2) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
+      if (returned != null || jarFiles.size() == 0)
+        return;
+
+      final Set<String> visited;
+      if (!(visited = mutex.get()).add(name))
+        return;
+
+      try {
+        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
+          System.out.println("BootLoaderAgent.ForName2: " + name + " " + isoClass);
+          if (isoClass != null) {
+            returned = isoClass;
+            thrown = null;
+            return;
+          }
+        }
+      }
+      catch (final Throwable t) {
+        log("<><><><> BootLoaderAgent.ForName2#exit", t, DefaultLevel.SEVERE);
+      }
+      finally {
+        visited.remove(name);
+      }
+    }
+  }
+
   public static class FindBootstrapClassOrNull {
     public static final Mutex mutex = new Mutex();
 
@@ -158,9 +233,8 @@ public class BootLoaderAgent {
 
       try {
         if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-          if (name.contains("GlobalTracer"))
-            System.out.println("ZZZ: FindBootstrapClassOrNull");
           final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
+          System.out.println("BootLoaderAgent.FindBootstrapClassOrNull: " + name + " " + isoClass);
           if (isoClass != null) {
             returned = isoClass;
             return;
@@ -210,9 +284,8 @@ public class BootLoaderAgent {
         }
 
         if (SpecialAgent.isoClassLoader != null && name.startsWith("io/opentracing/")) {
-          if (name.contains("GlobalTracer"))
-            System.out.println("ZZZ: FindBootstrapResource");
           final URL isoResource = SpecialAgent.isoClassLoader.getResource(name);
+          System.out.println("BootLoaderAgent.FindBootstrapResource: " + name + " " + isoResource);
           if (isoResource != null) {
             returned = isoResource;
             return;
@@ -261,9 +334,8 @@ public class BootLoaderAgent {
         }
 
         if (SpecialAgent.isoClassLoader != null && name.startsWith("io/opentracing/")) {
-          if (name.contains("GlobalTracer"))
-            System.out.println("ZZZ: FindBootstrapResources");
           final Enumeration<URL> isoResources = SpecialAgent.isoClassLoader.getResources(name);
+          System.out.println("BootLoaderAgent.FindBootstrapResource: " + name + " " + (isoResources == null ? "null" : isoResources.hasMoreElements()));
           if (isoResources != null)
             returned = returned == null ? isoResources : new CompoundEnumeration<>(returned, isoResources);
         }

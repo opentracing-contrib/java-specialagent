@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,6 +36,7 @@ import io.opentracing.mock.MockTracer;
  * @author Jose Montoya
  * @author Seva Safris
  */
+@Ignore
 @RunWith(AgentRunner.class)
 public class ExecutorTest extends AbstractConcurrentTest {
   private ExecutorService executorService;

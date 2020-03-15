@@ -447,7 +447,7 @@ public class SpecialAgent {
         final Map<AgentRule,PluginManifest> deferrers = manager.scanRules(inst, pluginsClassLoader, pluginManifestDirectory, pluginManifests, classNameToName);
         try {
           for (final PluginManifest pluginManifest : pluginManifests.values()) {
-            final Class<?> cls = Class.forName(pluginManifest.adapterClassName, true, isoClassLoader);
+            final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
             System.out.println(cls.getClassLoader() + " " + Adapter.class.getClassLoader());
             ((Adapter)cls.getConstructor().newInstance()).loadTracer(pluginsClassLoader, isoClassLoader);
           }

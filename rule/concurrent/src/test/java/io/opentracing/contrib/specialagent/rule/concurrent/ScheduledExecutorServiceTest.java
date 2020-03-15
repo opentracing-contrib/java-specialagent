@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,6 +37,7 @@ import io.opentracing.mock.MockTracer;
  * @author Jose Montoya
  * @author Seva Safris
  */
+@Ignore
 @RunWith(AgentRunner.class)
 public class ScheduledExecutorServiceTest extends AbstractConcurrentTest {
   private static final int NUMBER_OF_THREADS = 4;
