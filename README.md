@@ -183,11 +183,11 @@ The `test-jar` is the **test** artifact that contains the `AgentRunner` class, w
 
 [<ins>Tracer Plugins</ins>](#43-tracer-plugin) are integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) by specifying a "provided" dependency in the `!itest` profile in the [root POM][specialagent-pom]. For instance, the dependency for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is:
 
-```
+```xml
 <dependency>
   <groupId>io.opentracing.contrib</groupId>
   <artifactId>jaeger-client-bundle</artifactId>
-  <version>0.0.3</version>
+  <version>1.0.0</version>
   <scope>provided</scope>
 </dependency>
 ```
@@ -196,7 +196,7 @@ The `test-jar` is the **test** artifact that contains the `AgentRunner` class, w
 
 Each [<ins>Tracer Plugin</ins>](#43-tracer-plugin) integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) must define a <ins>Short Name</ins>, which is a string that is used to reference the plugin with the `-Dsa.plugin=<SHORT_NAME>` system property. To provide a <ins>Short Name</ins> for the [<ins>Tracer Plugin</ins>](#43-tracer-plugin), you must define a Maven property in the [root POM][specialagent-pom] with the name matching the `artifactId` of the [<ins>Tracer Plugin</ins>](#43-tracer-plugin) module. For instance, the <ins>Short Name</ins> for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is defined as:
 
-```
+```xml
 <properties>
 ...
   <jaeger-client-bundle>jaeger</jaeger-client-bundle>
