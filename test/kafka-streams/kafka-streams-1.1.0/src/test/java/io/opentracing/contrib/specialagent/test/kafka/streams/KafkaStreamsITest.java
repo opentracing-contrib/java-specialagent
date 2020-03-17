@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.test.kafka.streams;
 
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
-import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;

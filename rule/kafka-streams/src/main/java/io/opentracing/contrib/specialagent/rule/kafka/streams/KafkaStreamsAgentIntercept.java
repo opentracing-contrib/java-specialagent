@@ -19,11 +19,9 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.kafka.HeadersMapInjectAdapter;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
-import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -41,6 +39,8 @@ public class KafkaStreamsAgentIntercept {
     final StampedRecord stampedRecord = (StampedRecord) record;
     final SpanBuilder spanBuilder = tracer.buildSpan("consume")
         .withTag(Tags.COMPONENT, "kafka-streams")
+        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
+        .withTag(Tags.PEER_SERVICE, "kafka")
         .withTag("partition", stampedRecord.partition())
         .withTag("offset", stampedRecord.offset());
 
