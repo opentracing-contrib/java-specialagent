@@ -32,8 +32,10 @@ public class KafkaStreamsAgentIntercept {
     if (record == null)
       return;
 
-    if (LocalSpanContext.get() != null)
+    if (LocalSpanContext.get() != null) {
       LocalSpanContext.get().increment();
+      return;
+    }
 
     final Tracer tracer = GlobalTracer.get();
     final StampedRecord stampedRecord = (StampedRecord) record;
