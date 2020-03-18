@@ -46,6 +46,6 @@ public class RxJavaITest {
     });
 
     Observable.just("Hello", "World").subscribe(System.out::println);
-    TestUtil.checkSpan(new ComponentSpanCount("rxjava-2", 2, true));
+    TestUtil.checkSpan(new ComponentSpanCount("rxjava-2", 2));
   }
 }
