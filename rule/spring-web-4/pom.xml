@@ -30,8 +30,7 @@
     <min.version>4.1.0.RELEASE</min.version>
     <max.version>5.0.0.RELEASE</max.version>
     <passCompatibility>org.springframework:spring-web:[${min.version},${max.version})</passCompatibility>
-    <!-- FIXME: Fail compatibility test is failing. -->
-    <!--failCompatibility>org.springframework:spring-web:[3.0.3.RELEASE,${min.version}),[${max.version},]</failCompatibility-->
+    <failCompatibility>org.springframework:spring-web:[3.0.3.RELEASE,${min.version}),[${max.version},]</failCompatibility>
   </properties>
   <build>
     <plugins>
