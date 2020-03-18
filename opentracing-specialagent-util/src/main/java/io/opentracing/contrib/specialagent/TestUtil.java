@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -143,13 +142,8 @@ public final class TestUtil {
       }
     }
 
-    if (sameTrace && traceIds.size() > 1) {
-      final Iterator<Long> iterator = traceIds.iterator();
-      final long traceId = iterator.next();
-      while (iterator.hasNext())
-        if (iterator.next() != traceId)
-          throw new AssertionError("Not the same trace");
-    }
+    if (sameTrace && traceIds.size() > 1)
+      throw new AssertionError("Not the same trace");
 
     for (final ComponentSpanCount componentSpanCount : componentSpanCounts) {
       if (!spanCountMap.containsKey(componentSpanCount.componentName))
