@@ -591,6 +591,7 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [JAX-RS Client](https://github.com/opentracing-contrib/java-jaxrs) | [`jax-rs`][jaxrs] | 2.0 | LATEST |
 | [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | [`jedis`][jedis] | 2.7.0 | 3.1.0 |
 | [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:client`][kafka-client] | 1.1.0 | LATEST |
+| [Kafka Streams](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:streams`][kafka-streams] | 1.1.0 | LATEST |
 | [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | [`lettuce:5.0`][lettuce-5.0] | 5.0.0.RELEASE | 5.0.5.RELEASE |
 | | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.RELEASE | 5.1.8.RELEASE |
 | | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | LATEST |
@@ -722,6 +723,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-1
 [jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-2
 [kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-client
+[kafka-streams]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-streams
 [lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.0
 [lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
 [lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
