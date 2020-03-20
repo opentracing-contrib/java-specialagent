@@ -45,6 +45,20 @@
                   <dependencies>
                     <dependency>
                       <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-http_2.11</artifactId>
+                      <version>com.typesafe.akka:akka-http_2.11:[${min.version},]</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-actor_2.11</artifactId>
+                      <version>2.5.11</version>
+                    </dependency>
+                  </dependencies>
+                </pass>
+                <pass>
+                  <dependencies>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
                       <artifactId>akka-http_2.12</artifactId>
                       <version>com.typesafe.akka:akka-http_2.12:[${min.version},]</version>
                     </dependency>
@@ -52,6 +66,20 @@
                       <groupId>com.typesafe.akka</groupId>
                       <artifactId>akka-actor_2.12</artifactId>
                       <version>2.5.11</version>
+                    </dependency>
+                  </dependencies>
+                </pass>
+                <pass>
+                  <dependencies>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-http_2.13</artifactId>
+                      <version>com.typesafe.akka:akka-http_2.13:[10.1.8,]</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-actor_2.13</artifactId>
+                      <version>2.5.23</version>
                     </dependency>
                   </dependencies>
                 </pass>
