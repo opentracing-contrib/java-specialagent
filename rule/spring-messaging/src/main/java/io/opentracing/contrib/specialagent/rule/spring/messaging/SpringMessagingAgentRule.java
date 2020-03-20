@@ -31,18 +31,18 @@ public class SpringMessagingAgentRule extends AgentRule {
   @Override
   public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     return Arrays.asList(builder
-      .type(not(isInterface()).and(hasSuperType(named("org.springframework.beans.factory.ListableBeanFactory"))))
+      .type(hasSuperType(named("org.springframework.integration.channel.AbstractMessageChannel$ChannelInterceptorList")))
       .transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(SpringMessagingAgentRule.class).on(named("getBeansOfType").and(takesArguments(1))));
+        return builder.visit(Advice.to(SpringMessagingAgentRule.class).on(named("preSend")));
       }
     }));
   }
 
-  @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 0) Class<?> arg) {
+  @Advice.OnMethodEnter
+  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
     if (isEnabled("SpringMessagingAgentRule", origin))
-      SpringMessagingAgentIntercept.exit(returned, arg);
+      SpringMessagingAgentIntercept.enter(thiz);
   }
 }

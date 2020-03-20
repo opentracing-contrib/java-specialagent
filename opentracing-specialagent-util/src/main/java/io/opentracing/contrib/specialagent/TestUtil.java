@@ -16,13 +16,16 @@
 package io.opentracing.contrib.specialagent;
 
 import java.lang.reflect.Field;
+import java.net.ServerSocket;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -34,6 +37,22 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public final class TestUtil {
+  private static final int MIN_PORT = 15000;
+  private static final int MAX_PORT = 32000;
+  private static final AtomicInteger port = new AtomicInteger(MIN_PORT);
+
+  public static int nextFreePort() {
+    for (int p; (p = port.getAndIncrement()) <= MAX_PORT;) {
+      try (final ServerSocket socket = new ServerSocket(p)) {
+        return p;
+      }
+      catch (final Exception ignore) {
+      }
+    }
+
+    throw new RuntimeException("Unable to find a free port");
+  }
+
   public static CountDownLatch initExpectedSpanLatch(final int expectedSpans) {
     if (!(TestUtil.getGlobalTracer() instanceof MockTracer))
       return null;
@@ -102,6 +121,7 @@ public final class TestUtil {
     final List<MockSpan> spans = tracer.finishedSpans();
     final Map<String,Integer> spanCountMap = new HashMap<>();
     final Map<String,Long> traceIdMap = new HashMap<>();
+    final Set<Long> traceIds = new HashSet<>();
     for (final MockSpan span : spans) {
       printSpan(span);
       for (final ComponentSpanCount componentSpanCount : componentSpanCounts) {
@@ -114,23 +134,16 @@ public final class TestUtil {
         else
           spanCountMap.put(componentSpanCount.componentName, spanCountMap.get(componentSpanCount.componentName) + 1);
 
-        traceIdMap.put(componentSpanCount.componentName, span.context().traceId());
-
-        if (!componentSpanCount.sameTrace)
-          continue;
-
-        if (traceIdMap.containsKey(componentSpanCount.componentName) && !traceIdMap.get(componentSpanCount.componentName).equals(span.context().traceId()))
+        if (componentSpanCount.sameTrace && traceIdMap.containsKey(componentSpanCount.componentName) && !traceIdMap.get(componentSpanCount.componentName).equals(span.context().traceId()))
           throw new AssertionError("Not the same trace of " + componentSpanCount.componentName);
+
+        traceIds.add(span.context().traceId());
+        traceIdMap.put(componentSpanCount.componentName, span.context().traceId());
       }
     }
 
-    if (sameTrace && traceIdMap.size() > 1) {
-      final Iterator<Long> iterator = traceIdMap.values().iterator();
-      final long traceId = iterator.next();
-      while (iterator.hasNext())
-        if (iterator.next() != traceId)
-          throw new AssertionError("Not the same trace");
-    }
+    if (sameTrace && traceIds.size() > 1)
+      throw new AssertionError("Not the same trace");
 
     for (final ComponentSpanCount componentSpanCount : componentSpanCounts) {
       if (!spanCountMap.containsKey(componentSpanCount.componentName))

@@ -75,6 +75,15 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   @Parameter(defaultValue="${localRepository}", required=true, readonly=true)
   private ArtifactRepository localRepository;
 
+  @Parameter(property="maven.test.skip")
+  private boolean mavenTestSkip = false;
+
+  @Parameter(property="skipTests")
+  private boolean skipTests = false;
+
+  @Parameter(property="skipCompatibilityTests")
+  private boolean skipCompatibilityTests = false;
+
   @Parameter(property = "failAtEnd")
   private boolean failAtEnd;
 
@@ -162,7 +171,7 @@ public final class CompatibilityTestMojo extends AbstractMojo {
   }
 
   private void resolveDependencies(final MavenProject project) throws DependencyResolutionException, LifecycleExecutionException {
-    flushProjectArtifactsCache();
+//    flushProjectArtifactsCache();
 
     final Set<Artifact> dependencyArtifacts = project.getDependencyArtifacts();
     final Map<String,List<MojoExecution>> executions = new LinkedHashMap<>(execution.getForkedExecutions());
@@ -275,6 +284,24 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     isRunning = true;
     if ("pom".equalsIgnoreCase(project.getPackaging())) {
       getLog().info("Skipping for \"pom\" module.");
+      return;
+    }
+
+    if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests || skipCompatibilityTests)) {
+      final StringBuilder builder = new StringBuilder("Tests are skipped (");
+      if (mavenTestSkip)
+        builder.append("maven.test.skip=true; ");
+
+      if (skipTests)
+        builder.append("skipTests=true; ");
+
+      if (skipCompatibilityTests)
+        builder.append("skipCompatibilityTests=true; ");
+
+      builder.setLength(builder.length() - 2);
+      builder.append(")");
+
+      getLog().info(builder.toString());
       return;
     }
 

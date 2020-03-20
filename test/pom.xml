@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent</groupId>
     <artifactId>specialagent</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.1-SNAPSHOT</version>
   </parent>
   <groupId>io.opentracing.contrib.specialagent.test</groupId>
   <artifactId>test</artifactId>
@@ -41,6 +41,7 @@
     <module>cassandra-driver</module>
     <module>concurrent</module>
     <module>couchbase-client</module>
+    <module>cxf</module>
     <module>dynamic</module>
     <module>elasticsearch-client</module>
     <module>feign</module>
@@ -55,6 +56,7 @@
     <module>jedis</module>
     <module>jms</module>
     <module>kafka-client</module>
+    <module>kafka-streams</module>
     <module>lettuce</module>
     <module>mongo-driver-async</module>
     <module>mongo-driver-reactive</module>
@@ -71,6 +73,7 @@
     <module>ratpack</module>
     <module>reactor</module>
     <module>redisson</module>
+    <module>rewrite</module>
     <module>rxjava</module>
     <module>servlet-jetty</module>
     <module>servlet-tomcat</module>

@@ -114,7 +114,8 @@ public abstract class AgentRule {
 
   private static final Logger logger = Logger.getLogger(AgentRule.class);
   private static final MutexLatch mutexLatch = new MutexLatch();
-  private static Map<String,String> classNameToName;
+  private static final ThreadLocal<String> currentAgentRuleClass = new ThreadLocal<>();
+  static Map<String,String> classNameToName;
 
   public static boolean isEnabled(final String agentRuleClass, final String origin) {
     final boolean enabled = initialized && mutexLatch.get() == 0 && isThreadInstrumentable.get();
@@ -122,12 +123,23 @@ public abstract class AgentRule {
     if (enabled) {
       if (logger.isLoggable(Level.FINER))
         logger.finer("-------> Intercept [" + agentRuleClass + "@" + Thread.currentThread().getName() + "]: " + origin);
+
+      currentAgentRuleClass.set(agentRuleClass);
     }
     else if (logger.isLoggable(Level.FINEST)) {
       logger.finest("-------> Intercept [" + agentRuleClass + "@" + Thread.currentThread().getName() + "] DROP: " + origin);
     }
 
     return enabled;
+  }
+
+  public static String getCurrentPluginName() {
+    // FIXME: This is a big performance hit!
+    for (final Map.Entry<String,String> entry : classNameToName.entrySet())
+      if (entry.getKey() == null ? currentAgentRuleClass.get() == null : entry.getKey().endsWith("." + currentAgentRuleClass.get()))
+        return entry.getValue();
+
+    return null;
   }
 
   public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {

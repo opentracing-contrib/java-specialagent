@@ -110,9 +110,11 @@ public class PluginManifest {
     TRACER
   }
 
+  private static final String RULE_NAME_PROPERTY = "sa.rule.name.";
+
   private static PluginManifest getPluginManifestFromEntry(final File file, final String entry) {
-    if (entry.startsWith("sa.rule.name."))
-      return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(15));
+    if (entry.startsWith(RULE_NAME_PROPERTY))
+      return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(RULE_NAME_PROPERTY.length()));
 
     if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
       return new PluginManifest(file, Type.TRACER, file.getName().substring(0, file.getName().length() - 4));

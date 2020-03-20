@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.1-SNAPSHOT</version>
   </parent>
   <artifactId>spring-kafka</artifactId>
   <name>SpecialAgent Rule for Spring Kafka</name>
@@ -62,17 +62,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-client -->
+      <!-- https://github.com/opentracing-contrib/java-kafka-client -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-kafka-client</artifactId>
-      <version>0.1.11</version>
-      <scope>provided</scope> <!-- FIXME: It is added in kafka-client rule -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka-clients</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>0.1.12</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.kafka</groupId>

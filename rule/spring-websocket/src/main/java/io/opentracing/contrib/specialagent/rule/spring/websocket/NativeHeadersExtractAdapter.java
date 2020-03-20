@@ -27,11 +27,9 @@ public final class NativeHeadersExtractAdapter implements TextMap {
   private final Map<String,String> headers = new HashMap<>();
 
   public NativeHeadersExtractAdapter(final Map<String,List<String>> nativeHeaders) {
-    for (final Entry<String,List<String>> entry : nativeHeaders.entrySet()) {
-      if (entry.getValue() != null && entry.getValue().size() == 1) {
+    for (final Entry<String,List<String>> entry : nativeHeaders.entrySet())
+      if (entry.getValue() != null && entry.getValue().size() == 1)
         this.headers.put(entry.getKey(), entry.getValue().get(0));
-      }
-    }
   }
 
   @Override

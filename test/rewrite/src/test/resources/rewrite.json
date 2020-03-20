@@ -1,0 +1,15 @@
+{
+  "ok*": [
+    {
+      "input": {
+        "type": "tag",
+        "key": "component",
+        "value": "ok.*"
+      },
+      "output": {
+        "type": "tag",
+        "value": "rewrite"
+      }
+    }
+  ]
+}

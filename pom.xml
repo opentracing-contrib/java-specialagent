@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>1.6.0-SNAPSHOT</version>
+  <version>1.6.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Java SpecialAgent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
@@ -242,6 +242,7 @@
         <module>opentracing-specialagent-api</module>
         <module>opentracing-specialagent-util</module>
         <module>fingerprint</module>
+        <module>rewrite</module>
         <module>assemble-maven-plugin</module>
         <module>opentracing-specialagent</module>
         <module>agentrule-maven-plugin</module>

@@ -1,0 +1,15 @@
+{
+  "expectedError": "test.rules[0].output[0]: Missing output key for tag",
+  "rules": [
+    {
+      "input": {
+        "type": "operationName"
+      },
+      "output": [
+        {
+          "type": "tag"
+        }
+      ]
+    }
+  ]
+}
