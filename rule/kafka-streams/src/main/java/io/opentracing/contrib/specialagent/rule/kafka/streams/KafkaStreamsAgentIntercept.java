@@ -15,6 +15,9 @@
 
 package io.opentracing.contrib.specialagent.rule.kafka.streams;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.streams.processor.internals.StampedRecord;
+
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -24,8 +27,6 @@ import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.streams.processor.internals.StampedRecord;
 
 public class KafkaStreamsAgentIntercept {
   public static void onNextRecordExit(final Object record) {
@@ -38,13 +39,13 @@ public class KafkaStreamsAgentIntercept {
     }
 
     final Tracer tracer = GlobalTracer.get();
-    final StampedRecord stampedRecord = (StampedRecord) record;
+    final StampedRecord stampedRecord = (StampedRecord)record;
     final SpanBuilder spanBuilder = tracer.buildSpan("consume")
-        .withTag(Tags.COMPONENT, "kafka-streams")
-        .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
-        .withTag(Tags.PEER_SERVICE, "kafka")
-        .withTag("partition", stampedRecord.partition())
-        .withTag("offset", stampedRecord.offset());
+      .withTag(Tags.COMPONENT, "kafka-streams")
+      .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
+      .withTag(Tags.PEER_SERVICE, "kafka")
+      .withTag("partition", stampedRecord.partition())
+      .withTag("offset", stampedRecord.offset());
 
     if (stampedRecord.topic() != null)
       spanBuilder.withTag(Tags.MESSAGE_BUS_DESTINATION, stampedRecord.topic());
@@ -69,17 +70,16 @@ public class KafkaStreamsAgentIntercept {
   }
 
   @SuppressWarnings("rawtypes")
-  public static void onDeserializeExit(Object returned, Object record) {
+  public static void onDeserializeExit(final Object returned, final Object record) {
     if (returned == null || record == null)
       return;
 
-    final ConsumerRecord rawRecord = (ConsumerRecord) record;
+    final ConsumerRecord rawRecord = (ConsumerRecord)record;
     final Tracer tracer = GlobalTracer.get();
     final SpanContext spanContext = TracingKafkaUtils.extractSpanContext(rawRecord.headers(), tracer);
     if (spanContext != null) {
-      ConsumerRecord returnedRecord = (ConsumerRecord) returned;
+      final ConsumerRecord returnedRecord = (ConsumerRecord)returned;
       TracingKafkaUtils.inject(spanContext, returnedRecord.headers(), tracer);
     }
-
   }
 }

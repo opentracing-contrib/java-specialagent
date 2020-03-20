@@ -25,7 +25,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class KafkaStreamsAgentRule extends AgentRule {
@@ -54,7 +53,7 @@ public class KafkaStreamsAgentRule extends AgentRule {
 
   public static class NextRecord {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
       if (isEnabled("KafkaStreamsAgentRule", origin))
         KafkaStreamsAgentIntercept.onNextRecordExit(returned);
     }
@@ -70,7 +69,7 @@ public class KafkaStreamsAgentRule extends AgentRule {
 
   public static class Deserialize {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object record) {
+    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 1) Object record) {
       if (isEnabled("KafkaStreamsAgentRule", origin))
         KafkaStreamsAgentIntercept.onDeserializeExit(returned, record);
     }

@@ -15,13 +15,11 @@
 
 package io.opentracing.contrib.specialagent.test.kafka.streams;
 
-
-import io.opentracing.contrib.specialagent.TestUtil;
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -36,6 +34,9 @@ import org.apache.kafka.streams.kstream.KeyValueMapper;
 import org.apache.kafka.streams.kstream.Produced;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+
+import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class KafkaStreamsITest {
   public static void main(final String[] args) throws Exception {
@@ -55,28 +56,27 @@ public class KafkaStreamsITest {
     }, 10);
 
     final Map<String,Object> senderProps = KafkaTestUtils.producerProps(embeddedKafkaRule.getEmbeddedKafka());
-
     try (final Producer<Integer,String> producer = new KafkaProducer<>(senderProps)) {
       final CountDownLatch latch = TestUtil.initExpectedSpanLatch(4);
 
-      Properties config = new Properties();
+      final Properties config = new Properties();
       config.put(StreamsConfig.APPLICATION_ID_CONFIG, "stream-app");
       config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, senderProps.get("bootstrap.servers"));
       config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
       config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
-      ProducerRecord<Integer, String> record = new ProducerRecord<>("stream-test", 1, "test");
+      final ProducerRecord<Integer,String> record = new ProducerRecord<>("stream-test", 1, "test");
       producer.send(record);
 
       final Serde<String> stringSerde = Serdes.String();
       final Serde<Integer> intSerde = Serdes.Integer();
 
-      StreamsBuilder builder = new StreamsBuilder();
-      KStream<Integer, String> kStream = builder.stream("stream-test");
+      final StreamsBuilder builder = new StreamsBuilder();
+      final KStream<Integer,String> kStream = builder.stream("stream-test");
 
-      kStream.map(new KeyValueMapper<Integer, String, KeyValue<Integer, String>>() {
+      kStream.map(new KeyValueMapper<Integer,String,KeyValue<Integer,String>>() {
         @Override
-        public KeyValue<Integer, String> apply(Integer key, String value) {
+        public KeyValue<Integer,String> apply(final Integer key, final String value) {
           TestUtil.checkActiveSpan();
           return new KeyValue<>(key, value + "map");
         }
@@ -98,5 +98,4 @@ public class KafkaStreamsITest {
       System.exit(0);
     }
   }
-
 }

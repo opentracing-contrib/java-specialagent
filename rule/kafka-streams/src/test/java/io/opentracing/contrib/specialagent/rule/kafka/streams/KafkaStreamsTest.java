@@ -63,38 +63,37 @@ public class KafkaStreamsTest {
   @Test
   public void test(final MockTracer tracer) {
     final Map<String,Object> senderProps = KafkaTestUtils.producerProps(embeddedKafkaRule.getEmbeddedKafka());
-
     try (final Producer<Integer,String> producer = new KafkaProducer<>(senderProps)) {
-      Properties config = new Properties();
+      final Properties config = new Properties();
       config.put(StreamsConfig.APPLICATION_ID_CONFIG, "stream-app");
       config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, senderProps.get("bootstrap.servers"));
       config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
       config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
-      ProducerRecord<Integer, String> record = new ProducerRecord<>("stream-test", 1, "test");
+      final ProducerRecord<Integer,String> record = new ProducerRecord<>("stream-test", 1, "test");
       producer.send(record);
 
       final Serde<String> stringSerde = Serdes.String();
       final Serde<Integer> intSerde = Serdes.Integer();
 
-      StreamsBuilder builder = new StreamsBuilder();
-      KStream<Integer, String> kStream = builder.stream("stream-test");
+      final StreamsBuilder builder = new StreamsBuilder();
+      final KStream<Integer,String> kStream = builder.stream("stream-test");
 
-      kStream.map(new KeyValueMapper<Integer, String, KeyValue<Integer, String>>() {
+      kStream.map(new KeyValueMapper<Integer,String,KeyValue<Integer,String>>() {
         @Override
-        public KeyValue<Integer, String> apply(Integer key, String value) {
+        public KeyValue<Integer,String> apply(final Integer key, final String value) {
           TestUtil.checkActiveSpan();
           return new KeyValue<>(key, value + "map");
         }
-      }).filter(new Predicate<Integer, String>() {
+      }).filter(new Predicate<Integer,String>() {
         @Override
-        public boolean test(Integer key, String value) {
+        public boolean test(final Integer key, final String value) {
           TestUtil.checkActiveSpan();
           return value.contains("map");
         }
       }).to("stream-out", Produced.with(intSerde, stringSerde));
 
-      KafkaStreams streams = new KafkaStreams(builder.build(), config);
+      final KafkaStreams streams = new KafkaStreams(builder.build(), config);
       streams.start();
       await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
       streams.close();
@@ -104,5 +103,4 @@ public class KafkaStreamsTest {
     assertEquals(1, mockSpans.size());
     assertNull(tracer.activeSpan());
   }
-
 }
