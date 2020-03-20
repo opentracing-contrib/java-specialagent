@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.rule.rabbitmq.client;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -23,18 +22,21 @@ import java.util.Map;
 
 import org.apache.qpid.server.SystemLauncher;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+
 class EmbeddedAMQPBroker {
   private int brokerPort = TestUtil.nextFreePort();;
   private final SystemLauncher broker = new SystemLauncher();
 
   EmbeddedAMQPBroker() throws Exception {
-    Map<String, Object> brokerOptions = new HashMap<>();
-    brokerOptions.put("type", "Memory");
-    Map<String, Object> context = new HashMap<>();
+    final Map<String,Object> context = new HashMap<>();
     context.put("qpid.amqp_port", brokerPort);
     context.put("qpid.work_dir", Files.createTempDirectory("qpid").toFile().getAbsolutePath());
+
+    final Map<String,Object> brokerOptions = new HashMap<>();
+    brokerOptions.put("type", "Memory");
     brokerOptions.put("context", context);
-    brokerOptions.put("initialConfigurationLocation",  "src/test/resources/qpid-config.json");
+    brokerOptions.put("initialConfigurationLocation", "src/test/resources/qpid-config.json");
     // start broker
     broker.startup(brokerOptions);
   }

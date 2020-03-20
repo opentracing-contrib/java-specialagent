@@ -25,7 +25,7 @@ import java.util.jar.JarFile;
 import org.junit.Test;
 
 public class BootLoaderAgentTest {
-  private static final Instrumentation inst = Elevator.install(null);
+  private static final Instrumentation inst = AgentRunnerBootstrap.install(null);
 
   @Test
   public void test() throws IOException {

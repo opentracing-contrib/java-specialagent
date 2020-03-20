@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

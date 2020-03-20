@@ -54,6 +54,9 @@ public final class AgentUtil {
    */
   public static Set<String> getClassFiles(final File ... files) throws IOException {
     final Set<String> classFiles = new HashSet<>();
+    if (files == null || files.length == 0)
+      return classFiles;
+
     for (final File file : files) {
       if (file.isDirectory()) {
         final Path filePath = file.toPath();

@@ -530,9 +530,8 @@ public class SpecialAgent {
    * Links the {@link AgentRule} at the specified {@code index} to the provided
    * target {@link ClassLoader classLoader}.
    *
-   * @param index The index identifying the Instrumentation Rule in the list of
-   *          Instrumentation Rules in {@link PluginsClassLoader#getFiles()} to
-   *          be linked to the provided target {@link ClassLoader classLoader}.
+   * @param pluginManifest The {@link PluginManifest} to be linked to the
+   *          provided target {@link ClassLoader classLoader}.
    * @param classLoader The target {@link ClassLoader classLoader} to which the
    *          Instrumentation Rule at the specified index is to be linked.
    * @return Whether the Instrumentation Rule was compatible and was

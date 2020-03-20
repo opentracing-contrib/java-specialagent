@@ -82,25 +82,7 @@ public class BootLoaderAgent {
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE);
 
-//    final Narrowable forName = builder.type(is(Class.class));
-//    forName.transform(new Transformer() {
-//      @Override
-//      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-//        return builder
-//          .visit(Advice.to(ForName1.class, cachedLocator).on(isStatic().and(named("forName").and(returns(Class.class).and(takesArguments(1).and(takesArgument(0, String.class)))))))
-//          .visit(Advice.to(ForName1.class, cachedLocator).on(isStatic().and(named("forName").and(returns(Class.class).and(takesArguments(3).and(takesArgument(0, String.class)))))))
-//          .visit(Advice.to(ForName2.class, cachedLocator).on(isStatic().and(named("forName").and(returns(Class.class).and(takesArguments(2).and(takesArgument(1, String.class)))))));
-//      }})
-//    .installOn(inst);
-
     final Narrowable j8 = builder.type(isSubTypeOf(ClassLoader.class));
-//    j8.transform(new Transformer() {
-//      @Override
-//      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-//        return builder.visit(Advice.to(FindBootstrapClassOrNull.class, cachedLocator).on(isPrivate().and(named("findBootstrapClassOrNull").and(returns(Class.class).and(takesArguments(1).and(takesArgument(0, String.class)))))));
-//      }})
-//    .installOn(inst);
-
     j8.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -116,13 +98,6 @@ public class BootLoaderAgent {
     .installOn(inst);
 
     final Narrowable j9 = builder.type(hasSuperType(named("jdk.internal.loader.BuiltinClassLoader")));
-//    j9.transform(new Transformer() {
-//      @Override
-//      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-//        return builder.visit(Advice.to(FindBootstrapClassOrNull.class, cachedLocator).on(isProtected().and(named("loadClassOrNull").and(returns(Class.class).and(takesArguments(2).and(takesArgument(0, String.class)).and(takesArgument(1, boolean.class)))))));
-//      }})
-//    .installOn(inst);
-
     j9.transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -155,101 +130,6 @@ public class BootLoaderAgent {
     }
   }
 
-//  public static class ForName1 {
-//    public static final Mutex mutex = new Mutex();
-//
-//    @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
-//    public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-//      if (returned != null || jarFiles.size() == 0)
-//        return;
-//
-//      final Set<String> visited;
-//      if (!(visited = mutex.get()).add(name))
-//        return;
-//
-//      try {
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-//          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
-//          System.out.println("BootLoaderAgent.ForName1: " + name + " " + isoClass);
-//          if (isoClass != null) {
-//            returned = isoClass;
-//            thrown = null;
-//            return;
-//          }
-//        }
-//      }
-//      catch (final Throwable t) {
-//        log("<><><><> BootLoaderAgent.ForName1#exit", t, DefaultLevel.SEVERE);
-//      }
-//      finally {
-//        visited.remove(name);
-//      }
-//    }
-//  }
-//
-//  public static class ForName2 {
-//    public static final Mutex mutex = new Mutex();
-//
-//    @Advice.OnMethodExit(onThrowable = ClassNotFoundException.class)
-//    public static void exit(final @Advice.Argument(2) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned, @Advice.Thrown(readOnly = false, typing = Typing.DYNAMIC) ClassNotFoundException thrown) {
-//      if (returned != null || jarFiles.size() == 0)
-//        return;
-//
-//      final Set<String> visited;
-//      if (!(visited = mutex.get()).add(name))
-//        return;
-//
-//      try {
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-//          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
-//          System.out.println("BootLoaderAgent.ForName2: " + name + " " + isoClass);
-//          if (isoClass != null) {
-//            returned = isoClass;
-//            thrown = null;
-//            return;
-//          }
-//        }
-//      }
-//      catch (final Throwable t) {
-//        log("<><><><> BootLoaderAgent.ForName2#exit", t, DefaultLevel.SEVERE);
-//      }
-//      finally {
-//        visited.remove(name);
-//      }
-//    }
-//  }
-
-//  public static class FindBootstrapClassOrNull {
-//    public static final Mutex mutex = new Mutex();
-//
-//    @Advice.OnMethodExit
-//    public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Class<?> returned) {
-//      if (returned != null || jarFiles.size() == 0)
-//        return;
-//
-//      final Set<String> visited;
-//      if (!(visited = mutex.get()).add(name))
-//        return;
-//
-//      try {
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-//          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
-//          System.out.println("BootLoaderAgent.FindBootstrapClassOrNull: " + name + " " + isoClass);
-//          if (isoClass != null) {
-//            returned = isoClass;
-//            return;
-//          }
-//        }
-//      }
-//      catch (final Throwable t) {
-//        log("<><><><> BootLoaderAgent.FindBootstrapClassOrNull#exit", t, DefaultLevel.SEVERE);
-//      }
-//      finally {
-//        visited.remove(name);
-//      }
-//    }
-//  }
-
   public static class FindBootstrapResource {
     public static final Mutex mutex = new Mutex();
 
@@ -281,15 +161,6 @@ public class BootLoaderAgent {
           returned = resource;
           return;
         }
-
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io/opentracing/")) {
-//          final URL isoResource = SpecialAgent.isoClassLoader.getResource(name);
-//          System.out.println("BootLoaderAgent.FindBootstrapResource: " + name + " " + isoResource);
-//          if (isoResource != null) {
-//            returned = isoResource;
-//            return;
-//          }
-//        }
       }
       catch (final Throwable t) {
         log("<><><><> BootLoaderAgent.FindBootstrapResource#exit", t, DefaultLevel.SEVERE);
@@ -331,13 +202,6 @@ public class BootLoaderAgent {
           final Enumeration<URL> enumeration = Collections.enumeration(resources);
           returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
         }
-
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io/opentracing/")) {
-//          final Enumeration<URL> isoResources = SpecialAgent.isoClassLoader.getResources(name);
-//          System.out.println("BootLoaderAgent.FindBootstrapResource: " + name + " " + (isoResources == null ? "null" : isoResources.hasMoreElements()));
-//          if (isoResources != null)
-//            returned = returned == null ? isoResources : new CompoundEnumeration<>(returned, isoResources);
-//        }
       }
       catch (final Throwable t) {
         log("<><><><> BootLoaderAgent.FindBootstrapResources#exit", t, DefaultLevel.SEVERE);

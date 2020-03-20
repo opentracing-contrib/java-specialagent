@@ -1,3 +1,18 @@
+/* Copyright 2020 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
@@ -7,7 +22,7 @@ import java.util.jar.JarFile;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
 
-public class Elevator {
+public final class AgentRunnerBootstrap {
   private static Instrumentation inst;
 
   private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
@@ -40,7 +55,7 @@ public class Elevator {
 
   private static JarFile[] appendSourceLocationToBootstrap(final File ... files) throws IOException {
     final JarFile[] jarFiles = new JarFile[files.length + 1];
-    jarFiles[0] = createJarFileOfSource(Elevator.class);
+    jarFiles[0] = createJarFileOfSource(AgentRunnerBootstrap.class);
     for (int i = 0; i < files.length; ++i)
       jarFiles[i + 1] = createJarFileOfSource(files[i]);
 
@@ -52,18 +67,10 @@ public class Elevator {
       return inst;
 
     try {
-//      if (logger.isLoggable(Level.FINE))
-//        logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
-
-      final JarFile[] jarFiles = bootstrapFiles != null ? appendSourceLocationToBootstrap(bootstrapFiles) : appendSourceLocationToBootstrap(Elevator.class);
-//      if (logger.isLoggable(Level.FINE))
-//        logger.fine("\n================== Installing BootLoaderAgent ==================\n");
-
+      final JarFile[] jarFiles = bootstrapFiles != null ? appendSourceLocationToBootstrap(bootstrapFiles) : appendSourceLocationToBootstrap(AgentRunnerBootstrap.class);
       final Instrumentation inst = ByteBuddyAgent.install();
-      for (final JarFile jarFile : jarFiles) {
-        System.err.println("Adding jar to bootstrap: " + jarFile.getName());
+      for (final JarFile jarFile : jarFiles)
         inst.appendToBootstrapClassLoaderSearch(jarFile);
-      }
 
       BootLoaderAgent.premain(inst, jarFiles);
 
@@ -73,10 +80,13 @@ public class Elevator {
       if (BootProxyClassLoader.INSTANCE.getResource("io/opentracing/contrib/specialagent/Adapter.class") == null)
         throw new IllegalStateException();
 
-      return Elevator.inst = inst;
+      return AgentRunnerBootstrap.inst = inst;
     }
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
+  }
+
+  private AgentRunnerBootstrap() {
   }
 }
