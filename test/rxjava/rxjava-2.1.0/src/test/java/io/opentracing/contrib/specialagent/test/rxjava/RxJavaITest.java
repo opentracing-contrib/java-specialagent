@@ -20,9 +20,10 @@ import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 
 public class RxJavaITest {
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     Observable.range(1, 5).subscribe(new Observer<Integer>() {
       @Override
       public void onSubscribe(final Disposable d) {
@@ -31,21 +32,30 @@ public class RxJavaITest {
 
       @Override
       public void onNext(final Integer s) {
+        TestUtil.checkActiveSpan();
         System.out.println("on next " + s);
       }
 
       @Override
       public void onError(final Throwable e) {
+        TestUtil.checkActiveSpan();
         System.out.println("on error: " + e);
       }
 
       @Override
       public void onComplete() {
+        TestUtil.checkActiveSpan();
         System.out.println("on complete");
       }
     });
 
-    Observable.just("Hello", "World").subscribe(System.out::println);
-    TestUtil.checkSpan(new ComponentSpanCount("rxjava-2", 2, true));
+    Observable.just("Hello", "World").subscribe(new Consumer<String>() {
+      @Override
+      public void accept(String s) {
+        TestUtil.checkActiveSpan();
+        System.out.println(s);
+      }
+    });
+    TestUtil.checkSpan(new ComponentSpanCount("rxjava-2", 2));
   }
 }

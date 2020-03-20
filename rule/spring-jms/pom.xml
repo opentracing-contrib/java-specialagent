@@ -52,7 +52,6 @@
       <artifactId>opentracing-jms-common</artifactId>
       <version>0.1.7</version>
       <optional>true</optional>
-      <scope>provided</scope> <!-- FIXME: It's a hack because we already have it from jms-1/jms-2 -->
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
