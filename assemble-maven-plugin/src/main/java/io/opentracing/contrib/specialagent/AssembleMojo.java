@@ -41,7 +41,7 @@ import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 @Execute(goal = "assemble")
 public final class AssembleMojo extends ResolveDependenciesMojo {
   private static final String pluginsDestDir = "dependencies/" + UtilConstants.META_INF_PLUGIN_PATH;
-  private static final String extDestDir = "dependencies/" + UtilConstants.META_INF_ISO_PATH;
+  private static final String isoDestDir = "dependencies/" + UtilConstants.META_INF_ISO_PATH;
   private static final String declarationScopeOfInstrumentationPlugins = "provided";
 
   @Parameter(defaultValue = "${localRepository}")
@@ -66,8 +66,8 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
       final File pluginsPath = new File(getProject().getBuild().getDirectory(), pluginsDestDir);
       pluginsPath.mkdirs();
 
-      final File extPath = new File(getProject().getBuild().getDirectory(), extDestDir);
-      extPath.mkdirs();
+      final File isoPath = new File(getProject().getBuild().getDirectory(), isoDestDir);
+      isoPath.mkdirs();
 
       final DependencyStatusSets dependencies = getDependencySets(false, false);
       final Set<Artifact> artifacts = dependencies.getResolvedDependencies();
@@ -96,6 +96,10 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
           }
 
           if (dependenciesTgf != null) {
+            if (!artifact.isOptional())
+              throw new MojoExecutionException("Rule " + artifact + " should be <optional>true</optional>");
+
+            // FIXME: Add test to make sure sa.rule.name. file exists and associates an adapter
             copyDependencies(dependenciesTgf, pluginsPath);
           }
           else if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory") || AssembleUtil.hasFileInJar(jarFile, "META-INF/maven/io.opentracing.contrib/opentracing-tracerresolver/pom.xml")) {
@@ -110,8 +114,8 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
 
             fileCopy(jarFile, new File(pluginsPath, pluginName));
           }
-          else if (artifact.isOptional()) {
-            fileCopy(jarFile, new File(extPath, jarFile.getName()));
+          else if (!artifact.isOptional()) {
+            fileCopy(jarFile, new File(isoPath, jarFile.getName()));
           }
           else if (getLog().isDebugEnabled()) {
             getLog().debug("Skipping artifact [selector]: " + artifact.toString());

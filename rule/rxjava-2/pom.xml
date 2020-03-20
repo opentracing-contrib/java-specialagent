@@ -36,6 +36,17 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rxjava-2</artifactId>
       <version>0.1.4</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.reactivex.rxjava2</groupId>

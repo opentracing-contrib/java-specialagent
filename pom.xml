@@ -279,6 +279,18 @@
               <groupId>io.opentracing</groupId>
               <artifactId>opentracing-util</artifactId>
             </exclusion>
+            <exclusion>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>io.opentracing</groupId>
+              <artifactId>opentracing-util</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.wavefront</groupId>
+              <artifactId>wavefront-opentracing-sdk-java</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
         <dependency>
@@ -286,6 +298,31 @@
           <artifactId>opentelemetry-bridge</artifactId>
           <version>0.2.0</version>
           <scope>provided</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>io.opentelemetry</groupId>
+              <artifactId>opentelemetry-sdk</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.awaitility</groupId>
+          <artifactId>awaitility</artifactId>
+          <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <optional>true</optional>
+          <scope>test</scope>
         </dependency>
       </dependencies>
     </profile>
@@ -617,16 +654,11 @@
         <artifactId>maven-compat</artifactId>
         <version>${version.maven}</version>
       </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>20.0</version>
-      </dependency>
 
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>4.13</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>

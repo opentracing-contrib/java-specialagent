@@ -10,7 +10,7 @@
 1638631856 org.bouncycastle:bcprov-jdk15on:jar:1.50:test
 1417203230 io.opentracing:opentracing-mock:jar:0.32.0:test
 1591505133 io.opentracing:opentracing-util:jar:0.32.0:test
-1125614861 junit:junit:jar:4.12:test
+1125614861 junit:junit:jar:4.12:test (optional)
 2118939350 org.hamcrest:hamcrest-core:jar:1.3:test
 1825983295 io.opentracing.contrib:opentracing-specialagent1:test-jar:tests:0.0.0-SNAPSHOT:test
 #

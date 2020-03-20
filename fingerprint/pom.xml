@@ -86,7 +86,6 @@
       <artifactId>javax.el-api</artifactId>
       <version>3.0.0</version>
       <scope>test</scope>
-      <optional>true</optional>
     </dependency>
     <!-- [end] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [end] -->
   </dependencies>

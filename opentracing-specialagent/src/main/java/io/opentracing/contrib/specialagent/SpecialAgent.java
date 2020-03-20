@@ -115,16 +115,16 @@ public class SpecialAgent {
    * @param inst The {@code Instrumentation}.
    */
   public static void premain(final String agentArgs, final Instrumentation inst) {
-    premain(agentArgs, inst, null);
+    premain(agentArgs, inst, null, null);
   }
 
-  public static void premain(final String agentArgs, final Instrumentation inst, final IsoClassLoader isoClassLoader) {
+  public static void premain(final String agentArgs, final Instrumentation inst, final File[] ruleFiles, final IsoClassLoader isoClassLoader) {
     SpecialAgent.inst = inst;
     try {
       if (agentArgs != null)
         AssembleUtil.absorbProperties(agentArgs);
 
-      init(isoClassLoader);
+      init(ruleFiles, isoClassLoader);
     }
     catch (final Throwable t) {
       logger.log(Level.SEVERE, "Terminating initialization of SpecialAgent due to:", t);
@@ -132,7 +132,7 @@ public class SpecialAgent {
   }
 
   /** Initialize the SpecialAgent in a sequence of steps. */
-  private static void init(final IsoClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
+  private static void init(final File[] ruleFiles, final IsoClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
     if (logger.isLoggable(Level.FINE))
       logger.fine("Initializing SpecialAgent\n");
 
@@ -155,7 +155,7 @@ public class SpecialAgent {
 
     // Finally, load the Instrumentation Plugins and Tracer Plugins with the
     // provided `Manager`.
-    load(instrumenter.manager, isoClassLoader);
+    load(instrumenter.manager, ruleFiles, isoClassLoader);
 
     final long startupTime = (System.currentTimeMillis() - startTime) / 10;
     if (logger.isLoggable(Level.FINE))
@@ -171,7 +171,7 @@ public class SpecialAgent {
    * @throws ReflectiveOperationException If a reflective operation error has
    *           occurred.
    */
-  private static void load(final Manager manager, final IsoClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
+  private static void load(final Manager manager, final File[] ruleFiles, final IsoClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("SpecialAgent#load(" + manager.getClass().getSimpleName() + ") java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
@@ -308,8 +308,21 @@ public class SpecialAgent {
     // Then, load the plugins inside the SpecialAgent JAR.
     SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, loadPluginPredicate);
 
-    if (pluginManifestDirectory.size() == 0 && logger.isLoggable(Level.FINER))
-      logger.finer("Must be running from a test, because no JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH);
+    if (pluginManifestDirectory.size() == 0) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("Must be running from a test, because no JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH);
+    }
+    else if (ruleFiles != null) {
+      throw new IllegalStateException(pluginManifestDirectory.size() + " JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH + ", and ruleFiles is not null");
+    }
+
+    // Add plugins specified on in the RULE_PATH_ARG
+    if (ruleFiles == null)
+      logger.warning("No JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH + ", and ruleFiles is null");
+    else
+      for (final File pluginFile : ruleFiles)
+        if (!pluginManifestDirectory.containsKey(pluginFile))
+          pluginManifestDirectory.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
 
     // Add instrumentation rule JARs from system class loader
     final Enumeration<URL> instrumentationRules = manager.getResources();
@@ -318,13 +331,6 @@ public class SpecialAgent {
       final PluginManifest pluginManifest = PluginManifest.getPluginManifest(pluginFile);
       pluginManifestDirectory.put(pluginManifest.file, pluginManifest);
     }
-
-    // Add plugins specified on in the RULE_PATH_ARG
-    final File[] pluginFiles = AssembleUtil.classPathToFiles(System.getProperty(RULE_PATH_ARG));
-    if (pluginFiles != null)
-      for (final File pluginFile : pluginFiles)
-        if (!pluginManifestDirectory.containsKey(pluginFile))
-          pluginManifestDirectory.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
 
     // Sort the directory based on load priority
     pluginManifestDirectory.sort();
@@ -379,7 +385,7 @@ public class SpecialAgent {
 
       nameToVersion.put(pluginManifest.name, version);
 
-      final File[] dependencyFiles = SpecialAgentUtil.filterRuleURLs(pluginsClassLoader.getFiles(), dependenciesTgf, false, "compile");
+      final File[] dependencyFiles = RuleUtil.filterRuleURLs(pluginsClassLoader.getFiles(), dependenciesTgf, true, "compile");
       if (logger.isLoggable(Level.FINEST))
         logger.finest("  URLs from " + DEPENDENCIES_TGF + ": " + AssembleUtil.toIndentedString(dependencyFiles));
 
@@ -448,7 +454,7 @@ public class SpecialAgent {
         try {
           for (final PluginManifest pluginManifest : pluginManifests.values()) {
             final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
-            System.out.println(cls.getClassLoader() + " " + Adapter.class.getClassLoader());
+//            System.out.println(cls.getClassLoader() + " " + Adapter.class.getClassLoader());
             ((Adapter)cls.getConstructor().newInstance()).loadTracer(pluginsClassLoader, isoClassLoader);
           }
         }

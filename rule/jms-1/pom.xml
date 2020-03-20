@@ -29,14 +29,17 @@
     <sa.rule.name>jms:1</sa.rule.name>
     <min.version>1.1-rev-1</min.version>
     <passCompatibility>javax.jms:jms-api:[${min.version},]</passCompatibility>
+    <failCompatibility>javax.jms:javax.jms-api:[2.0.1,]</failCompatibility>
     <version.activemq>5.15.9</version.activemq>
+    <version.opentracing.jms>0.1.7</version.opentracing.jms>
   </properties>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jms -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-1</artifactId>
-      <version>0.1.7</version>
+      <version>${version.opentracing.jms}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
@@ -49,6 +52,7 @@
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-broker</artifactId>
       <version>${version.activemq}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

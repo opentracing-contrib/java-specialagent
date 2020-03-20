@@ -50,11 +50,11 @@ class RuleClassLoader extends URLClassLoader {
     public void accept(final String path, final ClassLoader classLoader) {
       final String className = AssembleUtil.resourceToClassName(path);
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("Class#forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
+        logger.finest("Class.forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
 
       try {
-        classLoader.loadClass(className);
-//        Class.forName(className, false, classLoader);
+//        classLoader.loadClass(className);
+        Class.forName(className, false, classLoader);
       }
       catch (final ClassNotFoundException e) {
       }

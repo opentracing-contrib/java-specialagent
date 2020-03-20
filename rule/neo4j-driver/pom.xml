@@ -39,14 +39,23 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <!-- https://github.com/opentracing-contrib/java-neo4j-driver -->
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-neo4j-driver</artifactId>
       <version>0.2.1</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.neo4j.test</groupId>
       <artifactId>neo4j-harness</artifactId>
       <version>3.5.14</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

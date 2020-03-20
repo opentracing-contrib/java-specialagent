@@ -34,21 +34,15 @@ public class Elevator {
     throw new UnsupportedOperationException("Unsupported source path: " + path);
   }
 
-  private static JarFile[] appendSourceLocationToBootstrap(final Instrumentation inst, final Class<?> cls) throws IOException {
-    final JarFile jarFile = createJarFileOfSource(cls);
-    inst.appendToBootstrapClassLoaderSearch(jarFile);
-    return new JarFile[] {jarFile};
+  private static JarFile[] appendSourceLocationToBootstrap(final Class<?> cls) throws IOException {
+    return new JarFile[] {createJarFileOfSource(cls)};
   }
 
-  private static JarFile[] appendSourceLocationToBootstrap(final Instrumentation inst, final File ... files) throws IOException {
+  private static JarFile[] appendSourceLocationToBootstrap(final File ... files) throws IOException {
     final JarFile[] jarFiles = new JarFile[files.length + 1];
     jarFiles[0] = createJarFileOfSource(Elevator.class);
-    inst.appendToBootstrapClassLoaderSearch(jarFiles[0]);
-    System.out.println("Adding to bootstrap: " + jarFiles[0].getName());
-    for (int i = 0; i < files.length; ++i) {
-      System.out.println("Adding to bootstrap: " + files[i]);
-      inst.appendToBootstrapClassLoaderSearch(jarFiles[i + 1] = createJarFileOfSource(files[i]));
-    }
+    for (int i = 0; i < files.length; ++i)
+      jarFiles[i + 1] = createJarFileOfSource(files[i]);
 
     return jarFiles;
   }
@@ -61,12 +55,18 @@ public class Elevator {
 //      if (logger.isLoggable(Level.FINE))
 //        logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
 
-      final Instrumentation inst = ByteBuddyAgent.install();
-      final JarFile[] jarFiles = bootstrapFiles != null ? appendSourceLocationToBootstrap(inst, bootstrapFiles) : appendSourceLocationToBootstrap(inst, Elevator.class);
+      final JarFile[] jarFiles = bootstrapFiles != null ? appendSourceLocationToBootstrap(bootstrapFiles) : appendSourceLocationToBootstrap(Elevator.class);
 //      if (logger.isLoggable(Level.FINE))
 //        logger.fine("\n================== Installing BootLoaderAgent ==================\n");
 
+      final Instrumentation inst = ByteBuddyAgent.install();
+      for (final JarFile jarFile : jarFiles) {
+        System.err.println("Adding jar to bootstrap: " + jarFile.getName());
+        inst.appendToBootstrapClassLoaderSearch(jarFile);
+      }
+
       BootLoaderAgent.premain(inst, jarFiles);
+
       if (BootProxyClassLoader.INSTANCE.loadClassOrNull("io.opentracing.contrib.specialagent.Level", false) == null)
         throw new IllegalStateException();
 

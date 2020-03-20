@@ -205,7 +205,7 @@ public class AssembleUtilTest {
     expected.add("opentracing-util-0.32.0.jar");
 
     final String test = new String(AssembleUtil.readBytes(new File("src/test/resources/test.tgf").toURI().toURL()));
-    final Set<File> files = AssembleUtil.selectFromTgf(test, true, null);
+    final Set<File> files = AssembleUtil.selectFromTgf(test, false, null);
     for (final File file : files)
       assertTrue(file.getName(), expected.contains(file.getName()));
   }
@@ -274,7 +274,7 @@ public class AssembleUtilTest {
 
     final String tgf = new String(AssembleUtil.readBytes(new File("src/test/resources/test.tgf").toURI().toURL()));
     final Set<File> files = AssembleUtil.selectFromTgf(tgf, false, new String[] {"test"}, Ignore.class);
-    assertEquals(expected.size(), files.size());
+    assertEquals(String.valueOf(files), expected.size(), files.size());
     for (final File file : files)
       assertTrue(file.getName(), expected.contains(file.getName()));
   }

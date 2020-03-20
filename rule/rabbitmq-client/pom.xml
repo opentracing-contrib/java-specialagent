@@ -36,6 +36,13 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-rabbitmq-client</artifactId>
       <version>0.1.8</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.rabbitmq</groupId>
@@ -48,6 +55,7 @@
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-broker</artifactId>
       <version>7.1.0</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

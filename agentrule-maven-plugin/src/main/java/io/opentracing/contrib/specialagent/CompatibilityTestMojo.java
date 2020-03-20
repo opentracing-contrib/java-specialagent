@@ -281,40 +281,40 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     if (isRunning)
       return;
 
-    isRunning = true;
-    if ("pom".equalsIgnoreCase(project.getPackaging())) {
-      getLog().info("Skipping for \"pom\" module.");
-      return;
-    }
-
-    if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests || skipCompatibilityTests)) {
-      final StringBuilder builder = new StringBuilder("Tests are skipped (");
-      if (mavenTestSkip)
-        builder.append("maven.test.skip=true; ");
-
-      if (skipTests)
-        builder.append("skipTests=true; ");
-
-      if (skipCompatibilityTests)
-        builder.append("skipCompatibilityTests=true; ");
-
-      builder.setLength(builder.length() - 2);
-      builder.append(")");
-
-      getLog().info(builder.toString());
-      return;
-    }
-
-    if ((passCompatibility != null || failCompatibility != null) && (passes != null || fails != null))
-      throw new MojoExecutionException("<{pass/fail}Compatibility> cannot be used in conjuction with <passes> or <fails>");
-
-    if (passCompatibility != null)
-      passes = shortFormToLongForm(passCompatibility);
-
-    if (failCompatibility != null)
-      fails = shortFormToLongForm(failCompatibility);
-
     try {
+      isRunning = true;
+      if ("pom".equalsIgnoreCase(project.getPackaging())) {
+        getLog().info("Skipping for \"pom\" module.");
+        return;
+      }
+
+      if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests || skipCompatibilityTests)) {
+        final StringBuilder builder = new StringBuilder("Tests are skipped (");
+        if (mavenTestSkip)
+          builder.append("maven.test.skip=true; ");
+
+        if (skipTests)
+          builder.append("skipTests=true; ");
+
+        if (skipCompatibilityTests)
+          builder.append("skipCompatibilityTests=true; ");
+
+        builder.setLength(builder.length() - 2);
+        builder.append(")");
+
+        getLog().info(builder.toString());
+        return;
+      }
+
+      if ((passCompatibility != null || failCompatibility != null) && (passes != null || fails != null))
+        throw new MojoExecutionException("<{pass/fail}Compatibility> cannot be used in conjuction with <passes> or <fails>");
+
+      if (passCompatibility != null)
+        passes = shortFormToLongForm(passCompatibility);
+
+      if (failCompatibility != null)
+        fails = shortFormToLongForm(failCompatibility);
+
       boolean wasRun = false;
       if (passes != null && (wasRun = true))
         assertCompatibility(passes, true);

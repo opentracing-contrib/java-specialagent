@@ -28,6 +28,7 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
+import io.opentracing.util.GlobalTracer;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -40,6 +41,7 @@ import okhttp3.mockwebserver.MockWebServer;
 public class OkHttpTest {
   @Before
   public void before(final MockTracer tracer) {
+    assertNull(GlobalTracer.class.getClassLoader());
     tracer.reset();
   }
 

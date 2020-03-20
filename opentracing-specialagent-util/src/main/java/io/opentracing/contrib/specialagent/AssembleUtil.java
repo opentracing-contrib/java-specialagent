@@ -135,8 +135,7 @@ public final class AssembleUtil {
    * parameters.
    *
    * @param tgf The TGF-formatted string of Maven dependencies.
-   * @param includeOptional Whether to include dependencies marked as
-   *          {@code (optional)}.
+   * @param isOptional Whether the dependency is marked as {@code (optional)}.
    * @param scopes An array of Maven scopes to include in the returned set, or
    *          {@code null} to include all scopes.
    * @param excludes An array of {@code Class} objects representing source
@@ -144,24 +143,29 @@ public final class AssembleUtil {
    * @return A {@code Set} of resource names that match the call parameters.
    * @throws IOException If an I/O error has occurred.
    */
-  public static Set<File> selectFromTgf(final String tgf, final boolean includeOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
+  public static Set<File> selectFromTgf(final String tgf, final boolean isOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
     final Set<String> excluded = getLocations(excludes);
     final Set<File> files = new HashSet<>();
     final StringTokenizer tokenizer = new StringTokenizer(tgf, "\r\n");
     TOKENIZER:
-    while (tokenizer.hasMoreTokens()) {
+    for (int i = 0; tokenizer.hasMoreTokens(); ++i) {
       String token = tokenizer.nextToken().trim();
+      // Special case: include the artifact itself if (isOptional=true, and scope=compile)
+      final boolean matchOptionalCompile = i == 0 && isOptional && contains(scopes, "compile");
+      if (i == 0 && !matchOptionalCompile)
+        continue;
+
       if ("#".equals(token))
         break;
 
-      final boolean isOptional = token.endsWith(" (optional)");
-      if (isOptional) {
-        if (!includeOptional)
+      final boolean optional = token.endsWith(" (optional)");
+      if (optional) {
+        if (!isOptional)
           continue;
 
         token = token.substring(0, token.length() - 11);
       }
-      else if (includeOptional) {
+      else if (isOptional && !matchOptionalCompile) {
         continue;
       }
 

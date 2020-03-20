@@ -16,20 +16,14 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * Utility functions for the {@code AgentRunner}. This class was created as an
@@ -58,7 +52,7 @@ public final class AgentUtil {
    *         well as subpaths of the paths.
    * @throws IOException If an I/O error has occurred.
    */
-  public static Set<String> getClassFiles(final List<File> files) throws IOException {
+  public static Set<String> getClassFiles(final File ... files) throws IOException {
     final Set<String> classFiles = new HashSet<>();
     for (final File file : files) {
       if (file.isDirectory()) {

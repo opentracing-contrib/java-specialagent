@@ -43,6 +43,7 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

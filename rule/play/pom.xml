@@ -44,18 +44,21 @@
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-server_2.12</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-java_2.12</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.typesafe.play</groupId>
       <artifactId>play-akka-http-server_2.12</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

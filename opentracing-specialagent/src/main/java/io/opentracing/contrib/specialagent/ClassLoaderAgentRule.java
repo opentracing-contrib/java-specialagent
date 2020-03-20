@@ -68,7 +68,7 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
 
   public static boolean isExcluded(final ClassLoader thiz) {
     final String className = thiz.getClass().getName();
-    return className.startsWith("io.opentracing.contrib.specialagent.RuleClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.AgentRunnerClassLoader");
+    return className.startsWith("io.opentracing.contrib.specialagent.RuleClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.PluginsClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.AgentRunnerClassLoader") || className.startsWith("io.opentracing.contrib.specialagent.IsoClassLoader");
   }
 
   public static class DefineClass {
@@ -103,14 +103,14 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
           return;
         }
 
-        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
-          if (isoClass != null) {
-            returned = isoClass;
-            thrown = null;
-            return;
-          }
-        }
+//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+//          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
+//          if (isoClass != null) {
+//            returned = isoClass;
+//            thrown = null;
+//            return;
+//          }
+//        }
 
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
@@ -152,13 +152,13 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
           return;
         }
 
-        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-          final URL isoResource = SpecialAgent.isoClassLoader.getResource(name);
-          if (isoResource != null) {
-            returned = isoResource;
-            return;
-          }
-        }
+//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+//          final URL isoResource = SpecialAgent.isoClassLoader.getResource(name);
+//          if (isoResource != null) {
+//            returned = isoResource;
+//            return;
+//          }
+//        }
       }
       catch (final Throwable t) {
         log("<><><><> ClassLoaderAgent.FindResource#exit", t, DefaultLevel.SEVERE);
@@ -186,11 +186,11 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
         if (resources != null)
           returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
 
-        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-          final Enumeration<URL> isoResources = SpecialAgent.isoClassLoader.getResources(name);
-          if (isoResources != null)
-            returned = returned == null ? isoResources : new CompoundEnumeration<>(returned, isoResources);
-        }
+//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
+//          final Enumeration<URL> isoResources = SpecialAgent.isoClassLoader.getResources(name);
+//          if (isoResources != null)
+//            returned = returned == null ? isoResources : new CompoundEnumeration<>(returned, isoResources);
+//        }
       }
       catch (final Throwable t) {
         log("<><><><> ClassLoaderAgent.FindResources#exit", t, DefaultLevel.SEVERE);

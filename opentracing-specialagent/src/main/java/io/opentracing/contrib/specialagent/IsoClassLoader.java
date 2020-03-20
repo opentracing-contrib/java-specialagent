@@ -52,7 +52,6 @@ public class IsoClassLoader extends URLClassLoader {
             @Override
             public void accept(final String name, final Void arg) {
               names.add(name);
-//              System.out.println("### " + name);
             }
           });
 
@@ -92,20 +91,24 @@ public class IsoClassLoader extends URLClassLoader {
 
   public Class<?> loadClass(final String name) throws ClassNotFoundException {
     try {
+      if (name.contains("TracingInterceptor"))
+        System.out.println();
       final Class<?> cls = super.loadClass(name);
-      System.out.println("~~~~~~~~ IsoClassLoader.loadClass(\"" + name + "\"): " + cls);
+//      System.out.println("~~~~~~~~ IsoClassLoader.loadClass(\"" + name + "\"): " + cls);
       return cls;
     }
     catch (final ClassNotFoundException e) {
-      System.out.println("~~~~~~~~ IsoClassLoader.loadClass(\"" + name + "\"): EXCEPTION");
+//      System.out.println("~~~~~~~~ IsoClassLoader.loadClass(\"" + name + "\"): EXCEPTION");
       throw e;
     }
   }
 
   public Class<?> loadClassOrNull(final String name) {
     try {
+      if (name.contains("TracingInterceptor"))
+        System.out.println();
       final Class<?> cls = loadClass(name);
-      System.out.println("~~~~~~~~ IsoClassLoader.loadClassOrNull(\"" + name + "\"): " + cls);
+//      System.out.println("~~~~~~~~ IsoClassLoader.loadClassOrNull(\"" + name + "\"): " + cls);
       return cls;
     }
     catch (final ClassNotFoundException e) {
