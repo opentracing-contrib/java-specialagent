@@ -16,24 +16,25 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecution;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 public final class MavenUtil {
+  private static final Set<String> jarTypes = new HashSet<>(Arrays.asList("jar", "test-jar", "maven-plugin", "ejb", "ejb-client", "java-source", "javadoc"));
+
+  /** https://maven.apache.org/ref/3.6.1/maven-core/artifact-handlers.html */
+  private static String getExtension(final String type) {
+    return type == null || jarTypes.contains(type) ? "jar" : type;
+  }
+
   public static DefaultArtifact clone(final Artifact artifact) {
     final DefaultArtifact clone = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getScope(), artifact.getType(), artifact.getClassifier(), artifact.getArtifactHandler());
     clone.setAvailableVersions(artifact.getAvailableVersions());
@@ -51,10 +52,18 @@ public final class MavenUtil {
   }
 
   public static Dependency newDependency(final String groupId, final String artifactId, final String version) {
+    return newDependency(groupId, artifactId, version, null, null);
+  }
+
+  public static Dependency newDependency(final String groupId, final String artifactId, final String version, final String classifier, final String type) {
     final Dependency dependency = new Dependency();
     dependency.setGroupId(groupId);
     dependency.setArtifactId(artifactId);
     dependency.setVersion(version);
+    dependency.setClassifier(classifier);
+    if (type != null)
+      dependency.setType(type);
+
     return dependency;
   }
 
@@ -117,34 +126,40 @@ public final class MavenUtil {
    * Returns the filesystem path of {@code artifact} located in
    * {@code localRepository}.
    *
-   * @param localRepository The local repository reference.
+   * @param localRepositoryPath The local repository path.
    * @param artifact The artifact.
    * @return The filesystem path of {@code dependency} located in
    *         {@code localRepository}.
    * @throws NullPointerException If {@code localRepository} or {@code artifact}
    *           is null.
    */
-  public static URL getPathOf(final ArtifactRepository localRepository, final Artifact artifact) {
-    final StringBuilder builder = new StringBuilder();
-    builder.append(localRepository.getBasedir());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getGroupId().replace('.', File.separatorChar));
-    builder.append(File.separatorChar);
-    builder.append(artifact.getArtifactId());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getVersion());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getArtifactId());
-    builder.append('-').append(artifact.getVersion());
-    if (artifact.getClassifier() != null)
-      builder.append('-').append(artifact.getClassifier());
+  public static String getPathOf(final String localRepositoryPath, final Artifact artifact) {
+    return getPathOf(localRepositoryPath, artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getClassifier(), artifact.getType());
+  }
 
-    try {
-      return new URL("file", "", builder.append(".jar").toString());
+  public static String getPathOf(final String localRepositoryPath, final Dependency dependency) {
+    return getPathOf(localRepositoryPath, dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType());
+  }
+
+  public static String getPathOf(final String localRepositoryPath, final String groupId, final String artifactId, final String version, final String classifier, final String type) {
+    final StringBuilder builder = new StringBuilder();
+    if (localRepositoryPath != null) {
+      builder.append(localRepositoryPath);
+      builder.append(File.separatorChar);
     }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
+
+    builder.append(groupId.replace('.', File.separatorChar));
+    builder.append(File.separatorChar);
+    builder.append(artifactId);
+    builder.append(File.separatorChar);
+    builder.append(version);
+    builder.append(File.separatorChar);
+    builder.append(artifactId);
+    builder.append('-').append(version);
+    if (classifier != null)
+      builder.append('-').append(classifier);
+
+    return builder.append('.').append(getExtension(type)).toString();
   }
 
   private MavenUtil() {

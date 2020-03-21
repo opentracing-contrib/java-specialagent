@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,9 +47,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import org.apache.maven.model.Dependency;
+
 public final class AssembleUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
-  private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
+  private static final String[] scopes = {"compile", "provided", "runtime", "system", "test", "isolated"};
 
   /**
    * Tests if the specified string is a name of a Maven scope.
@@ -66,13 +67,6 @@ public final class AssembleUtil {
     return false;
   }
 
-  private static final Set<String> jarTypes = new HashSet<>(Arrays.asList("jar", "test-jar", "maven-plugin", "ejb", "ejb-client", "java-source", "javadoc"));
-
-  /** https://maven.apache.org/ref/3.6.1/maven-core/artifact-handlers.html */
-  private static String getExtension(final String type) {
-    return type == null || jarTypes.contains(type) ? "jar" : type;
-  }
-
   private static boolean contains(final Object[] array, final Object obj) {
     for (int i = 0; i < array.length; ++i)
       if (obj == null ? array[i] == null : obj.equals(array[i]))
@@ -81,7 +75,7 @@ public final class AssembleUtil {
     return false;
   }
 
-  public static File getFileForDependency(final String dependency, final String ... scopes) {
+  public static Dependency getDependency(final String dependency, final String ... scopes) {
     final int c0 = dependency.indexOf(':');
     final String groupId = dependency.substring(0, c0);
 
@@ -92,7 +86,7 @@ public final class AssembleUtil {
     // type
     final int c2 = dependency.indexOf(':', c1 + 1);
     final String type = dependency.substring(c1 + 1, c2);
-    final String ext = getExtension(type);
+//    final String ext = getExtension(type);
 
     // classifier or version
     final int c3 = dependency.indexOf(':', c2 + 1);
@@ -104,12 +98,13 @@ public final class AssembleUtil {
 
     final String scope = c4 == -1 ? null : dependency.substring(c4 + 1);
 
-    final String groupPath = groupId.replace('.', File.separatorChar) + File.separator + artifactId + File.separator;
+//    final String groupPath = groupId.replace('.', File.separatorChar) + File.separator + artifactId + File.separator;
     if (scope != null) {
       if (scopes != null && !contains(scopes, scope))
         return null;
 
-      return new File(groupPath + versionOrScope, artifactId + "-" + versionOrScope + "-" + classifierOrVersion + "." + ext);
+      return MavenUtil.newDependency(groupId, artifactId, versionOrScope, classifierOrVersion, type);
+//      return new File(groupPath + versionOrScope, artifactId + "-" + versionOrScope + "-" + classifierOrVersion + "." + ext);
     }
     else if (versionOrScope != null) {
       final boolean isScope = isScope(versionOrScope);
@@ -117,15 +112,18 @@ public final class AssembleUtil {
         return null;
 
       if (isScope)
-        return new File(groupPath + classifierOrVersion, artifactId + "-" + classifierOrVersion + "." + ext);
+        return MavenUtil.newDependency(groupId, artifactId, classifierOrVersion, null, type);
+//        return new File(groupPath + classifierOrVersion, artifactId + "-" + classifierOrVersion + "." + ext);
 
-      return new File(groupPath + classifierOrVersion, artifactId + "-" + versionOrScope + "-" + classifierOrVersion + "." + ext);
+      return MavenUtil.newDependency(groupId, artifactId, versionOrScope, classifierOrVersion, type);
+//      return new File(groupPath + versionOrScope, artifactId + "-" + versionOrScope + "-" + classifierOrVersion + "." + ext);
     }
     else {
       if (scopes != null && !contains(scopes, "compile"))
         return null;
 
-      return new File(groupPath + classifierOrVersion, artifactId + "-" + classifierOrVersion + "." + ext);
+      return MavenUtil.newDependency(groupId, artifactId, classifierOrVersion, null, type);
+//      return new File(groupPath + classifierOrVersion, artifactId + "-" + classifierOrVersion + "." + ext);
     }
   }
 
@@ -145,9 +143,23 @@ public final class AssembleUtil {
    */
   public static Set<File> selectFromTgf(final String tgf, final boolean isOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
     final Set<String> excluded = getLocations(excludes);
-    final Set<File> files = new HashSet<>();
+    final Set<Dependency> dependencies = selectDependenciesFromTgf(tgf, isOptional, scopes);
+    final Set<File> files = new LinkedHashSet<>();
+    for (final Dependency dependency : dependencies) {
+      final File file = new File(MavenUtil.getPathOf(null, dependency));
+      for (final String exclude : excluded)
+        if (exclude.endsWith(file.getName()))
+          continue;
+
+      files.add(file);
+    }
+
+    return files;
+  }
+
+  public static Set<Dependency> selectDependenciesFromTgf(final String tgf, final boolean isOptional, final String ... scopes) {
+    final Set<Dependency> dependencies = new LinkedHashSet<>();
     final StringTokenizer tokenizer = new StringTokenizer(tgf, "\r\n");
-    TOKENIZER:
     for (int i = 0; tokenizer.hasMoreTokens(); ++i) {
       String token = tokenizer.nextToken().trim();
       // Special case: include the artifact itself if (isOptional=true, and scope=compile)
@@ -175,18 +187,14 @@ public final class AssembleUtil {
       if (end == -1)
         end = token.length();
 
-      final File file = getFileForDependency(token.substring(start + 1, end), scopes);
-      if (file == null)
+      final Dependency dependency = getDependency(token.substring(start + 1, end), scopes);
+      if (dependency == null)
         continue;
 
-      for (final String exclude : excluded)
-        if (exclude.endsWith(file.getName()))
-          continue TOKENIZER;
-
-      files.add(file);
+      dependencies.add(dependency);
     }
 
-    return files;
+    return dependencies;
   }
 
   public static boolean hasFileInJar(final File jarFile, final String name) throws IOException {
@@ -1049,6 +1057,15 @@ public final class AssembleUtil {
       files[i] = new File(paths[i]).getAbsoluteFile();
 
     return files;
+  }
+
+  public static URL toURL(final String path) {
+    try {
+      return new URL("file", "", path);
+    }
+    catch (final MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private AssembleUtil() {

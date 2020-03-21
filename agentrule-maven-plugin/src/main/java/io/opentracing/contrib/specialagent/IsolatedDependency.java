@@ -1,4 +1,4 @@
-/* Copyright 2019 The OpenTracing Authors
+/* Copyright 2020 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,11 @@
 
 package io.opentracing.contrib.specialagent;
 
-import static org.junit.Assert.*;
+public class IsolatedDependency extends MavenDependency {
+  public IsolatedDependency(final String groupId, final String artifactId, final String version) {
+    super(groupId, artifactId, version);
+  }
 
-import org.apache.maven.artifact.Artifact;
-import org.junit.Test;
-
-public class SpecialAgentMojoTest {
-  @Test
-  public void test() {
-    try {
-      MavenUtil.getPathOf(null, (Artifact)null);
-      fail("Expected NullPointerException");
-    }
-    catch (final NullPointerException e) {
-    }
+  public IsolatedDependency() {
   }
 }

@@ -35,7 +35,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
-public class ResolvableDependency {
+public class ResolvableDependency extends MavenDependency {
   private static final HashMap<DependencyId,SortedSet<DefaultArtifactVersion>> dependencyIdToVersions = new HashMap<>();
 
   private static SortedSet<DefaultArtifactVersion> downloadVersions(final Log log, final DependencyId dependencyId) throws MojoExecutionException {
@@ -104,51 +104,22 @@ public class ResolvableDependency {
     return new ResolvableDependency(parts[0], parts[1], parts[2]);
   }
 
-  private String groupId;
-  private String artifactId;
-  private String version;
-
   public ResolvableDependency(final String groupId, final String artifactId, final String version) {
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.version = version;
+    super(groupId, artifactId, version);
   }
 
   public ResolvableDependency() {
-  }
-
-  public String getGroupId() {
-    return this.groupId;
-  }
-
-  public void setGroupId(final String groupId) {
-    this.groupId = groupId;
-  }
-
-  public String getArtifactId() {
-    return this.artifactId;
-  }
-
-  public void setArtifactId(final String artifactId) {
-    this.artifactId = artifactId;
-  }
-
-  public String getVersion() {
-    return this.version;
-  }
-
-  public void setVersion(final String version) {
-    this.version = version;
+    super();
   }
 
   private List<Dependency> resolvedVersions;
 
   boolean isSingleVersion() {
-    return !version.contains(":") && !version.contains("[") && !version.contains("(");
+    return !getVersion().contains(":") && !getVersion().contains("[") && !getVersion().contains("(");
   }
 
   boolean isOwnVersion() {
-    return !version.contains(":");
+    return !getVersion().contains(":");
   }
 
   List<Dependency> resolveVersions(final MavenProject project, final Log log) throws InvalidVersionSpecificationException, MojoExecutionException {
@@ -156,9 +127,9 @@ public class ResolvableDependency {
       return resolvedVersions;
 
     if (isSingleVersion())
-      return resolvedVersions = Collections.singletonList(MavenUtil.newDependency(getGroupId(), getArtifactId(), version));
+      return resolvedVersions = Collections.singletonList(MavenUtil.newDependency(getGroupId(), getArtifactId(), getVersion()));
 
-    final ResolvableDependency versionDependency = isOwnVersion() ? this : ResolvableDependency.parse(version);
+    final ResolvableDependency versionDependency = isOwnVersion() ? this : ResolvableDependency.parse(getVersion());
     resolvedVersions = new ArrayList<>();
 
     final SortedSet<DefaultArtifactVersion> versions = resolveVersions(project, log, versionDependency);

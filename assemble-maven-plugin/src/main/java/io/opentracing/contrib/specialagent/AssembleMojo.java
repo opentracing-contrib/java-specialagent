@@ -28,6 +28,7 @@ import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -78,8 +79,9 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
         if (getLog().isDebugEnabled())
           getLog().debug("Assembling artifact: " + artifact.toString());
 
-        File jarFile = AssembleUtil.getFileForDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
-        if (jarFile != null) {
+        final Dependency dependency = AssembleUtil.getDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
+        if (dependency != null) {
+          File jarFile = new File(MavenUtil.getPathOf(null, dependency));
           jarFile = new File(localRepository.getBasedir(), jarFile.getPath());
           String dependenciesTgf = null;
           try (final ZipFile zipFile = new ZipFile(jarFile)) {

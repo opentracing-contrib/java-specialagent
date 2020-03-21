@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -32,6 +33,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Execute;
@@ -41,6 +44,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.TGFDependencyNodeVisitor;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
@@ -94,7 +98,7 @@ public final class FingerprintMojo extends TreeMojo {
     while (iterator.hasNext()) {
       final Artifact dependency = iterator.next();
       if (optional == dependency.isOptional() && (scope == null || scope.equals(dependency.getScope()))) {
-        final URL url = MavenUtil.getPathOf(localRepository, dependency);
+        final URL url = AssembleUtil.toURL(MavenUtil.getPathOf(localRepository.getBasedir(), dependency));
         final URL[] urls = getDependencyPaths(localRepository, scope, optional, iterator, depth + 1);
         if (urls != null && url != null)
           urls[depth] = url;
@@ -112,22 +116,17 @@ public final class FingerprintMojo extends TreeMojo {
   @Parameter(defaultValue="${sa.rule.name}", required=true)
   private String name;
 
+  @Parameter(property = "debug")
+  private boolean debug = false;
+
+  @Parameter
+  private List<IsolatedDependency> isolatedDependencies;
+
   @Parameter
   private List<String> presents;
 
   @Parameter
   private List<String> absents;
-
-  private Object getField(final Class<? super FingerprintMojo> cls, final String fieldName) {
-    try {
-      final Field field = cls.getDeclaredField(fieldName);
-      field.setAccessible(true);
-      return field.get(this);
-    }
-    catch (final IllegalAccessException | NoSuchFieldException e) {
-      throw new IllegalStateException(e);
-    }
-  }
 
   private void setField(final Class<? super FingerprintMojo> cls, final String fieldName, final Object value) {
     try {
@@ -140,10 +139,10 @@ public final class FingerprintMojo extends TreeMojo {
     }
   }
 
-  private class Foo implements DependencyNodeVisitor {
+  private class CustomNodeVisitor implements DependencyNodeVisitor {
     private DependencyNodeVisitor target;
 
-    private Foo(final DependencyNodeVisitor target) {
+    private CustomNodeVisitor(final DependencyNodeVisitor target) {
       this.target = target;
     }
 
@@ -187,17 +186,56 @@ public final class FingerprintMojo extends TreeMojo {
   @Override
   public DependencyNodeVisitor getSerializingDependencyNodeVisitor(final Writer writer) {
     final DependencyNodeVisitor visitor = super.getSerializingDependencyNodeVisitor(writer);
-    if (!(visitor instanceof TGFDependencyNodeVisitor))
-      return visitor;
-
-    return new Foo(visitor);
+    return visitor instanceof TGFDependencyNodeVisitor ? new CustomNodeVisitor(visitor) : visitor;
   }
 
-  private void createDependenciesTgf() throws MojoExecutionException, MojoFailureException {
+  private static String lookupVersion(final MavenProject project, final MavenDependency mavenDependency) throws MojoExecutionException {
+    final DependencyManagement dependencyManagement = project.getModel().getDependencyManagement();
+    if (dependencyManagement != null)
+      for (final Dependency dependency : dependencyManagement.getDependencies())
+        if (dependency.getGroupId().equals(mavenDependency.getGroupId()) && dependency.getArtifactId().equals(mavenDependency.getArtifactId()))
+          return dependency.getVersion();
+
+    if (project.getParent() == null)
+      throw new MojoExecutionException("Was not able to find the version of: " + mavenDependency.getGroupId() + ":" + mavenDependency.getArtifactId());
+
+    return lookupVersion(project.getParent(), mavenDependency);
+  }
+
+  private void createDependenciesTgf() throws IOException, MojoExecutionException, MojoFailureException {
+    final File file = new File(getProject().getBuild().getOutputDirectory(), "dependencies.tgf");
     getLog().info("--> dependencies.tgf <--");
     setField(TreeMojo.class, "outputType", "tgf");
-    setField(TreeMojo.class, "outputFile", new File(getProject().getBuild().getOutputDirectory(), "dependencies.tgf"));
+    setField(TreeMojo.class, "outputFile", file);
     super.execute();
+
+    if (isolatedDependencies == null || isolatedDependencies.size() == 0)
+      return;
+
+    try (final RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+      for (String line; (line = raf.readLine()) != null;) {
+        if ("#".equals(line)) {
+          raf.seek(raf.getFilePointer() - 3);
+          for (final IsolatedDependency dep : isolatedDependencies) {
+            if (dep.getVersion() == null)
+              dep.setVersion(lookupVersion(getProject(), dep));
+
+            raf.write(("\n0 " + dep.getGroupId() + ":" + dep.getArtifactId() + ":jar:" + dep.getVersion() + ":isolated").getBytes());
+          }
+
+          raf.write("\n#".getBytes());
+          raf.setLength(raf.getFilePointer());
+          return;
+        }
+      }
+    }
+
+    throw new MojoExecutionException("Could not write isolated dependencies into dependencies.tgf");
+  }
+
+  private void createLocalRepoFile() throws IOException {
+    final File file = new File(getProject().getBuild().getDirectory(), "localRepository.txt");
+    Files.write(file.toPath(), localRepository.getBasedir().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
   }
 
   private void createFingerprintBin() throws IOException {
@@ -212,19 +250,19 @@ public final class FingerprintMojo extends TreeMojo {
     // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
     // bridges/links between the 3rd-Party Library to itself).
     ruleDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
-    if (getLog().isDebugEnabled())
-      getLog().debug("ruleDeps: " + Arrays.toString(ruleDeps));
+    if (debug)
+      getLog().warn("ruleDeps: " + Arrays.toString(ruleDeps));
 
     // The `libDeps` represent the 3rd-Party Library that is being instrumented
     final URL[] libDeps = getDependencyPaths(localRepository, "provided", true, getProject().getArtifacts().iterator(), 0);
-    if (getLog().isDebugEnabled())
-      getLog().debug("libDeps: " + Arrays.toString(libDeps));
+    if (debug)
+      getLog().warn("libDeps: " + Arrays.toString(libDeps));
 
     try (final URLClassLoader classLoader = new URLClassLoader(ruleDeps, new URLClassLoader(libDeps != null ? libDeps : new URL[0], null))) {
       final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, presents, absents, new MavenLogger(getLog()));
       fingerprint.toFile(destFile);
-      if (getLog().isDebugEnabled())
-        getLog().debug(fingerprint.toString());
+      if (debug)
+        getLog().warn(fingerprint.toString());
     }
   }
 
@@ -273,6 +311,7 @@ public final class FingerprintMojo extends TreeMojo {
     try {
       createDependenciesTgf();
       createFingerprintBin();
+      createLocalRepoFile();
       createPluginName();
     }
     catch (final IOException e) {

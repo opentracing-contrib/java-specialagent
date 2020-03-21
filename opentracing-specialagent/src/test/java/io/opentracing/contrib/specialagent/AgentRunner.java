@@ -38,6 +38,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -46,6 +47,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.apache.maven.cli.MavenCli;
+import org.apache.maven.model.Dependency;
 import org.junit.Assert;
 import org.junit.rules.TestRule;
 import org.junit.runner.notification.RunNotifier;
@@ -54,8 +56,6 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
-
-import io.opentracing.util.GlobalTracer;
 
 /**
  * A JUnit runner that is designed to run tests for instrumentation rules that
@@ -80,33 +80,51 @@ import io.opentracing.util.GlobalTracer;
  */
 public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(AgentRunner.class);
+  private static final boolean debug;
+  private static final boolean inSurefireTest;
 
   private static final File CWD = new File("").getAbsoluteFile();
   private static final File[] classpath;
   private static final String dependenciesTgf;
+  private static final String localRepositoryPath;
   private static final Instrumentation inst;
   private static final Set<String> bootstrapClasses;
 
   static {
     System.setProperty(AGENT_RUNNER_ARG, "");
     final String sunJavaCommand = System.getProperty("sun.java.command");
-    if (sunJavaCommand != null)
-      AssembleUtil.absorbProperties(sunJavaCommand);
-
+    AssembleUtil.absorbProperties(sunJavaCommand);
     AssembleUtil.loadProperties();
 
+    final String debugProperty = System.getProperty("debug");
+    debug = debugProperty != null && !"false".equals(debugProperty);
+    inSurefireTest = sunJavaCommand.contains("org.apache.maven.surefire");
+
     try {
-      final URL dependenciesUrl = getDependenciesUrl();
+      URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(DEPENDENCIES_TGF);
+      if (dependenciesUrl == null) {
+        logger.warning(DEPENDENCIES_TGF + " was not found: invoking `mvn process-classes`");
+        System.setProperty("maven.multiModuleProjectDirectory", CWD.getParentFile().getParentFile().getAbsolutePath());
+        new MavenCli().doMain(new String[] {"process-classes"}, CWD.getAbsolutePath(), System.out, System.err);
+        final File dependenciesTgf = new File(CWD, "target/classes/" + DEPENDENCIES_TGF);
+        if (!dependenciesTgf.exists())
+          throw new ExceptionInInitializerError(DEPENDENCIES_TGF + " was not found: Please assert that `mvn generate-resources` executes successfully");
+
+        dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(DEPENDENCIES_TGF);
+      }
+
       classpath = AssembleUtil.classPathToFiles(System.getProperty("java.class.path"));
       dependenciesTgf = new String(AssembleUtil.readBytes(dependenciesUrl));
+      localRepositoryPath = new String(Files.readAllBytes(new File(CWD, "target/localRepository.txt").toPath()));
 
       final File[] bootstrapDependencies = RuleUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile", "test");
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("Bootstrap Dependencies:\n  " + AssembleUtil.toIndentedString(bootstrapDependencies).replace("\n", "\n  "));
+      if (debug) {
+        System.err.println("Bootstrap Dependencies:\n  " + AssembleUtil.toIndentedString(bootstrapDependencies).replace("\n", "\n  "));
+        checkFilesExist(bootstrapDependencies);
+      }
 
       inst = AgentRunnerBootstrap.install(bootstrapDependencies);
 
-      assertNull(AgentUtil.class.getClassLoader());
       bootstrapClasses = AgentUtil.getClassFiles(bootstrapDependencies);
     }
     catch (final IOException e) {
@@ -114,20 +132,10 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private static URL getDependenciesUrl() throws IOException {
-    URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(DEPENDENCIES_TGF);
-    if (dependenciesUrl != null)
-      return dependenciesUrl;
-
-    logger.warning(DEPENDENCIES_TGF + " was not found: invoking `mvn process-classes`");
-    System.setProperty("maven.multiModuleProjectDirectory", CWD.getParentFile().getParentFile().getAbsolutePath());
-    new MavenCli().doMain(new String[] {"generate-resources"}, CWD.getAbsolutePath(), System.out, System.err);
-    final File dependenciesTgf = new File(CWD, "target/generated-resources/" + DEPENDENCIES_TGF);
-    if (!dependenciesTgf.exists())
-      throw new ExceptionInInitializerError(DEPENDENCIES_TGF + " was not found: Please assert that `mvn generate-resources` executes successfully");
-
-    Files.copy(dependenciesTgf.toPath(), new File(CWD, "target/classes/" + DEPENDENCIES_TGF).toPath());
-    return Thread.currentThread().getContextClassLoader().getResource(DEPENDENCIES_TGF);
+  private static void checkFilesExist(final File ... files) {
+    if (files != null)
+      for (final File file : files)
+        assertTrue(file.exists());
   }
 
   /**
@@ -164,18 +172,27 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       if (libDependencies != null)
         testAppClasses.addAll(AgentUtil.getClassFiles(libDependencies));
 
-      final File[] isoDependencies = RuleUtil.filterRuleURLs(classpath, dependenciesTgf, false, "provided");
-      final Set<String> isoClasses = AgentUtil.getClassFiles(isoDependencies);
+      final Set<Dependency> isoDependencies = AssembleUtil.selectDependenciesFromTgf(dependenciesTgf, false, "isolated");
+      final File[] isoFiles = new File[isoDependencies.size()];
+      final Iterator<Dependency> iterator = isoDependencies.iterator();
+      for (int i = 0; iterator.hasNext(); ++i)
+        isoFiles[i] = getPath(localRepositoryPath, iterator.next());
 
-      if (logger.isLoggable(Level.FINE)) {
-        logger.fine("Rule Dependencies:\n  " + AssembleUtil.toIndentedString(ruleDependencies).replace("\n", "\n  "));
-        logger.fine("Lib Test Dependencies:\n  " + AssembleUtil.toIndentedString(libTestDependencies).replace("\n", "\n  "));
-        logger.fine("Lib Dependencies:\n  " + AssembleUtil.toIndentedString(libDependencies).replace("\n", "\n  "));
-        logger.fine("Iso Dependencies:\n  " + AssembleUtil.toIndentedString(isoDependencies).replace("\n", "\n  "));
+      final Set<String> isoClasses = AgentUtil.getClassFiles(isoFiles);
+
+      if (debug) {
+        System.err.println("Rule Dependencies:\n  " + AssembleUtil.toIndentedString(ruleDependencies).replace("\n", "\n  "));
+        checkFilesExist(ruleDependencies);
+        System.err.println("Lib Test Dependencies:\n  " + AssembleUtil.toIndentedString(libTestDependencies).replace("\n", "\n  "));
+        checkFilesExist(libTestDependencies);
+        System.err.println("Lib Dependencies:\n  " + AssembleUtil.toIndentedString(libDependencies).replace("\n", "\n  "));
+        checkFilesExist(libDependencies);
+        System.err.println("Iso Dependencies:\n  " + AssembleUtil.toIndentedString(isoFiles).replace("\n", "\n  "));
+        checkFilesExist(isoFiles);
       }
 
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-      agentRunnerClassLoader = new AgentRunnerClassLoader(AssembleUtil.toURLs(classpath), ruleDependencies, AssembleUtil.toURLs(isoDependencies), parent) {
+      agentRunnerClassLoader = new AgentRunnerClassLoader(AssembleUtil.toURLs(classpath), ruleDependencies, AssembleUtil.toURLs(isoFiles), parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
           final String resourceName = AssembleUtil.classNameToResource(name);
@@ -215,6 +232,14 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
       throw new InitializationError(e);
     }
+  }
+
+  private static File getPath(final String localRepositoryPath, final Dependency dependency) {
+    final File ideFile;
+    if (!inSurefireTest && CWD.getParentFile().getName().equals("rule") && (ideFile = new File(CWD.getParentFile().getParentFile(), dependency.getArtifactId() + "/target/classes")).exists())
+      return ideFile;
+
+    return new File(MavenUtil.getPathOf(localRepositoryPath, dependency));
   }
 
   /**
