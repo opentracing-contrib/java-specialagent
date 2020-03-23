@@ -5,14 +5,10 @@ import io.opentracing.contrib.specialagent.rule.GreeterServiceImpl;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.Filter;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-import java.util.ServiceLoader;
 
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader=false)

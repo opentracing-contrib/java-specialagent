@@ -31,6 +31,7 @@ public class DubboFilter implements Filter {
         Span span = null;
         if (rpcContext.isProviderSide()) {
             spanBuilder.withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER);
+            spanBuilder.withTag(Tags.COMPONENT.getKey(), "java-dubbo");
             SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new DubboFilter.DubboAdapter(rpcContext));
             if (spanContext != null) {
                 spanBuilder.asChildOf(spanContext);
@@ -38,10 +39,10 @@ public class DubboFilter implements Filter {
             span = spanBuilder.start();
         } else {
             spanBuilder.withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
+            spanBuilder.withTag(Tags.COMPONENT.getKey(), "java-dubbo");
             span = spanBuilder.start();
             tracer.inject(span.context(), Format.Builtin.TEXT_MAP, new DubboFilter.DubboAdapter(rpcContext));
         }
-
         InetSocketAddress remoteAddress = rpcContext.getRemoteAddress();
         if (remoteAddress != null) {
             span.setTag("remoteAddress", remoteAddress.getHostString() + ":" + remoteAddress.getPort());

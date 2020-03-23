@@ -22,7 +22,6 @@ public class MockServer {
         service.setApplication(new ApplicationConfig("test"));
         service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         service.setProtocol(new ProtocolConfig("dubbo", TestUtil.nextFreePort()));
-        //service.setFilter("traceFilter");
         service.setInterface(GreeterService.class);
         service.setRef(new GreeterServiceImpl());
     }
