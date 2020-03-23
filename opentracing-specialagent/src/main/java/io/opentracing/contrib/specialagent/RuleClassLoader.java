@@ -53,7 +53,6 @@ class RuleClassLoader extends URLClassLoader {
         logger.finest("Class.forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
 
       try {
-//        classLoader.loadClass(className);
         Class.forName(className, false, classLoader);
       }
       catch (final ClassNotFoundException e) {

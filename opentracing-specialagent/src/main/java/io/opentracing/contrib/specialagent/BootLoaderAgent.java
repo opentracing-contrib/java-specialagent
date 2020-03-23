@@ -55,7 +55,7 @@ public class BootLoaderAgent {
     try {
       cachedLocator = new CachedClassFileLocator(ClassFileLocator.ForClassLoader.ofSystemLoader(),
         // BootLoaderAgent @Advice classes
-        /*ForName1.class, ForName2.class, FindBootstrapClassOrNull.class,*/ FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
+        FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         ClassLoaderAgentRule.DefineClass.class, ClassLoaderAgentRule.LoadClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
