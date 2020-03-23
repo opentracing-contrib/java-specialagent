@@ -379,7 +379,7 @@ mvn clean install && mvn -Dassemble install
 
 This is required, because the Integration Tests use the packaged SpecialAgent JAR with the `-javaagent:...` argument, as whould be done in a real use-case.
 
-## 8 Debugging
+## 9 Debugging
 
 The `-Dsa.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
 
@@ -387,13 +387,13 @@ The `-Dsa.log.events` system property can be used to set the re/transformation e
 
 The `-Dsa.log.file` system property can be used to set the logging output file for <ins>SpecialAgent</ins>.
 
-## 9 Contributing
+## 10 Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-## 10 License
+## 11 License
 
 This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
