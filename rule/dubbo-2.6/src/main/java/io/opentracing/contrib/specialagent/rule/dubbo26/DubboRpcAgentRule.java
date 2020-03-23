@@ -42,19 +42,19 @@ public class DubboRpcAgentRule extends AgentRule {
   }
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin,@Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) String  key,
+    public static void exit(final @Advice.Origin String origin,@Advice.Argument(value = 1) Object  key,
                             @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-        if ("service.filter".equals(key)) {
-            if (isEnabled("DubboRpcAgentRule", origin)) {
-                returned = DubboAgentIntercept.exit(returned);
-            }
-        } else if ("reference.filter".equals(key)) {
-            if (isEnabled("DubboRpcAgentRule", origin)) {
-                returned = DubboAgentIntercept.exit(returned);
+        if (key instanceof String) {
+            if ("service.filter".equals(key)) {
+                if (isEnabled("DubboRpcAgentRule", origin)) {
+                    returned = DubboAgentIntercept.exit(returned);
+                }
+            } else if ("reference.filter".equals(key)) {
+                if (isEnabled("DubboRpcAgentRule", origin)) {
+                    returned = DubboAgentIntercept.exit(returned);
+                }
             }
         }
     }
-
-
 
 }
