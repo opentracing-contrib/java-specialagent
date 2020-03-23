@@ -12,15 +12,16 @@
 <samp>&nbsp;&nbsp;</samp>1 [Introduction](#1-introduction)<br>
 <samp>&nbsp;&nbsp;</samp>2 [Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>](#2-developing-instrumentation-rules-for-specialagent)<br>
 <samp>&nbsp;&nbsp;</samp>3 [Implementing the <ins>Instrumentation Rules</ins>](#3-implementing-the-instrumentation-rules)<br>
-<samp>&nbsp;&nbsp;</samp>4 [Usage](#4-usage)<br>
+<samp>&nbsp;&nbsp;</samp>4 [`AgentRule` Usage](#4-agentrule-usage)<br>
 <samp>&nbsp;&nbsp;</samp>5 [`AgentRunner` Usage](#5-agentrunner-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1 [Configuring `AgentRunner`](#51-configuring-agentrunner)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.1 [Packaging](#511-packaging)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.2 [Testing](#512-testing)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1.3 [Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>](#513-including-the-instrumentation-rule-in-the-specialagent)<br>
-<samp>&nbsp;&nbsp;</samp>6 [Debugging](#6-debugging)<br>
-<samp>&nbsp;&nbsp;</samp>7 [Contributing](#7-contributing)<br>
-<samp>&nbsp;&nbsp;</samp>8 [License](#8-license)
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6 [Packaging](#6-packaging)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>](#61-including-the-instrumentation-rule-in-the-specialagent)<br>
+<samp>&nbsp;&nbsp;</samp>7 [Compatibility Testing](#7-compatibility-testing)<br>
+<samp>&nbsp;&nbsp;</samp>8 [Integration Testing](#8-integration-testing)<br>
+<samp>&nbsp;&nbsp;</samp>9 [Debugging](#9-debugging)<br>
+<samp>&nbsp;&nbsp;</samp>10 [Contributing](#10-contributing)<br>
+<samp>&nbsp;&nbsp;</samp>11 [License](#11-license)
 
 ## 1 Introduction
 
@@ -38,36 +39,9 @@ The [opentracing-contrib][opentracing-contrib] organization contains <ins>Instru
 
 The <ins>SpecialAgent</ins> uses ByteBuddy as the re/transformation manager for auto-instrumentation. This module defines the API and patterns for implementation of auto-instrumentation rules for OpenTracing <ins>Instrumentation Plugins</ins>.
 
-## 4 Usage
+## 4 `AgentRule` Usage
 
-The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTracing <ins>Instrumentation Plugin</ins>.
-
-1. **Add the `opentracing-specialagent-api` and `bytebuddy` dependencies to the project's POM**
-
-   Ensure the dependency scope is set to `provided`.
-
-   ```xml
-   <dependency>
-     <groupId>io.opentracing.contrib.specialagent</groupId>
-     <artifactId>opentracing-specialagent-api</artifactId>
-     <version>1.6.0</version>
-     <scope>provided</scope>
-   </dependency>
-   <dependency>
-     <groupId>net.bytebuddy</groupId>
-     <artifactId>byte-buddy</artifactId>
-     <scope>provided</scope>
-   </dependency>
-   <dependency>
-     <groupId>net.bytebuddy</groupId>
-     <artifactId>byte-buddy-agent</artifactId>
-     <scope>provided</scope>
-   </dependency>
-   ```
-
-1. **Important note!**
-
-   The <ins>Instrumentation Plugin</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the plugin to be instrumentable (i.e. if the plugin finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
+All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https://github.com/opentracing-contrib/java-specialagent/) codebase, and are coupled to the <ins>SpecialAgent Rule API</ins>. When implementing an <ins>Instrumentation Rule</ins>:
 
 1. **Implement the `AgentRule` interface**
 
@@ -80,12 +54,11 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
    An example implementation for an <ins>Instrumentation Rule</ins> that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
 
    ```java
+   // This class CANNOT directly reference any 3rd-party library classes, because when this class is loaded, the 3rd-party
+   // library will not be available, as it will be loaded in premain.
    public class TargetAgentRule implements AgentRule {
-     public Iterable<? extends AgentBuilder> buildAgent(final String agentArgs) throws Exception {
-       return Arrays.asList(new AgentBuilder.Default()
-         .with(RedefinitionStrategy.RETRANSFORMATION)  // Allows loaded classes to be retransformed.
-         .with(InitializationStrategy.NoOp.INSTANCE)   // Singleton instantiation of loaded type initializers.
-         .with(TypeStrategy.Default.REDEFINE)          // Allows loaded classes to be redefined.
+     public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
+       return Arrays.asList(builder.                   // All rules must be based off of the `builder` variable
          .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
                                                        // the class name is expressed in string form, as opposed
                                                        // to is(com.example.TargetBuilder.class), or
@@ -110,13 +83,13 @@ The <ins>SpecialAgent Rule API</ins> is intended to be integrated into an OpenTr
      // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
      // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
      @Advice.OnMethodExit
-     public static void exit(@Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-       if (AgentRuleUtil.isEnabled())                  // Prevents the SpecialAgent from instrumenting the tracer itself.
+     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
+       if (AgentRuleUtil.isEnabled("TargetAgentRule", origin)) // The call to AgentRuleUtil.isEnabled(...) is required.
          returned = TargetAgentIntercept.exit(returned);
      }
    }
 
-   // This class can reference 3rd-party library classes, because this class will only be loaded at intercept time,
+   // This class CAN reference 3rd-party library classes, because this class will only be loaded at intercept time,
    // where the target object's class loader is guaranteed to have the 3rd-party classes either loaded or on the
    // class path.
    public class TargetAgentIntercept {
@@ -152,18 +125,6 @@ The <ins>SpecialAgent</ins> uses the JUnit Runner API to implement a lightweight
 1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
 1. Initialize a `MockTracer` as `GlobalTracer`, and provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
 
-The `AgentRunner` is available in the test jar of the <ins>SpecialAgent</ins> module. It can be imported with the following dependency spec:
-
-```xml
-<dependency>
-  <groupId>io.opentracing.contrib.specialagent</groupId>
-  <artifactId>opentracing-specialagent</artifactId>
-  <version>1.6.0</version>
-  <type>test-jar</type>
-  <scope>test</scope>
-</dependency>
-```
-
 To use the `AgentRunner` in a JUnit test class, provide the following annotation to the class in question:
 
 ```java
@@ -195,18 +156,11 @@ public void before(MockTracer tracer) {}
 public void after(MockTracer tracer) {}
 ```
 
-The `MockTracer` class can be referenced by importing the following dependency spec:
-
-```xml
-<dependency>
-  <groupId>io.opentracing</groupId>
-  <artifactId>opentracing-mock</artifactId>
-  <version>${version.opentracing-mock}</version>
-  <scope>test</scope>
-</dependency>
-```
-
 Upon execution of the test class, in either the IDE or with Maven, the `AgentRunner` will execute each test method via the 3 step workflow described above.
+
+**Important note!**
+
+If you have trouble getting your test to work due to obscure class loading or illegal access errors, you can specify the `isolateClassLoader` parameter (described below).
 
 ### 5.1 Configuring `AgentRunner`
 
@@ -219,37 +173,103 @@ The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotatio
 1. `verbose`<br>Sets verbose mode for the plugin being tested.<br>**Default:** `false`.
 1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>**Default:** `true`.
 
-#### 5.1.1 Packaging
+## 6 Packaging
 
 The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Instrumentation Rules</ins>:
 
-1. If the library being instrumented is 3rd-party (i.e. it does not belong to the standard Java APIs), then the dependency artifacts for the library must be non-transitive (i.e. declared with `<scope>test</scope>`, or with `<scope>provided</scope>`).
-   * The dependencies for the 3rd-party libraries are not necessary when the plugin is applied to a target application, as the application must already have these dependencies for the plugin to be used.
-   * Declaring the 3rd-party libraries as non-transitive dependencies greatly reduces the size of the <ins>SpecialAgent</ins> package, as all of the <ins>Instrumentation Plugins</ins> as contained within it.
-   * If 3rd-party libraries are _not_ declared as non-transitive, there is a risk that target applications may experience class loading exceptions due to inadvertant loading of incompatibile classes.
-   * Many of the currently implemented <ins>Instrumentation Plugins</ins> _do not_ declare the 3rd-party libraries which they are instrumenting as non-transitive. In this case, an `<exclude>` tag must be specified for each 3rd-party artifact dependency when referring to the <ins>Instrumentation Plugin</ins> artifact. An example of this can be seen with the [Mongo Driver Plugin][mongodriver-pom].
-1. The package must contain a `fingerprint.bin` file. This file provides the <ins>SpecialAgent</ins> with a fingerprint of the 3rd-party library that the plugin is instrumenting. This fingerprint allows the <ins>SpecialAgent</ins> to determine if the plugin is compatible with the relevant 3rd-party library in a target application.
-   1. To generate the fingerprint, it is first necessary to identify which Maven artifacts are intended to be fingerprinted. To mark an artifact to be fingerprinted, you must add `<optional>true</optional>` to the dependency's spec. Please see the [pom.xml for OkHttp3][okhttp-pom] as an example.
-   1. Next, include the following plugin in the project's POM:
-      ```xml
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>fingerprint</goal>
-            </goals>
-            <phase>process-classes</phase>
-            <configuration>
-              <name>**NAME OF THE PLUGIN**</name>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      ```
-      The `<name>` property specifies the name of the plugin. This name will be used by users to configure the plugin. If the `<name>` property is not specified, the plugin's `artifactId` will be used as the plugin's name.
+1. **Does the rule have an external JAR that implements the instrumentation logic?**
+
+   Many <ins>Instrumentation Rules</ins> in <ins>SpecialAgent</ins> have the instrumentation logic implemented in external projects. An example of this is the [OkHttp Rule][okhttp] and [OkHttp Plugin][java-okhttp]. This separation is preferred, because it allows the Instrumentation Plugin ([OkHttp Plugin][java-okhttp]) to be used _without <ins>SpecialAgent</ins>_ via manual instrumentation. The [OkHttp Rule][okhttp] therefore is merely a bridge between <ins>SpecialAgent</ins> and the ([OkHttp Plugin][java-okhttp]).
+
+   * If the rule you are implementing has an external JAR that implements the instrumentation logic, then its maven dependency must be specified in the rule's POM as:
+
+     ```xml
+     <dependency>
+       ...
+       <optional>true</optional>
+       ...
+     </dependency>
+     ```
+
+     For example, for the [OkHttp Rule][okhttp] the dependency for the [OkHttp Plugin][java-okhttp] is:
+
+     ```xml
+     <dependency>
+       <groupId>io.opentracing.contrib</groupId>
+       <artifactId>opentracing-okhttp3</artifactId>
+       <optional>true</optional>
+       <version>${version.plugin}</version>
+       <exclusions>
+         <exclusion>
+           <groupId>io.opentracing.contrib</groupId>
+           <artifactId>opentracing-concurrent</artifactId>
+         </exclusion>
+         <exclusion>
+           <groupId>io.opentracing</groupId>
+           <artifactId>opentracing-api</artifactId>
+         </exclusion>
+       </exclusions>
+     </dependency>
+     ```
+
+   * If the external Instrumentation Plugin JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependecies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
+
+     _If this is not done, it may lead to `LinkageError` due to the existence of multiple versions of the same class in different class loaders._
+
+1. **What is the required library that must be present in a target runtime for this rule to be compatible?**
+
+   For <ins>Instrumentation Rules</ins> that have external <ins>Instrumentation Plugins</ins>, this required library is effectively the dependency that the <ins>Instrumentation Plugin</ins> uses to implement its instrumentation logic for the specific 3rd-party library.
+
+   For <ins>Instrumentation Rules</ins> that do not have an external <ins>Instrumentation Plugin</ins>, this is the effectively the same. However, in this case, the <ins>Instrumentation Rules</ins> import this/these dependencies directly.
+
+   <ins>SpecialAgent</ins> needs to know **what is the required library that must be present in a target runtime**, so it can create a `fingerprint.bin` that will later be used to determine compatibility with target runtimes.
+
+   **Required libraries that must be present** must be declared as a dependency in the <ins>Instrumentation Rule's</ins> POM as:
+
+     ```xml
+     <dependency>
+       ...
+       <optional>true</optional>
+       <scope>provided</scope>
+       ...
+     </dependency>
+     ```
+
+     For example, for the [OkHttp Rule][okhttp] the required dependency (coming from [OkHttp Plugin][java-okhttp]) is:
+
+     ```xml
+     <dependency>
+       <groupId>com.squareup.okhttp3</groupId>
+       <artifactId>okhttp</artifactId>
+       <version>${version.library}</version>
+       <optional>true</optional>
+       <scope>provided</scope>
+     </dependency>
+     ```
+
+1. **Important note!**
+
+   _All_ dependencies declared in a <ins>Instrumentation Rule's</ins> POM must have `<optional>true</optional>` spec.
+
+   In case of `<scope>test</scope>` dependencies, this is also true.
+
+1. **Important note!**
+
+   The <ins>Instrumentation Rule/Plugin</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the plugin to be instrumentable (i.e. if the plugin finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
+
+1. Each rule **MUST** declare a unique name. To declare a name, the plugin's `pom.xml` must specify the following:
+   ```xml
+   <project>
+    ...
+    <properties>
+      <sa.rule.name>NAME</sa.rule.name>
+    </properties>
+    ...
+   </project>
+   ```
+
+   The value of `sa.rule.name` must follow the [Rule Name Pattern](https://github.com/opentracing-contrib/java-specialagent/#rule-name-pattern) pattern: `<WORD>[:WORD][:NUMBER]`. The first `<WORD>` is required, the second `[:WORD]` is optional, and the `[:NUMBER]` suffix is also optional. Please refer to the link in the previous sentence for a description of the use and meaning of this spec.
+
 1. Each plugin can declare a priority for order when plugins are loaded by the SpecialAgent. To declare a priority, the plugin's `pom.xml` must specify the following:
    ```xml
    <project>
@@ -260,19 +280,106 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
     ...
    </project>
    ```
+
    The value of `sa.rule.priority` can be between `0` and `2147483647`. Plugins with the highest `sa.rule.priority` value are loaded last (i.e. the order for loading of plugins is as per inverse `sa.rule.priority`).
 
    If the `sa.rule.priority` property is missing, a priority of `0` is used as default.
 
-#### 5.1.2 Testing
-
-The <ins>SpecialAgent</ins> provides a convenient methodology for testing of the auto-instrumentation of plugins via `AgentRunner`. Please refer to the section on [`AgentRunner` Usage](#5-agentrunner-usage) for instructions.
-
-#### 5.1.3 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
+### 6.1 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
 
 <ins>Instrumentation Rules</ins> must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`][specialagent-pom] for an example of the usage.
 
-## 6 Debugging
+## 7 Compatibility Testing
+
+<ins>Instrumentation Rules</ins> must provide a spec for compatibility tests. These tests assert compatibility with different versions of a particular 3rd-party library. For instance, with OkHttp, the API significantly changed when it was upgraded from OkHttp3 to OkHttp4. This information is essential for <ins>SpecialAgent</ins> to be able to assert proper functioning of its fingerprinting utility so as to prevent a target runtime from potential failure due to incompatible instrumentation.
+
+The <ins>Compatibility Testing</ins> spec is described for `pass` and `fail` conditions. The `pass` condition requires the compatibility test to pass for a particular 3rd-party library, and the `fail` condition requires the compatibility test to fail.
+
+The POM of each <ins>Instrumentation Rule</ins> must describe at least one `pass` compatibility test. This test can be expressed in 2 forms:
+
+1. **Short Form**
+
+   The Short Form is provided in the `<properties>` element of the <ins>Instrumentation Rule's</ins> POM in a `<passCompatibility>` sub-element. The body of the sub-element must be a `groupId:artifactId:versionRange`. For a description of Version Ranges, please refer to [this link](http://www.mojohaus.org/versions-maven-plugin/examples/resolve-ranges.html).
+
+   For example, the `<passCompatibility>` spec for the [OkHttp Rule][okhttp] is:
+
+   ```xml
+   <passCompatibility>com.squareup.okhttp3:okhttp:[3.5.0,]</passCompatibility>
+   ```
+
+   This spec says that all versions of the `com.squareup.okhttp3:okhttp` artifact must pass compatibility from `3.5.0` until most current available version in the Maven Central Repository.
+
+   Multiple artifact specs can be provided in a single `<passCompatibility>` element, delimited with the `;` character.
+
+1. **Long Form**
+
+   The Long Form is provided in the `specialagent-maven-plugin` configuration of the <ins>Instrumentation Rule's</ins> POM. This form allows for the description of complex compatibility situations. Let's look at the `spring-messaging` rule as an example:
+
+   ```xml
+   <plugin>
+     <groupId>io.opentracing.contrib.specialagent</groupId>
+     <artifactId>specialagent-maven-plugin</artifactId>
+     <executions>
+       <execution>
+         <id>test-compatibility</id>
+         <configuration>
+           <passes>
+             <pass>
+               <dependencies>
+                 <dependency>
+                   <groupId>org.springframework.integration</groupId>
+                   <artifactId>spring-integration-core</artifactId>
+                   <version>${min.version}</version> <!-- NOTE: Single version. -->
+                 </dependency>
+                 <dependency>
+                   <groupId>org.springframework</groupId>
+                   <artifactId>spring-jcl</artifactId>
+                   <version>org.springframework:spring-messaging:[${min.version},]</version>
+                 </dependency>
+                 <dependency>
+                   <groupId>org.springframework</groupId>
+                   <artifactId>spring-core</artifactId>
+                   <version>org.springframework:spring-messaging:[${min.version},]</version>
+                 </dependency>
+                 <dependency>
+                   <groupId>org.springframework</groupId>
+                   <artifactId>spring-messaging</artifactId>
+                   <version>org.springframework:spring-messaging:[${min.version},]</version>
+                 </dependency>
+               </dependencies>
+             </pass>
+           </passes>
+         </configuration>
+       </execution>
+     </executions>
+   </plugin>
+   ```
+
+   In this example, the compatibility rule describes a situation where there are 4 Maven artifacts that must be present for the rule to be compatible. The `<version>` element in each dependency can either be a range or a static version. In the first dependency, the `<version>` is static. However, the subsequent 3 are ranges that are all pinned to the available versions of the `org.springframework:spring-messaging` artifact, starting from `${min.version}` and ending with the most recently available version in the Maven Central Repository.
+
+   **Important note!**
+
+   If a complex compatibility spec is needed, then all the versions of each artifact must be "pinned" to a single artifact's version range. This is required, because otherwise it would be impossible to automatically deduce which version of which artifact aligns with a version of another artifact.
+
+## 8 Integration Testing
+
+<ins>Instrumentation Rules</ins> must provide an integration test demonstrating proper functionality of the rule against a runtime with the 3rd-party being instrumented. These tests belong to the [`/test/`](https://github.com/opentracing-contrib/java-specialagent/tree/master/test/) sub-module. These tests resemble the `AgentRunner` tests, but are simpler, because there is no complex class loading architecture involved. The Integration Tests are intended to be as simple as possible, and are only required to demonstrate the proper instrumentation of the particular 3rd-party library.
+
+**Important note!**
+
+All Integration Tests must provide a class with a `public void main(String[] args)` in a sub-package of `io.opentracing.contrib.specialagent.test.<sub-package>`. The `<sub-package>` here should align to the package of the `AgentRule` subclass whose functionality is being asserted.
+
+**Important note!**
+
+Before Integration Tests can be run, the <ins>SpecialAgent</ins> must be built and assembled:
+
+```bash
+mvn clean install && mvn -Dassemble install
+```
+
+This is required, because the Integration Tests use the packaged SpecialAgent JAR with the `-javaagent:...` argument, as whould be done in a real use-case.
+
+## 8 Debugging
 
 The `-Dsa.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
 
@@ -280,13 +387,13 @@ The `-Dsa.log.events` system property can be used to set the re/transformation e
 
 The `-Dsa.log.file` system property can be used to set the logging output file for <ins>SpecialAgent</ins>.
 
-## 7 Contributing
+## 9 Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-## 8 License
+## 10 License
 
 This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
@@ -295,3 +402,6 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [okhttp-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/rules/okhttp/pom.xml
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/opentracing-specialagent/pom.xml
+
+[okhttp]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/okhttp
+[java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
