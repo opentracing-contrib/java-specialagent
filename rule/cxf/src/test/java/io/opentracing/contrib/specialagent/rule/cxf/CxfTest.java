@@ -16,11 +16,10 @@
 package io.opentracing.contrib.specialagent.rule.cxf;
 
 import static org.junit.Assert.*;
-
+import java.util.List;
 import javax.jws.WebService;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
@@ -31,8 +30,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.rule.cxf.interceptors.AbstractSpanTagInterceptor;
+import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
@@ -102,6 +102,41 @@ public class CxfTest {
 
     assertEquals(msg, response);
     assertEquals(2, tracer.finishedSpans().size());
+
+    server.destroy();
+    serverFactory.getBus().shutdown(true);
+  }
+
+  @Test
+  public void testInterceptor(final MockTracer tracer) {
+    System.setProperty(Configuration.INTERCEPTORS_CLIENT_IN,
+        "io.opentracing.contrib.specialagent.rule.cxf.interceptors.ClientSpanTagInterceptor");
+    System.setProperty(Configuration.INTERCEPTORS_SERVER_OUT,
+        "io.opentracing.contrib.specialagent.rule.cxf.interceptors.ServerSpanTagInterceptor");
+
+    final String msg = "hello";
+
+    // prepare server
+    final JAXRSServerFactoryBean serverFactory = new JAXRSServerFactoryBean();
+    serverFactory.setAddress(BASE_URI);
+    serverFactory.setServiceBean(new EchoImpl());
+    final Server server = serverFactory.create();
+
+    // prepare client
+    final JAXRSClientFactoryBean clientFactory = new JAXRSClientFactoryBean();
+    clientFactory.setServiceClass(Echo.class);
+    clientFactory.setAddress(BASE_URI);
+    final Echo echo = clientFactory.create(Echo.class);
+
+    final String response = echo.echo(msg);
+
+    assertEquals(msg, response);
+    final List<MockSpan> spans = tracer.finishedSpans();
+    assertEquals(2, spans.size());
+
+    for (final MockSpan span : spans) {
+      assertEquals(AbstractSpanTagInterceptor.SPAN_TAG_VALUE, span.tags().get(AbstractSpanTagInterceptor.SPAN_TAG_KEY));
+    }
 
     server.destroy();
     serverFactory.getBus().shutdown(true);

@@ -25,10 +25,14 @@ public class CxfAgentIntercept {
   public static void addClientTracingFeature(final Object thiz) {
     final AbstractEndpointFactory factory = (AbstractEndpointFactory)thiz;
     factory.getFeatures().add(new OpenTracingClientFeature(GlobalTracer.get()));
+    factory.getInInterceptors().addAll(Configuration.getClientInInterceptors());
+    factory.getOutInterceptors().addAll(Configuration.getClientOutInterceptors());
   }
 
   public static void addServerTracingFeauture(final Object thiz) {
     final AbstractEndpointFactory factory = (AbstractEndpointFactory)thiz;
     factory.getFeatures().add(new OpenTracingFeature(GlobalTracer.get()));
+    factory.getInInterceptors().addAll(Configuration.getServerInInterceptors());
+    factory.getOutInterceptors().addAll(Configuration.getServerOutInterceptors());
   }
 }
