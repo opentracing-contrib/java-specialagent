@@ -1,5 +1,5 @@
 <!--
-  Copyright 2019 The OpenTracing Authors
+  Copyright 2020 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -23,44 +23,14 @@
     <artifactId>rule</artifactId>
     <version>1.6.1-SNAPSHOT</version>
   </parent>
-  <artifactId>spring-kafka</artifactId>
-  <name>SpecialAgent Rule for Spring Kafka</name>
+  <artifactId>kafka-streams</artifactId>
+  <name>SpecialAgent Rule for Kafka Streams</name>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <sa.rule.name>spring:kafka</sa.rule.name>
-    <min.version>2.2.0.RELEASE</min.version>
-    <passCompatibility>org.apache.kafka:kafka-clients:[${min.version},]</passCompatibility>
-    <version.kafka>2.0.0</version.kafka>
+    <sa.rule.name>kafka:streams</sa.rule.name>
+    <min.version>1.1.0</min.version>
+    <passCompatibility>org.apache.kafka:kafka-streams:[${min.version},]</passCompatibility>
   </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
-        <configuration>
-          <presents>
-            <present>org.apache.kafka.common.header.Headers</present>
-          </presents>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
-    <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka-clients</artifactId>
-      <version>${version.kafka}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-kafka-client -->
       <groupId>io.opentracing.contrib</groupId>
@@ -68,9 +38,16 @@
       <version>0.1.12</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
+      <version>${min.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
-      <version>${min.version}</version>
+      <version>2.2.4.RELEASE</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -86,20 +63,20 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.12</artifactId>
-      <version>${version.kafka}</version>
+      <version>${min.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.12</artifactId>
-      <version>${version.kafka}</version>
+      <version>${min.version}</version>
       <classifier>test</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
-      <version>${version.kafka}</version>
+      <version>${min.version}</version>
       <classifier>test</classifier>
       <scope>test</scope>
     </dependency>

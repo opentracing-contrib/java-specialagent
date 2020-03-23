@@ -318,6 +318,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/kafka-client -amd integration-test || (mvn -B -P test -pl test/kafka-client -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Kafka Streams [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/kafka-streams -amd integration-test || (mvn -B -P test -pl test/kafka-streams -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Kafka Streams [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/kafka-streams -amd integration-test || (mvn -B -P test -pl test/kafka-streams -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "Lettuce [openjdk8]"
     stage: test
     jdk: openjdk8
