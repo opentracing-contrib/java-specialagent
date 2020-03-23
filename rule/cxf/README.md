@@ -34,7 +34,7 @@ Following properties are supported by the CXF Rule.
 
   **Example:**
 
-  `/path/to/your/lib/myspandecorators1.jar:/path/to/your/lib/myspandecorators1.jar`
+  `/path/to/your/lib/myinterceptors1.jar:/path/to/your/lib/myinterceptors2.jar`
 
 ## Compatibility
 
