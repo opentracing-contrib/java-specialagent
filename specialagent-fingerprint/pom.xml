@@ -23,7 +23,7 @@
     <artifactId>specialagent</artifactId>
     <version>1.6.1-SNAPSHOT</version>
   </parent>
-  <artifactId>fingerprint</artifactId>
+  <artifactId>specialagent-fingerprint</artifactId>
   <name>Fingerprint Utility for SpecialAgent</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/fingerprint</url>
   <dependencies>

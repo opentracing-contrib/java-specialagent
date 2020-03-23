@@ -38,10 +38,11 @@
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
-            <artifactId>assemble-maven-plugin</artifactId>
+            <artifactId>specialagent-maven-plugin</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
+                <id>assemble</id>
                 <!-- Phase must be generate-resources for the maven-resources-plugin to acknowledge the
                   <outputDirectory> of this execution, which is defined as a <resource> above. Specifying a
                   different phase results in a JAR that does not include the dependencies generated in the
@@ -51,14 +52,8 @@
                   <goal>assemble</goal>
                 </goals>
               </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>io.opentracing.contrib.specialagent</groupId>
-            <artifactId>agentrule-maven-plugin</artifactId>
-            <version>${project.version}</version>
-            <executions>
               <execution>
+                <id>verify</id>
                 <goals>
                   <goal>verify</goal>
                 </goals>
@@ -578,17 +573,12 @@
     </profile>
   </profiles>
   <dependencies>
-    <!-- FIXME: What were these for? -->
+    <!-- Maven dependencies necessary for execution of mvn from `AgentRunner` -->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-embedder</artifactId>
       <optional>true</optional>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model</artifactId>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -599,13 +589,13 @@
 
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>rewrite</artifactId>
+      <artifactId>opentracing-rewrite</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>fingerprint</artifactId>
+      <artifactId>specialagent-fingerprint</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>

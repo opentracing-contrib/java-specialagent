@@ -118,6 +118,16 @@ public class SpecialAgent {
     premain(agentArgs, inst, null, null);
   }
 
+  /**
+   * Test entrypoint to load the {@code SpecialAgent} for tests with
+   * {@link AgentRunner}.
+   *
+   * @param agentArgs Agent arguments.
+   * @param inst The {@code Instrumentation}.
+   * @param ruleFiles Files to be present in the {@link RuleClassLoader} for the
+   *          rule to be tested.
+   * @param isoClassLoader The {@link IsoClassLoader}.
+   */
   public static void premain(final String agentArgs, final Instrumentation inst, final File[] ruleFiles, final IsoClassLoader isoClassLoader) {
     SpecialAgent.inst = inst;
     try {
@@ -385,7 +395,7 @@ public class SpecialAgent {
 
       nameToVersion.put(pluginManifest.name, version);
 
-      final File[] dependencyFiles = RuleUtil.filterRuleURLs(pluginsClassLoader.getFiles(), dependenciesTgf, true, "compile");
+      final File[] dependencyFiles = MavenUtil.filterRuleURLs(pluginsClassLoader.getFiles(), dependenciesTgf, true, "compile");
       if (logger.isLoggable(Level.FINEST))
         logger.finest("  URLs from " + DEPENDENCIES_TGF + ": " + AssembleUtil.toIndentedString(dependencyFiles));
 

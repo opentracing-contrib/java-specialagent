@@ -187,19 +187,6 @@
           <artifactId>opentracing-adapter</artifactId>
         </dependency>
 
-        <!-- FIXME: What were these for? -->
-        <dependency>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-embedder</artifactId>
-          <optional>true</optional>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-compat</artifactId>
-          <optional>true</optional>
-          <scope>test</scope>
-        </dependency>
       </dependencies>
     </profile>
     <!-- FIXME: why are there 2 profiles here? -->
@@ -226,7 +213,7 @@
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
-            <artifactId>agentrule-maven-plugin</artifactId>
+            <artifactId>specialagent-maven-plugin</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -235,46 +222,6 @@
                   <goal>fingerprint</goal>
                 </goals>
                 <phase>process-classes</phase>
-                <configuration>
-                  <isolatedDependencies>
-                    <!-- Tracer Plugins -->
-                    <dependency>
-                      <groupId>io.opentracing.contrib.specialagent</groupId>
-                      <artifactId>fingerprint</artifactId>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.ow2.asm</groupId>
-                      <artifactId>asm</artifactId>
-                    </dependency>
-
-                    <!-- Tracer Plugins -->
-                    <dependency>
-                      <groupId>io.opentracing.contrib</groupId>
-                      <artifactId>opentracing-tracerresolver</artifactId>
-                      <version>0.1.8</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>io.opentracing.contrib</groupId>
-                      <artifactId>jaeger-client-bundle</artifactId>
-                      <version>1.0.0</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>com.lightstep.tracer</groupId>
-                      <artifactId>lightstep-tracer-jre-bundle</artifactId>
-                      <version>0.19.0</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>com.wavefront</groupId>
-                      <artifactId>wavefront-opentracing-bundle-java</artifactId>
-                      <version>0.9.0</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>io.opentracing.contrib</groupId>
-                      <artifactId>opentelemetry-bridge</artifactId>
-                      <version>0.2.0</version>
-                    </dependency>
-                  </isolatedDependencies>
-                </configuration>
               </execution>
               <execution>
                 <id>test-compatibility</id>

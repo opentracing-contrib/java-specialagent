@@ -37,7 +37,7 @@
     <plugins>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
+        <artifactId>specialagent-maven-plugin</artifactId>
         <configuration>
           <absents>
             <absent>org.springframework.web.servlet.resource.HttpResource</absent>

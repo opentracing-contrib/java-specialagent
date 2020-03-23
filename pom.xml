@@ -242,11 +242,10 @@
         <module>opentracing-adapter</module>
         <module>opentracing-specialagent-api</module>
         <module>opentracing-specialagent-util</module>
-        <module>fingerprint</module>
-        <module>rewrite</module>
-        <module>assemble-maven-plugin</module>
+        <module>specialagent-fingerprint</module>
+        <module>opentracing-rewrite</module>
         <module>opentracing-specialagent</module>
-        <module>agentrule-maven-plugin</module>
+        <module>specialagent-maven-plugin</module>
         <module>itest-maven-plugin</module>
       </modules>
       <dependencies>
@@ -412,6 +411,45 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>io.opentracing.contrib.specialagent</groupId>
+          <artifactId>specialagent-maven-plugin</artifactId>
+          <version>${project.version}</version>
+          <configuration>
+            <isolatedDependencies>
+              <dependency>
+                <groupId>io.opentracing.contrib.specialagent</groupId>
+                <artifactId>specialagent-fingerprint</artifactId>
+              </dependency>
+              <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+              </dependency>
+
+              <!-- Tracer Plugins -->
+              <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-tracerresolver</artifactId>
+              </dependency>
+              <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>jaeger-client-bundle</artifactId>
+              </dependency>
+              <dependency>
+                <groupId>com.lightstep.tracer</groupId>
+                <artifactId>lightstep-tracer-jre-bundle</artifactId>
+              </dependency>
+              <dependency>
+                <groupId>com.wavefront</groupId>
+                <artifactId>wavefront-opentracing-bundle-java</artifactId>
+              </dependency>
+              <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentelemetry-bridge</artifactId>
+              </dependency>
+            </isolatedDependencies>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.7.0</version>
@@ -522,7 +560,7 @@
       </dependency>
       <dependency>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>fingerprint</artifactId>
+        <artifactId>specialagent-fingerprint</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -568,6 +606,32 @@
       </dependency>
 
       <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-tracerresolver</artifactId>
+        <version>0.1.8</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>jaeger-client-bundle</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.lightstep.tracer</groupId>
+        <artifactId>lightstep-tracer-jre-bundle</artifactId>
+        <version>0.19.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.wavefront</groupId>
+        <artifactId>wavefront-opentracing-bundle-java</artifactId>
+        <version>0.9.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentelemetry-bridge</artifactId>
+        <version>0.2.0</version>
+      </dependency>
+
+      <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
         <version>${version.bytebuddy}</version>
@@ -586,11 +650,6 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
-        <version>${version.maven}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-model</artifactId>
         <version>${version.maven}</version>
       </dependency>
       <dependency>

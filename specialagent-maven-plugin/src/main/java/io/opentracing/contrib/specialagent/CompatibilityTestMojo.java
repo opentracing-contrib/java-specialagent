@@ -202,7 +202,6 @@ public final class CompatibilityTestMojo extends AbstractMojo {
     for (final Artifact artifact : project.getArtifacts())
       classpath.add(AssembleUtil.toURL(MavenUtil.getPathOf(localRepository.getBasedir(), artifact)));
 
-//    System.err.println(classpath);
     try (final URLClassLoader classLoader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]), null)) {
       final List<FingerprintError> errors = getFingerprint().isCompatible(classLoader);
       if (errors == null != shouldPass) {

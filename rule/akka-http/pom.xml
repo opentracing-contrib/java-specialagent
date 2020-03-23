@@ -35,7 +35,7 @@
     <plugins>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
+        <artifactId>specialagent-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>test-compatibility</id>

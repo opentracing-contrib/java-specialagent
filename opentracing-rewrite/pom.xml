@@ -23,7 +23,7 @@
     <artifactId>specialagent</artifactId>
     <version>1.6.1-SNAPSHOT</version>
   </parent>
-  <artifactId>rewrite</artifactId>
+  <artifactId>opentracing-rewrite</artifactId>
   <name>Rewritable Tracer for SpecialAgent</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/rewrite</url>
   <dependencies>

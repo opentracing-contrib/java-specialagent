@@ -23,10 +23,10 @@
     <artifactId>specialagent</artifactId>
     <version>1.6.1-SNAPSHOT</version>
   </parent>
-  <artifactId>agentrule-maven-plugin</artifactId>
+  <artifactId>specialagent-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <name>AgentRule Maven Plugin for SpecialAgent</name>
-  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/agentrule-maven-plugin</url>
+  <name>SpecialAgent Maven Plugin</name>
+  <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/specialagent-maven-plugin</url>
   <build>
     <plugins>
       <plugin>
@@ -34,7 +34,7 @@
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
-          <goalPrefix>agentrule</goalPrefix>
+          <goalPrefix>specialagent</goalPrefix>
         </configuration>
         <executions>
           <execution>
@@ -62,7 +62,7 @@
         <plugins>
           <plugin>
             <groupId>io.opentracing.contrib.specialagent</groupId>
-            <artifactId>agentrule-maven-plugin</artifactId>
+            <artifactId>specialagent-maven-plugin</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -104,8 +104,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
-      <artifactId>fingerprint</artifactId>
-      <version>${project.version}</version>
+      <artifactId>specialagent-fingerprint</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>

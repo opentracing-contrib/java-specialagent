@@ -22,13 +22,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -48,15 +48,24 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
   @Parameter(defaultValue = "${localRepository}")
   private ArtifactRepository localRepository;
 
+  @Parameter
+  private List<IsolatedDependency> isolatedDependencies;
+
+  @Parameter(property = "debug")
+  private boolean debug = false;
+
   private void copyDependencies(final String dependencyTgf, final File destPath) throws IOException {
-    final Set<File> jarFiles = AssembleUtil.selectFromTgf(dependencyTgf, false, new String[] {"compile"});
+    final Set<File> jarFiles = MavenUtil.selectFromTgf(dependencyTgf, true, "compile");
     for (final File jarFile : jarFiles) {
       final Path path = new File(localRepository.getBasedir(), jarFile.getPath()).toPath();
       Files.copy(path, new File(destPath, jarFile.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
   }
 
-  private static void fileCopy(final File from, final File to) throws IOException {
+  private void fileCopy(final File from, final File to) throws IOException {
+    if (debug)
+      getLog().warn("Copying " + from.getAbsolutePath() + " to " + to.getAbsolutePath());
+
     Files.copy(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
   }
 
@@ -72,59 +81,60 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
 
       final DependencyStatusSets dependencies = getDependencySets(false, false);
       final Set<Artifact> artifacts = dependencies.getResolvedDependencies();
-      if (getLog().isDebugEnabled())
-        getLog().debug("Assembling " + artifacts.size() + " artifacts");
+      if (debug)
+        getLog().warn("Assembling " + artifacts.size() + " artifacts");
 
       for (final Artifact artifact : artifacts) {
-        if (getLog().isDebugEnabled())
-          getLog().debug("Assembling artifact: " + artifact.toString());
+        if (debug)
+          getLog().warn("Assembling artifact: " + artifact.toString());
 
-        final Dependency dependency = AssembleUtil.getDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
+        final MavenDependency dependency = MavenUtil.getDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
         if (dependency != null) {
           File jarFile = new File(MavenUtil.getPathOf(null, dependency));
           jarFile = new File(localRepository.getBasedir(), jarFile.getPath());
           String dependenciesTgf = null;
+          String saRuleName = null;
           try (final ZipFile zipFile = new ZipFile(jarFile)) {
             final Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
-            while (enumeration.hasMoreElements()) {
+            while ((dependenciesTgf == null || saRuleName == null) && enumeration.hasMoreElements()) {
               final ZipEntry entry = enumeration.nextElement();
-              if ("dependencies.tgf".equals(entry.getName())) {
+              if (dependenciesTgf == null && "dependencies.tgf".equals(entry.getName())) {
                 try (final InputStream in = zipFile.getInputStream(entry)) {
                   dependenciesTgf = new String(AssembleUtil.readBytes(in));
-                  break;
                 }
+              }
+              else if (saRuleName == null && entry.getName().startsWith("sa.rule.name.")) {
+                saRuleName = entry.getName().substring(13);
               }
             }
           }
 
           if (dependenciesTgf != null) {
+            if (saRuleName == null)
+              throw new MojoExecutionException("sa.rule.name file was not found");
+
             if (!artifact.isOptional())
               throw new MojoExecutionException("Rule " + artifact + " should be <optional>true</optional>");
 
-            // FIXME: Add test to make sure sa.rule.name. file exists and associates an adapter
             copyDependencies(dependenciesTgf, pluginsPath);
           }
-          else if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory") || AssembleUtil.hasFileInJar(jarFile, "META-INF/maven/io.opentracing.contrib/opentracing-tracerresolver/pom.xml")) {
-            String pluginName = (String)getProject().getProperties().get(artifact.getArtifactId());
-            if (pluginName == null) {
-              getLog().warn("Name of Tracer Plugin is missing: <properties><" + artifact.getArtifactId() + ">NAME</" + artifact.getArtifactId() + "></properties>");
-              pluginName = jarFile.getName();
-            }
-            else {
-              pluginName += ".jar";
-            }
-
-            fileCopy(jarFile, new File(pluginsPath, pluginName));
-          }
-          else if (!artifact.isOptional()) {
-            fileCopy(jarFile, new File(isoPath, jarFile.getName()));
-          }
-          else if (getLog().isDebugEnabled()) {
-            getLog().debug("Skipping artifact [selector]: " + artifact.toString());
+          else if (debug) {
+            getLog().warn("Skipping artifact [selector]: " + artifact.toString());
           }
         }
-        else if (getLog().isDebugEnabled()) {
-          getLog().debug("Skipping artifact [scope mismatch]: " + artifact.toString());
+        else if (debug) {
+          getLog().warn("Skipping artifact [scope mismatch]: " + artifact.toString());
+        }
+      }
+
+      if (isolatedDependencies != null && isolatedDependencies.size() > 0) {
+        for (final IsolatedDependency dependency : isolatedDependencies) {
+          if (dependency.getVersion() != null)
+            throw new MojoExecutionException("Version of " + dependency + " must be specified in <dependencyManagement>");
+
+          dependency.setVersion(MavenUtil.lookupVersion(getProject(), dependency));
+          final File jarFile = new File(MavenUtil.getPathOf(localRepository.getBasedir(), dependency));
+          fileCopy(jarFile, new File(isoPath, jarFile.getName()));
         }
       }
     }

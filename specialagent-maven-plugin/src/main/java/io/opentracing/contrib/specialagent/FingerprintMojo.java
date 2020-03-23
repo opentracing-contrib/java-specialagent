@@ -33,8 +33,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Execute;
@@ -44,7 +42,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.TGFDependencyNodeVisitor;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
@@ -189,19 +186,6 @@ public final class FingerprintMojo extends TreeMojo {
     return visitor instanceof TGFDependencyNodeVisitor ? new CustomNodeVisitor(visitor) : visitor;
   }
 
-  private static String lookupVersion(final MavenProject project, final MavenDependency mavenDependency) throws MojoExecutionException {
-    final DependencyManagement dependencyManagement = project.getModel().getDependencyManagement();
-    if (dependencyManagement != null)
-      for (final Dependency dependency : dependencyManagement.getDependencies())
-        if (dependency.getGroupId().equals(mavenDependency.getGroupId()) && dependency.getArtifactId().equals(mavenDependency.getArtifactId()))
-          return dependency.getVersion();
-
-    if (project.getParent() == null)
-      throw new MojoExecutionException("Was not able to find the version of: " + mavenDependency.getGroupId() + ":" + mavenDependency.getArtifactId());
-
-    return lookupVersion(project.getParent(), mavenDependency);
-  }
-
   private void createDependenciesTgf() throws IOException, MojoExecutionException, MojoFailureException {
     final File file = new File(getProject().getBuild().getOutputDirectory(), "dependencies.tgf");
     getLog().info("--> dependencies.tgf <--");
@@ -216,11 +200,12 @@ public final class FingerprintMojo extends TreeMojo {
       for (String line; (line = raf.readLine()) != null;) {
         if ("#".equals(line)) {
           raf.seek(raf.getFilePointer() - 3);
-          for (final IsolatedDependency dep : isolatedDependencies) {
-            if (dep.getVersion() == null)
-              dep.setVersion(lookupVersion(getProject(), dep));
+          for (final IsolatedDependency isolatedDependency : isolatedDependencies) {
+            if (isolatedDependency.getVersion() != null)
+              throw new MojoExecutionException("Version of " + isolatedDependency + " must be specified in <dependencyManagement>");
 
-            raf.write(("\n0 " + dep.getGroupId() + ":" + dep.getArtifactId() + ":jar:" + dep.getVersion() + ":isolated").getBytes());
+            isolatedDependency.setVersion(MavenUtil.lookupVersion(getProject(), isolatedDependency));
+            raf.write(("\n0 " + isolatedDependency.getGroupId() + ":" + isolatedDependency.getArtifactId() + ":jar:" + isolatedDependency.getVersion() + ":isolated").getBytes());
           }
 
           raf.write("\n#".getBytes());

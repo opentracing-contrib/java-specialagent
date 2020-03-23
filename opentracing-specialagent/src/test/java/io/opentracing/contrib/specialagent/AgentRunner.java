@@ -47,7 +47,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.apache.maven.cli.MavenCli;
-import org.apache.maven.model.Dependency;
 import org.junit.Assert;
 import org.junit.rules.TestRule;
 import org.junit.runner.notification.RunNotifier;
@@ -117,7 +116,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       dependenciesTgf = new String(AssembleUtil.readBytes(dependenciesUrl));
       localRepositoryPath = new String(Files.readAllBytes(new File(CWD, "target/localRepository.txt").toPath()));
 
-      final File[] bootstrapDependencies = RuleUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile", "test");
+      final File[] bootstrapDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile", "test");
       if (debug) {
         System.err.println("Bootstrap Dependencies:\n  " + AssembleUtil.toIndentedString(bootstrapDependencies).replace("\n", "\n  "));
         checkFilesExist(bootstrapDependencies);
@@ -160,21 +159,21 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    */
   private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass, final boolean isolate) throws InitializationError, InterruptedException {
     try {
-      final File[] ruleDependencies = RuleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "compile");
+      final File[] ruleDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "compile");
       final Set<String> ruleClasses = AgentUtil.getClassFiles(ruleDependencies);
 
       final Set<String> testAppClasses = AgentUtil.getClassFiles(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
-      final File[] libTestDependencies = RuleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test");
+      final File[] libTestDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test");
       if (libTestDependencies != null)
         testAppClasses.addAll(AgentUtil.getClassFiles(libTestDependencies));
 
-      final File[] libDependencies = RuleUtil.filterRuleURLs(classpath, dependenciesTgf, true, "provided");
+      final File[] libDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "provided");
       if (libDependencies != null)
         testAppClasses.addAll(AgentUtil.getClassFiles(libDependencies));
 
-      final Set<Dependency> isoDependencies = AssembleUtil.selectDependenciesFromTgf(dependenciesTgf, false, "isolated");
+      final Set<MavenDependency> isoDependencies = MavenUtil.selectDependenciesFromTgf(dependenciesTgf, false, "isolated");
       final File[] isoFiles = new File[isoDependencies.size()];
-      final Iterator<Dependency> iterator = isoDependencies.iterator();
+      final Iterator<MavenDependency> iterator = isoDependencies.iterator();
       for (int i = 0; iterator.hasNext(); ++i)
         isoFiles[i] = getPath(localRepositoryPath, iterator.next());
 
@@ -234,7 +233,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private static File getPath(final String localRepositoryPath, final Dependency dependency) {
+  private static File getPath(final String localRepositoryPath, final MavenDependency dependency) {
     final File ideFile;
     if (!inSurefireTest && CWD.getParentFile().getName().equals("rule") && (ideFile = new File(CWD.getParentFile().getParentFile(), dependency.getArtifactId() + "/target/classes")).exists())
       return ideFile;
