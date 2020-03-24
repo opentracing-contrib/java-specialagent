@@ -379,6 +379,10 @@ mvn clean install && mvn -Dassemble install
 
 This is required, because the Integration Tests use the packaged SpecialAgent JAR with the `-javaagent:...` argument, as whould be done in a real use-case.
 
+**Important note!**
+
+Once you are ready to commit your integration test, make sure to add it to [`.travis.yml`](https://github.com/opentracing-contrib/java-specialagent/blob/master/.travis.yml). Just copy+paste some other integration test job pair, and modify for your tests.
+
 ## 9 Debugging
 
 The `-Dsa.log.level` system property can be used to set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
