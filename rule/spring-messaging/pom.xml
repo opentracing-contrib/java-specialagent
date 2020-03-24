@@ -26,79 +26,15 @@
   <name>SpecialAgent Rule for Spring Messaging</name>
   <artifactId>spring-messaging</artifactId>
   <properties>
-    <!-- FIXME: Can this be reduced to 1.7? -->
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <sa.rule.name>spring:messaging</sa.rule.name>
     <min.version>5.1.1.RELEASE</min.version>
     <version.spring.cloud>2.2.0.RELEASE</version.spring.cloud>
+    <passCompatibility>org.springframework.integration:spring-integration-core:[${min.version},]</passCompatibility>
   </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>specialagent-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>test-compatibility</id>
-            <configuration>
-              <passes>
-                <pass>
-                  <dependencies>
-                    <dependency>
-                      <groupId>org.springframework.integration</groupId>
-                      <artifactId>spring-integration-core</artifactId>
-                      <version>${min.version}</version> <!-- NOTE: Single version. -->
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-jcl</artifactId>
-                      <version>org.springframework:spring-messaging:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-core</artifactId>
-                      <version>org.springframework:spring-messaging:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-messaging</artifactId>
-                      <version>org.springframework:spring-messaging:[${min.version},]</version>
-                    </dependency>
-                  </dependencies>
-                </pass>
-              </passes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.springframework.integration</groupId>
       <artifactId>spring-integration-core</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jcl</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-messaging</artifactId>
       <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
