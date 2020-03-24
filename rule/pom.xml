@@ -186,7 +186,6 @@
           <groupId>io.opentracing.contrib.specialagent</groupId>
           <artifactId>opentracing-adapter</artifactId>
         </dependency>
-
       </dependencies>
     </profile>
     <!-- FIXME: why are there 2 profiles here? -->
