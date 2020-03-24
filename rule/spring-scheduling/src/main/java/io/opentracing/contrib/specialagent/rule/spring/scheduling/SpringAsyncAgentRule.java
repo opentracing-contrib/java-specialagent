@@ -42,7 +42,7 @@ public class SpringAsyncAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-    if (isEnabled("SpringAsyncAgentRule", origin))
+    if (isEnabled(SpringAsyncAgentRule.class.getName(), origin))
       arg = SpringSchedulingAgentIntercept.invoke(arg);
   }
 }

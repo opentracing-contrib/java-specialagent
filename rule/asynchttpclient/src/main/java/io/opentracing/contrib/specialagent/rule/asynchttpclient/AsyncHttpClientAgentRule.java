@@ -42,7 +42,7 @@ public class AsyncHttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object request, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object handler) {
-    if (isEnabled("AsyncHttpClientAgentRule", origin))
+    if (isEnabled(AsyncHttpClientAgentRule.class.getName(), origin))
       handler = AsyncHttpClientAgentIntercept.enter(request, handler);
   }
 }

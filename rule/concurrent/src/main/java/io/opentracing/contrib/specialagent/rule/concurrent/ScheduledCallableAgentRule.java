@@ -51,7 +51,7 @@ public class ScheduledCallableAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Callable<?> arg) throws Exception {
-    if (!isEnabled("ScheduledCallableAgentRule", origin))
+    if (!isEnabled(ScheduledCallableAgentRule.class.getName(), origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();

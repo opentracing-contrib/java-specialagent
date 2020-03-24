@@ -75,13 +75,13 @@ public class DynamicAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin) {
-    if (isEnabled("DynamicAgentRule", origin))
+    if (isEnabled(DynamicAgentRule.class.getName(), origin))
       DynamicAgentIntercept.enter(origin);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled("DynamicAgentRule", origin))
+    if (isEnabled(DynamicAgentRule.class.getName(), origin))
       DynamicAgentIntercept.exit(thrown);
   }
 }

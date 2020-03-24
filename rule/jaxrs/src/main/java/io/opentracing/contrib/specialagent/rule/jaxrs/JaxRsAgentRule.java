@@ -41,7 +41,7 @@ public class JaxRsAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled("JaxRsAgentRule", origin))
+    if (isEnabled(JaxRsAgentRule.class.getName(), origin))
       JaxRsAgentIntercept.enter(thiz);
   }
 }

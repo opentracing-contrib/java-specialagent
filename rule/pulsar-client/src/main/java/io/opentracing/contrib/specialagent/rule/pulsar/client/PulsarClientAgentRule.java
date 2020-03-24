@@ -51,7 +51,7 @@ public class PulsarClientAgentRule extends AgentRule {
   public static class Consumer {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
-      if (isEnabled("PulsarClientAgentRule", origin))
+      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
         PulsarClientAgentIntercept.receiveEnd(thiz, returned);
     }
   }
@@ -59,7 +59,7 @@ public class PulsarClientAgentRule extends AgentRule {
   public static class ConsumerAsync {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
-      if (isEnabled("PulsarClientAgentRule", origin))
+      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
         PulsarClientAgentIntercept.receiveAsyncEnd(thiz, returned);
     }
   }
@@ -67,13 +67,13 @@ public class PulsarClientAgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
-      if (isEnabled("PulsarClientAgentRule", origin))
+      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
         PulsarClientAgentIntercept.internalSendAsyncEnter(thiz, message);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled("PulsarClientAgentRule", origin))
+      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
         returned = PulsarClientAgentIntercept.internalSendAsyncEnd(returned, thrown);
     }
   }

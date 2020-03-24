@@ -41,7 +41,7 @@ public class CouchbaseClientAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled("CouchbaseClientAgentRule", origin))
+    if (isEnabled(CouchbaseClientAgentRule.class.getName(), origin))
       CouchbaseClientAgentIntercept.enter(thiz);
   }
 }

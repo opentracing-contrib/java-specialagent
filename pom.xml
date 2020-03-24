@@ -239,14 +239,7 @@
         </property>
       </activation>
       <modules>
-        <module>opentracing-adapter</module>
-        <module>opentracing-specialagent-api</module>
-        <module>opentracing-specialagent-util</module>
-        <module>specialagent-fingerprint</module>
-        <module>opentracing-rewrite</module>
         <module>opentracing-specialagent</module>
-        <module>specialagent-maven-plugin</module>
-        <module>itest-maven-plugin</module>
       </modules>
       <dependencies>
         <dependency>
@@ -277,6 +270,13 @@
         </property>
       </activation>
       <modules>
+        <module>opentracing-adapter</module>
+        <module>opentracing-specialagent-api</module>
+        <module>opentracing-specialagent-util</module>
+        <module>specialagent-fingerprint</module>
+        <module>opentracing-rewrite</module>
+        <module>specialagent-maven-plugin</module>
+        <module>itest-maven-plugin</module>
         <module>rule</module>
       </modules>
     </profile>

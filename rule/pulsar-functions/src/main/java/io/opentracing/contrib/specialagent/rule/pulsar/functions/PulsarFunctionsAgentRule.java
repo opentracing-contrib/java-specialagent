@@ -40,13 +40,13 @@ public class PulsarFunctionsAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, final @Advice.FieldValue(value = "function") Object function, final @Advice.FieldValue(value = "javaUtilFunction") Object javaUtilFunction, final @Advice.FieldValue(value = "context") Object context) {
-    if (isEnabled("PulsarFunctionsAgentRule", origin))
+    if (isEnabled(PulsarFunctionsAgentRule.class.getName(), origin))
       PulsarFunctionsAgentIntercept.handleMessageEnter(function != null ? function : javaUtilFunction, context, arg0);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled("PulsarFunctionsAgentRule", origin))
+    if (isEnabled(PulsarFunctionsAgentRule.class.getName(), origin))
       PulsarFunctionsAgentIntercept.handleMessageEnd(returned, thrown);
   }
 }
