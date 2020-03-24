@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Writer;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -29,10 +28,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.lifecycle.internal.MojoExecutor;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Execute;
@@ -42,10 +46,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.tree.TGFDependencyNodeVisitor;
 import org.apache.maven.plugins.dependency.tree.TreeMojo;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-import org.codehaus.plexus.component.repository.ComponentDependency;
 
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
@@ -66,21 +71,6 @@ import org.codehaus.plexus.component.repository.ComponentDependency;
 @Mojo(name="fingerprint", defaultPhase=LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(goal="fingerprint")
 public final class FingerprintMojo extends TreeMojo {
-  /**
-   * Returns an {@code Artifact} representation of {@code dependency}, qualified
-   * by {@code artifactHandler}.
-   *
-   * @param dependency The {@code ComponentDependency}.
-   * @param artifactHandler The {@code ArtifactHandler}.
-   * @return A {@code Artifact} representation of {@code dependency}, qualified
-   *         by {@code artifactHandler}.
-   * @throws NullPointerException If {@code dependency} or
-   *           {@code artifactHandler} is null.
-   */
-  public static Artifact toArtifact(final ComponentDependency dependency, final ArtifactHandler artifactHandler) {
-    return new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), null, dependency.getType(), null, artifactHandler);
-  }
-
   /**
    * Returns a list of {@code URL} objects representing paths of
    * {@link Artifact} objects marked with {@code <optional>true</optional>} in
@@ -107,10 +97,19 @@ public final class FingerprintMojo extends TreeMojo {
     return depth == 0 ? null : new URL[depth];
   }
 
-  @Parameter(defaultValue="${localRepository}", required=true, readonly=true)
+  @Inject
+  private MojoExecutor executor;
+
+  @Inject
+  private ProjectDependenciesResolver projectDependenciesResolver;
+
+  @Parameter(defaultValue = "${localRepository}", required = true, readonly = true)
   private ArtifactRepository localRepository;
 
-  @Parameter(defaultValue="${sa.rule.name}", required=true)
+  @Parameter(defaultValue = "${mojoExecution}", required = true, readonly = true)
+  private MojoExecution execution;
+
+  @Parameter(defaultValue = "${sa.rule.name}", required = true)
   private String name;
 
   @Parameter(property = "debug")
@@ -125,19 +124,12 @@ public final class FingerprintMojo extends TreeMojo {
   @Parameter
   private List<String> absents;
 
-  private void setField(final Class<? super FingerprintMojo> cls, final String fieldName, final Object value) {
-    try {
-      final Field field = cls.getDeclaredField(fieldName);
-      field.setAccessible(true);
-      field.set(this, value);
-    }
-    catch (final IllegalAccessException | NoSuchFieldException e) {
-      throw new IllegalStateException(e);
-    }
+  MavenSession getSession() {
+    return (MavenSession)HackMojo.getField(TreeMojo.class, this, "session");
   }
 
   private class CustomNodeVisitor implements DependencyNodeVisitor {
-    private DependencyNodeVisitor target;
+    private final DependencyNodeVisitor target;
 
     private CustomNodeVisitor(final DependencyNodeVisitor target) {
       this.target = target;
@@ -146,8 +138,7 @@ public final class FingerprintMojo extends TreeMojo {
     @Override
     public boolean visit(final DependencyNode node) {
       final List<DependencyNode> children = new ArrayList<>(node.getChildren());
-      final Iterator<DependencyNode> iterator = children.iterator();
-      while (iterator.hasNext()) {
+      for (final Iterator<DependencyNode> iterator = children.iterator(); iterator.hasNext();) {
         final DependencyNode child = iterator.next();
         final Artifact artifact = child.getArtifact();
         if ("io.opentracing".equals(artifact.getGroupId())) {
@@ -186,11 +177,11 @@ public final class FingerprintMojo extends TreeMojo {
     return visitor instanceof TGFDependencyNodeVisitor ? new CustomNodeVisitor(visitor) : visitor;
   }
 
-  private void createDependenciesTgf() throws IOException, MojoExecutionException, MojoFailureException {
+  private void createDependenciesTgf() throws DependencyResolutionException, IOException, LifecycleExecutionException, MojoExecutionException, MojoFailureException {
     final File file = new File(getProject().getBuild().getOutputDirectory(), "dependencies.tgf");
     getLog().info("--> dependencies.tgf <--");
-    setField(TreeMojo.class, "outputType", "tgf");
-    setField(TreeMojo.class, "outputFile", file);
+    HackMojo.setField(TreeMojo.class, this, "outputType", "tgf");
+    HackMojo.setField(TreeMojo.class, this, "outputFile", file);
     super.execute();
 
     if (isolatedDependencies == null || isolatedDependencies.size() == 0)
@@ -210,6 +201,11 @@ public final class FingerprintMojo extends TreeMojo {
 
           raf.write("\n#".getBytes());
           raf.setLength(raf.getFilePointer());
+
+          final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));
+          MutableMojo.resolveDependencies(getSession(), execution, executor, projectDependenciesResolver);
+          MutableMojo.rollbackDependencies(getProject().getDependencies(), rollback);
+          MutableMojo.resolveDependencies(getSession(), execution, executor, projectDependenciesResolver);
           return;
         }
       }
@@ -259,8 +255,8 @@ public final class FingerprintMojo extends TreeMojo {
       final String adapterClassName = AssembleUtil.readFileFromJar(artifact.getFile(), "META-INF/services/io.opentracing.contrib.specialagent.Adapter");
       if (adapterClassName != null) {
         final String[] lines = adapterClassName.split("\n");
-        for (String line : lines) {
-          line = line.trim();
+        for (int i = 0; i < lines.length; ++i) {
+          final String line = lines[i].trim();
           if (line.length() > 0 && line.charAt(0) != '#') {
             Files.write(nameFile.toPath(), line.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             return;
@@ -273,9 +269,14 @@ public final class FingerprintMojo extends TreeMojo {
   }
 
   private String apiVersion;
+  private static boolean isRunning;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    if (isRunning)
+      return;
+
+    isRunning = true;
     if (isSkip()) {
       getLog().info("Skipping plugin execution");
       return;
@@ -286,21 +287,24 @@ public final class FingerprintMojo extends TreeMojo {
       return;
     }
 
-    for (final Artifact artifact : getProject().getDependencyArtifacts()) {
-      if ("io.opentracing".equals(artifact.getGroupId()) && "opentracing-api".equals(artifact.getArtifactId())) {
-        apiVersion = artifact.getVersion();
-        break;
-      }
-    }
-
     try {
+      for (final Artifact artifact : getProject().getDependencyArtifacts()) {
+        if ("io.opentracing".equals(artifact.getGroupId()) && "opentracing-api".equals(artifact.getArtifactId())) {
+          apiVersion = artifact.getVersion();
+          break;
+        }
+      }
+
       createDependenciesTgf();
       createFingerprintBin();
       createLocalRepoFile();
       createPluginName();
     }
-    catch (final IOException e) {
+    catch (final DependencyResolutionException | IOException | LifecycleExecutionException e) {
       throw new MojoFailureException(e.getMessage(), e);
+    }
+    finally {
+      isRunning = false;
     }
   }
 }

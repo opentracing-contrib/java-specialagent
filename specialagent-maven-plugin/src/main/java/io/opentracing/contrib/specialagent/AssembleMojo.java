@@ -27,8 +27,14 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.inject.Inject;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.lifecycle.internal.MojoExecutor;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -37,6 +43,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.ProjectDependenciesResolver;
 
 @Mojo(name = "assemble", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true )
 @Execute(goal = "assemble")
@@ -45,8 +53,17 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
   private static final String isoDestDir = "dependencies/" + UtilConstants.META_INF_ISO_PATH;
   private static final String declarationScopeOfInstrumentationPlugins = "provided";
 
-  @Parameter(defaultValue = "${localRepository}")
+  @Inject
+  private MojoExecutor executor;
+
+  @Inject
+  private ProjectDependenciesResolver projectDependenciesResolver;
+
+  @Parameter(defaultValue = "${localRepository}", required = true, readonly = true)
   private ArtifactRepository localRepository;
+
+  @Parameter(defaultValue = "${mojoExecution}", required = true, readonly = true)
+  private MojoExecution execution;
 
   @Parameter
   private List<IsolatedDependency> isolatedDependencies;
@@ -69,8 +86,14 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
     Files.copy(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
   }
 
+  private static boolean isRunning;
+
   @Override
   protected void doExecute() throws MojoExecutionException {
+    if (isRunning)
+      return;
+
+    isRunning = true;
     this.includeScope = declarationScopeOfInstrumentationPlugins;
     try {
       final File pluginsPath = new File(getProject().getBuild().getDirectory(), pluginsDestDir);
@@ -136,10 +159,18 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
           final File jarFile = new File(MavenUtil.getPathOf(localRepository.getBasedir(), dependency));
           fileCopy(jarFile, new File(isoPath, jarFile.getName()));
         }
+
+        final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));
+        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
+        MutableMojo.rollbackDependencies(getProject().getDependencies(), rollback);
+        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
       }
     }
-    catch (final IOException e) {
+    catch (final DependencyResolutionException | IOException | LifecycleExecutionException e) {
       throw new MojoExecutionException(e.getMessage(), e);
+    }
+    finally {
+      isRunning = false;
     }
   }
 }

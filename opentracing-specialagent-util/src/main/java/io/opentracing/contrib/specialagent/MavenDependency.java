@@ -15,7 +15,21 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.util.Collection;
+import java.util.Iterator;
+
+import org.apache.maven.model.Dependency;
+
 public class MavenDependency {
+  public static Dependency[] toDependencies(final Collection<? extends MavenDependency> dependencies) {
+    final Dependency[] result = new Dependency[dependencies.size()];
+    final Iterator<? extends MavenDependency> iterator = dependencies.iterator();
+    for (int i = 0; iterator.hasNext(); ++i)
+      result[i] = iterator.next().toDependency();
+
+    return result;
+  }
+
   private String groupId;
   private String artifactId;
   private String version;
@@ -77,6 +91,10 @@ public class MavenDependency {
 
   public void setType(final String type) {
     this.type = type;
+  }
+
+  public Dependency toDependency() {
+    return MavenUtil.newDependency(getGroupId(), getArtifactId(), getVersion(), getClassifier(), getType());
   }
 
   @Override
