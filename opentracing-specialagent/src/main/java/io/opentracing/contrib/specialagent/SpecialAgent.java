@@ -555,8 +555,8 @@ public class SpecialAgent {
     Boolean compatible = classLoaderToCompatibility.get(classLoader);
 
     if (compatible != null && compatible) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("SpecialAgent.linkRule(\"" + pluginManifest.name + "\", " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("SpecialAgent.linkRule(\"" + pluginManifest.name + "\", " + AssembleUtil.getNameId(classLoader) + "): compatible = " + compatible + " [cached]");
 
       return true;
     }
@@ -590,8 +590,8 @@ public class SpecialAgent {
     }
 
     if (classLoader == null) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("[" + pluginManifest.name + "] Target class loader is: null (bootstrap)");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("[" + pluginManifest.name + "] Target class loader is: null (bootstrap)");
 
       for (final File pluginDependencyFile : pluginDependencyFiles) {
         try {
@@ -604,8 +604,8 @@ public class SpecialAgent {
       }
     }
     else if (classLoader == ClassLoader.getSystemClassLoader()) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("[" + pluginManifest.name + "] Target class loader is: " + AssembleUtil.getNameId(classLoader) + " (system)");
+      if (logger.isLoggable(Level.FINEST))
+        logger.finest("[" + pluginManifest.name + "] Target class loader is: " + AssembleUtil.getNameId(classLoader) + " (system)");
 
       for (final File pluginDependencyFile : pluginDependencyFiles) {
         try {
