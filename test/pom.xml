@@ -53,6 +53,7 @@
     <module>httpurlconnection</module>
     <module>jaxrs</module>
     <module>jdbc</module>
+    <module>jdbi</module>
     <module>jedis</module>
     <module>jms</module>
     <module>kafka-client</module>
