@@ -37,6 +37,7 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
+@AgentRunner.Config(isolateClassLoader = false)
 public class HttpClientTest {
   @Before
   public void before(final MockTracer tracer) {
@@ -45,6 +46,9 @@ public class HttpClientTest {
 
   @Test
   public void test(final MockTracer tracer) {
+    System.setProperty(Configuration.SPAN_DECORATORS,
+        "io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags,io.opentracing.contrib.specialagent.rule.apache.httpclient.MockSpanDecorator");
+
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     final String url = "http://localhost:12345";
 
@@ -78,6 +82,7 @@ public class HttpClientTest {
       assertEquals(url, span.tags().get(Tags.HTTP_URL.getKey()));
       assertEquals("localhost", span.tags().get(Tags.PEER_HOSTNAME.getKey()));
       assertEquals(12345, span.tags().get(Tags.PEER_PORT.getKey()));
+      assertEquals(MockSpanDecorator.MOCK_TAG_VALUE, span.tags().get(MockSpanDecorator.MOCK_TAG_KEY));
     }
   }
 }
