@@ -238,6 +238,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/httpurlconnection -amd integration-test || (mvn -B -P test -pl test/httpurlconnection -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Hystrix [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/hystrix -amd integration-test || (mvn -B -P test -pl test/hystrix -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "Hystrix [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/hystrix -amd integration-test || (mvn -B -P test -pl test/hystrix -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "Java Concurrent API [openjdk8]"
     stage: test
     jdk: openjdk8
