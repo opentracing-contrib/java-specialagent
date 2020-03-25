@@ -38,10 +38,19 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-akka</artifactId>
       <version>0.1.4</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>com.typesafe.akka</groupId>
           <artifactId>akka-actor_2.12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

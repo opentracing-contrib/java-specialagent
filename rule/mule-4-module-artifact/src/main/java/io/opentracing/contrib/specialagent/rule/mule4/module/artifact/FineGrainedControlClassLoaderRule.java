@@ -48,7 +48,7 @@ public class FineGrainedControlClassLoaderRule extends AgentRule {
   public static class OnExit {
     @OnMethodExit
     public static void exit(final @Origin String origin, final @This Object thiz, @Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned, final @Argument(value = 0) Object resObj) {
-      if (isEnabled("FineGrainedControlClassLoaderRule", origin))
+      if (isEnabled(FineGrainedControlClassLoaderRule.class.getName(), origin))
         returned = FineGrainedControlAgentIntercept.exit(thiz, returned, resObj);
     }
   }

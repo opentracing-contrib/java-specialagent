@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.pulsar.client;
 
 import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +43,7 @@ import com.google.common.collect.Sets;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;

@@ -34,11 +34,23 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jdbc</artifactId>
       <version>0.2.8</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>common</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>1.4.199</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

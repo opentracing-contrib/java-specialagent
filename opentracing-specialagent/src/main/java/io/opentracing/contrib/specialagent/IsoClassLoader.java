@@ -18,19 +18,21 @@ package io.opentracing.contrib.specialagent;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-class IsoClassLoader extends URLClassLoader {
+public class IsoClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(IsoClassLoader.class);
 
   private static class IsoParentClassLoader extends ClassLoader {
     private final AtomicReference<Set<String>> isoNames = new AtomicReference<>();
     private final URL[] isoClassPaths;
 
-    private IsoParentClassLoader(final URL[] isoClassPaths) {
+    private IsoParentClassLoader(final URL[] isoClassPaths, final ClassLoader parent) {
+      super(parent);
       this.isoClassPaths = isoClassPaths;
       if (logger.isLoggable(Level.FINEST))
         logger.finest("new IsoParentClassLoader(" + AssembleUtil.toIndentedString(isoClassPaths) + ")");
@@ -49,7 +51,9 @@ class IsoClassLoader extends URLClassLoader {
           AssembleUtil.<Void>forEachClass(isoClassPaths, null, new BiConsumer<String,Void>() {
             @Override
             public void accept(final String name, final Void arg) {
-              names.add(name);
+              // FIXME: This is a hack workaround for https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java/issues/17
+              if (BootProxyClassLoader.INSTANCE.getResource(name) == null)
+                names.add(name);
             }
           });
 
@@ -75,7 +79,7 @@ class IsoClassLoader extends URLClassLoader {
     @Override
     public Enumeration<URL> getResources(final String name) throws IOException {
       final boolean isNameIso = getNames().contains(name);
-      final Enumeration<URL> resources = isNameIso ? null : super.getResources(name);
+      final Enumeration<URL> resources = isNameIso ? Collections.<URL>emptyEnumeration() : super.getResources(name);
       if (logger.isLoggable(Level.FINEST))
         logger.finest("~~~~~~~~ IsoParentClassLoader.getResources(\"" + name + "\") [" + isNameIso + "]: " + resources);
 
@@ -83,7 +87,16 @@ class IsoClassLoader extends URLClassLoader {
     }
   }
 
-  IsoClassLoader(final URL[] urls) {
-    super(urls, new IsoParentClassLoader(urls));
+  public IsoClassLoader(final URL[] urls, final ClassLoader parent) {
+    super(urls, new IsoParentClassLoader(urls, parent));
+  }
+
+  public Class<?> loadClassOrNull(final String name) {
+    try {
+      return loadClass(name);
+    }
+    catch (final ClassNotFoundException e) {
+      return null;
+    }
   }
 }

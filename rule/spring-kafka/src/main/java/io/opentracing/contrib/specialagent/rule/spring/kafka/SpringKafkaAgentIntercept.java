@@ -23,8 +23,8 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.kafka.TracingKafkaUtils;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -56,7 +56,7 @@ public class SpringKafkaAgentIntercept {
     final LocalSpanContext context = LocalSpanContext.get();
     if (context != null && context.decrementAndGet() == 0) {
       if (thrown != null)
-        AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+        OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);
 
       context.closeAndFinish();
     }

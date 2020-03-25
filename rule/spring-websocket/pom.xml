@@ -33,7 +33,7 @@
     <plugins>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
+        <artifactId>specialagent-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>test-compatibility</id>
@@ -65,21 +65,22 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-websocket</artifactId>
       <version>${min.version}</version>
-      <scope>provided</scope>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- It's required to have a 2nd fingerprinted dependency. Any Spring WebSocket application must have both artifacts.-->
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
       <version>${min.version}</version>
-      <scope>provided</scope>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

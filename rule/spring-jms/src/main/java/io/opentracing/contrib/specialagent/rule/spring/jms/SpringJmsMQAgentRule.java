@@ -50,20 +50,20 @@ public class SpringJmsMQAgentRule extends AgentRule {
   public static class ReceiveMessage {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object consumer, final @Advice.Return Object message) {
-      if (isEnabled("SpringJmsMQAgentRule", origin))
+      if (isEnabled(SpringJmsMQAgentRule.class.getName(), origin))
         SpringJmsAgentIntercept.onReceiveMessage(consumer, message);
     }
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
-    if (isEnabled("SpringJmsMQAgentRule", origin))
+    if (isEnabled(SpringJmsMQAgentRule.class.getName(), origin))
       SpringJmsAgentIntercept.onMessageEnter(message);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled("SpringJmsMQAgentRule", origin))
+    if (isEnabled(SpringJmsMQAgentRule.class.getName(), origin))
       SpringJmsAgentIntercept.onMessageExit(thrown);
   }
 }

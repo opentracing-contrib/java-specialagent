@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 
@@ -51,7 +51,7 @@ public class TracingOperationCallback implements OperationCallback {
   }
 
   void onError(final Throwable thrown) {
-    AgentRuleUtil.setErrorTag(span, thrown);
+    OpenTracingApiUtil.setErrorTag(span, thrown);
     span.finish();
   }
 }

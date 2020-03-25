@@ -36,6 +36,13 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-mongo-common</artifactId>
       <version>0.1.5</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
@@ -51,38 +58,43 @@
       -->
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <scope>test</scope>
       <version>2.6.2</version>
+      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-async</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>de.bwaldvogel</groupId>
       <artifactId>mongo-java-server</artifactId>
       <version>1.14.0</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-reactivestreams</artifactId>
       <version>1.11.0</version>
+      <optional>true</optional>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.mongodb</groupId>
           <artifactId>mongodb-driver-async</artifactId>
         </exclusion>
       </exclusions>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

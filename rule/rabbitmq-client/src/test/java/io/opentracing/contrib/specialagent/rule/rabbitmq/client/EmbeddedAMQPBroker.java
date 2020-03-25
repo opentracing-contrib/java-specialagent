@@ -21,56 +21,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.qpid.server.SystemLauncher;
-import org.apache.qpid.server.SystemLauncherListener;
-import org.apache.qpid.server.model.Port;
-import org.apache.qpid.server.model.SystemConfig;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 class EmbeddedAMQPBroker {
-  private int brokerPort;
-  private final SystemLauncher broker = new SystemLauncher(new SystemLauncherListener() {
-    private SystemConfig<?> systemConfig;
-
-    @Override
-    public void onContainerResolve(final SystemConfig<?> systemConfig) {
-      this.systemConfig = systemConfig;
-    }
-
-    @Override
-    public void beforeStartup() {
-    }
-
-    @Override
-    public void errorOnStartup(final RuntimeException e) {
-    }
-
-    @Override
-    public void afterStartup() {
-      brokerPort = systemConfig.getContainer().getChildByName(Port.class, "AMQP").getBoundPort();
-    }
-
-    @Override
-    public void onContainerClose(final SystemConfig<?> systemConfig) {
-    }
-
-    @Override
-    public void onShutdown(final int exitCode) {
-    }
-
-    @Override
-    public void exceptionOnShutdown(final Exception e) {
-    }
-  });
+  private int brokerPort = TestUtil.nextFreePort();;
+  private final SystemLauncher broker = new SystemLauncher();
 
   EmbeddedAMQPBroker() throws Exception {
     final Map<String,Object> context = new HashMap<>();
-    context.put("qpid.amqp_port", 0);
+    context.put("qpid.amqp_port", brokerPort);
     context.put("qpid.work_dir", Files.createTempDirectory("qpid").toFile().getAbsolutePath());
 
     final Map<String,Object> brokerOptions = new HashMap<>();
     brokerOptions.put("type", "Memory");
     brokerOptions.put("context", context);
-    brokerOptions.put("initialConfigurationLocation", Thread.currentThread().getContextClassLoader().getResource("qpid-config.json").getPath());
-
+    brokerOptions.put("initialConfigurationLocation", "src/test/resources/qpid-config.json");
     // start broker
     broker.startup(brokerOptions);
   }

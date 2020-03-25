@@ -23,8 +23,8 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -70,7 +70,7 @@ public class HttpURLConnectionAgentIntercept {
       return;
 
     if (thrown != null)
-      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+      OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);
     else
       context.getSpan().setTag(Tags.HTTP_STATUS, responseCode);
 

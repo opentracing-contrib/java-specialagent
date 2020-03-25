@@ -42,7 +42,7 @@ public class PlayWSAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object arg1) {
-    if (isEnabled("PlayWSAgentRule", origin))
+    if (isEnabled(PlayWSAgentRule.class.getName(), origin))
       arg1 = PlayWSAgentIntercept.executeStart(arg0, arg1);
   }
 }

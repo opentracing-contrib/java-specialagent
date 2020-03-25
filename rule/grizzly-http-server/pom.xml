@@ -36,7 +36,7 @@
     <plugins>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
+        <artifactId>specialagent-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>test-compatibility</id>
@@ -69,6 +69,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grizzly-http-server</artifactId>
       <version>${version.opentracing.grizzly}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
@@ -95,12 +96,14 @@
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-client</artifactId>
       <version>1.15</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

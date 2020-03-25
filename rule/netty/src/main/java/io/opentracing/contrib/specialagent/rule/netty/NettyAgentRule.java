@@ -42,7 +42,7 @@ public class NettyAgentRule extends AgentRule {
   public static class ChannelPipelineAdd {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2, optional = true) Object arg2) {
-      if (isEnabled("NettyAgentRule", origin))
+      if (isEnabled(NettyAgentRule.class.getName(), origin))
         NettyAgentIntercept.pipelineAddExit(thiz, arg2);
     }
   }

@@ -50,7 +50,7 @@ class RuleClassLoader extends URLClassLoader {
     public void accept(final String path, final ClassLoader classLoader) {
       final String className = AssembleUtil.resourceToClassName(path);
       if (logger.isLoggable(Level.FINEST))
-        logger.finest("Class#forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
+        logger.finest("Class.forName(\"" + className + "\", false, " + AssembleUtil.getNameId(classLoader) + ")");
 
       try {
         Class.forName(className, false, classLoader);
@@ -63,7 +63,7 @@ class RuleClassLoader extends URLClassLoader {
   private final ClassLoaderMap<Boolean> compatibility = new ClassLoaderMap<>();
   private final ClassLoaderMap<Boolean> injected = new ClassLoaderMap<>();
   private final PluginManifest pluginManifest;
-  private final IsoClassLoader isoClassLoader;
+  private final ClassLoader isoClassLoader;
 
   /**
    * Creates a new {@code RuleClassLoader} with the specified classpath URLs and
@@ -75,7 +75,7 @@ class RuleClassLoader extends URLClassLoader {
    * @param parent The parent {@code ClassLoader}.
    * @param files The classpath URLs.
    */
-  RuleClassLoader(final PluginManifest pluginManifest, final IsoClassLoader isoClassLoader, final ClassLoader parent, final File ... files) {
+  RuleClassLoader(final PluginManifest pluginManifest, final ClassLoader isoClassLoader, final ClassLoader parent, final File ... files) {
     super(AssembleUtil.toURLs(files), parent);
     this.pluginManifest = pluginManifest;
     this.isoClassLoader = isoClassLoader;
@@ -181,7 +181,7 @@ class RuleClassLoader extends URLClassLoader {
       return true;
     }
 
-    final Class<?> libraryFingerprintClass = Class.forName("io.opentracing.contrib.specialagent.LibraryFingerprint", true, isoClassLoader);
+    final Class<?> libraryFingerprintClass = isoClassLoader.loadClass("io.opentracing.contrib.specialagent.LibraryFingerprint");
     final Method fromFileMethod = libraryFingerprintClass.getDeclaredMethod("fromFile", URL.class);
     final Object fingerprint = fromFileMethod.invoke(null, pluginManifest.getFingerprint());
     if (fingerprint != null) {

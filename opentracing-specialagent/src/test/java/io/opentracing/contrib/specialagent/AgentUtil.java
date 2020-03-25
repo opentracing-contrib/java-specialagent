@@ -21,7 +21,6 @@ import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -35,7 +34,7 @@ import java.util.jar.JarFile;
  *
  * @author Seva Safris
  */
-class AgentUtil {
+public final class AgentUtil {
   private static final Predicate<String> predicate = new Predicate<String>() {
     @Override
     public boolean test(final String t) {
@@ -53,20 +52,13 @@ class AgentUtil {
    *         well as subpaths of the paths.
    * @throws IOException If an I/O error has occurred.
    */
-  static Set<String> getClassFiles(final List<File> files) throws IOException {
+  public static Set<String> getClassFiles(final File ... files) throws IOException {
     final Set<String> classFiles = new HashSet<>();
+    if (files == null || files.length == 0)
+      return classFiles;
+
     for (final File file : files) {
-      if (file.getName().endsWith(".jar")) {
-        try (final JarFile jarFile = new JarFile(file)) {
-          final Enumeration<JarEntry> entries = jarFile.entries();
-          while (entries.hasMoreElements()) {
-            final JarEntry entry = entries.nextElement();
-            if (predicate.test(entry.getName()))
-              classFiles.add(entry.getName());
-          }
-        }
-      }
-      else {
+      if (file.isDirectory()) {
         final Path filePath = file.toPath();
         AssembleUtil.recurseDir(file, new Predicate<File>() {
           @Override
@@ -79,8 +71,24 @@ class AgentUtil {
           }
         });
       }
+      else if (file.getName().endsWith(".jar")) {
+        try (final JarFile jarFile = new JarFile(file)) {
+          final Enumeration<JarEntry> entries = jarFile.entries();
+          while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            if (predicate.test(entry.getName()))
+              classFiles.add(entry.getName());
+          }
+        }
+      }
+      else {
+        throw new IOException("Unknown file type: " + file);
+      }
     }
 
     return classFiles;
+  }
+
+  private AgentUtil() {
   }
 }

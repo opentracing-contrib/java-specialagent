@@ -64,8 +64,8 @@ public class ByteBuddyManager extends Manager {
   private static AgentBuilder newBuilder() {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
     AgentBuilder agentBuilder = new Default(byteBuddy);
-    if (AgentRuleUtil.tracerClassLoader != null)
-      agentBuilder = agentBuilder.ignore(any(), is(AgentRuleUtil.tracerClassLoader));
+    if (Adapter.tracerClassLoader != null)
+      agentBuilder = agentBuilder.ignore(any(), is(Adapter.tracerClassLoader));
 
     return agentBuilder
       .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
@@ -110,19 +110,19 @@ public class ByteBuddyManager extends Manager {
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  LinkedHashMap<AgentRule,Integer> scanRules(final Instrumentation inst, final LinkedHashMap<AgentRule,Integer> agentRules, final ClassLoader allRulesClassLoader, final Map<File,Integer> ruleJarToIndex, final Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException {
-    LinkedHashMap<AgentRule,Integer> deferrers = null;
+  Map<AgentRule,PluginManifest> scanRules(final Instrumentation inst, final ClassLoader pluginsClassLoader, final PluginManifest.Directory pluginManifestDirectory, final Map<AgentRule,PluginManifest> pluginManifests, final Map<String,String> classNameToName) throws IOException {
+    LinkedHashMap<AgentRule,PluginManifest> deferrers = null;
     AgentRule agentRule = null;
     try {
       // Prepare the agent rules
-      final Enumeration<URL> enumeration = allRulesClassLoader.getResources(file);
+      final Enumeration<URL> enumeration = pluginsClassLoader.getResources(file);
       while (enumeration.hasMoreElements()) {
         final URL scriptUrl = enumeration.nextElement();
-        final File ruleJar = SpecialAgentUtil.getSourceLocation(scriptUrl, file);
+        final File ruleJar = AssembleUtil.getSourceLocation(scriptUrl, file);
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Dereferencing index for " + ruleJar);
 
-        final int index = ruleJarToIndex.get(ruleJar);
+//        final int index = ruleJarToIndex.get(ruleJar);
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()))) {
           for (String line; (line = reader.readLine()) != null;) {
             line = line.trim();
@@ -136,7 +136,7 @@ public class ByteBuddyManager extends Manager {
               continue;
             }
 
-            final Class<?> agentClass = Class.forName(line, true, allRulesClassLoader);
+            final Class<?> agentClass = pluginsClassLoader.loadClass(line);
             if (!AgentRule.class.isAssignableFrom(agentClass)) {
               logger.severe("Class " + agentClass.getName() + " does not implement " + AgentRule.class);
               continue;
@@ -146,14 +146,14 @@ public class ByteBuddyManager extends Manager {
             final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
             if (AssembleUtil.isSystemProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable")) {
               if (logger.isLoggable(Level.FINE))
-                logger.fine("Skipping disabled rule: " + line);
+                logger.fine("Skipping rule: " + line);
 
               continue;
             }
 
             if (AgentRule.class.isAssignableFrom(agentClass)) {
               if (logger.isLoggable(Level.FINE))
-                logger.fine("Installing new rule: " + line);
+                logger.fine("Installing rule: " + line);
 
               classNameToName.put(agentClass.getName(), pluginManifest.name);
               agentRule = (AgentRule)agentClass.getConstructor().newInstance();
@@ -161,10 +161,10 @@ public class ByteBuddyManager extends Manager {
                 if (deferrers == null)
                   deferrers = new LinkedHashMap<>(1);
 
-                deferrers.put(agentRule, index);
+                deferrers.put(agentRule, pluginManifest);
               }
               else {
-                agentRules.put(agentRule, index);
+                pluginManifests.put(agentRule, pluginManifest);
               }
             }
           }
@@ -186,39 +186,40 @@ public class ByteBuddyManager extends Manager {
 
   private boolean loadedDefaultRules;
 
-  private void loadDefaultRules(final Instrumentation inst, final Event[] events) {
+  private void loadDefaultRules(final Instrumentation inst, final String[] tracerExcludedClasses, final Event[] events) {
     if (loadedDefaultRules)
       return;
 
     loadedDefaultRules = true;
 
     // Load ClassLoaderAgentRule
-    loadAgentRule(inst, new ClassLoaderAgentRule(), newBuilder(), -1, events);
+    loadAgentRule(inst, new ClassLoaderAgentRule(), newBuilder(), null, events);
 
-    // Load MutexAgentRule
-    loadAgentRule(inst, new MutexAgentRule(), newBuilder(), -1, events);
+    // Load TracerExclusionAgent
+    TracerExclusionAgent.premain(tracerExcludedClasses, newBuilder());
   }
 
   @Override
-  void loadRules(final Instrumentation inst, final Map<AgentRule,Integer> agentRules, final Event[] events) {
+  void loadRules(final Instrumentation inst, final Map<AgentRule,PluginManifest> pluginManifests, final String[] tracerExcludedClasses, final Event[] events) {
     // Ensure default rules are loaded
-    loadDefaultRules(inst, events);
+    loadDefaultRules(inst, tracerExcludedClasses, events);
 
     // Load the rest of the specified rules
-    for (final Map.Entry<AgentRule,Integer> entry : agentRules.entrySet()) {
-      final AgentRule agentRule = entry.getKey();
-      loadAgentRule(inst, agentRule, newBuilder(), entry.getValue(), events);
-      loadedRules.add(agentRule.getClass().getName());
+    if (pluginManifests != null) {
+      for (final Map.Entry<AgentRule,PluginManifest> entry : pluginManifests.entrySet()) {
+        loadAgentRule(inst, entry.getKey(), newBuilder(), entry.getValue(), events);
+        loadedRules.add(entry.getKey().getClass().getName());
+      }
     }
   }
 
-  private void loadAgentRule(final Instrumentation inst, final AgentRule agentRule, final AgentBuilder agentBuilder, final int index, final Event[] events) {
+  private void loadAgentRule(final Instrumentation inst, final AgentRule agentRule, final AgentBuilder agentBuilder, final PluginManifest pluginManifest, final Event[] events) {
     try {
       final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
       if (builders != null) {
         for (final AgentBuilder builder : builders) {
 //          assertParent(agentBuilder, builder);
-          builder.with(new TransformationListener(inst, index, events)).installOn(inst);
+          builder.with(new TransformationListener(inst, pluginManifest, events)).installOn(inst);
         }
       }
     }
@@ -229,12 +230,12 @@ public class ByteBuddyManager extends Manager {
 
   class TransformationListener implements Listener {
     private final Instrumentation inst;
-    private final int index;
+    private final PluginManifest pluginManifest;
     private final Event[] events;
 
-    TransformationListener(final Instrumentation inst, final int index, final Event[] events) {
+    TransformationListener(final Instrumentation inst, final PluginManifest pluginManifest, final Event[] events) {
       this.inst = inst;
-      this.index = index;
+      this.pluginManifest = pluginManifest;
       this.events = events;
     }
 
@@ -249,7 +250,7 @@ public class ByteBuddyManager extends Manager {
       if (events[Event.TRANSFORMATION.ordinal()] != null)
         log(Level.SEVERE, "Event::onTransformation(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
-      if (index != -1 && !SpecialAgent.linkRule(index, classLoader))
+      if (pluginManifest != null && !SpecialAgent.linkRule(pluginManifest, classLoader))
         throw new IncompatiblePluginException(typeDescription.getName());
 
       if (classLoader != null) {

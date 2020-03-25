@@ -15,7 +15,11 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
-import io.opentracing.Tracer;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.Ordered;
@@ -28,12 +32,9 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
-import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import io.opentracing.Tracer;
+import reactor.core.publisher.Mono;
 
 /**
  * Tracing {@link WebFilter} for Spring WebFlux.

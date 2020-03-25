@@ -1,9 +1,10 @@
 package io.opentracing.contrib.specialagent.rule.spring.web5.copied;
 
+import org.springframework.util.concurrent.SuccessCallback;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import org.springframework.util.concurrent.SuccessCallback;
 
 public class TracingSuccessCallback implements SuccessCallback {
   private final SuccessCallback callback;

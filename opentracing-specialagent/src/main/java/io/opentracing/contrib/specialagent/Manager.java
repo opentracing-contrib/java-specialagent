@@ -15,12 +15,12 @@
 
 package io.opentracing.contrib.specialagent;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,14 +29,6 @@ import java.util.Map;
  * @author Seva Safris
  */
 public abstract class Manager {
-  public enum Event {
-    COMPLETE,
-    DISCOVERY,
-    ERROR,
-    IGNORED,
-    TRANSFORMATION
-  }
-
   /** The configuration file name. **/
   final String file;
 
@@ -72,29 +64,30 @@ public abstract class Manager {
    * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
    *          entries to be filled with rules to be later loaded in
    *          {@link #loadRules(Instrumentation,Map,Event[])}.
-   * @param allRulesClassLoader The {@code ClassLoader} having a classpath with
+   * @param pluginsClassLoader The {@code ClassLoader} having a classpath with
    *          all rule JARs.
+   * @param pluginManifestDirectory Map between a JAR file and the associated
+   *          {@link PluginManifest}.
    * @param ruleJarToIndex A {@link Map} of rule JAR path to its index in the
    *          {@code allRulesClassLoader} classpath to be filled by this method.
    * @param classNameToName A {@link Map} of class names to plugin names to be
    *          filled by this method.
-   * @param pluginManifestDirectory Map between a JAR file and the associated
-   *          {@link PluginManifest}.
    * @return A {@link LinkedHashMap} of {@link AgentRule}-to-index entries with
    *         deferrers to be loaded in
    *         {@link #loadRules(Instrumentation,Map,Event[])}.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract LinkedHashMap<AgentRule,Integer> scanRules(Instrumentation inst, LinkedHashMap<AgentRule,Integer> agentRules, ClassLoader allRulesClassLoader, Map<File,Integer> ruleJarToIndex, Map<String,String> classNameToName, final PluginManifest.Directory pluginManifestDirectory) throws IOException;
+  abstract Map<AgentRule,PluginManifest> scanRules(Instrumentation inst, ClassLoader pluginsClassLoader, PluginManifest.Directory pluginManifestDirectory, Map<AgentRule,PluginManifest> pluginManifests, Map<String,String> classNameToName) throws IOException;
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in
    * the specified arguments.
    *
    * @param inst The {@code Instrumentation} instance.
-   * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
-   *          entries filled with rules to be loaded.
+   * @param pluginManifests The {@link LinkedHashMap} of
+   *          {@link AgentRule}-to-{@link PluginManifest} entries filled with
+   *          rules to be loaded.
    * @param events Manager events to log.
    */
-  abstract void loadRules(Instrumentation inst, Map<AgentRule,Integer> agentRules, Event[] events);
+  abstract void loadRules(Instrumentation inst, Map<AgentRule,PluginManifest> pluginManifests, String[] tracerExcludedClasses, Event[] events);
 }

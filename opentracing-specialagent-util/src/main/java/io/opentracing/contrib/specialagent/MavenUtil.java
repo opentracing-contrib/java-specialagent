@@ -18,22 +18,165 @@ package io.opentracing.contrib.specialagent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 public final class MavenUtil {
+  private static final Set<String> jarTypes = new HashSet<>(Arrays.asList("jar", "test-jar", "maven-plugin", "ejb", "ejb-client", "java-source", "javadoc"));
+  private static final String[] scopes = {"compile", "provided", "runtime", "system", "test", "isolated"};
+
+  /**
+   * Tests if the specified string is a name of a Maven scope.
+   *
+   * @param scope The string to test.
+   * @return {@code true} if the specified string is a name of a Maven scope.
+   */
+  private static boolean isScope(final String scope) {
+    for (int i = 0; i < scopes.length; ++i)
+      if (scopes[i].equals(scope))
+        return true;
+
+    return false;
+  }
+
+  private static boolean contains(final Object[] array, final Object obj) {
+    for (int i = 0; i < array.length; ++i)
+      if (obj == null ? array[i] == null : obj.equals(array[i]))
+        return true;
+
+    return false;
+  }
+
+  public static MavenDependency getDependency(final String dependency, final String ... scopes) {
+    final int c0 = dependency.indexOf(':');
+    final String groupId = dependency.substring(0, c0);
+
+    // artifactId
+    final int c1 = dependency.indexOf(':', c0 + 1);
+    final String artifactId = dependency.substring(c0 + 1, c1);
+
+    // type
+    final int c2 = dependency.indexOf(':', c1 + 1);
+    final String type = dependency.substring(c1 + 1, c2);
+//    final String ext = getExtension(type);
+
+    // classifier or version
+    final int c3 = dependency.indexOf(':', c2 + 1);
+    final String classifierOrVersion = dependency.substring(c2 + 1, c3 > c2 ? c3 : dependency.length());
+
+    // version or scope
+    final int c4 = c3 == -1 ? -1 : dependency.indexOf(':', c3 + 1);
+    final String versionOrScope = c3 == -1 ? null : dependency.substring(c3 + 1, c4 > c3 ? c4 : dependency.length());
+
+    final String scope = c4 == -1 ? null : dependency.substring(c4 + 1);
+
+    if (scope != null) {
+      if (scopes != null && !contains(scopes, scope))
+        return null;
+
+      return new MavenDependency(groupId, artifactId, versionOrScope, classifierOrVersion, type);
+    }
+    else if (versionOrScope != null) {
+      final boolean isScope = isScope(versionOrScope);
+      if (scopes != null && (isScope ? !contains(scopes, versionOrScope) : !contains(scopes, "compile")))
+        return null;
+
+      if (isScope)
+        return new MavenDependency(groupId, artifactId, classifierOrVersion, null, type);
+
+      return new MavenDependency(groupId, artifactId, versionOrScope, classifierOrVersion, type);
+    }
+    else {
+      if (scopes != null && !contains(scopes, "compile"))
+        return null;
+
+      return new MavenDependency(groupId, artifactId, classifierOrVersion, null, type);
+    }
+  }
+
+  /**
+   * Selects the resource names from the specified TGF-formatted string of Maven
+   * dependencies {@code tgf} that match the specification of the following
+   * parameters.
+   *
+   * @param tgf The TGF-formatted string of Maven dependencies.
+   * @param isOptional Whether the dependency is marked as {@code (optional)}.
+   * @param scopes An array of Maven scopes to include in the returned set, or
+   *          {@code null} to include all scopes.
+   * @return A {@code Set} of resource names that match the call parameters.
+   * @throws IOException If an I/O error has occurred.
+   */
+  public static Set<File> selectFromTgf(final String tgf, final boolean isOptional, final String ... scopes) throws IOException {
+    final Set<MavenDependency> dependencies = selectDependenciesFromTgf(tgf, isOptional, scopes);
+    final Set<File> files = new LinkedHashSet<>();
+    for (final MavenDependency dependency : dependencies) {
+      final File file = new File(MavenUtil.getPathOf(null, dependency));
+      files.add(file);
+    }
+
+    return files;
+  }
+
+  public static Set<MavenDependency> selectDependenciesFromTgf(final String tgf, final boolean isOptional, final String ... scopes) {
+    final Set<MavenDependency> dependencies = new LinkedHashSet<>();
+    final StringTokenizer tokenizer = new StringTokenizer(tgf, "\r\n");
+    final boolean includesCompileScope = contains(scopes, "compile");
+    for (int i = 0; tokenizer.hasMoreTokens(); ++i) {
+      String token = tokenizer.nextToken().trim();
+      // Special case: include the artifact itself if (isOptional=true, and scope=compile)
+      final boolean matchOptionalCompile = i == 0 && isOptional && includesCompileScope;
+      if (i == 0 && !matchOptionalCompile)
+        continue;
+
+      if ("#".equals(token))
+        break;
+
+      final boolean optional = token.endsWith(" (optional)");
+      if (optional) {
+        if (!isOptional)
+          continue;
+
+        token = token.substring(0, token.length() - 11);
+      }
+      else if (isOptional && !matchOptionalCompile) {
+        continue;
+      }
+
+      // groupId
+      final int firstSpace = token.indexOf(' ');
+      int lastSpace = token.indexOf(' ', firstSpace + 1);
+      if (lastSpace == -1)
+        lastSpace = token.length();
+
+      final MavenDependency dependency = getDependency(token.substring(firstSpace + 1, lastSpace), scopes);
+      if (dependency != null)
+        dependencies.add(dependency);
+    }
+
+    return dependencies;
+  }
+
+  /** https://maven.apache.org/ref/3.6.1/maven-core/artifact-handlers.html */
+  private static String getExtension(final String type) {
+    return type == null || jarTypes.contains(type) ? "jar" : type;
+  }
+
   public static DefaultArtifact clone(final Artifact artifact) {
     final DefaultArtifact clone = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getScope(), artifact.getType(), artifact.getClassifier(), artifact.getArtifactHandler());
     clone.setAvailableVersions(artifact.getAvailableVersions());
@@ -51,10 +194,18 @@ public final class MavenUtil {
   }
 
   public static Dependency newDependency(final String groupId, final String artifactId, final String version) {
+    return newDependency(groupId, artifactId, version, null, null);
+  }
+
+  public static Dependency newDependency(final String groupId, final String artifactId, final String version, final String classifier, final String type) {
     final Dependency dependency = new Dependency();
     dependency.setGroupId(groupId);
     dependency.setArtifactId(artifactId);
     dependency.setVersion(version);
+    dependency.setClassifier(classifier);
+    if (type != null)
+      dependency.setType(type);
+
     return dependency;
   }
 
@@ -113,38 +264,57 @@ public final class MavenUtil {
     return pluginExecution != null && pluginExecution.getPhase() != null && pluginExecution.getPhase().contains("test");
   }
 
+  public static String lookupVersion(final MavenProject project, final MavenDependency mavenDependency) throws MojoExecutionException {
+    final DependencyManagement dependencyManagement = project.getModel().getDependencyManagement();
+    if (dependencyManagement != null)
+      for (final Dependency dependency : dependencyManagement.getDependencies())
+        if (dependency.getGroupId().equals(mavenDependency.getGroupId()) && dependency.getArtifactId().equals(mavenDependency.getArtifactId()))
+          return dependency.getVersion();
+
+    if (project.getParent() == null)
+      throw new MojoExecutionException("Was not able to find the version of: " + mavenDependency.getGroupId() + ":" + mavenDependency.getArtifactId());
+
+    return lookupVersion(project.getParent(), mavenDependency);
+  }
+
   /**
    * Returns the filesystem path of {@code artifact} located in
    * {@code localRepository}.
    *
-   * @param localRepository The local repository reference.
+   * @param localRepositoryPath The local repository path.
    * @param artifact The artifact.
    * @return The filesystem path of {@code dependency} located in
    *         {@code localRepository}.
    * @throws NullPointerException If {@code localRepository} or {@code artifact}
    *           is null.
    */
-  public static URL getPathOf(final ArtifactRepository localRepository, final Artifact artifact) {
-    final StringBuilder builder = new StringBuilder();
-    builder.append(localRepository.getBasedir());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getGroupId().replace('.', File.separatorChar));
-    builder.append(File.separatorChar);
-    builder.append(artifact.getArtifactId());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getVersion());
-    builder.append(File.separatorChar);
-    builder.append(artifact.getArtifactId());
-    builder.append('-').append(artifact.getVersion());
-    if (artifact.getClassifier() != null)
-      builder.append('-').append(artifact.getClassifier());
+  public static String getPathOf(final String localRepositoryPath, final Artifact artifact) {
+    return getPathOf(localRepositoryPath, artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getClassifier(), artifact.getType());
+  }
 
-    try {
-      return new URL("file", "", builder.append(".jar").toString());
+  public static String getPathOf(final String localRepositoryPath, final MavenDependency dependency) {
+    return getPathOf(localRepositoryPath, dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType());
+  }
+
+  public static String getPathOf(final String localRepositoryPath, final String groupId, final String artifactId, final String version, final String classifier, final String type) {
+    final StringBuilder builder = new StringBuilder();
+    if (localRepositoryPath != null) {
+      builder.append(localRepositoryPath);
+      builder.append(File.separatorChar);
     }
-    catch (final MalformedURLException e) {
-      throw new UnsupportedOperationException(e);
-    }
+
+    builder.append(groupId.replace('.', File.separatorChar));
+    builder.append(File.separatorChar);
+    builder.append(artifactId);
+    builder.append(File.separatorChar);
+    builder.append(version);
+    builder.append(File.separatorChar);
+    builder.append(artifactId);
+    builder.append('-').append(version);
+    if (classifier != null)
+      builder.append('-').append(classifier);
+
+    return builder.append('.').append(getExtension(type)).toString();
   }
 
   private static String getArtifactFile(final File dir) {
@@ -158,6 +328,7 @@ public final class MavenUtil {
       throw new IllegalStateException(e);
     }
   }
+
   /**
    * Filters the specified array of {@code File} objects by checking if the file
    * name is included in the specified set of files to match.
@@ -210,7 +381,7 @@ public final class MavenUtil {
    * @throws IOException If an I/O error has occurred.
    */
   public static File[] filterRuleURLs(final File[] files, final String dependenciesTgf, final boolean includeOptional, final String ... scopes) throws IOException {
-    final Set<File> matches = AssembleUtil.selectFromTgf(dependenciesTgf, includeOptional, scopes);
+    final Set<File> matches = MavenUtil.selectFromTgf(dependenciesTgf, includeOptional, scopes);
     return filterUrlFileNames(files, matches, 0, 0);
   }
 

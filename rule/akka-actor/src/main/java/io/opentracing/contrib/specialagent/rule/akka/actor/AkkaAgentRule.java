@@ -56,13 +56,13 @@ public class AkkaAgentRule extends AgentRule {
   public static class Receive {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object message) {
-      if (isEnabled("AkkaAgentRule", origin))
+      if (isEnabled(AkkaAgentRule.class.getName(), origin))
        message = AkkaAgentIntercept.aroundReceiveStart(thiz, message);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled("AkkaAgentRule", origin))
+      if (isEnabled(AkkaAgentRule.class.getName(), origin))
         AkkaAgentIntercept.aroundReceiveEnd(thrown);
     }
   }
@@ -70,13 +70,13 @@ public class AkkaAgentRule extends AgentRule {
   public static class Tell {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object message, final @Advice.Argument(value = 1) Object sender) {
-      if (isEnabled("AkkaAgentRule", origin))
+      if (isEnabled(AkkaAgentRule.class.getName(), origin))
         message = AkkaAgentIntercept.askStart(thiz, message, "tell", sender);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message, final @Advice.Argument(value = 1) Object sender, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled("AkkaAgentRule", origin))
+      if (isEnabled(AkkaAgentRule.class.getName(), origin))
         AkkaAgentIntercept.askEnd(thiz, message, thrown, sender);
     }
   }
@@ -84,13 +84,13 @@ public class AkkaAgentRule extends AgentRule {
   public static class Ask {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object actorRef, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object message) {
-      if (isEnabled("AkkaAgentRule", origin))
+      if (isEnabled(AkkaAgentRule.class.getName(), origin))
         message = AkkaAgentIntercept.askStart(actorRef, message, "ask", null);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object actorRef, final @Advice.Argument(value = 1) Object message, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled("AkkaAgentRule", origin))
+      if (isEnabled(AkkaAgentRule.class.getName(), origin))
         AkkaAgentIntercept.askEnd(actorRef, message, thrown, null);
     }
   }

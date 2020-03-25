@@ -48,6 +48,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grizzly-http-server</artifactId>
       <version>${version.opentracing.grizzly.http.server}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
@@ -60,42 +61,49 @@
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-core</artifactId>
       <version>${version.mule}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-extensions-api</artifactId>
       <version>1.2.2</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mule.runtime</groupId>
       <artifactId>mule-service-http-api</artifactId>
       <version>${version.mule}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mule.tests</groupId>
       <artifactId>mule-tests-unit</artifactId>
       <version>${version.mule}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
       <version>${version.apache-logging}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>${version.apache-logging}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>fluent-hc</artifactId>
       <version>4.5.2</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

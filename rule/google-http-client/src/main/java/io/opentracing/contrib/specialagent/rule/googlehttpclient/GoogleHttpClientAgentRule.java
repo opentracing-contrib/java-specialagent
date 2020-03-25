@@ -41,13 +41,13 @@ public class GoogleHttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled("GoogleHttpClientAgentRule", origin))
+    if (isEnabled(GoogleHttpClientAgentRule.class.getName(), origin))
       GoogleHttpClientAgentIntercept.enter(thiz);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.Return final Object returned) {
-    if (isEnabled("GoogleHttpClientAgentRule", origin))
+    if (isEnabled(GoogleHttpClientAgentRule.class.getName(), origin))
       GoogleHttpClientAgentIntercept.exit(thrown, returned);
   }
 }

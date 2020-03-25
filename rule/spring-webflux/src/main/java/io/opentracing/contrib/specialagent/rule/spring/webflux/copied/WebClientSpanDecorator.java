@@ -20,7 +20,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 
 /**
@@ -97,7 +97,7 @@ public interface WebClientSpanDecorator {
 
     @Override
     public void onError(final ClientRequest clientRequest, final Throwable throwable, final Span span) {
-      AgentRuleUtil.setErrorTag(span, throwable);
+      OpenTracingApiUtil.setErrorTag(span, throwable);
     }
 
     @Override
