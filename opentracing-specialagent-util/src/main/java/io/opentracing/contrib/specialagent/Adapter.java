@@ -25,5 +25,5 @@ public abstract class Adapter {
   public static ClassLoader tracerClassLoader;
 
   public abstract Object getAgentRunnerTracer();
-  public abstract void loadTracer(ClassLoader pluginsClassLoader, ClassLoader isoClassLoader) throws IllegalStateException;
+  public abstract String[] loadTracer(ClassLoader pluginsClassLoader, ClassLoader isoClassLoader) throws IllegalStateException;
 }

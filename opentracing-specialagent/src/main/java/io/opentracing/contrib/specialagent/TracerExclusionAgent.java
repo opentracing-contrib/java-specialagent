@@ -15,41 +15,40 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.DefaultAgentRule.*;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-import java.util.List;
-
+import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class MutexAgentRule extends DefaultAgentRule {
+public class TracerExclusionAgent {
   public static final MutexLatch latch = AgentRule.$Access.mutexLatch();
 
-  @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
+  public static AgentBuilder premain(final String[] traceExcludedClasses, final AgentBuilder builder) throws Exception {
     log("\n<<<<<<<<<<<<<<<<<< Installing MutexAgentRule >>>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
-    final List<Extendable> builders = Arrays.asList(builder
-      .type(hasSuperType(named("io.opentracing.Tracer")))
-        .or(hasSuperType(named("io.opentracing.Scope")))
-        .or(hasSuperType(named("io.opentracing.ScopeManager")))
-        .or(hasSuperType(named("io.opentracing.Span")))
-        .or(hasSuperType(named("io.opentracing.SpanBuilder")))
-        .or(hasSuperType(named("io.opentracing.SpanContext")))
-      .transform(new Transformer() {
+    try {
+      final Narrowable narrowable = builder
+        .type(hasSuperType(named(traceExcludedClasses[0])));
+
+      for (int i = 1; i < traceExcludedClasses.length; ++i)
+        narrowable.or(hasSuperType(named(traceExcludedClasses[i])));
+
+      return narrowable.transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(MutexAgentRule.class).on(isPublic().and(any())));
-        }}));
-
-    log("\n>>>>>>>>>>>>>>>>>>> Installed MutexAgentRule <<<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
-    return builders;
+          return builder.visit(Advice.to(TracerExclusionAgent.class).on(isPublic().and(any())));
+        }});
+    }
+    finally {
+      log("\n>>>>>>>>>>>>>>>>>>> Installed MutexAgentRule <<<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
+    }
   }
 
   @Advice.OnMethodEnter

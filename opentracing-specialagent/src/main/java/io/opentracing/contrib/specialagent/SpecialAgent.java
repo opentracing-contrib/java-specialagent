@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -450,13 +451,14 @@ public class SpecialAgent {
       if (pluginsClassLoader == null)
         throw new IllegalStateException("Attempt to load OpenTracing agent rules before allPluginsClassLoader initialized");
 
+      final ArrayList<String> tracerExcludedClasses = new ArrayList<>();
       try {
         final LinkedHashMap<AgentRule,PluginManifest> pluginManifests = new LinkedHashMap<>();
         final HashMap<String,String> classNameToName = new HashMap<>();
         AgentRule.$Access.configure(new Runnable() {
           @Override
           public void run() {
-            manager.loadRules(inst, pluginManifests, events);
+            manager.loadRules(inst, pluginManifests, tracerExcludedClasses.size() == 0 ? null : tracerExcludedClasses.toArray(new String[tracerExcludedClasses.size()]), events);
           }
         }, classNameToName);
 
@@ -464,7 +466,7 @@ public class SpecialAgent {
         try {
           for (final PluginManifest pluginManifest : pluginManifests.values()) {
             final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
-            ((Adapter)cls.getConstructor().newInstance()).loadTracer(pluginsClassLoader, isoClassLoader);
+            Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(pluginsClassLoader, isoClassLoader));
           }
         }
         catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
@@ -512,7 +514,7 @@ public class SpecialAgent {
 
           if (attachMode == AttachMode.STATIC_DEFERRED) {
             // Just load the deferrers
-            manager.loadRules(inst, deferrers, events);
+            manager.loadRules(inst, deferrers, tracerExcludedClasses.size() == 0 ? null : tracerExcludedClasses.toArray(new String[tracerExcludedClasses.size()]), events);
             return;
           }
         }

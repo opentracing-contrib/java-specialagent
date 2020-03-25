@@ -86,18 +86,21 @@ public class OpenTracingAdapter extends Adapter {
     }
   }
 
-  @Override
-  public void loadTracer(final ClassLoader pluginsClassLoader, final ClassLoader isoClassLoader) {
-    if (loaded)
-      return;
+  private static final String[] traceExcludedClasses = {"io.opentracing.Tracer", "io.opentracing.Scope", "io.opentracing.ScopeManager", "io.opentracing.Span", "io.opentracing.SpanBuilder", "io.opentracing.SpanContext"};
 
-    try {
-      loaded = true;
-      this.deferredTracer = loadDeferredTracer(pluginsClassLoader, isoClassLoader);
+  @Override
+  public String[] loadTracer(final ClassLoader pluginsClassLoader, final ClassLoader isoClassLoader) {
+    if (!loaded) {
+      try {
+        loaded = true;
+        this.deferredTracer = loadDeferredTracer(pluginsClassLoader, isoClassLoader);
+      }
+      catch (final IOException | ReflectiveOperationException e) {
+        throw new IllegalStateException(e);
+      }
     }
-    catch (final IOException | ReflectiveOperationException e) {
-      throw new IllegalStateException(e);
-    }
+
+    return traceExcludedClasses;
   }
 
   /**

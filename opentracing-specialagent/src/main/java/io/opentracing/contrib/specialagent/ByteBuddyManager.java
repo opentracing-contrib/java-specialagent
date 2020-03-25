@@ -186,7 +186,7 @@ public class ByteBuddyManager extends Manager {
 
   private boolean loadedDefaultRules;
 
-  private void loadDefaultRules(final Instrumentation inst, final Event[] events) {
+  private void loadDefaultRules(final Instrumentation inst, final String[] tracerExcludedClasses, final Event[] events) {
     if (loadedDefaultRules)
       return;
 
@@ -195,14 +195,14 @@ public class ByteBuddyManager extends Manager {
     // Load ClassLoaderAgentRule
     loadAgentRule(inst, new ClassLoaderAgentRule(), newBuilder(), null, events);
 
-    // Load MutexAgentRule
-    loadAgentRule(inst, new MutexAgentRule(), newBuilder(), null, events);
+    // Load TracerExclusionAgent
+    TracerExclusionAgent.premain(tracerExcludedClasses, newBuilder());
   }
 
   @Override
-  void loadRules(final Instrumentation inst, final Map<AgentRule,PluginManifest> pluginManifests, final Event[] events) {
+  void loadRules(final Instrumentation inst, final Map<AgentRule,PluginManifest> pluginManifests, final String[] tracerExcludedClasses, final Event[] events) {
     // Ensure default rules are loaded
-    loadDefaultRules(inst, events);
+    loadDefaultRules(inst, tracerExcludedClasses, events);
 
     // Load the rest of the specified rules
     if (pluginManifests != null) {

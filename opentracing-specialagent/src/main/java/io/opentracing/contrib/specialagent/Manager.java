@@ -20,6 +20,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -83,9 +84,10 @@ public abstract class Manager {
    * the specified arguments.
    *
    * @param inst The {@code Instrumentation} instance.
-   * @param agentRules The {@link LinkedHashMap} of {@link AgentRule}-to-index
-   *          entries filled with rules to be loaded.
+   * @param pluginManifests The {@link LinkedHashMap} of
+   *          {@link AgentRule}-to-{@link PluginManifest} entries filled with
+   *          rules to be loaded.
    * @param events Manager events to log.
    */
-  abstract void loadRules(Instrumentation inst, Map<AgentRule,PluginManifest> pluginManifests, Event[] events);
+  abstract void loadRules(Instrumentation inst, Map<AgentRule,PluginManifest> pluginManifests, String[] tracerExcludedClasses, Event[] events);
 }
