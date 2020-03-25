@@ -26,7 +26,7 @@
   <groupId>io.opentracing.contrib.specialagent.test.dubbo</groupId>
   <artifactId>dubbo</artifactId>
   <packaging>pom</packaging>
-  <name>SpecialAgent Tests for OkHttp</name>
+  <name>SpecialAgent Tests for Dubbo</name>
   <modules>
     <module>dubbo-2.6</module>
     <module>dubbo-2.7</module>
