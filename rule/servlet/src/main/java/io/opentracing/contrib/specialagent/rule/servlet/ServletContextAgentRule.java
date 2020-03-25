@@ -56,7 +56,7 @@ public class ServletContextAgentRule extends AgentRule {
   public static class JettyAdvice {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled("ServletContextAgentRule", origin))
+      if (isEnabled(ServletContextAgentRule.class.getName(), origin))
         filterAdded = JettyAgentIntercept.addFilter(thiz);
     }
   }
@@ -64,7 +64,7 @@ public class ServletContextAgentRule extends AgentRule {
   public static class ServletContextAdvice {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled("ServletContextAgentRule", origin))
+      if (isEnabled(ServletContextAgentRule.class.getName(), origin))
         filterAdded = ServletContextAgentIntercept.addFilter(thiz);
     }
   }

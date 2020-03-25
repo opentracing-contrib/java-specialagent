@@ -14,12 +14,14 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.web40.copied;
 
+import java.io.IOException;
+
+import org.springframework.http.client.AsyncClientHttpRequest;
+import org.springframework.web.client.AsyncRequestCallback;
+
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.util.GlobalTracer;
-import java.io.IOException;
-import org.springframework.http.client.AsyncClientHttpRequest;
-import org.springframework.web.client.AsyncRequestCallback;
 
 public class TracingAsyncRequestCallback implements AsyncRequestCallback {
   private final AsyncRequestCallback callback;

@@ -13,16 +13,18 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.messaging.copied;
 
-import io.opentracing.propagation.TextMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.springframework.integration.support.MutableMessageHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
+
+import io.opentracing.propagation.TextMap;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

@@ -43,30 +43,35 @@
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-stream-binder-kafka</artifactId>
       <version>${version.spring.cloud}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-stream</artifactId>
       <version>${version.spring.cloud}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
       <version>2.2.7.RELEASE</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <version>2.1.6.RELEASE</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-core</artifactId>
       <version>1.2.0</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

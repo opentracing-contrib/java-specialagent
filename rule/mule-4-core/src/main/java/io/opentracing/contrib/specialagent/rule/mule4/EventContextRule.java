@@ -45,7 +45,7 @@ public class EventContextRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (!isEnabled("EventContextRule", origin))
+    if (!isEnabled(EventContextRule.class.getName(), origin))
       return;
 
     final Span span = GlobalTracer.get().activeSpan();

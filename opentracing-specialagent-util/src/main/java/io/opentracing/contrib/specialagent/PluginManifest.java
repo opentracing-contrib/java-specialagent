@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -112,32 +113,57 @@ public class PluginManifest {
 
   private static final String RULE_NAME_PROPERTY = "sa.rule.name.";
 
-  private static PluginManifest getPluginManifestFromEntry(final File file, final String entry) {
+  private static <D,P>PluginManifest getPluginManifestFromEntry(final File file, final String entry, final D dir, final P path, final BiFunction<D,P,String> entryToContent) {
     if (entry.startsWith(RULE_NAME_PROPERTY))
-      return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(RULE_NAME_PROPERTY.length()));
+      return new PluginManifest(file, Type.INSTRUMENTATION, entry.substring(RULE_NAME_PROPERTY.length()), entryToContent.apply(dir, path));
 
     if ("META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory".equals(entry))
-      return new PluginManifest(file, Type.TRACER, file.getName().substring(0, file.getName().length() - 4));
+      return new PluginManifest(file, Type.TRACER, file.getName().substring(0, file.getName().length() - 4), null);
 
     return null;
   }
 
   public static PluginManifest id(final File file) {
-    return new PluginManifest(file, null, null);
+    return new PluginManifest(file, null, null, null);
   }
+
+  private static BiFunction<Path,Path,String> pathToClassName = new BiFunction<Path,Path,String>() {
+    @Override
+    public String apply(final Path t, final Path u) {
+      try {
+        return new String(Files.readAllBytes(u));
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  };
+
+  private static BiFunction<JarFile,JarEntry,String> jarToClassName = new BiFunction<JarFile,JarEntry,String>() {
+    @Override
+    public String apply(final JarFile t, final JarEntry u) {
+      try (final InputStream in = t.getInputStream(u)) {
+        return new String(AssembleUtil.readBytes(in));
+      }
+      catch (final IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  };
 
   public static PluginManifest getPluginManifest(final File file) {
     if (file.isDirectory()) {
       final PluginManifest[] pluginManifest = new PluginManifest[1];
-      final Path path = file.toPath();
+      final Path dir = file.toPath();
       AssembleUtil.recurseDir(file, new Function<File,FileVisitResult>() {
         @Override
         public FileVisitResult apply(final File t) {
-          final String entry = path.relativize(t.toPath()).toString();
+          final Path path = t.toPath();
+          final String entry = dir.relativize(path).toString();
           if (entry.contains("/") && !entry.startsWith("META-INF"))
             return FileVisitResult.SKIP_SIBLINGS;
 
-          pluginManifest[0] = getPluginManifestFromEntry(file, entry);
+          pluginManifest[0] = getPluginManifestFromEntry(file, entry, dir, path, pathToClassName);
           return pluginManifest[0] != null ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
         }
       });
@@ -148,8 +174,8 @@ public class PluginManifest {
     try (final JarFile jarFile = new JarFile(file)) {
       final Enumeration<JarEntry> entries = jarFile.entries();
       while (entries.hasMoreElements()) {
-        final String entry = entries.nextElement().getName();
-        final PluginManifest pluginManifest = getPluginManifestFromEntry(file, entry);
+        final JarEntry entry = entries.nextElement();
+        final PluginManifest pluginManifest = getPluginManifestFromEntry(file, entry.getName(), jarFile, entry, jarToClassName);
         if (pluginManifest != null)
           return pluginManifest;
       }
@@ -164,13 +190,15 @@ public class PluginManifest {
   public final File file;
   public final Type type;
   public final String name;
+  public final String adapterClassName;
   private URL fingerprintUrl;
   private int priority = -1;
 
-  private PluginManifest(final File file, final Type type, final String name) {
+  private PluginManifest(final File file, final Type type, final String name, final String adapterClassName) {
     this.file = file.getAbsoluteFile();
     this.type = type;
     this.name = name;
+    this.adapterClassName = adapterClassName;
   }
 
   public int getPriority() {
@@ -223,6 +251,12 @@ public class PluginManifest {
     catch (final MalformedURLException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private HashMap<ClassLoader,Boolean> classLoaderToCompatibility = new HashMap<>();
+
+  public Map<ClassLoader,Boolean> getClassLoaderToCompatibility() {
+    return classLoaderToCompatibility;
   }
 
   @Override

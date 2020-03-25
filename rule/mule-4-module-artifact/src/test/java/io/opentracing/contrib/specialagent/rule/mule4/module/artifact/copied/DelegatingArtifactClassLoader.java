@@ -1,14 +1,14 @@
 package io.opentracing.contrib.specialagent.rule.mule4.module.artifact.copied;
 
-import org.mule.runtime.module.artifact.api.classloader.ArtifactClassLoader;
-import org.mule.runtime.module.artifact.api.classloader.ClassLoaderLookupPolicy;
-import org.mule.runtime.module.artifact.api.classloader.ShutdownListener;
-import org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+
+import org.mule.runtime.module.artifact.api.classloader.ArtifactClassLoader;
+import org.mule.runtime.module.artifact.api.classloader.ClassLoaderLookupPolicy;
+import org.mule.runtime.module.artifact.api.classloader.ShutdownListener;
+import org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor;
 
 public class DelegatingArtifactClassLoader extends ClassLoader implements ArtifactClassLoader {
 

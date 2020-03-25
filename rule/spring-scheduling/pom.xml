@@ -35,8 +35,8 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
       <version>${min.version}</version>
-      <scope>provided</scope>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

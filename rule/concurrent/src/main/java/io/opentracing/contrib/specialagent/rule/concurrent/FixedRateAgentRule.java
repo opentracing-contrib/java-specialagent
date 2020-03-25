@@ -51,7 +51,7 @@ public class FixedRateAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!isEnabled("FixedRateAgentRule", origin))
+    if (!isEnabled(FixedRateAgentRule.class.getName(), origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();

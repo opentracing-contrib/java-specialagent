@@ -35,7 +35,7 @@
     <plugins>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
+        <artifactId>specialagent-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>test-compatibility</id>
@@ -152,6 +152,7 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-stream_2.12</artifactId>
       <version>2.5.11</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

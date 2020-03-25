@@ -24,7 +24,7 @@ import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.server.ServerWebExchange;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 
 /**
@@ -97,7 +97,7 @@ public interface WebFluxSpanDecorator {
 
     @Override
     public void onError(final ServerWebExchange exchange, final Throwable exception, final Span span) {
-      AgentRuleUtil.setErrorTag(span, exception);
+      OpenTracingApiUtil.setErrorTag(span, exception);
     }
   }
 

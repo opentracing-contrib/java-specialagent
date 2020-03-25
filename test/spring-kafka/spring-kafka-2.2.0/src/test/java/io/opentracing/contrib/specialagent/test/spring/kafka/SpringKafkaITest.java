@@ -15,7 +15,6 @@
 
 package io.opentracing.contrib.specialagent.test.spring.kafka;
 
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +36,7 @@ import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 @SpringBootApplication
 public class SpringKafkaITest {

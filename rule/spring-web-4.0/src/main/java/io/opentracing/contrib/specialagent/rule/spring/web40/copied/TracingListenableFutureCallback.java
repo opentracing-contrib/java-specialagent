@@ -19,7 +19,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -38,7 +38,7 @@ public class TracingListenableFutureCallback implements ListenableFutureCallback
   @Override
   public void onFailure(Throwable ex) {
     if (finishSpan) {
-      AgentRuleUtil.setErrorTag(span, ex);
+      OpenTracingApiUtil.setErrorTag(span, ex);
       span.finish();
     }
     if (callback != null) {

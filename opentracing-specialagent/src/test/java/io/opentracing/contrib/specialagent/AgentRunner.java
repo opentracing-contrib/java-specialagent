@@ -15,6 +15,9 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.Constants.*;
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -35,12 +38,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.jar.JarFile;
 
 import org.apache.maven.cli.MavenCli;
 import org.junit.Assert;
@@ -51,9 +55,6 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
-
-import io.opentracing.contrib.specialagent.Manager.Event;
-import net.bytebuddy.agent.ByteBuddyAgent;
 
 /**
  * A JUnit runner that is designed to run tests for instrumentation rules that
@@ -78,62 +79,166 @@ import net.bytebuddy.agent.ByteBuddyAgent;
  */
 public class AgentRunner extends BlockJUnit4ClassRunner {
   private static final Logger logger = Logger.getLogger(AgentRunner.class);
+  private static final boolean debug;
+  private static final boolean inSurefireTest;
+
+  private static final File CWD = new File("").getAbsoluteFile();
+  private static final File[] classpath;
+  private static final String dependenciesTgf;
+  private static final String localRepositoryPath;
   private static final Instrumentation inst;
+  private static final Set<String> bootstrapClasses;
 
-  private static JarFile createJarFileOfSource(final Class<?> cls) throws IOException {
-    final String testClassesPath = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
-    if (testClassesPath.endsWith("-tests.jar"))
-      return new JarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 10) + ".jar"));
+  static {
+    System.setProperty(AGENT_RUNNER_ARG, "");
+    final String sunJavaCommand = System.getProperty("sun.java.command");
+    AssembleUtil.absorbProperties(sunJavaCommand);
+    AssembleUtil.loadProperties();
 
-    if (testClassesPath.endsWith(".jar"))
-      return new JarFile(new File(testClassesPath));
-
-    if (testClassesPath.endsWith("/test-classes/"))
-      return SpecialAgentUtil.createTempJarFile(new File(testClassesPath.substring(0, testClassesPath.length() - 14) + "/classes/"));
-
-    if (testClassesPath.endsWith("/classes/"))
-      return SpecialAgentUtil.createTempJarFile(new File(testClassesPath));
-
-    throw new UnsupportedOperationException("Unsupported source path: " + testClassesPath);
-  }
-
-  private static JarFile appendSourceLocationToBootstrap(final Instrumentation inst, final Class<?> cls) throws IOException {
-    final JarFile jarFile = createJarFileOfSource(cls);
-    inst.appendToBootstrapClassLoaderSearch(jarFile);
-    return jarFile;
-  }
-
-  static Instrumentation install() {
-    if (inst != null)
-      return inst;
+    final String debugProperty = System.getProperty("debug");
+    debug = debugProperty != null && !"false".equals(debugProperty);
+    inSurefireTest = sunJavaCommand.contains("org.apache.maven.surefire");
 
     try {
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("\n>>>>>>>>>>>>>>>>>>>>>>> Installing Agent <<<<<<<<<<<<<<<<<<<<<<<\n");
+      URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(DEPENDENCIES_TGF);
+      if (dependenciesUrl == null) {
+        logger.warning(DEPENDENCIES_TGF + " was not found: invoking `mvn process-classes`");
+        System.setProperty("maven.multiModuleProjectDirectory", CWD.getParentFile().getParentFile().getAbsolutePath());
+        new MavenCli().doMain(new String[] {"process-classes"}, CWD.getAbsolutePath(), System.out, System.err);
+        final File dependenciesTgf = new File(CWD, "target/classes/" + DEPENDENCIES_TGF);
+        if (!dependenciesTgf.exists())
+          throw new ExceptionInInitializerError(DEPENDENCIES_TGF + " was not found: Please assert that `mvn generate-resources` executes successfully");
 
-      final Instrumentation inst = ByteBuddyAgent.install();
-      final JarFile jarFile0 = appendSourceLocationToBootstrap(inst, AgentRunner.class);
-      if (logger.isLoggable(Level.FINE))
-        logger.fine("\n================== Installing BootLoaderAgent ==================\n");
+        dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(DEPENDENCIES_TGF);
+      }
 
-      BootLoaderAgent.premain(inst, jarFile0);
-      return inst;
+      classpath = AssembleUtil.classPathToFiles(System.getProperty("java.class.path"));
+      dependenciesTgf = new String(AssembleUtil.readBytes(dependenciesUrl));
+      localRepositoryPath = new String(Files.readAllBytes(new File(CWD, "target/localRepository.txt").toPath()));
+
+      final File[] bootstrapDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile", "test");
+      if (debug) {
+        System.err.println("Bootstrap Dependencies:\n  " + AssembleUtil.toIndentedString(bootstrapDependencies).replace("\n", "\n  "));
+        checkFilesExist(bootstrapDependencies);
+      }
+
+      inst = AgentRunnerBootstrap.install(bootstrapDependencies);
+
+      bootstrapClasses = AgentUtil.getClassFiles(bootstrapDependencies);
     }
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
     }
   }
 
-  private static final File CWD = new File("").getAbsoluteFile();
+  private static void checkFilesExist(final File ... files) {
+    if (files != null)
+      for (final File file : files)
+        assertTrue(file.exists());
+  }
 
-  static {
-    System.setProperty(SpecialAgentBase.AGENT_RUNNER_ARG, "");
-    final String sunJavaCommand = System.getProperty("sun.java.command");
-    if (sunJavaCommand != null)
-      AssembleUtil.absorbProperties(sunJavaCommand);
+  /**
+   * Loads the specified class in an isolated {@link URLClassLoader}. The class
+   * loader will be initialized with the process classpath, and will be detached
+   * from the System {@link ClassLoader}. This construct guarantees that any
+   * {@code cls} passed to this function will be unable to resolve classes in
+   * the System {@link ClassLoader}.
+   * <p>
+   * <i><b>Note:</b> If {@code cls} is present in the Bootstrap
+   * {@link ClassLoader}, it will be resolved in the Bootstrap
+   * {@link ClassLoader} instead of the {@link URLClassLoader} created by this
+   * function.</i>
+   *
+   * @param testClass The test class to load in the {@link URLClassLoader}.
+   * @param isolate Whether the returned class should belong to an isolated
+   *          class loader or not.
+   * @return The class loaded in the {@link URLClassLoader}.
+   * @throws InitializationError If the specified class cannot be located by the
+   *           {@link URLClassLoader}.
+   * @throws InterruptedException If a required Maven subprocess is interrupted.
+   */
+  private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass, final boolean isolate) throws InitializationError, InterruptedException {
+    try {
+      final File[] ruleDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "compile");
+      final Set<String> ruleClasses = AgentUtil.getClassFiles(ruleDependencies);
 
-    SpecialAgentBase.loadProperties();
-    inst = install();
+      final Set<String> testAppClasses = AgentUtil.getClassFiles(new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
+      final File[] libTestDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test");
+      if (libTestDependencies != null)
+        testAppClasses.addAll(AgentUtil.getClassFiles(libTestDependencies));
+
+      final File[] libDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "provided");
+      if (libDependencies != null)
+        testAppClasses.addAll(AgentUtil.getClassFiles(libDependencies));
+
+      final Set<MavenDependency> isoDependencies = MavenUtil.selectDependenciesFromTgf(dependenciesTgf, false, "isolated");
+      final File[] isoFiles = new File[isoDependencies.size()];
+      final Iterator<MavenDependency> iterator = isoDependencies.iterator();
+      for (int i = 0; iterator.hasNext(); ++i)
+        isoFiles[i] = getPath(localRepositoryPath, iterator.next());
+
+      final Set<String> isoClasses = AgentUtil.getClassFiles(isoFiles);
+
+      if (debug) {
+        System.err.println("Rule Dependencies:\n  " + AssembleUtil.toIndentedString(ruleDependencies).replace("\n", "\n  "));
+        checkFilesExist(ruleDependencies);
+        System.err.println("Lib Test Dependencies:\n  " + AssembleUtil.toIndentedString(libTestDependencies).replace("\n", "\n  "));
+        checkFilesExist(libTestDependencies);
+        System.err.println("Lib Dependencies:\n  " + AssembleUtil.toIndentedString(libDependencies).replace("\n", "\n  "));
+        checkFilesExist(libDependencies);
+        System.err.println("Iso Dependencies:\n  " + AssembleUtil.toIndentedString(isoFiles).replace("\n", "\n  "));
+        checkFilesExist(isoFiles);
+      }
+
+      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      agentRunnerClassLoader = new AgentRunnerClassLoader(AssembleUtil.toURLs(classpath), ruleDependencies, AssembleUtil.toURLs(isoFiles), parent) {
+        @Override
+        protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
+          final String resourceName = AssembleUtil.classNameToResource(name);
+          if (bootstrapClasses.contains(resourceName))
+            return BootProxyClassLoader.INSTANCE.loadClass(name, resolve);
+
+          // Plugin classes must be unresolvable by this class loader, so they
+          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          if (ruleClasses.contains(resourceName))
+            return null;
+
+          // Test classes must be resolvable by the classpath {@link URL URL[]} of
+          // this {@code URLClassLoader}.
+          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          if (testAppClasses.contains(resourceName))
+            return isolate ? super.loadClass(name, resolve) : ClassLoader.getSystemClassLoader().loadClass(name);
+
+          // Iso classes must be resolvable by the IsoClassLoader
+          if (isoClasses.contains(resourceName))
+            return isoClassLoader.loadClass(name);
+
+          // All other classes belong to the system class loader.
+          return ClassLoader.getSystemClassLoader().loadClass(name);
+        }
+      };
+
+      final Class<?> classInClassLoader = agentRunnerClassLoader.loadClass(testClass.getName());
+      Assert.assertNotNull("Test class is not resolvable in URLClassLoader: " + testClass.getName(), classInClassLoader);
+      Assert.assertNotNull("Test class must not be resolvable in bootstrap class loader: " + testClass.getName(), classInClassLoader.getClassLoader());
+      if (isolate)
+        Assert.assertEquals("Class " + testClass.getName() + " should have been loaded by the IsoClassLoader", agentRunnerClassLoader, classInClassLoader.getClassLoader());
+      else
+        Assert.assertEquals("Class " + testClass.getName() + " should have been loaded by the system class loader", ClassLoader.getSystemClassLoader(), classInClassLoader.getClassLoader());
+
+      return classInClassLoader;
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
+      throw new InitializationError(e);
+    }
+  }
+
+  private static File getPath(final String localRepositoryPath, final MavenDependency dependency) {
+    final File ideFile;
+    if (!inSurefireTest && CWD.getParentFile().getName().equals("rule") && (ideFile = new File(CWD.getParentFile().getParentFile(), dependency.getArtifactId() + "/target/classes")).exists())
+      return ideFile;
+
+    return new File(MavenUtil.getPathOf(localRepositoryPath, dependency));
   }
 
   /**
@@ -244,132 +349,9 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     boolean isolateClassLoader() default true;
   }
 
-  /**
-   * Loads the specified class in an isolated {@link URLClassLoader}. The class
-   * loader will be initialized with the process classpath, and will be detached
-   * from the System {@link ClassLoader}. This construct guarantees that any
-   * {@code cls} passed to this function will be unable to resolve classes in
-   * the System {@link ClassLoader}.
-   * <p>
-   * <i><b>Note:</b> If {@code cls} is present in the Bootstrap
-   * {@link ClassLoader}, it will be resolved in the Bootstrap
-   * {@link ClassLoader} instead of the {@link URLClassLoader} created by this
-   * function.</i>
-   *
-   * @param testClass The test class to load in the {@link URLClassLoader}.
-   * @return The class loaded in the {@link URLClassLoader}.
-   * @throws InitializationError If the specified class cannot be located by the
-   *           {@link URLClassLoader}.
-   * @throws InterruptedException If a required Maven subprocess is interrupted.
-   */
-  private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
-    try {
-      URL dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
-      if (dependenciesUrl == null) {
-        logger.warning(SpecialAgent.DEPENDENCIES_TGF + " was not found: invoking `mvn generate-resources`");
-        System.setProperty("maven.multiModuleProjectDirectory", CWD.getParentFile().getParentFile().getAbsolutePath());
-        new MavenCli().doMain(new String[] {"generate-resources"}, CWD.getAbsolutePath(), System.out, System.err);
-        final File dependenciesTgf = new File(CWD, "target/generated-resources/" + SpecialAgent.DEPENDENCIES_TGF);
-        if (dependenciesTgf.exists()) {
-          Files.copy(dependenciesTgf.toPath(), new File(CWD, "target/classes/" + SpecialAgent.DEPENDENCIES_TGF).toPath());
-          dependenciesUrl = Thread.currentThread().getContextClassLoader().getResource(SpecialAgent.DEPENDENCIES_TGF);
-        }
+  private static AgentRunnerClassLoader agentRunnerClassLoader;
 
-        if (dependenciesUrl == null) {
-          logger.severe(SpecialAgent.DEPENDENCIES_TGF + " was not found: Please assert that `mvn generate-resources` executes successfully");
-          return Object.class;
-        }
-      }
-
-      final List<File> rulePaths = findRulePaths(dependenciesUrl, true);
-      final Set<String> pluginClasses = AgentUtil.getClassFiles(rulePaths);
-
-      final List<File> testRulePaths = findRulePaths(dependenciesUrl, false);
-      testRulePaths.add(0, new File(testClass.getProtectionDomain().getCodeSource().getLocation().getPath()));
-      final Set<String> testClasses = AgentUtil.getClassFiles(testRulePaths);
-
-      final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
-      final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
-      final URLClassLoader isolatedClassLoader = new URLClassLoader(AssembleUtil.toURLs(classpath), parent) {
-        @Override
-        protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-          final String resourceName = AssembleUtil.classNameToResource(name);
-
-          // Plugin classes must be unresolvable by this class loader, so they
-          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
-          if (pluginClasses.contains(resourceName))
-            return null;
-
-          // Test classes must be resolvable by the classpath {@link URL URL[]} of
-          // this {@code URLClassLoader}.
-          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
-          if (testClasses.contains(resourceName))
-            return super.loadClass(name, resolve);
-
-          // All other classes belong to the system class loader.
-          return ClassLoader.getSystemClassLoader().loadClass(name);
-        }
-      };
-
-      final Class<?> classInClassLoader = Class.forName(testClass.getName(), false, isolatedClassLoader);
-      Assert.assertNotNull("Test class is not resolvable in URLClassLoader: " + testClass.getName(), classInClassLoader);
-      Assert.assertNotNull("Test class must not be resolvable in bootstrap class loader: " + testClass.getName(), classInClassLoader.getClassLoader());
-      Assert.assertEquals(isolatedClassLoader, classInClassLoader.getClassLoader());
-      return classInClassLoader;
-    }
-    catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException | IOException | NoSuchMethodException e) {
-      throw new InitializationError(e);
-    }
-  }
-
-  /**
-   * Find the rule paths using the specified dependencies TGF {@link URL}.
-   *
-   * @param dependenciesUrl The {@link URL} pointing to the dependencies TGF
-   *          file.
-   * @return A list of the rule paths.
-   * @throws IOException If an I/O error has occurred.
-   * @throws NullPointerException If {@code dependenciesUrl} is null.
-   */
-  private static List<File> findRulePaths(final URL dependenciesUrl, final boolean isMain) throws IOException {
-    final String dependenciesTgf = new String(AssembleUtil.readBytes(dependenciesUrl));
-
-    final List<File> rulePaths = new ArrayList<>();
-    final File[] classpath = SpecialAgentUtil.classPathToFiles(System.getProperty("java.class.path"));
-
-    if (isMain) {
-      final File[] dependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, false, "compile");
-      if (dependencies == null)
-        throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
-
-      for (int i = 0; i < dependencies.length; ++i)
-        rulePaths.add(dependencies[i]);
-    }
-
-    // Use the whole java.class.path for the forked process, because any class
-    // on the classpath may be used in the implementation of the test method.
-    // The JARs with classes in the Boot-Path are already excluded due to their
-    // provided scope.
-    if (isMain) {
-      if (logger.isLoggable(Level.FINEST))
-        logger.finest("rulePaths of runner will be:\n" + AssembleUtil.toIndentedString(rulePaths));
-
-      System.setProperty(SpecialAgent.RULE_PATH_ARG, AssembleUtil.toString(rulePaths.toArray(), File.pathSeparator));
-    }
-
-    if (!isMain) {
-      // Add scope={"test", "provided"}, optional=true to rulePaths
-      final File[] testDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "test", "provided");
-      if (testDependencies == null)
-        throw new UnsupportedOperationException("Unsupported " + SpecialAgent.DEPENDENCIES_TGF + " encountered. Please file an issue on https://github.com/opentracing-contrib/java-specialagent/");
-
-      for (final File testDependency : testDependencies)
-        rulePaths.add(testDependency);
-    }
-
-    return rulePaths;
-  }
-
+  private final Adapter adapter;
   private final Config config;
   private final PluginManifest pluginManifest;
 
@@ -394,7 +376,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @throws InterruptedException If a required Maven subprocess is interrupted.
    */
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
-    super(testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader() ? loadClassInIsolatedClassLoader(testClass) : testClass);
+    super(loadClassInIsolatedClassLoader(testClass, testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader()));
     this.config = testClass.getAnnotation(Config.class);
     String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
     if (path.endsWith("/test-classes/"))
@@ -445,12 +427,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
 
-    System.setProperty(SpecialAgentBase.INIT_DEFER, String.valueOf(isStaticDeferredAttach));
+    System.setProperty(INIT_DEFER, String.valueOf(isStaticDeferredAttach));
 
     if (events != null && events.length > 0) {
-      final String eventsProperty = System.getProperty(SpecialAgent.LOG_EVENTS_PROPERTY);
+      final String eventsProperty = System.getProperty(LOG_EVENTS_PROPERTY);
       if (eventsProperty != null) {
-        logger.warning(SpecialAgent.LOG_EVENTS_PROPERTY + "=" + eventsProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events=" + Arrays.toString(events) + " is specified in " + testClass.getName());
+        logger.warning(LOG_EVENTS_PROPERTY + "=" + eventsProperty + " system property is specified on command line, and @" + AgentRunner.class.getSimpleName() + "." + Config.class.getSimpleName() + ".events=" + Arrays.toString(events) + " is specified in " + testClass.getName());
       }
       else {
         final StringBuilder builder = new StringBuilder();
@@ -458,20 +440,19 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           builder.append(event).append(",");
 
         builder.setLength(builder.length() - 1);
-        System.setProperty(SpecialAgent.LOG_EVENTS_PROPERTY, builder.toString());
+        System.setProperty(LOG_EVENTS_PROPERTY, builder.toString());
       }
     }
 
-    System.setProperty("sa.config.instrumentation.plugin.method",
-            "io.opentracing.contrib.specialagent.rule.method.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.rule.method.ExampleMethodClass#test2");
-
     try {
-      SpecialAgent.premain(null, inst);
+      SpecialAgent.premain(null, inst, agentRunnerClassLoader.ruleFiles, agentRunnerClassLoader.isoClassLoader);
     }
     catch (final Throwable e) {
       e.printStackTrace();
       throw new IllegalStateException(e.getMessage(), e.getCause());
     }
+
+    this.adapter = ServiceLoader.load(Adapter.class).iterator().next();
   }
 
   private int delta = Integer.MAX_VALUE;
@@ -573,7 +554,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
 
         ++delta;
         if (logger.isLoggable(Level.FINEST))
-          logger.finest("invokeExplosively [" + getName() + "](" + target + ")");
+          logger.finest("invokeExplosively [" + getName() + "](" + target + "<" + target.getClass().getClassLoader() + ">)");
 
         if (config == null || config.isolateClassLoader()) {
           final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
@@ -584,7 +565,17 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         if (testConfig != null)
           setVerbose(testConfig.verbose());
 
-        final Object object = method.getMethod().getParameterTypes().length == 1 ? super.invokeExplosively(target, AgentRunnerUtil.getTracer()) : super.invokeExplosively(target);
+        final Object object;
+        if (method.getMethod().getParameterTypes().length == 1) {
+//          System.out.println(method.getMethod().getParameterTypes()[0].getName() + " " + method.getMethod().getParameterTypes()[0].getClassLoader());
+          final Object tracer = adapter.getAgentRunnerTracer();
+//          System.out.println(tracer.getClass().getName() + " " + tracer.getClass().getClassLoader());
+          object = super.invokeExplosively(target, tracer);
+        }
+        else {
+          object = super.invokeExplosively(target);
+        }
+
         --delta;
         return object;
       }

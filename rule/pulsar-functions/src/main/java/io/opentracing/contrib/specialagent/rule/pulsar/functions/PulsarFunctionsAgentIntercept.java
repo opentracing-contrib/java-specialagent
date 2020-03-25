@@ -25,8 +25,8 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -77,16 +77,16 @@ public class PulsarFunctionsAgentIntercept {
     final Span span = context.getSpan();
 
     if (thrown != null) {
-      AgentRuleUtil.setErrorTag(span, thrown);
+      OpenTracingApiUtil.setErrorTag(span, thrown);
       span.finish();
       return;
     }
 
     final JavaExecutionResult result = (JavaExecutionResult) returned;
     if (result.getSystemException() != null)
-      AgentRuleUtil.setErrorTag(span, result.getSystemException());
+      OpenTracingApiUtil.setErrorTag(span, result.getSystemException());
     else if (result.getUserException() != null)
-      AgentRuleUtil.setErrorTag(span, result.getUserException());
+      OpenTracingApiUtil.setErrorTag(span, result.getUserException());
 
     span.finish();
   }

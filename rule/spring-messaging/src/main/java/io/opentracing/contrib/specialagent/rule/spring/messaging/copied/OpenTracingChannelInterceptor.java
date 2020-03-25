@@ -30,7 +30,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 
@@ -146,7 +146,7 @@ public class OpenTracingChannelInterceptor extends ChannelInterceptorAdapter imp
    */
   protected void handleException(Exception ex, Span span) {
     if (ex != null) {
-      AgentRuleUtil.setErrorTag(span, ex);
+      OpenTracingApiUtil.setErrorTag(span, ex);
     }
   }
 

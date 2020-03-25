@@ -48,7 +48,7 @@ public class SpringWebSocketAgentRule extends AgentRule {
   public static class MessageChannelSend {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled("SpringWebSocketAgentRule", origin))
+      if (isEnabled(SpringWebSocketAgentRule.class.getName(), origin))
         SpringWebSocketAgentIntercept.messageChannelSend(thiz);
     }
   }
@@ -56,13 +56,13 @@ public class SpringWebSocketAgentRule extends AgentRule {
   public static class StompSessionSend {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg) {
-      if (isEnabled("SpringWebSocketAgentRule", origin))
+      if (isEnabled(SpringWebSocketAgentRule.class.getName(), origin))
         SpringWebSocketAgentIntercept.sendEnter(arg);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled("SpringWebSocketAgentRule", origin))
+      if (isEnabled(SpringWebSocketAgentRule.class.getName(), origin))
         SpringWebSocketAgentIntercept.sendExit(thrown);
     }
   }

@@ -20,7 +20,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import redis.clients.jedis.Protocol.Command;
@@ -76,7 +76,7 @@ public class JedisAgentIntercept {
       return;
 
     if (throwable != null)
-      AgentRuleUtil.setErrorTag(span, throwable);
+      OpenTracingApiUtil.setErrorTag(span, throwable);
 
     span.finish();
   }

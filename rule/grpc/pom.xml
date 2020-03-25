@@ -88,29 +88,44 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-grpc</artifactId>
       <version>0.2.1</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-testing</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -466,7 +466,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
           break;
         }
         switch (schemeField.id) {
@@ -474,7 +474,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.line = iprot.readString();
               struct.setLineIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -482,7 +482,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.city = iprot.readString();
               struct.setCityIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -490,7 +490,7 @@ public class Address implements org.apache.thrift.TBase<Address, Address._Fields
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.zipCode = iprot.readString();
               struct.setZipCodeIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
