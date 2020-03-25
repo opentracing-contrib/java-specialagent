@@ -157,7 +157,20 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
 
           dependency.setVersion(MavenUtil.lookupVersion(getProject(), dependency));
           final File jarFile = new File(MavenUtil.getPathOf(localRepository.getBasedir(), dependency));
-          fileCopy(jarFile, new File(isoPath, jarFile.getName()));
+
+          final String fileName;
+          if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory")) {
+            final String pluginName = (String)getProject().getProperties().get(dependency.getArtifactId());
+            if (pluginName == null)
+              throw new MojoExecutionException("Name of Tracer Plugin is missing: <properties><" + dependency.getArtifactId() + ">NAME</" + dependency.getArtifactId() + "></properties>");
+
+            fileName = pluginName + ".jar";
+          }
+          else {
+            fileName = jarFile.getName();
+          }
+
+          fileCopy(jarFile, new File(isoPath, fileName));
         }
 
         final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));

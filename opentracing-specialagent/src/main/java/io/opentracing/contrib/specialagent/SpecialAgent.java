@@ -466,7 +466,7 @@ public class SpecialAgent {
         try {
           for (final PluginManifest pluginManifest : pluginManifests.values()) {
             final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
-            Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(pluginsClassLoader, isoClassLoader));
+            Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(isoClassLoader));
           }
         }
         catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {

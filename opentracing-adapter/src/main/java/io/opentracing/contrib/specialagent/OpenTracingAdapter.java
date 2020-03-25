@@ -25,11 +25,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
@@ -37,7 +36,7 @@ import io.opentracing.mock.ProxyMockTracer;
 import io.opentracing.util.GlobalTracer;
 
 public class OpenTracingAdapter extends Adapter {
-  private static final Logger logger = Logger.getLogger(OpenTracingAdapter.class.getName());
+  private static final Logger logger = Logger.getLogger(OpenTracingAdapter.class);
   private static final String TRACER_FACTORY = "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory";
 
   private boolean loaded;
@@ -59,7 +58,6 @@ public class OpenTracingAdapter extends Adapter {
    *         is not specified for the current process.
    */
   @Override
-  @SuppressWarnings("resource")
   public Tracer getAgentRunnerTracer() {
     if (tracer != null)
       return tracer;
@@ -104,11 +102,11 @@ public class OpenTracingAdapter extends Adapter {
   private static final String[] traceExcludedClasses = {"io.opentracing.Tracer", "io.opentracing.Scope", "io.opentracing.ScopeManager", "io.opentracing.Span", "io.opentracing.SpanBuilder", "io.opentracing.SpanContext"};
 
   @Override
-  public String[] loadTracer(final ClassLoader pluginsClassLoader, final ClassLoader isoClassLoader) {
+  public String[] loadTracer(final ClassLoader isoClassLoader) {
     if (!loaded) {
       try {
         loaded = true;
-        this.deferredTracer = loadDeferredTracer(pluginsClassLoader, isoClassLoader);
+        this.deferredTracer = loadDeferredTracer(isoClassLoader);
       }
       catch (final IOException | ReflectiveOperationException e) {
         throw new IllegalStateException(e);
@@ -161,7 +159,7 @@ public class OpenTracingAdapter extends Adapter {
    *           occurred.
    */
   @SuppressWarnings("resource")
-  private Tracer loadDeferredTracer(final ClassLoader pluginsClassLoader, final ClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
+  private static Tracer loadDeferredTracer(final ClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
     if (logger.isLoggable(Level.FINE))
       logger.fine("\n<<<<<<<<<<<<<<<<<<<< Loading Tracer Plugin >>>>>>>>>>>>>>>>>>>>>\n");
 
@@ -192,22 +190,21 @@ public class OpenTracingAdapter extends Adapter {
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         final File file = new File(tracerProperty);
 
-        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(pluginsClassLoader, tracerProperty);
-
-        Adapter.tracerClassLoader = getClass().getClassLoader();
-        Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
-        if (tracerUrl != null) {
-          // If the desired tracer is in its own JAR file, or if this is not
-          // running in an AgentRunner test (because in this case the tracer
-          // is in a JAR also, which is inside the SpecialAgent JAR), then
-          // isolate the tracer JAR in its own class loader.
-          if (file.exists() || !isAgentRunner()) {
-            Adapter.tracerClassLoader = new TracerClassLoader(Adapter.tracerClassLoader, tracerUrl);
-            Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
-          }
-        }
-        else if (findTracer(ClassLoader.getSystemClassLoader(), tracerProperty) == null) {
+        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(isoClassLoader, tracerProperty);
+        if (tracerUrl == null)
           throw new IllegalStateException(TRACER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
+
+        final String tracerResolverUrl = isoClassLoader.getResource("io/opentracing/contrib/tracerresolver/TracerResolver.class").toString();
+        Adapter.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!')))});
+        Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
+
+        // If the desired tracer is in its own JAR file, or if this is not
+        // running in an AgentRunner test (because in this case the tracer
+        // is in a JAR also, which is inside the SpecialAgent JAR), then
+        // isolate the tracer JAR in its own class loader.
+        if (file.exists() || !isAgentRunner()) {
+          Adapter.tracerClassLoader = new TracerClassLoader(Adapter.tracerClassLoader, tracerUrl);
+          Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
         }
 
         final Class<?> tracerResolverClass = Class.forName("io.opentracing.contrib.tracerresolver.TracerResolver", true, Adapter.tracerClassLoader);
