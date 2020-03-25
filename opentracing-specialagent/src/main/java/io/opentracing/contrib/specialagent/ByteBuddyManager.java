@@ -146,14 +146,14 @@ public class ByteBuddyManager extends Manager {
             final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
             if (AssembleUtil.isSystemProperty("sa.instrumentation.plugin." + pluginManifest.name + "#" + simpleClassName + ".disable")) {
               if (logger.isLoggable(Level.FINE))
-                logger.fine("Skipping disabled rule: " + line);
+                logger.fine("Skipping rule: " + line);
 
               continue;
             }
 
             if (AgentRule.class.isAssignableFrom(agentClass)) {
               if (logger.isLoggable(Level.FINE))
-                logger.fine("Installing new rule: " + line);
+                logger.fine("Installing rule: " + line);
 
               classNameToName.put(agentClass.getName(), pluginManifest.name);
               agentRule = (AgentRule)agentClass.getConstructor().newInstance();

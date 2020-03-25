@@ -90,14 +90,12 @@
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <version>2.3</version>
-      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
-      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
   </dependencies>

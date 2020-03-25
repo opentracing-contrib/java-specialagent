@@ -30,7 +30,7 @@ import net.bytebuddy.utility.JavaModule;
 public class TracerExclusionAgent {
   public static final MutexLatch latch = AgentRule.$Access.mutexLatch();
 
-  public static AgentBuilder premain(final String[] traceExcludedClasses, final AgentBuilder builder) throws Exception {
+  public static AgentBuilder premain(final String[] traceExcludedClasses, final AgentBuilder builder) {
     log("\n<<<<<<<<<<<<<<<<<< Installing MutexAgentRule >>>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
 
     try {

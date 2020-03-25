@@ -51,7 +51,9 @@ public class IsoClassLoader extends URLClassLoader {
           AssembleUtil.<Void>forEachClass(isoClassPaths, null, new BiConsumer<String,Void>() {
             @Override
             public void accept(final String name, final Void arg) {
-              names.add(name);
+              // FIXME: This is a hack workaround for https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java/issues/17
+              if (BootProxyClassLoader.INSTANCE.getResource(name) == null)
+                names.add(name);
             }
           });
 

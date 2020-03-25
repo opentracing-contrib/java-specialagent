@@ -421,8 +421,16 @@
                 <artifactId>specialagent-fingerprint</artifactId>
               </dependency>
               <dependency>
+                <groupId>io.opentracing.contrib.specialagent</groupId>
+                <artifactId>opentracing-rewrite</artifactId>
+              </dependency>
+              <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
+              </dependency>
+              <dependency>
+                <groupId>com.grack</groupId>
+                <artifactId>nanojson</artifactId>
               </dependency>
 
               <!-- Tracer Plugins -->
@@ -560,7 +568,7 @@
       </dependency>
       <dependency>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>specialagent-fingerprint</artifactId>
+        <artifactId>opentracing-rewrite</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -571,6 +579,11 @@
       <dependency>
         <groupId>io.opentracing.contrib.specialagent</groupId>
         <artifactId>opentracing-specialagent-util</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>specialagent-fingerprint</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -645,6 +658,11 @@
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
         <version>5.0.3</version>
+      </dependency>
+      <dependency>
+        <groupId>com.grack</groupId>
+        <artifactId>nanojson</artifactId>
+        <version>1.4</version>
       </dependency>
 
       <dependency>
