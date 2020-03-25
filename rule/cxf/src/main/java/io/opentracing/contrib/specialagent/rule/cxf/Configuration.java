@@ -1,15 +1,16 @@
-/*
- * Copyright 2019 The OpenTracing Authors
+/* Copyright 2020 The OpenTracing Authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package io.opentracing.contrib.specialagent.rule.cxf;
@@ -25,7 +26,7 @@ import org.apache.cxf.phase.PhaseInterceptor;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 
-public class Configuration {
+public final class Configuration {
   public static final Logger logger = Logger.getLogger(Configuration.class);
   public static final String INTERCEPTORS_SERVER_IN = "sa.instrumentation.plugin.cxf.interceptors.server.in";
   public static final String INTERCEPTORS_SERVER_OUT = "sa.instrumentation.plugin.cxf.interceptors.server.out";
@@ -72,10 +73,11 @@ public class Configuration {
     try {
       final Class<?> interceptorClass = getInterceptorClassLoader().loadClass(className);
       if (PhaseInterceptor.class.isAssignableFrom(interceptorClass))
-        return (PhaseInterceptor<Message>) interceptorClass.newInstance();
+        return (PhaseInterceptor<Message>)interceptorClass.newInstance();
 
       logger.log(Level.WARNING, className + " is not a subclass of " + PhaseInterceptor.class.getName());
-    } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
     }
 
@@ -96,11 +98,15 @@ public class Configuration {
       final String part = parts[i];
       try {
         urls[i] = new URL("file", "", part.endsWith(".jar") || part.endsWith("/") ? part : part + "/");
-      } catch (final MalformedURLException e) {
+      }
+      catch (final MalformedURLException e) {
         logger.log(Level.WARNING, part + "is not a valid URL");
       }
     }
 
     return interceptorClassLoader = new URLClassLoader(urls, Configuration.class.getClassLoader());
+  }
+
+  private Configuration() {
   }
 }

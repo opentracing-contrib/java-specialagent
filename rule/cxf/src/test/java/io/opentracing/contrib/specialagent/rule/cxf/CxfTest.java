@@ -16,10 +16,13 @@
 package io.opentracing.contrib.specialagent.rule.cxf;
 
 import static org.junit.Assert.*;
+
 import java.util.List;
+
 import javax.jws.WebService;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
@@ -30,13 +33,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.rule.cxf.interceptors.AbstractSpanTagInterceptor;
+import io.opentracing.contrib.specialagent.rule.cxf.interceptor.AbstractSpanTagInterceptor;
+import io.opentracing.contrib.specialagent.rule.cxf.interceptor.ClientSpanTagInterceptor;
+import io.opentracing.contrib.specialagent.rule.cxf.interceptor.ServerSpanTagInterceptor;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(disable = "*", isolateClassLoader = false)
+@AgentRunner.Config(isolateClassLoader = false)
 public class CxfTest {
   private static final String BASE_URI = "http://127.0.0.1:48080";
 
@@ -96,7 +102,7 @@ public class CxfTest {
     final JaxWsProxyFactoryBean clientFactory = new JaxWsProxyFactoryBean();
     clientFactory.setServiceClass(Echo.class);
     clientFactory.setAddress(BASE_URI);
-    final Echo echo = (Echo) clientFactory.create();
+    final Echo echo = (Echo)clientFactory.create();
 
     final String response = echo.echo(msg);
 
@@ -109,10 +115,8 @@ public class CxfTest {
 
   @Test
   public void testInterceptor(final MockTracer tracer) {
-    System.setProperty(Configuration.INTERCEPTORS_CLIENT_IN,
-        "io.opentracing.contrib.specialagent.rule.cxf.interceptors.ClientSpanTagInterceptor");
-    System.setProperty(Configuration.INTERCEPTORS_SERVER_OUT,
-        "io.opentracing.contrib.specialagent.rule.cxf.interceptors.ServerSpanTagInterceptor");
+    System.setProperty(Configuration.INTERCEPTORS_CLIENT_IN, ClientSpanTagInterceptor.class.getName());
+    System.setProperty(Configuration.INTERCEPTORS_SERVER_OUT, ServerSpanTagInterceptor.class.getName());
 
     final String msg = "hello";
 

@@ -48,11 +48,6 @@
                     </dependency>
                     <dependency>
                       <groupId>org.springframework</groupId>
-                      <artifactId>spring-webmvc</artifactId>
-                      <version>org.springframework:spring-websocket:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
                       <artifactId>spring-messaging</artifactId>
                       <version>org.springframework:spring-websocket:[${min.version},]</version>
                     </dependency>
@@ -74,20 +69,18 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <!-- FIXME: Having a 2nd fingerprinted dependency couples this rule to environments that must have both artifacts. -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>${min.version}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <!-- FIXME: Having a 2nd fingerprinted dependency couples this rule to environments that must have both artifacts. -->
+      <!-- It's required to have a 2nd fingerprinted dependency. Any Spring WebSocket application must have both artifacts.-->
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
       <version>${min.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${min.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

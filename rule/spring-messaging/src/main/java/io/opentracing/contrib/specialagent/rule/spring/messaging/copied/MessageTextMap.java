@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.springframework.integration.support.MutableMessageHeaders;
 import org.springframework.messaging.Message;
@@ -46,18 +47,18 @@ public class MessageTextMap<T> implements TextMap {
   @Override
   public Iterator<Map.Entry<String, String>> iterator() {
     Map<String, String> stringHeaders = new HashMap<>(headers.size());
-    headers.forEach((k, v) -> {
-      if (v instanceof byte[]) {
+    for (Entry<String, Object> entry : headers.entrySet()) {
+      if (entry.getValue() instanceof byte[]) {
         try {
-          stringHeaders.put(k, new String((byte[])v));
-          byteHeaders.add(k);
+          stringHeaders.put(entry.getKey(), new String((byte[])entry.getValue()));
+          byteHeaders.add(entry.getKey());
         } catch (Exception ex) {
-          stringHeaders.put(k, String.valueOf(v));
+          stringHeaders.put(entry.getKey(), String.valueOf(entry.getValue()));
         }
       } else {
-        stringHeaders.put(k, String.valueOf(v));
+        stringHeaders.put(entry.getKey(), String.valueOf(entry.getValue()));
       }
-    });
+    }
     return stringHeaders.entrySet().iterator();
   }
 

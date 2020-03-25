@@ -39,7 +39,10 @@ public class RewritableTracer implements Tracer {
   private static final HashMap<String,RewriteRules> nameToRules = new HashMap<>();
 
   private RewriteRules getRulesForCurrentPlugin() {
-    final String currentPluginName = Objects.requireNonNull(AgentRule.getCurrentPluginName());
+    String currentPluginName = AgentRule.getCurrentPluginName();
+    if (currentPluginName == null)
+      currentPluginName = "";
+
     if (nameToRules.containsKey(currentPluginName))
       return nameToRules.get(currentPluginName);
 
