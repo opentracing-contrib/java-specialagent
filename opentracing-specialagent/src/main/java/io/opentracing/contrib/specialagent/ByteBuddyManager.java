@@ -196,7 +196,9 @@ public class ByteBuddyManager extends Manager {
     loadAgentRule(inst, new ClassLoaderAgentRule(), newBuilder(), null, events);
 
     // Load TracerExclusionAgent
-    TracerExclusionAgent.premain(tracerExcludedClasses, newBuilder());
+    final AgentBuilder builder = TracerExclusionAgent.premain(tracerExcludedClasses, newBuilder());
+    if (builder != null)
+      builder.installOn(inst);
   }
 
   @Override

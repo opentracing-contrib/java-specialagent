@@ -437,6 +437,17 @@ public class SpecialAgent {
     return count;
   }
 
+  private static void loadAdapter(final ArrayList<String> tracerExcludedClasses, final Map<AgentRule,PluginManifest> pluginManifests) {
+    try {
+      for (final PluginManifest pluginManifest : pluginManifests.values()) {
+        final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
+        Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(isoClassLoader));
+      }
+    }
+    catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
   /**
    * This method loads any OpenTracing {@code AgentRule}s, delegated to the
@@ -463,15 +474,10 @@ public class SpecialAgent {
         }, classNameToName);
 
         final Map<AgentRule,PluginManifest> deferrers = manager.scanRules(inst, pluginsClassLoader, pluginManifestDirectory, pluginManifests, classNameToName);
-        try {
-          for (final PluginManifest pluginManifest : pluginManifests.values()) {
-            final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
-            Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(isoClassLoader));
-          }
-        }
-        catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
-          throw new IllegalStateException(e);
-        }
+        loadAdapter(tracerExcludedClasses, deferrers);
+        loadAdapter(tracerExcludedClasses, pluginManifests);
+        if (tracerExcludedClasses.size() == 0)
+          logger.warning("No adapter was loaded!");
 
         final String initDeferProperty = System.getProperty(INIT_DEFER);
         if (initDeferProperty != null) {
