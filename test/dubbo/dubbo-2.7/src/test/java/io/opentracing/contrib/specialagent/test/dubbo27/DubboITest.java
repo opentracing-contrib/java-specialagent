@@ -37,6 +37,8 @@ public class DubboITest {
     ReferenceConfig<GreeterService> client =getClient(linkLocalIp, service.getProtocol().getPort());
     client.get().sayHello("jorge");
     TestUtil.checkSpan(latch, new ComponentSpanCount("java-dubbo", 2) );
+    client.destroy();
+    service.unexport();
   }
 
 
