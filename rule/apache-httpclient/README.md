@@ -10,11 +10,13 @@ Following properties are supported by the Apache HttpClient Rule.
 
 * `-Dsa.instrumentation.plugin.apache:httpclient.spanDecorators`
 
-  Override default Apache HttpClient span decorator (`io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags` the class provided by this rule plugin), with customized decorator class names, comma separated. The customized decorators must be subclasses of `io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator` (the interface provided by this rule plugin).
+  Override default provided Apache HttpClient span decorator (`io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags`), with customized decorator class names, comma separated. The customized decorators must be subclasses of `io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator` (the interface provided by this rule plugin).
 
   **Example:**
 
-  `com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2,io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags`
+  ```bash
+  com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2,io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags
+  ```
 
 * `-Dsa.instrumentation.plugin.apache:httpclient.spanDecorators.classpath`
 
@@ -22,7 +24,9 @@ Following properties are supported by the Apache HttpClient Rule.
 
   **Example:**
 
-  `/path/to/your/lib/myspandecorators1.jar:/path/to/your/lib/myspandecorators1.jar`
+  ```
+  /path/to/your/lib/myspandecorators1.jar:/path/to/your/lib/myspandecorators1.jar
+  ```
 
 ## Compatibility
 

@@ -438,6 +438,9 @@ public class SpecialAgent {
   }
 
   private static void loadAdapter(final ArrayList<String> tracerExcludedClasses, final Map<AgentRule,PluginManifest> pluginManifests) {
+    if (pluginManifests == null)
+      return;
+
     try {
       for (final PluginManifest pluginManifest : pluginManifests.values()) {
         final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);

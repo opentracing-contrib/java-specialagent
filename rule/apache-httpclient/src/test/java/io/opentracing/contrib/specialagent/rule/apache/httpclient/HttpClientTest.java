@@ -46,8 +46,7 @@ public class HttpClientTest {
 
   @Test
   public void test(final MockTracer tracer) {
-    System.setProperty(Configuration.SPAN_DECORATORS,
-        "io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags,io.opentracing.contrib.specialagent.rule.apache.httpclient.MockSpanDecorator");
+    System.setProperty(Configuration.SPAN_DECORATORS, "io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags,io.opentracing.contrib.specialagent.rule.apache.httpclient.MockSpanDecorator");
 
     final CloseableHttpClient httpClient = HttpClients.createDefault();
     final String url = "http://localhost:12345";
