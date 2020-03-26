@@ -29,7 +29,7 @@
     <sa.rule.name>netty</sa.rule.name>
     <min.version>4.1.0.Final</min.version>
     <max.version>5.0.0.Alpha1</max.version>
-    <passCompatibility>io.netty:netty-codec-http:[${min.version},${max.version})</passCompatibility>
+    <passCompatibility>io.netty:netty-codec-http:[${min.version},${max.version});io.ratpack:ratpack-core:[1.4.0,]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
