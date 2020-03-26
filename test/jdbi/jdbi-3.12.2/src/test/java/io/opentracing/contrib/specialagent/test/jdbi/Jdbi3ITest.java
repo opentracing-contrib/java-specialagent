@@ -15,20 +15,20 @@
 
 package io.opentracing.contrib.specialagent.test.jdbi;
 
-
-import io.opentracing.contrib.specialagent.TestUtil;
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.h2.Driver;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
+
 public class Jdbi3ITest {
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     Driver.load();
     final Jdbi dbi = Jdbi.create("jdbc:h2:mem:dbi", "sa", "");
-    final Handle handle = dbi.open();
-    handle.execute("CREATE TABLE employer (id INTEGER)");
-    handle.close();
+    try (final Handle handle = dbi.open()) {
+      handle.execute("CREATE TABLE employer (id INTEGER)");
+    }
 
     TestUtil.checkSpan(new ComponentSpanCount("java-jdbc", 2));
   }

@@ -15,15 +15,15 @@
 
 package io.opentracing.contrib.specialagent.test.jdbi;
 
-
-import io.opentracing.contrib.specialagent.TestUtil;
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import org.h2.Driver;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
+
 public class JdbiITest {
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     Driver.load();
     final DBI dbi = new DBI("jdbc:h2:mem:dbi", "sa", "");
     final Handle handle = dbi.open();

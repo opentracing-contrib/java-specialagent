@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.test.hystrix;
 
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.TestUtil;
@@ -25,25 +26,23 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class HystrixITest {
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     final Span parent = GlobalTracer.get().buildSpan("parent").withTag(Tags.COMPONENT, "hystrix").start();
-    try (Scope ignored = GlobalTracer.get().activateSpan(parent)) {
+    try (final Scope ignored = GlobalTracer.get().activateSpan(parent)) {
       final String res = new HystrixTestCommand().execute();
-      if (!res.equalsIgnoreCase("test")) {
+      if (!res.equalsIgnoreCase("test"))
         throw new AssertionError("ERROR: failed hystrix res: " + res);
-      }
-    } finally {
+    }
+    finally {
       parent.finish();
     }
 
     TestUtil.checkSpan(new ComponentSpanCount("hystrix", 1));
-
     System.exit(0); // There is no way to shutdown all Hystix thread pools
   }
 
   private static class HystrixTestCommand extends HystrixCommand<String> {
-
-    HystrixTestCommand() {
+    private HystrixTestCommand() {
       super(HystrixCommandGroupKey.Factory.asKey("ExampleGroup"));
     }
 
