@@ -647,7 +647,7 @@ The following libraries are instrumented by existing [<ins>Instrumentation Rules
 
 | OpenTracing Plugin<br/><sup>(link to <ins>plugin</ins> implementation)</sup> | SpecialAgent Rule<br/><sup>(link to <ins>rule</ins> implementation)</sup> | Min Version<br/><sup>(min supported)</sup> | Max Version<br/><sup>(max supported)</sup> |
 |:-|:-|:-:|:-:|
-| [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing) | [`feign`][feign] | **1.0.2** | **1.5.18** |
+| [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | \*<br>&nbsp; | \*<br>&nbsp; |
 | [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty) | [`netty`][netty] | 1.4.0 | LATEST |
 
