@@ -258,6 +258,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/jdbc -amd integration-test || (mvn -B -P test -pl test/jdbc -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "JDBI [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/jdbi -amd integration-test || (mvn -B -P test -pl test/jdbi -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
+  - name: "JDBI [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -B -P test -pl test/jdbi -amd integration-test || (mvn -B -P test -pl test/jdbi -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
   - name: "Java JMS [openjdk8]"
     stage: test
     jdk: openjdk8
