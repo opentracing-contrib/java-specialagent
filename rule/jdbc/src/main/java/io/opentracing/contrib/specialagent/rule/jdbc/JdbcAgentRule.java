@@ -68,7 +68,7 @@ public class JdbcAgentRule extends AgentRule {
   public static class DriverManagerEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Class<?> caller) throws Exception {
-      if (isEnabled("JdbcAgentRule", origin))
+      if (isEnabled(JdbcAgentRule.class.getName(), origin))
         JdbcAgentIntercept.isDriverAllowed(caller);
     }
   }
@@ -87,7 +87,7 @@ public class JdbcAgentRule extends AgentRule {
   public static class DriverEnter {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) String url, final @Advice.Argument(value = 1) Properties info) throws Exception {
-      if (!isEnabled("JdbcAgentRule", origin))
+      if (!isEnabled(JdbcAgentRule.class.getName(), origin))
         return;
 
       final Connection connection = JdbcAgentIntercept.connect(url, info);

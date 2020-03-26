@@ -188,7 +188,7 @@ public final class SpecialAgentUtil {
 //            logger.fine("Running from IDE? Could not find " + JarFile.MANIFEST_NAME);
         }
         else {
-          final String jarName = getName(location.getPath());
+          final String jarName = AssembleUtil.getName(location.getPath());
           if (!jarName.equals(bootClassPathManifestEntry))
             throw new IllegalStateException("Name of -javaagent JAR, which is currently " + jarName + ", must be: " + bootClassPathManifestEntry);
         }
@@ -208,32 +208,6 @@ public final class SpecialAgentUtil {
   }
 
   /**
-   * Returns the source location of the specified resource in the specified URL.
-   *
-   * @param url The {@code URL} from which to find the source location.
-   * @param resourcePath The resource path that is the suffix of the specified
-   *          URL.
-   * @return The source location of the specified resource in the specified URL.
-   * @throws MalformedURLException If no protocol is specified, or an unknown
-   *           protocol is found, or spec is null.
-   * @throws IllegalArgumentException If the specified resource path is not the
-   *           suffix of the specified URL.
-   */
-  static File getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
-    final String string = url.toString();
-    if (!string.endsWith(resourcePath))
-      throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
-
-    if (string.startsWith("jar:file:"))
-      return new File(string.substring(9, string.lastIndexOf('!')));
-
-    if (string.startsWith("file:"))
-      return new File(string.substring(5, string.length() - resourcePath.length()));
-
-    throw new UnsupportedOperationException("Unsupported protocol: " + url.getProtocol());
-  }
-
-  /**
    * Returns the number of occurrences of the specified {@code char} in the
    * specified {@code String}.
    *
@@ -250,52 +224,6 @@ public final class SpecialAgentUtil {
         ++count;
 
     return count;
-  }
-
-  /**
-   * Returns an array of {@link File} objects representing each path entry in
-   * the specified {@code classpath}.
-   *
-   * @param classpath The classpath which to convert to an array of {@link File}
-   *          objects.
-   * @return An array of {@link File} objects representing each path entry in
-   *         the specified {@code classpath}.
-   */
-  public static File[] classPathToFiles(final String classpath) {
-    if (classpath == null)
-      return null;
-
-    final String[] paths = classpath.split(File.pathSeparator);
-    final File[] files = new File[paths.length];
-    for (int i = 0; i < paths.length; ++i)
-      files[i] = new File(paths[i]).getAbsoluteFile();
-
-    return files;
-  }
-
-  /**
-   * Returns the name of the file or directory denoted by the specified
-   * pathname. This is just the last name in the name sequence of {@code path}.
-   * If the name sequence of {@code path} is empty, then the empty string is
-   * returned.
-   *
-   * @param path The path string.
-   * @return The name of the file or directory denoted by the specified
-   *         pathname, or the empty string if the name sequence of {@code path}
-   *         is empty.
-   * @throws NullPointerException If {@code path} is null.
-   * @throws IllegalArgumentException If {@code path} is an empty string.
-   */
-  static String getName(final String path) {
-    if (path.length() == 0)
-      throw new IllegalArgumentException("Empty path");
-
-    if (path.length() == 0)
-      return path;
-
-    final boolean end = path.charAt(path.length() - 1) == File.separatorChar;
-    final int start = end ? path.lastIndexOf(File.separatorChar, path.length() - 2) : path.lastIndexOf(File.separatorChar);
-    return start == -1 ? (end ? path.substring(0, path.length() - 1) : path) : end ? path.substring(start + 1, path.length() - 1) : path.substring(start + 1);
   }
 
   /**
@@ -446,15 +374,15 @@ public final class SpecialAgentUtil {
     return names;
   }
 
-  private static final Manager.Event[] DEFAULT_EVENTS = new Manager.Event[5];
+  private static final Event[] DEFAULT_EVENTS = new Event[5];
 
-  static Manager.Event[] digestEventsProperty(final String eventsProperty) {
+  static Event[] digestEventsProperty(final String eventsProperty) {
     if (eventsProperty == null)
       return DEFAULT_EVENTS;
 
     final String[] parts = eventsProperty.split(",");
     Arrays.sort(parts);
-    final Manager.Event[] events = Manager.Event.values();
+    final Event[] events = Event.values();
     for (int i = 0, j = 0; i < events.length;) {
       final int comparison = j < parts.length ? events[i].name().compareTo(parts[j]) : -1;
       if (comparison < 0) {

@@ -30,6 +30,11 @@ public class BootProxyClassLoader extends URLClassLoader {
     return super.findClass(name);
   }
 
+  @Override
+  public Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
+    return super.loadClass(name, resolve);
+  }
+
   public Class<?> loadClassOrNull(final String name, final boolean resolve) {
     try {
       return super.loadClass(name, resolve);

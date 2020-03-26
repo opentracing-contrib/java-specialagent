@@ -38,6 +38,13 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-cassandra-driver-3</artifactId>
       <version>0.1.6</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.datastax.cassandra</groupId>
@@ -49,7 +56,8 @@
     <dependency>
       <groupId>org.cassandraunit</groupId>
       <artifactId>cassandra-unit</artifactId>
-      <version>2.2.2.1</version>
+      <version>3.0.0.1</version>
+      <optional>true</optional>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -61,7 +69,8 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>16.0.1</version>
+      <version>18.0</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

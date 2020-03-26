@@ -16,7 +16,7 @@
 package io.opentracing.contrib.specialagent.rule.aws.sdk2;
 
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import software.amazon.awssdk.core.interceptor.Context.AfterExecution;
@@ -73,7 +73,7 @@ public class TracingExecutionInterceptor implements ExecutionInterceptor {
       return;
 
     executionAttributes.putAttribute(SPAN_ATTRIBUTE, null);
-    AgentRuleUtil.setErrorTag(span, context.exception());
+    OpenTracingApiUtil.setErrorTag(span, context.exception());
     span.finish();
   }
 }

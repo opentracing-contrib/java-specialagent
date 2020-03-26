@@ -48,7 +48,7 @@ public class PrivilegedEventRule extends AgentRule {
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object event) {
-    if (!isEnabled("PrivilegedEventRule", origin))
+    if (!isEnabled(PrivilegedEventRule.class.getName(), origin))
       return;
 
     if (event == null) {

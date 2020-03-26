@@ -35,30 +35,35 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${version.spring}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-web-servlet-filter</artifactId>
       <version>0.4.0</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
       <version>${version.jetty}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
       <version>${version.jetty}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
       <version>${version.jetty}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

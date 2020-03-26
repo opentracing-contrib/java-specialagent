@@ -36,6 +36,7 @@ import io.opentracing.mock.MockTracer;
  * @author Jose Montoya
  */
 @RunWith(AgentRunner.class)
+@AgentRunner.Config(isolateClassLoader = false)
 public class Ahc2Test extends AbstractAhcTest {
   private static final int port = 8348;
 

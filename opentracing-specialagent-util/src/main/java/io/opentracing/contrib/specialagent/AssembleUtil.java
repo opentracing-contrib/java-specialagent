@@ -15,10 +15,15 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.Constants.*;
+
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,14 +34,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -44,137 +48,6 @@ import java.util.zip.ZipInputStream;
 
 public final class AssembleUtil {
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
-  private static final String[] scopes = {"compile", "provided", "runtime", "system", "test"};
-
-  /**
-   * Tests if the specified string is a name of a Maven scope.
-   *
-   * @param scope The string to test.
-   * @return {@code true} if the specified string is a name of a Maven scope.
-   */
-  private static boolean isScope(final String scope) {
-    for (int i = 0; i < scopes.length; ++i)
-      if (scopes[i].equals(scope))
-        return true;
-
-    return false;
-  }
-
-  private static final Set<String> jarTypes = new HashSet<>(Arrays.asList("jar", "test-jar", "maven-plugin", "ejb", "ejb-client", "java-source", "javadoc"));
-
-  /** https://maven.apache.org/ref/3.6.1/maven-core/artifact-handlers.html */
-  private static String getExtension(final String type) {
-    return type == null || jarTypes.contains(type) ? "jar" : type;
-  }
-
-  private static boolean contains(final Object[] array, final Object obj) {
-    for (int i = 0; i < array.length; ++i)
-      if (obj == null ? array[i] == null : obj.equals(array[i]))
-        return true;
-
-    return false;
-  }
-
-  public static File getFileForDependency(final String dependency, final String ... scopes) {
-    final int c0 = dependency.indexOf(':');
-    final String groupId = dependency.substring(0, c0);
-
-    // artifactId
-    final int c1 = dependency.indexOf(':', c0 + 1);
-    final String artifactId = dependency.substring(c0 + 1, c1);
-
-    // type
-    final int c2 = dependency.indexOf(':', c1 + 1);
-    final String type = dependency.substring(c1 + 1, c2);
-    final String ext = getExtension(type);
-
-    // classifier or version
-    final int c3 = dependency.indexOf(':', c2 + 1);
-    final String classifierOrVersion = dependency.substring(c2 + 1, c3 > c2 ? c3 : dependency.length());
-
-    // version or scope
-    final int c4 = c3 == -1 ? -1 : dependency.indexOf(':', c3 + 1);
-    final String versionOrScope = c3 == -1 ? null : dependency.substring(c3 + 1, c4 > c3 ? c4 : dependency.length());
-
-    final String scope = c4 == -1 ? null : dependency.substring(c4 + 1);
-
-    final String groupPath = groupId.replace('.', File.separatorChar) + File.separator + artifactId + File.separator;
-    if (scope != null) {
-      if (scopes != null && !contains(scopes, scope))
-        return null;
-
-      return new File(groupPath + versionOrScope, artifactId + "-" + versionOrScope + "-" + classifierOrVersion + "." + ext);
-    }
-    else if (versionOrScope != null) {
-      final boolean isScope = isScope(versionOrScope);
-      if (scopes != null && (isScope ? !contains(scopes, versionOrScope) : !contains(scopes, "compile")))
-        return null;
-
-      if (isScope)
-        return new File(groupPath + classifierOrVersion, artifactId + "-" + classifierOrVersion + "." + ext);
-
-      return new File(groupPath + classifierOrVersion, artifactId + "-" + versionOrScope + "-" + classifierOrVersion + "." + ext);
-    }
-    else {
-      if (scopes != null && !contains(scopes, "compile"))
-        return null;
-
-      return new File(groupPath + classifierOrVersion, artifactId + "-" + classifierOrVersion + "." + ext);
-    }
-  }
-
-  /**
-   * Selects the resource names from the specified TGF-formatted string of Maven
-   * dependencies {@code tgf} that match the specification of the following
-   * parameters.
-   *
-   * @param tgf The TGF-formatted string of Maven dependencies.
-   * @param includeOptional Whether to include dependencies marked as
-   *          {@code (optional)}.
-   * @param scopes An array of Maven scopes to include in the returned set, or
-   *          {@code null} to include all scopes.
-   * @param excludes An array of {@code Class} objects representing source
-   *          locations to be excluded from the returned set.
-   * @return A {@code Set} of resource names that match the call parameters.
-   * @throws IOException If an I/O error has occurred.
-   */
-  public static Set<File> selectFromTgf(final String tgf, final boolean includeOptional, final String[] scopes, final Class<?> ... excludes) throws IOException {
-    final Set<String> excluded = getLocations(excludes);
-    final Set<File> files = new HashSet<>();
-    final StringTokenizer tokenizer = new StringTokenizer(tgf, "\r\n");
-    TOKENIZER:
-    while (tokenizer.hasMoreTokens()) {
-      String token = tokenizer.nextToken().trim();
-      if ("#".equals(token))
-        break;
-
-      final boolean isOptional = token.endsWith(" (optional)");
-      if (isOptional) {
-        if (!includeOptional)
-          continue;
-
-        token = token.substring(0, token.length() - 11);
-      }
-
-      // groupId
-      final int start = token.indexOf(' ');
-      int end = token.indexOf(' ', start + 1);
-      if (end == -1)
-        end = token.length();
-
-      final File file = getFileForDependency(token.substring(start + 1, end), scopes);
-      if (file == null)
-        continue;
-
-      for (final String exclude : excluded)
-        if (exclude.endsWith(file.getName()))
-          continue TOKENIZER;
-
-      files.add(file);
-    }
-
-    return files;
-  }
 
   public static boolean hasFileInJar(final File jarFile, final String name) throws IOException {
     try (final ZipFile zipFile = new ZipFile(jarFile)) {
@@ -911,6 +784,140 @@ public final class AssembleUtil {
       return Pattern.compile(regex + ".*");
 
     return Pattern.compile("(" + regex + "$|" + regex + ":.*)");
+  }
+
+  /**
+   * Returns the source location of the specified resource in the specified URL.
+   *
+   * @param url The {@code URL} from which to find the source location.
+   * @param resourcePath The resource path that is the suffix of the specified
+   *          URL.
+   * @return The source location of the specified resource in the specified URL.
+   * @throws MalformedURLException If no protocol is specified, or an unknown
+   *           protocol is found, or spec is null.
+   * @throws IllegalArgumentException If the specified resource path is not the
+   *           suffix of the specified URL.
+   */
+  public static File getSourceLocation(final URL url, final String resourcePath) throws MalformedURLException {
+    final String string = url.toString();
+    if (!string.endsWith(resourcePath))
+      throw new IllegalArgumentException(url + " does not end with \"" + resourcePath + "\"");
+
+    if (string.startsWith("jar:file:"))
+      return new File(string.substring(9, string.lastIndexOf('!')));
+
+    if (string.startsWith("file:"))
+      return new File(string.substring(5, string.length() - resourcePath.length()));
+
+    throw new UnsupportedOperationException("Unsupported protocol: " + url.getProtocol());
+  }
+
+  /**
+   * Returns the name of the file or directory denoted by the specified
+   * pathname. This is just the last name in the name sequence of {@code path}.
+   * If the name sequence of {@code path} is empty, then the empty string is
+   * returned.
+   *
+   * @param path The path string.
+   * @return The name of the file or directory denoted by the specified
+   *         pathname, or the empty string if the name sequence of {@code path}
+   *         is empty.
+   * @throws NullPointerException If {@code path} is null.
+   * @throws IllegalArgumentException If {@code path} is an empty string.
+   */
+  public static String getName(final String path) {
+    if (path.length() == 0)
+      throw new IllegalArgumentException("Empty path");
+
+    if (path.length() == 0)
+      return path;
+
+    final boolean end = path.charAt(path.length() - 1) == File.separatorChar;
+    final int start = end ? path.lastIndexOf(File.separatorChar, path.length() - 2) : path.lastIndexOf(File.separatorChar);
+    return start == -1 ? (end ? path.substring(0, path.length() - 1) : path) : end ? path.substring(start + 1, path.length() - 1) : path.substring(start + 1);
+  }
+
+  private static boolean propertiesLoaded = false;
+
+  private static void loadProperties(final Map<String,String> properties, final BufferedReader reader) throws IOException {
+    for (String line; (line = reader.readLine()) != null;) {
+      line = line.trim();
+      char ch;
+      if (line.length() == 0 || (ch = line.charAt(0)) == '#' || ch == '!')
+        continue;
+
+      final int eq = line.indexOf('=');
+      if (eq == -1) {
+        properties.put(line, "");
+      }
+      else if (eq > 0) {
+        final String key = line.substring(0, eq).trim();
+        final String value = line.substring(eq + 1).trim();
+        if (key.length() > 0)
+          properties.put(key, value);
+      }
+    }
+  }
+
+  static void loadProperties() {
+    if (propertiesLoaded)
+      return;
+
+    propertiesLoaded = true;
+    final String configProperty = System.getProperty(CONFIG_ARG);
+    try (
+      final InputStream defaultConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream("default.properties");
+      final FileReader userConfig = configProperty == null ? null : new FileReader(configProperty);
+    ) {
+      final Map<String,String> properties = new HashMap<>();
+
+      // Load default config properties
+      loadProperties(properties, new BufferedReader(new InputStreamReader(defaultConfig)));
+
+      // Load user config properties
+      if (userConfig != null)
+        loadProperties(properties, new BufferedReader(userConfig));
+
+      // Set config properties as system properties
+      for (final Map.Entry<String,String> entry : properties.entrySet())
+        if (System.getProperty(entry.getKey()) == null)
+          System.setProperty(entry.getKey(), entry.getValue());
+
+      Logger.refreshLoggers();
+    }
+    catch (final IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * Returns an array of {@link File} objects representing each path entry in
+   * the specified {@code classpath}.
+   *
+   * @param classpath The classpath which to convert to an array of {@link File}
+   *          objects.
+   * @return An array of {@link File} objects representing each path entry in
+   *         the specified {@code classpath}.
+   */
+  public static File[] classPathToFiles(final String classpath) {
+    if (classpath == null)
+      return null;
+
+    final String[] paths = classpath.split(File.pathSeparator);
+    final File[] files = new File[paths.length];
+    for (int i = 0; i < paths.length; ++i)
+      files[i] = new File(paths[i]).getAbsoluteFile();
+
+    return files;
+  }
+
+  public static URL toURL(final String path) {
+    try {
+      return new URL("file", "", path);
+    }
+    catch (final MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private AssembleUtil() {

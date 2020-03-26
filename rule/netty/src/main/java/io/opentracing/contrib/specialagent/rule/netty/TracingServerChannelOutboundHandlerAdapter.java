@@ -20,7 +20,7 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpResponse;
 import io.opentracing.Span;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 
 public class TracingServerChannelOutboundHandlerAdapter extends ChannelOutboundHandlerAdapter {
@@ -38,7 +38,7 @@ public class TracingServerChannelOutboundHandlerAdapter extends ChannelOutboundH
       handlerContext.write(message, promise);
     }
     catch (final Throwable t) {
-      AgentRuleUtil.setErrorTag(span, t);
+      OpenTracingApiUtil.setErrorTag(span, t);
       span.setTag(Tags.HTTP_STATUS, 500);
       span.finish(); // Finish the span manually since finishSpanOnClose was false
       throw t;

@@ -36,10 +36,19 @@
       <groupId>io.github.openfeign.opentracing</groupId>
       <artifactId>feign-opentracing</artifactId>
       <version>0.3.0</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>io.github.openfeign</groupId>
           <artifactId>feign-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -47,13 +56,14 @@
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-core</artifactId>
       <version>${min.version}</version>
-      <scope>provided</scope>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-okhttp</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

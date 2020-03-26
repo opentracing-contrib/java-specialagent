@@ -35,7 +35,7 @@ public abstract class DefaultAgentRule extends AgentRule {
   private static Logger logger;
 
   public static void log(final String message, final Throwable thrown, final DefaultLevel level) {
-    if (isAgentRunner == null ? isAgentRunner = SpecialAgent.isAgentRunner() : isAgentRunner) {
+    if (isAgentRunner == null ? isAgentRunner = Adapter.isAgentRunner() : isAgentRunner) {
       final String logLevel = System.getProperty("sa.log.level");
       if (level == DefaultLevel.SEVERE || logLevel != null && logLevel.startsWith("FINE")) {
         System.err.println(message);

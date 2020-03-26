@@ -35,7 +35,7 @@
     <plugins>
       <plugin>
         <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
+        <artifactId>specialagent-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>test-compatibility</id>
@@ -59,6 +59,20 @@
                   <dependencies>
                     <dependency>
                       <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-http_2.11</artifactId>
+                      <version>${min.version}</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-actor_2.11</artifactId>
+                      <version>com.typesafe.akka:akka-actor_2.11:[2.5.11,]</version>
+                    </dependency>
+                  </dependencies>
+                </pass>
+                <pass>
+                  <dependencies>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
                       <artifactId>akka-http_2.12</artifactId>
                       <version>com.typesafe.akka:akka-http_2.12:[${min.version},]</version>
                     </dependency>
@@ -73,6 +87,20 @@
                   <dependencies>
                     <dependency>
                       <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-http_2.12</artifactId>
+                      <version>${min.version}</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-actor_2.12</artifactId>
+                      <version>com.typesafe.akka:akka-actor_2.12:[2.5.11,]</version>
+                    </dependency>
+                  </dependencies>
+                </pass>
+                <pass>
+                  <dependencies>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
                       <artifactId>akka-http_2.13</artifactId>
                       <version>com.typesafe.akka:akka-http_2.13:[10.1.8,]</version>
                     </dependency>
@@ -80,6 +108,20 @@
                       <groupId>com.typesafe.akka</groupId>
                       <artifactId>akka-actor_2.13</artifactId>
                       <version>2.5.23</version>
+                    </dependency>
+                  </dependencies>
+                </pass>
+                <pass>
+                  <dependencies>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-http_2.13</artifactId>
+                      <version>10.1.8</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.typesafe.akka</groupId>
+                      <artifactId>akka-actor_2.13</artifactId>
+                      <version>com.typesafe.akka:akka-actor_2.13:[2.5.23,]</version>
                     </dependency>
                   </dependencies>
                 </pass>
@@ -99,7 +141,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- FIXME: Having a 2nd fingerprinted dependency couples this rule to environments that must have both artifacts. -->
+      <!-- It's required to have a 2nd fingerprinted dependency. Any Akka Http application must have both artifacts.-->
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_2.12</artifactId>
       <version>2.5.11</version>
@@ -110,6 +152,7 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-stream_2.12</artifactId>
       <version>2.5.11</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

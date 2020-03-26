@@ -41,13 +41,13 @@ public class SpringSchedulingAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled("SpringSchedulingAgentRule", origin))
+    if (isEnabled(SpringSchedulingAgentRule.class.getName(), origin))
       SpringSchedulingAgentIntercept.enter(thiz);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @Advice.Thrown Throwable thown, final @Advice.Origin String origin) {
-    if (isEnabled("SpringSchedulingAgentRule", origin))
+    if (isEnabled(SpringSchedulingAgentRule.class.getName(), origin))
       SpringSchedulingAgentIntercept.exit(thown);
   }
 }

@@ -48,7 +48,7 @@ public class SpringWebAgentRule extends AgentRule {
   public static class RestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled("SpringWebAgentRule", origin))
+      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
         SpringWebAgentIntercept.enter(thiz);
     }
   }
@@ -56,7 +56,7 @@ public class SpringWebAgentRule extends AgentRule {
   public static class AsyncRestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled("SpringWebAgentRule", origin))
+      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
         SpringWebAgentIntercept.enterAsync(thiz);
     }
   }

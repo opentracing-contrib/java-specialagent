@@ -23,7 +23,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -58,7 +58,7 @@ public class TracingMethodInvocation implements MethodInvocation {
       return invocation.proceed();
     }
     catch (final Exception e) {
-      AgentRuleUtil.setErrorTag(span, e);
+      OpenTracingApiUtil.setErrorTag(span, e);
       throw e;
     }
     finally {

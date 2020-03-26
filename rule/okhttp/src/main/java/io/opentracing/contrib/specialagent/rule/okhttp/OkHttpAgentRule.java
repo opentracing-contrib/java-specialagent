@@ -42,7 +42,7 @@ public class OkHttpAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled("OkHttpAgentRule", origin))
+    if (isEnabled(OkHttpAgentRule.class.getName(), origin))
       returned = OkHttpAgentIntercept.exit(returned);
   }
 }

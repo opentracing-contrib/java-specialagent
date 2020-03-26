@@ -46,6 +46,7 @@
       <groupId>org.apache.pulsar</groupId>
       <artifactId>pulsar-broker</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

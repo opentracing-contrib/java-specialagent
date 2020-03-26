@@ -28,8 +28,6 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.rule.zuul.TracePostZuulFilter;
-import io.opentracing.contrib.specialagent.rule.zuul.TracePreZuulFilter;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)

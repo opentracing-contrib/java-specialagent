@@ -44,6 +44,7 @@
       <groupId>org.mule.tests</groupId>
       <artifactId>mule-tests-unit</artifactId>
       <version>${min.version}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

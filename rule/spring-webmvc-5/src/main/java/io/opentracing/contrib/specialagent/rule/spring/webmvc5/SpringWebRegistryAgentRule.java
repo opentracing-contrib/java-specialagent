@@ -41,7 +41,7 @@ public class SpringWebRegistryAgentRule extends AgentRule {
 
   @Advice.OnMethodEnter
   public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled("SpringWebRegistryAgentRule", origin))
+    if (isEnabled(SpringWebRegistryAgentRule.class.getName(), origin))
       SpringWebMvcAgentIntercept.getInterceptors(thiz);
   }
 }

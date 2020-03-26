@@ -61,7 +61,7 @@ public class ThriftAgentRule extends AgentRule {
     public static class OnComplete {
       @Advice.OnMethodExit
       public static void exit(final @Advice.Origin String origin) {
-        if (isEnabled("ThriftAgentRule", origin))
+        if (isEnabled(ThriftAgentRule.class.getName(), origin))
           ThriftAgentIntercept.onComplete();
       }
     }
@@ -69,7 +69,7 @@ public class ThriftAgentRule extends AgentRule {
     public static class OnError {
       @Advice.OnMethodExit
       public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exception) {
-        if (isEnabled("ThriftAgentRule", origin))
+        if (isEnabled(ThriftAgentRule.class.getName(), origin))
           ThriftAgentIntercept.onError(exception);
       }
     }
@@ -78,7 +78,7 @@ public class ThriftAgentRule extends AgentRule {
   public static class Processor {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled("ThriftAgentRule", origin))
+      if (isEnabled(ThriftAgentRule.class.getName(), origin))
         returned = ThriftAgentIntercept.getProcessor(returned);
     }
   }
@@ -86,7 +86,7 @@ public class ThriftAgentRule extends AgentRule {
   public static class ProtocolFactory {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled("ThriftAgentRule", origin))
+      if (isEnabled(ThriftAgentRule.class.getName(), origin))
         returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
     }
   }

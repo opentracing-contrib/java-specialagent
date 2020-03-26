@@ -32,6 +32,7 @@ import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -67,7 +68,7 @@ public class SpringRabbitMQAgentIntercept {
       return;
 
     if (thrown != null)
-      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+      OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);
 
     context.closeAndFinish();
   }
@@ -92,7 +93,7 @@ public class SpringRabbitMQAgentIntercept {
       return;
 
     if (thrown != null)
-      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+      OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);
 
     context.closeAndFinish();
   }

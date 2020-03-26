@@ -29,6 +29,7 @@
     <sa.rule.name>jms:2</sa.rule.name>
     <min.version>2.0.1</min.version>
     <passCompatibility>javax.jms:javax.jms-api:[${min.version},]</passCompatibility>
+    <!--failCompatibility>javax.jms:jms-api:[1.1-rev-1,]</failCompatibility-->
     <version.artemis>2.7.0</version.artemis>
     <version.opentracing.jms>0.1.7</version.opentracing.jms>
   </properties>
@@ -38,6 +39,7 @@
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jms-2</artifactId>
       <version>${version.opentracing.jms}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
@@ -50,12 +52,14 @@
       <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-server</artifactId>
       <version>${version.artemis}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-jms-client</artifactId>
       <version>${version.artemis}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

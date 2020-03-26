@@ -15,20 +15,21 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webflux.copied;
 
+import java.util.List;
+
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.server.ServerWebExchange;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoOperator;
 import reactor.util.context.Context;
-
-import java.util.List;
 
 /**
  * Similar to {@code MonoWebFilterTrace} from spring-cloud-sleuth-core.

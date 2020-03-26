@@ -29,8 +29,8 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.tag.Tags;
@@ -109,7 +109,7 @@ public class PulsarClientAgentIntercept {
     final Span span = context.getSpan();
 
     if (thrown != null) {
-      AgentRuleUtil.setErrorTag(span, thrown);
+      OpenTracingApiUtil.setErrorTag(span, thrown);
       span.finish();
       return returned;
     }
@@ -118,7 +118,7 @@ public class PulsarClientAgentIntercept {
       span.finish();
       return messageId;
     }).exceptionally(throwable -> {
-      AgentRuleUtil.setErrorTag(span, throwable);
+      OpenTracingApiUtil.setErrorTag(span, throwable);
       span.finish();
       return null;
     });

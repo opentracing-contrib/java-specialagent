@@ -19,8 +19,8 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -69,7 +69,7 @@ public class PlayAgentIntercept {
     context.closeScope();
 
     if (thrown != null) {
-      AgentRuleUtil.setErrorTag(span, thrown);
+      OpenTracingApiUtil.setErrorTag(span, thrown);
       span.finish();
       return;
     }
@@ -78,7 +78,7 @@ public class PlayAgentIntercept {
       @Override
       public Object apply(final Try<Result> response) {
         if (response.isFailure()) {
-          AgentRuleUtil.setErrorTag(span, response.failed().get());
+          OpenTracingApiUtil.setErrorTag(span, response.failed().get());
         }
         else {
           span.setTag(Tags.HTTP_STATUS, response.get().header().status());

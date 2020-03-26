@@ -49,5 +49,16 @@
       <artifactId>cxf-rt-transports-http-jetty</artifactId>
       <version>${version.cxf}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-management</artifactId>
+      <version>${version.cxf}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-integration-tracing-opentracing</artifactId>
+      <version>${version.cxf}</version>
+    </dependency>
   </dependencies>
 </project>

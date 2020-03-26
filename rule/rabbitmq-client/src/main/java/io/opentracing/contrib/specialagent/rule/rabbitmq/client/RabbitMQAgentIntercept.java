@@ -27,15 +27,15 @@ import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
-import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
+import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.util.GlobalTracer;
 
 public class RabbitMQAgentIntercept {
   public static void exitGet(final Object response, final Object queue, final Throwable thrown) {
     final Span span = TracingUtils.buildChildSpan(((GetResponse)response).getProps(), (String)queue, GlobalTracer.get());
     if (thrown != null)
-      AgentRuleUtil.setErrorTag(span, thrown);
+      OpenTracingApiUtil.setErrorTag(span, thrown);
 
     span.finish();
   }
@@ -46,7 +46,7 @@ public class RabbitMQAgentIntercept {
       return;
 
     if (thrown != null)
-      AgentRuleUtil.setErrorTag(context.getSpan(), thrown);
+      OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);
 
     context.closeAndFinish();
   }

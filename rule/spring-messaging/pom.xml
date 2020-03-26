@@ -26,54 +26,11 @@
   <name>SpecialAgent Rule for Spring Messaging</name>
   <artifactId>spring-messaging</artifactId>
   <properties>
-    <!-- FIXME: Can this be reduced to 1.7? -->
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <sa.rule.name>spring:messaging</sa.rule.name>
     <min.version>5.1.1.RELEASE</min.version>
     <version.spring.cloud>2.2.0.RELEASE</version.spring.cloud>
+    <passCompatibility>org.springframework.integration:spring-integration-core:[${min.version},]</passCompatibility>
   </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>agentrule-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>test-compatibility</id>
-            <configuration>
-              <passes>
-                <pass>
-                  <dependencies>
-                    <dependency>
-                      <groupId>org.springframework.integration</groupId>
-                      <artifactId>spring-integration-core</artifactId>
-                      <version>${min.version}</version> <!-- NOTE: Single version. -->
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-jcl</artifactId>
-                      <version>org.springframework:spring-messaging:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-core</artifactId>
-                      <version>org.springframework:spring-messaging:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-messaging</artifactId>
-                      <version>org.springframework:spring-messaging:[${min.version},]</version>
-                    </dependency>
-                  </dependencies>
-                </pass>
-              </passes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.springframework.integration</groupId>
@@ -83,54 +40,38 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jcl</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-messaging</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-stream-binder-kafka</artifactId>
       <version>${version.spring.cloud}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-stream</artifactId>
       <version>${version.spring.cloud}</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
       <version>2.2.7.RELEASE</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <version>2.1.6.RELEASE</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-core</artifactId>
       <version>1.2.0</version>
+      <optional>true</optional>
       <scope>test</scope>
     </dependency>
   </dependencies>

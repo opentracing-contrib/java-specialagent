@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ class PluginsClassLoader extends URLClassLoader {
       // Overridden to ensure resources are not discovered in bootstrap class loader
       @Override
       public Enumeration<URL> getResources(final String name) throws IOException {
-        return null;
+        return Collections.<URL>emptyEnumeration();
       }
     });
     this.set = files;

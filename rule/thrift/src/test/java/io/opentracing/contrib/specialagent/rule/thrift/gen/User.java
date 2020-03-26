@@ -378,7 +378,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
           break;
         }
         switch (schemeField.id) {
@@ -386,7 +386,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.name = iprot.readString();
               struct.setNameIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -394,7 +394,7 @@ public class User implements org.apache.thrift.TBase<User, User._Fields>, java.i
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.age = iprot.readI32();
               struct.setAgeIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;

@@ -36,15 +36,15 @@
       <groupId>com.netflix.zuul</groupId>
       <artifactId>zuul-core</artifactId>
       <version>${min.version}</version>
-      <scope>provided</scope>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <version>2.3</version>
-      <scope>provided</scope>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
