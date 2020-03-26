@@ -649,10 +649,10 @@ The following libraries are instrumented by existing [<ins>Instrumentation Rules
 |:-|:-:|:-:|
 | [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing) | **1.0.2** | **1.5.18** |
 | [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi) | \* | \* |
+| [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty) | 1.4.0 | LATEST |
 
 **TBD**
 
-1. [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty)
 1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
 1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
