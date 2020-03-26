@@ -26,6 +26,8 @@
   <artifactId>dubbo-2.6</artifactId>
   <name>SpecialAgent Rule for dubbo</name>
   <properties>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
       <sa.rule.name>dubbo-2.6</sa.rule.name>
       <dubbo.rpc.max.version>2.6.7</dubbo.rpc.max.version>
       <dubbo.rpc.min.version>2.6.2</dubbo.rpc.min.version>

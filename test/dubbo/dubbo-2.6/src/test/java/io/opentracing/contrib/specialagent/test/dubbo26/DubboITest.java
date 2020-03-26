@@ -16,6 +16,10 @@
 package io.opentracing.contrib.specialagent.test.dubbo26;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.concurrent.CountDownLatch;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
@@ -26,11 +30,13 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 public class DubboITest {
   public static void main(final String[] args) throws Exception {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
-     String linkLocalIp = NetUtils.getLocalAddress().getHostAddress();
+    String linkLocalIp = produceLinkLocalIp();
     if (linkLocalIp != null) {
       // avoid dubbo's logic which might pick docker ip
       System.setProperty(Constants.DUBBO_IP_TO_BIND, linkLocalIp);
       System.setProperty(Constants.DUBBO_IP_TO_REGISTRY, linkLocalIp);
+    } else {
+      linkLocalIp = "127.0.0.1";
     }
     ServiceConfig<GreeterService> service = getService();
     service.export();
@@ -47,9 +53,7 @@ public class DubboITest {
     ServiceConfig<GreeterService> service = new ServiceConfig<>();
     service.setApplication(new ApplicationConfig("test"));
     service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
-    ProtocolConfig protocolConfig = new ProtocolConfig("dubbo", TestUtil.nextFreePort());
-    protocolConfig.setHost("127.0.0.1");
-    service.setProtocol(protocolConfig);
+    service.setProtocol(new ProtocolConfig("dubbo", TestUtil.nextFreePort()));
     service.setInterface(GreeterService.class);
     service.setRef(new GreeterServiceImpl());
     return service;
@@ -61,5 +65,22 @@ public class DubboITest {
     client.setInterface(GreeterService.class);
     client.setUrl("dubbo://" + ip + ":" + port + "?scope=remote");
     return client;
+  }
+
+  private static String produceLinkLocalIp() {
+    try {
+      Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+      while (nics.hasMoreElements()) {
+        NetworkInterface nic = nics.nextElement();
+        Enumeration<InetAddress> addresses = nic.getInetAddresses();
+        while (addresses.hasMoreElements()) {
+          InetAddress address = addresses.nextElement();
+          if (address.isSiteLocalAddress()) return address.getHostAddress();
+        }
+      }
+    } catch (Exception e) {
+      // ignore
+    }
+    return null;
   }
 }
