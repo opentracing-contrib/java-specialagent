@@ -38,6 +38,9 @@
         <os>
           <family>mac</family>
         </os>
+        <file>
+          <missing>.pom-packaging-marker</missing>
+        </file>
       </activation>
       <build>
         <plugins>
