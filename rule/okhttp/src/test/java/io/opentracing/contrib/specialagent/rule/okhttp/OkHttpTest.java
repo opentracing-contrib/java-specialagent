@@ -37,7 +37,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(log = Level.FINEST)
 public class OkHttpTest {
   @Before
   public void before(final MockTracer tracer) {
