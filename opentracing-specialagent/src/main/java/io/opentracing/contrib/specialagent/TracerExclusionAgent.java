@@ -18,8 +18,6 @@ package io.opentracing.contrib.specialagent;
 import static io.opentracing.contrib.specialagent.DefaultAgentRule.*;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
@@ -33,7 +31,7 @@ public class TracerExclusionAgent {
   public static final MutexLatch latch = AgentRule.$Access.mutexLatch();
 
   public static AgentBuilder premain(final String[] traceExcludedClasses, final AgentBuilder builder) {
-    log("\n<<<<<<<<<<<<<<<<<< Installing MutexAgentRule >>>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
+    log("\n<<<<<<<<<<<<<<< Installing TracerExclusionAgent >>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
     if (traceExcludedClasses == null || traceExcludedClasses.length == 0)
       return null;
 
@@ -51,7 +49,7 @@ public class TracerExclusionAgent {
         }});
     }
     finally {
-      log("\n>>>>>>>>>>>>>>>>>>> Installed MutexAgentRule <<<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
+      log("\n>>>>>>>>>>>>>>>> Installed TracerExclusionAgent <<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
     }
   }
 

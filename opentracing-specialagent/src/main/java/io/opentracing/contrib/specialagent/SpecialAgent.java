@@ -437,14 +437,18 @@ public class SpecialAgent {
     return count;
   }
 
-  private static void loadAdapter(final ArrayList<String> tracerExcludedClasses, final Map<AgentRule,PluginManifest> pluginManifests) {
+  private static final HashSet<Class<?>> adapterClasses = new HashSet<>(1);
+
+  private static void loadAdapter(final List<String> tracerExcludedClasses, final Map<AgentRule,PluginManifest> pluginManifests) {
     if (pluginManifests == null)
       return;
 
     try {
       for (final PluginManifest pluginManifest : pluginManifests.values()) {
         final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
-        Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(isoClassLoader));
+        if (adapterClasses.add(cls)) {
+          Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(isoClassLoader));
+        }
       }
     }
     catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
