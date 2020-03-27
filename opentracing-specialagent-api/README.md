@@ -212,7 +212,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
      </dependency>
      ```
 
-   * If the external Instrumentation Plugin JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependecies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
+   * If the external Instrumentation Plugin JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependencies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
 
      _If this is not done, it may lead to `LinkageError` due to the existence of multiple versions of the same class in different class loaders._
 
