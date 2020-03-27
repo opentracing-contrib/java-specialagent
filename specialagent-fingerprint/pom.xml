@@ -26,6 +26,64 @@
   <artifactId>specialagent-fingerprint</artifactId>
   <name>Fingerprint Utility for SpecialAgent</name>
   <url>https://github.com/opentracing-contrib/java-specialagent/tree/master/fingerprint</url>
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <property>
+          <name>!assemble</name>
+        </property>
+      </activation>
+      <dependencies>
+        <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
+        <dependency>
+          <!-- https://github.com/opentracing-contrib/java-okhttp -->
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-okhttp3</artifactId>
+          <version>2.0.1</version>
+          <exclusions>
+            <exclusion>
+              <groupId>io.opentracing.contrib</groupId>
+              <artifactId>opentracing-concurrent</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>okhttp</artifactId>
+          <version>3.5.0</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <!-- https://github.com/opentracing-contrib/java-thrift -->
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-thrift</artifactId>
+          <version>0.1.1</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.thrift</groupId>
+              <artifactId>libthrift</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.thrift</groupId>
+          <artifactId>libthrift</artifactId>
+          <version>0.12.0</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>javax.el</groupId>
+          <artifactId>javax.el-api</artifactId>
+          <version>3.0.0</version>
+          <scope>test</scope>
+        </dependency>
+        <!-- [end] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [end] -->
+      </dependencies>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
       <groupId>io.opentracing.contrib.specialagent</groupId>
@@ -41,52 +99,5 @@
       <groupId>junit</groupId>
       <scope>test</scope>
     </dependency>
-
-    <!-- [start] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [start] -->
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-okhttp -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-okhttp3</artifactId>
-      <version>2.0.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.opentracing.contrib</groupId>
-          <artifactId>opentracing-concurrent</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>3.5.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-thrift -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-thrift</artifactId>
-      <version>0.1.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.thrift</groupId>
-          <artifactId>libthrift</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
-      <version>0.12.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.el</groupId>
-      <artifactId>javax.el-api</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- [end] DO NOT REMOVE OR CHANGE VERSION! USED FOR TESTING [end] -->
   </dependencies>
 </project>
