@@ -30,14 +30,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 public class DubboITest {
   public static void main(final String[] args) throws Exception {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
-    String linkLocalIp = produceLinkLocalIp();
-    if (linkLocalIp != null) {
-      // avoid dubbo's logic which might pick docker ip
-      System.setProperty(Constants.DUBBO_IP_TO_BIND, linkLocalIp);
-      System.setProperty(Constants.DUBBO_IP_TO_REGISTRY, linkLocalIp);
-    } else {
-      linkLocalIp = "127.0.0.1";
-    }
+    String linkLocalIp = "127.0.0.1";
     ServiceConfig<GreeterService> service = getService();
     service.export();
     ReferenceConfig<GreeterService> client =getClient(linkLocalIp, service.getProtocol().getPort());
@@ -63,24 +56,8 @@ public class DubboITest {
     ReferenceConfig<GreeterService> client = new ReferenceConfig<>();
     client.setApplication(new ApplicationConfig("test"));
     client.setInterface(GreeterService.class);
-    client.setUrl("dubbo://" + ip + ":" + port + "?scope=remote");
+    client.setUrl("dubbo://" + ip + ":" + port );
     return client;
   }
-
-  private static String produceLinkLocalIp() {
-    try {
-      Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-      while (nics.hasMoreElements()) {
-        NetworkInterface nic = nics.nextElement();
-        Enumeration<InetAddress> addresses = nic.getInetAddresses();
-        while (addresses.hasMoreElements()) {
-          InetAddress address = addresses.nextElement();
-          if (address.isSiteLocalAddress()) return address.getHostAddress();
-        }
-      }
-    } catch (Exception e) {
-      // ignore
-    }
-    return null;
-  }
+  
 }
