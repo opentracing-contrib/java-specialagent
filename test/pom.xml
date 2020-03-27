@@ -51,8 +51,10 @@
     <module>grpc</module>
     <module>hazelcast</module>
     <module>httpurlconnection</module>
+    <module>hystrix</module>
     <module>jaxrs</module>
     <module>jdbc</module>
+    <module>jdbi</module>
     <module>jedis</module>
     <module>jms</module>
     <module>kafka-client</module>

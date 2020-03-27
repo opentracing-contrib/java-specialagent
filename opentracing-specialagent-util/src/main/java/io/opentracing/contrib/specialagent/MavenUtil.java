@@ -319,6 +319,7 @@ public final class MavenUtil {
 
   private static String getArtifactFile(final File dir) {
     try {
+      final String doo = XmlPullParserException.class.getName();
       final MavenXpp3Reader reader = new MavenXpp3Reader();
       final Model model = reader.read(new FileReader(new File(dir, "pom.xml")));
       final String version = model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();

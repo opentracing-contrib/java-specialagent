@@ -41,7 +41,7 @@ public class HttpClientAgentIntercept {
       // request signature and AWS SDK gets traced by the aws-sdk rule
       return null;
     }
-    
+
     final LocalSpanContext context = LocalSpanContext.get();
     if (context != null) {
       context.increment();
@@ -54,10 +54,9 @@ public class HttpClientAgentIntercept {
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
       .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
       .withTag(Tags.HTTP_URL, request.getRequestLine().getUri()).start();
-    
-    for (ApacheClientSpanDecorator decorator : Configuration.spanDecorators) {
+
+    for (final ApacheClientSpanDecorator decorator : Configuration.spanDecorators)
       decorator.onRequest(request, arg0 instanceof HttpHost ? (HttpHost)arg0 : null, span);
-    }
 
     LocalSpanContext.set(span, null);
 
@@ -73,17 +72,13 @@ public class HttpClientAgentIntercept {
 
   public static void exit(final Object returned) {
     final LocalSpanContext context = LocalSpanContext.get();
-    if (context == null)
-      return;
-
-    if (context.decrementAndGet() != 0)
+    if (context == null || context.decrementAndGet() != 0)
       return;
 
     if (returned instanceof HttpResponse) {
       final HttpResponse response = (HttpResponse)returned;
-      for (ApacheClientSpanDecorator decorator : Configuration.spanDecorators) {
+      for (final ApacheClientSpanDecorator decorator : Configuration.spanDecorators)
         decorator.onResponse(response, context.getSpan());
-      }
     }
 
     context.closeAndFinish();
@@ -91,15 +86,12 @@ public class HttpClientAgentIntercept {
 
   public static void onError(final Throwable thrown) {
     final LocalSpanContext context = LocalSpanContext.get();
-    if (context == null)
+    if (context == null || context.decrementAndGet() != 0)
       return;
 
-    if (context.decrementAndGet() != 0)
-      return;
-
-    for (ApacheClientSpanDecorator decorator : Configuration.spanDecorators) {
+    for (final ApacheClientSpanDecorator decorator : Configuration.spanDecorators)
       decorator.onError(thrown, context.getSpan());
-    }
+
     context.closeAndFinish();
   }
 }
