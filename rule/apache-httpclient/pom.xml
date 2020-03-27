@@ -28,7 +28,7 @@
   <properties>
     <min.version>4.4</min.version>
     <sa.rule.name>apache:httpclient</sa.rule.name>
-    <passCompatibility>org.apache.httpcomponents:httpclient:[${min.version},]</passCompatibility>
+    <passCompatibility>org.apache.httpcomponents:httpclient:[${min.version},];org.apache.solr:solr-solrj:[4.0.0,]</passCompatibility>
   </properties>
   <dependencies>
     <dependency>
