@@ -411,6 +411,11 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.6.0</version>
+        </plugin>
+        <plugin>
           <groupId>io.opentracing.contrib.specialagent</groupId>
           <artifactId>specialagent-maven-plugin</artifactId>
           <version>${project.version}</version>
