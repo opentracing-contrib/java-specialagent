@@ -645,9 +645,14 @@ Intrinsically, the [<ins>SpecialAgent</ins>](#41-specialagent) includes support 
 
 The following libraries are instrumented by existing [<ins>Instrumentation Rules</ins>](#45-instrumentation-rule).
 
-1. [Hystrix 1.5.18](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing)
-1. [JDBI 3.8.2](https://github.com/opentracing-contrib/java-jdbi)
-1. [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty)
+| OpenTracing Plugin<br/><sup>(link to <ins>plugin</ins> implementation)</sup> | SpecialAgent Rule<br/><sup>(link to <ins>rule</ins> implementation)</sup> | Min Version<br/><sup>(min supported)</sup> | Max Version<br/><sup>(max supported)</sup> |
+|:-|:-|:-:|:-:|
+| [Hystrix](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-hystrix-opentracing) | [`concurrent`][concurrent] | 1.5 | 11 |
+| [JDBI](https://github.com/opentracing-contrib/java-jdbi)<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | \*<br>&nbsp; | \*<br>&nbsp; |
+| [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty) | [`netty`][netty] | 1.4.0 | LATEST |
+
+**TBD**
+
 1. [Solr Client](https://github.com/opentracing-contrib/java-solr-client)
 1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
