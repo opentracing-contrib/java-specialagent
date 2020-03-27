@@ -651,10 +651,10 @@ The following libraries are instrumented by existing [<ins>Instrumentation Rules
 | [JDBI](https://github.com/opentracing-contrib/java-jdbi)<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | \*<br>&nbsp; | \*<br>&nbsp; |
 | [Ratpack](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty) | [`netty`][netty] | 1.4.0 | LATEST |
 | [Solr Client](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.0.0 | LATEST |
+| [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet) | [`javax.servlet`][servlet] | 2.2 | LATEST |
 
 **TBD**
 
-1. [SparkJava](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/servlet)
 1. [Spring Cloud](https://github.com/opentracing-contrib/java-spring-cloud)
 1. [Twilio](https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/apache-httpclient)
 
