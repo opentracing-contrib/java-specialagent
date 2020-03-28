@@ -21,8 +21,8 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.Matchers.*;
 
 import java.util.List;
-
 import java.util.concurrent.Callable;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;

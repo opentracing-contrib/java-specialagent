@@ -17,7 +17,19 @@
 
 package io.opentracing.contrib.specialagent.rule.mongo.driver;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.bson.Document;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import com.mongodb.Block;
 import com.mongodb.MongoClientSettings;
@@ -28,21 +40,12 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.Success;
+
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import org.bson.Document;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 @RunWith(AgentRunner.class)
 public class ReactiveMongoClientTest {

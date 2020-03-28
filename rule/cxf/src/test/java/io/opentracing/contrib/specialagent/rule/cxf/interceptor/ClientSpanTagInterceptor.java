@@ -17,6 +17,7 @@ package io.opentracing.contrib.specialagent.rule.cxf.interceptor;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.tracing.opentracing.OpenTracingClientStopInterceptor;
 
