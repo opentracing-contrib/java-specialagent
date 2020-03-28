@@ -66,12 +66,6 @@ import org.junit.runners.model.TestClass;
  * run from any environment (i.e. from Maven's Surefire plugin, from an IDE, or
  * directly via JUnit itself).
  * <p>
- * The {@link AgentRunner} has a facility to "raise" the classes loaded for the
- * purpose of the test into an isolated {@link ClassLoader} (see
- * {@link Config#isolateClassLoader()}). This allows the test to ensure that
- * instrumentation is successful for classes that are loaded in a class loader
- * that is not the System or Bootstrap class loader.
- * <p>
  * The {@link AgentRunner} also has a facility to aide in debugging of the
  * runner's runtime Please refer to {@link Config}.
  *
@@ -150,14 +144,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * function.</i>
    *
    * @param testClass The test class to load in the {@link URLClassLoader}.
-   * @param isolate Whether the returned class should belong to an isolated
-   *          class loader or not.
    * @return The class loaded in the {@link URLClassLoader}.
    * @throws InitializationError If the specified class cannot be located by the
    *           {@link URLClassLoader}.
    * @throws InterruptedException If a required Maven subprocess is interrupted.
    */
-  private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass, final boolean isolate) throws InitializationError, InterruptedException {
+  private static Class<?> loadClassInIsolatedClassLoader(final Class<?> testClass) throws InitializationError, InterruptedException {
     try {
       final File[] ruleDependencies = MavenUtil.filterRuleURLs(classpath, dependenciesTgf, true, "compile");
       final Set<String> ruleClasses = AgentUtil.getClassFiles(ruleDependencies);
@@ -191,6 +183,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
       }
 
       final ClassLoader parent = System.getProperty("java.version").startsWith("1.") ? null : (ClassLoader)ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+      final ClassLoader appClassLoader = ClassLoader.getSystemClassLoader();
       agentRunnerClassLoader = new AgentRunnerClassLoader(AssembleUtil.toURLs(classpath), ruleDependencies, AssembleUtil.toURLs(isoFiles), parent) {
         @Override
         protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
@@ -198,7 +191,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           if (bootstrapClasses.contains(resourceName))
             return BootProxyClassLoader.INSTANCE.loadClass(name, resolve);
 
-          // Plugin classes must be unresolvable by this class loader, so they
+          // Rule classes must be unresolvable by this class loader, so they
           // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
           if (ruleClasses.contains(resourceName))
             return null;
@@ -207,24 +200,21 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           // this {@code URLClassLoader}.
           // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
           if (testAppClasses.contains(resourceName))
-            return isolate ? super.loadClass(name, resolve) : ClassLoader.getSystemClassLoader().loadClass(name);
+            return appClassLoader.loadClass(name);
 
-          // Iso classes must be resolvable by the IsoClassLoader
+          // Iso classes must be resolvable by the IsoClassLoader.
           if (isoClasses.contains(resourceName))
             return isoClassLoader.loadClass(name);
 
           // All other classes belong to the system class loader.
-          return ClassLoader.getSystemClassLoader().loadClass(name);
+          return appClassLoader.loadClass(name);
         }
       };
 
       final Class<?> classInClassLoader = agentRunnerClassLoader.loadClass(testClass.getName());
       Assert.assertNotNull("Test class is not resolvable in URLClassLoader: " + testClass.getName(), classInClassLoader);
       Assert.assertNotNull("Test class must not be resolvable in bootstrap class loader: " + testClass.getName(), classInClassLoader.getClassLoader());
-      if (isolate)
-        Assert.assertEquals("Class " + testClass.getName() + " should have been loaded by the IsoClassLoader", agentRunnerClassLoader, classInClassLoader.getClassLoader());
-      else
-        Assert.assertEquals("Class " + testClass.getName() + " should have been loaded by the system class loader", ClassLoader.getSystemClassLoader(), classInClassLoader.getClassLoader());
+      Assert.assertEquals("Class " + testClass.getName() + " should have been loaded by the system class loader", appClassLoader, classInClassLoader.getClassLoader());
 
       return classInClassLoader;
     }
@@ -248,7 +238,7 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   @Retention(RetentionPolicy.RUNTIME)
   public @interface TestConfig {
     /**
-     * @return Whether the plugin should run in verbose mode.
+     * @return Whether the rule should run in verbose mode.
      *         <p>
      *         Default: <code>false</code>.
      */
@@ -298,65 +288,33 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     String[] properties() default {};
 
     /**
-     * Names of plugins (either instrumentation or tracer) to be disabled.
+     * Names of rules (either instrumentation or tracer) to be disabled.
      * <p>
      * Default: <code>{}</code>.
      *
-     * @return Names of plugins (either instrumentation or tracer) to be
+     * @return Names of rules (either instrumentation or tracer) to be
      *         disabled.
      */
     String[] disable() default {};
 
     /**
-     * Whether the plugin is to be run in verbose mode.
+     * Whether the rule is to be run in verbose mode.
      * <p>
      * Default: <code>false</code>.
      *
-     * @return Whether the plugin is to be run in verbose mode.
+     * @return Whether the rule is to be run in verbose mode.
      */
     boolean verbose() default false;
-
-    /**
-     * Whether the tests are to be run in a class loader that is isolated from
-     * the system class loader (i.e. a {@link ClassLoader} with a {@code null}
-     * parent).
-     * <p>
-     * <blockquote><i><b>Important</b>: All attempts should be taken to avoid
-     * setting this property to {@code false}.
-     * <p>
-     * It is important to note that this option should only be set to
-     * {@code false} in special situations, such as if a test relies on an
-     * integrated module that does not function properly if the class loader of
-     * its classes is isolated.
-     * <p>
-     * If this property is set to {@code false}, the {@link AgentRunner} runtime
-     * disables all testing that asserts proper functionality of the rule when
-     * the 3rd-party library it is instrumenting is loaded in a class loader
-     * that is _not_ the system class loader.
-     * <p>
-     * <ins>By disabling this facet of the {@link AgentRunner}, the test may
-     * pass, but the rule may fail in real-world application.</ins>
-     * <p>
-     * If this property is set to {@code false}, the build will print a
-     * <b>WARN</b>-level log message, to warn the developer that
-     * {@code isolateClassLoader=false}.</i> </blockquote> Default:
-     * {@code true}.
-     *
-     * @return Whether the tests are to be run in a class loader that is
-     *         isolated from the system class loader (i.e. a {@link ClassLoader}
-     *         with a {@code null} parent).
-     */
-    boolean isolateClassLoader() default true;
   }
 
   private static AgentRunnerClassLoader agentRunnerClassLoader;
 
   private final Adapter adapter;
   private final Config config;
-  private final PluginManifest pluginManifest;
+  private final PluginManifest ruleManifest;
 
   private void setVerbose(final boolean verbose) {
-    System.setProperty("sa.instrumentation.plugin." + pluginManifest.name + ".verbose", String.valueOf(verbose));
+    System.setProperty("sa.instrumentation.plugin." + ruleManifest.name + ".verbose", String.valueOf(verbose));
   }
 
   private static void setDisable(final String[] disable) {
@@ -376,13 +334,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
    * @throws InterruptedException If a required Maven subprocess is interrupted.
    */
   public AgentRunner(final Class<?> testClass) throws InitializationError, InterruptedException {
-    super(loadClassInIsolatedClassLoader(testClass, testClass.getAnnotation(Config.class) == null || testClass.getAnnotation(Config.class).isolateClassLoader()));
+    super(loadClassInIsolatedClassLoader(testClass));
     this.config = testClass.getAnnotation(Config.class);
     String path = testClass.getProtectionDomain().getCodeSource().getLocation().getPath();
     if (path.endsWith("/test-classes/"))
       path = path.substring(0, path.length() - 13) + "classes/";
 
-    this.pluginManifest = Objects.requireNonNull(PluginManifest.getPluginManifest(new File(path)));
+    this.ruleManifest = Objects.requireNonNull(PluginManifest.getPluginManifest(new File(path)));
     final Event[] events;
     final boolean isStaticDeferredAttach;
     if (config == null) {
@@ -422,9 +380,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
           Logger.refreshLoggers();
         }
       }
-
-      if (!config.isolateClassLoader())
-        logger.warning("`isolateClassLoader=false`\nAll attempts should be taken to avoid setting `isolateClassLoader=false`");
     }
 
     System.setProperty(INIT_DEFER, String.valueOf(isStaticDeferredAttach));
@@ -555,11 +510,6 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
         ++delta;
         if (logger.isLoggable(Level.FINEST))
           logger.finest("invokeExplosively [" + getName() + "](" + target + "<" + target.getClass().getClassLoader() + ">)");
-
-        if (config == null || config.isolateClassLoader()) {
-          final ClassLoader classLoader = isStatic() ? method.getDeclaringClass().getClassLoader() : target.getClass().getClassLoader();
-          Assert.assertTrue("Method \"" + getName() + "\" should be executed in URLClassLoader", classLoader instanceof URLClassLoader);
-        }
 
         final TestConfig testConfig = method.getMethod().getAnnotation(TestConfig.class);
         if (testConfig != null)

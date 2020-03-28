@@ -25,7 +25,6 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class CoreTest extends AbstractMuleTestCase {
   @Before
   public void before(final MockTracer tracer) throws Exception {

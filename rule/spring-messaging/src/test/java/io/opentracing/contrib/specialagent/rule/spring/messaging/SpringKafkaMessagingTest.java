@@ -36,7 +36,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class SpringKafkaMessagingTest {
   @ClassRule
   public static final EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(1);

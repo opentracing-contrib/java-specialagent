@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false, disable="okhttp", properties = "sa.httpHeaderTags=key")
+@AgentRunner.Config(disable="okhttp", properties = "sa.httpHeaderTags=key")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
   private static final int serverPort = 9786;

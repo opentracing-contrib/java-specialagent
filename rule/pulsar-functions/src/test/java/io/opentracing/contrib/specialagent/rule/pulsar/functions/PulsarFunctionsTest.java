@@ -64,14 +64,12 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class PulsarFunctionsTest {
   // Pulsar doesn't yet support the latest JDK versions. We are still on 1.8
   private static final boolean isJdkSupported = System.getProperty("java.version").startsWith("1.8.");

@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
@@ -248,10 +249,15 @@ public class SpecialAgent {
       }
     };
 
-    if (isoClassLoader != null) {
-      SpecialAgent.isoClassLoader = isoClassLoader;
+    if (ruleFiles != null) {
+      // For AgentRunner execution...
+      SpecialAgent.isoClassLoader = Objects.requireNonNull(isoClassLoader);
+      for (final File pluginFile : ruleFiles)
+        if (!pluginManifestDirectory.containsKey(pluginFile))
+          pluginManifestDirectory.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
     }
     else {
+      // For regular execution...
       final ArrayList<URL> isoUrls = new ArrayList<>();
 
       // Process the ext JARs from AssembleUtil#META_INF_EXT_PATH
@@ -269,71 +275,58 @@ public class SpecialAgent {
       });
 
       SpecialAgent.isoClassLoader = new IsoClassLoader(isoUrls.toArray(new URL[isoUrls.size()]), ClassLoader.getSystemClassLoader());
-    }
 
-    // Process the plugin JARs from AssembleUtil#META_INF_PLUGIN_PATH
-    final Predicate<File> loadPluginPredicate = new Predicate<File>() {
-      @Override
-      public boolean test(final File file) {
-        // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
-        final PluginManifest pluginManifest = PluginManifest.getPluginManifest(file);
-        boolean enablePlugin = true;
-        if (pluginManifest != null) {
-          final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
-          // Next, see if it is included or excluded
-          enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-          final HashMap<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
-          for (final String pluginName : verbosePluginNames) {
-            final Pattern namePattern = AssembleUtil.convertToNameRegex(pluginName);
-            if (pluginManifest.name.equals(pluginName) || namePattern.matcher(pluginManifest.name).matches()) {
-              System.setProperty("sa." + (isInstruPlugin ? "instrumentation" : "tracer") + ".plugin." + pluginManifest.name + ".verbose", "true");
-              break;
+      // Process the plugin JARs from AssembleUtil#META_INF_PLUGIN_PATH
+      final Predicate<File> loadPluginPredicate = new Predicate<File>() {
+        @Override
+        public boolean test(final File file) {
+          // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
+          final PluginManifest pluginManifest = PluginManifest.getPluginManifest(file);
+          boolean enablePlugin = true;
+          if (pluginManifest != null) {
+            final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
+            // Next, see if it is included or excluded
+            enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
+            final HashMap<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
+            for (final String pluginName : verbosePluginNames) {
+              final Pattern namePattern = AssembleUtil.convertToNameRegex(pluginName);
+              if (pluginManifest.name.equals(pluginName) || namePattern.matcher(pluginManifest.name).matches()) {
+                System.setProperty("sa." + (isInstruPlugin ? "instrumentation" : "tracer") + ".plugin." + pluginManifest.name + ".verbose", "true");
+                break;
+              }
+            }
+
+            for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
+              final Pattern namePattern = AssembleUtil.convertToNameRegex(entry.getKey());
+              if (pluginManifest.name.equals(entry.getKey()) || namePattern.matcher(pluginManifest.name).matches()) {
+                enablePlugin = entry.getValue();
+                if (logger.isLoggable(Level.FINER))
+                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginManifest.name + " is " + (enablePlugin ? "en" : "dis") + "abled");
+
+                break;
+              }
             }
           }
 
-          for (final Map.Entry<String,Boolean> entry : pluginNameToEnable.entrySet()) {
-            final Pattern namePattern = AssembleUtil.convertToNameRegex(entry.getKey());
-            if (pluginManifest.name.equals(entry.getKey()) || namePattern.matcher(pluginManifest.name).matches()) {
-              enablePlugin = entry.getValue();
-              if (logger.isLoggable(Level.FINER))
-                logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginManifest.name + " is " + (enablePlugin ? "en" : "dis") + "abled");
+          if (!enablePlugin)
+            return false;
 
-              break;
-            }
-          }
+          pluginManifestDirectory.put(file, pluginManifest);
+          return true;
         }
+      };
 
-        if (!enablePlugin)
-          return false;
+      // First, load all plugins explicitly included with the `-Dsa.instrumentation.plugin.include=...` system property.
+      if (includedPlugins != null)
+        for (final File includedPlugin : includedPlugins)
+          loadPluginPredicate.test(includedPlugin);
 
-        pluginManifestDirectory.put(file, pluginManifest);
-        return true;
-      }
-    };
+      // Then, load the plugins inside the SpecialAgent JAR.
+      SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, loadPluginPredicate);
 
-    // First, load all plugins explicitly included with the `-Dsa.instrumentation.plugin.include=...` system property.
-    if (includedPlugins != null)
-      for (final File includedPlugin : includedPlugins)
-        loadPluginPredicate.test(includedPlugin);
-
-    // Then, load the plugins inside the SpecialAgent JAR.
-    SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, loadPluginPredicate);
-
-    if (pluginManifestDirectory.size() == 0) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("Must be running from a test, because no JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH);
+      if (pluginManifestDirectory.size() == 0)
+        logger.warning("No JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH + ", and ruleFiles == null");
     }
-    else if (ruleFiles != null) {
-      throw new IllegalStateException(pluginManifestDirectory.size() + " JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH + ", and ruleFiles is not null");
-    }
-
-    // Add plugins specified on in the RULE_PATH_ARG
-    if (ruleFiles == null)
-      logger.warning("No JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH + ", and ruleFiles is null");
-    else
-      for (final File pluginFile : ruleFiles)
-        if (!pluginManifestDirectory.containsKey(pluginFile))
-          pluginManifestDirectory.put(pluginFile, PluginManifest.getPluginManifest(pluginFile));
 
     // Add instrumentation rule JARs from system class loader
     final Enumeration<URL> instrumentationRules = manager.getResources();

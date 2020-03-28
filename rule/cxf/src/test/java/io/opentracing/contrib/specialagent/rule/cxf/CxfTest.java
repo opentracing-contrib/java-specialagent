@@ -42,7 +42,6 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class CxfTest {
   private static final String BASE_URI = "http://127.0.0.1:48080";
 

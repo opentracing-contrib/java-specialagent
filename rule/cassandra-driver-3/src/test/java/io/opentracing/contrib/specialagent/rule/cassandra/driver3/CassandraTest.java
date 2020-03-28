@@ -35,7 +35,6 @@ import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class CassandraTest {
   private static final Logger logger = Logger.getLogger(CassandraTest.class);
 

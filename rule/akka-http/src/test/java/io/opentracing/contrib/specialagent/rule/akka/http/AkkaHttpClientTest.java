@@ -40,7 +40,6 @@ import akka.http.javadsl.model.HttpResponse;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -49,7 +48,6 @@ import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class AkkaHttpClientTest {
   private static ActorSystem system;
 

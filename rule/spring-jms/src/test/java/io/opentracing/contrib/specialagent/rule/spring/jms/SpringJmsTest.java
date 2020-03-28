@@ -54,7 +54,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class SpringJmsTest {
   private static final AtomicInteger counter = new AtomicInteger();
   private ActiveMQServer server;

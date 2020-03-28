@@ -158,10 +158,6 @@ public void after(MockTracer tracer) {}
 
 Upon execution of the test class, in either the IDE or with Maven, the `AgentRunner` will execute each test method via the 3 step workflow described above.
 
-**Important note!**
-
-If you have trouble getting your test to work due to obscure class loading or illegal access errors, you can specify the `isolateClassLoader` parameter (described below).
-
 ### 5.1 Configuring `AgentRunner`
 
 The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotation. The annotation supports the following properties:
@@ -171,7 +167,6 @@ The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotatio
 1. `disable`<br>Names of plugins to disable during execution.<br>**Default:** `{}`.
 1. `properties`<br>System properties to be set in the test runtime.<br>Specification: `{"NAME_1=VALUE_1", "NAME_2=VALUE_2", ..., "NAME_N=VALUE_N"}`.<br>**Default:** `{}`.
 1. `verbose`<br>Sets verbose mode for the plugin being tested.<br>**Default:** `false`.
-1. `isolateClassLoader`<br>If set to `true`, tests will be run from a class loader that is isolated from the system class loader. If set to `false`, tests will be run from the system class loader.<br>**Default:** `true`.
 
 ## 6 Packaging
 
