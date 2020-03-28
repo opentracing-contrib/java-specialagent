@@ -15,12 +15,15 @@
 
 package io.opentracing.contrib.specialagent.rule.feign;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
 import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import feign.Client;
 import feign.Feign;
 import feign.Headers;
@@ -30,14 +33,12 @@ import feign.Target;
 import feign.okhttp.OkHttpClient;
 import io.opentracing.Scope;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.rule.feign.Configuration;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
 @AgentRunner.Config(isolateClassLoader = false)
 public class FeignTest {
-
   @BeforeClass
   public static void beforeClass() {
     System.setProperty(Configuration.SPAN_DECORATORS, "feign.opentracing.FeignSpanDecorator$StandardTags,io.opentracing.contrib.specialagent.rule.feign.MockSpanDecorator");
@@ -104,7 +105,7 @@ public class FeignTest {
   }
 
   private static Feign getExplicitClient() {
-    return Feign.builder().client((new Client.Default(null, null))).retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2)).build();
+    return Feign.builder().client(new Client.Default(null, null)).retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2)).build();
   }
 
   private static Feign getImplicitClientWithBuilderConstructor() {
@@ -112,7 +113,7 @@ public class FeignTest {
   }
 
   private static Feign getExplicitClientWithBuilderConstructor() {
-    return new Feign.Builder().client((new OkHttpClient())).retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2)).build();
+    return new Feign.Builder().client(new OkHttpClient()).retryer(new Retryer.Default(100, TimeUnit.SECONDS.toMillis(1), 2)).build();
   }
 
   private interface StringEntityRequest {

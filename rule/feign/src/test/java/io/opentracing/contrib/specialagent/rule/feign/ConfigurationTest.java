@@ -15,11 +15,13 @@
 
 package io.opentracing.contrib.specialagent.rule.feign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Test;
+
 import feign.opentracing.FeignSpanDecorator;
 
 public class ConfigurationTest {
