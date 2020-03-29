@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.cxf</groupId>
     <artifactId>cxf</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>cxf-jaxrs-3.3.5</artifactId>
   <name>SpecialAgent Test for Apache CXF JAX-RS 3.3.5</name>
