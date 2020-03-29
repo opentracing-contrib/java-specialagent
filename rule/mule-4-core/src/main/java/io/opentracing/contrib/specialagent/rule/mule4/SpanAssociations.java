@@ -15,11 +15,11 @@
 
 package io.opentracing.contrib.specialagent.rule.mule4;
 
-import io.opentracing.Span;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import io.opentracing.Span;
 
 public class SpanAssociations {
 

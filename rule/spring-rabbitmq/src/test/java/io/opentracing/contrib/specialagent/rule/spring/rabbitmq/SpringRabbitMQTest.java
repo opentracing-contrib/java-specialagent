@@ -49,7 +49,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class SpringRabbitMQTest {
   private static final String QUEUE_NAME = "queue-test";
   private static final String QUEUE_NAME2 = "queue-test-2";

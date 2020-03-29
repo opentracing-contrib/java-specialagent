@@ -49,7 +49,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class PulsarClientTest {
   private static final Logger logger = Logger.getLogger(PulsarClientTest.class);
   // Pulsar doesn't yet support the latest JDK versions. We are still on 1.8

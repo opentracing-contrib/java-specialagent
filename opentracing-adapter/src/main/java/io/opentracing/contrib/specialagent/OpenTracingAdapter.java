@@ -42,7 +42,6 @@ public class OpenTracingAdapter extends Adapter {
   private boolean loaded;
   private Tracer deferredTracer;
 
-
   private static final Object tracerMutex = new Object();
   private Tracer tracer;
 
@@ -250,15 +249,8 @@ public class OpenTracingAdapter extends Adapter {
         return tracer;
 
       final Class<Tracer> rewritableTracerClass = (Class<Tracer>)Class.forName("io.opentracing.contrib.specialagent.RewritableTracer", true, isoClassLoader);
-      for (final Constructor<?> constructor : rewritableTracerClass.getConstructors()) {
-        if (constructor.getParameterTypes().length == 2) {
-          System.out.println("XXX: " + constructor.getParameterTypes()[0].getClassLoader() + " " + constructor.getParameterTypes()[1].getClassLoader());
-          System.out.println("XXX: " + tracer.getClass().getClassLoader() + " " + rules.getClass().getClassLoader());
-          return (Tracer)constructor.newInstance(tracer, rules);
-        }
-      }
-
-      throw new IllegalStateException("Could not find expected constructor in RewritableTracer");
+      final Constructor<?> constructor = rewritableTracerClass.getConstructor(Tracer.class, List.class);
+      return (Tracer)constructor.newInstance(tracer, rules);
     }
     catch (final ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
       throw new RuntimeException(e);

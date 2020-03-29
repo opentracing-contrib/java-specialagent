@@ -34,7 +34,6 @@ import io.opentracing.contrib.specialagent.rule.mule4.module.artifact.copied.Del
 
 // Based on https://github.com/mulesoft/mule/blob/mule-4.2.2/modules/artifact/src/test/java/org/mule/runtime/module/artifact/api/classloader/FilteringArtifactClassLoaderTestCase.java
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class FilteringArtifactClassLoaderTest extends AbstractMuleTestCase {
   public static final String TEST_CLASS_PACKAGE = "mypackage";
   public static final String TEST_CLASS_NAME = "mypackage.MyClass";

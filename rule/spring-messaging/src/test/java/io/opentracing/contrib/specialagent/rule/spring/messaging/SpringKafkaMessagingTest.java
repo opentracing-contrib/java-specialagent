@@ -21,8 +21,8 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.Matchers.*;
 
 import java.util.List;
-
 import java.util.concurrent.Callable;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -36,7 +36,6 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class SpringKafkaMessagingTest {
   @ClassRule
   public static final EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(1);

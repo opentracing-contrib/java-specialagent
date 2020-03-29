@@ -43,7 +43,6 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class RabbitMQTest {
   private static EmbeddedAMQPBroker embeddedAMQPBroker;
   private Connection connection;

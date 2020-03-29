@@ -38,14 +38,12 @@ import org.springframework.web.server.WebHandler;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import reactor.core.publisher.Mono;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class SpringWebFluxTest {
   private static final ReactiveWebServerApplicationContext APPLICATION_CONTEXT = new ReactiveWebServerApplicationContext();
   private static TestRestTemplate testRestTemplate;

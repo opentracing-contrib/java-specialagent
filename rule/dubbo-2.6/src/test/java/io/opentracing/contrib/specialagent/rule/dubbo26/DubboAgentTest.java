@@ -11,7 +11,6 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false)
 public class DubboAgentTest {
     private static MockClient client ;
 

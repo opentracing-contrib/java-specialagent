@@ -29,11 +29,9 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class SpringWebMvcTest {
   private static final String CONTEXT_PATH = "/tracing";
   private static Server jettyServer;

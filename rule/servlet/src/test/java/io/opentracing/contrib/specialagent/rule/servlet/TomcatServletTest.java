@@ -17,13 +17,16 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.Logger;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.core.StandardContext;
@@ -35,21 +38,20 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Logger;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * @author gbrown
  * @author Seva Safris
  */
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader=false, disable="okhttp", properties = "sa.httpHeaderTags=key")
+@AgentRunner.Config(disable="okhttp", properties = "sa.httpHeaderTags=key")
 public class TomcatServletTest {
   private static final Logger logger = Logger.getLogger(TomcatServletTest.class);
   private static final int serverPort = 9786;

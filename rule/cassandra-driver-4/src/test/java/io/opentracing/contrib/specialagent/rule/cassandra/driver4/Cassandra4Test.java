@@ -31,13 +31,11 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class Cassandra4Test {
   private static final Logger logger = Logger.getLogger(Cassandra4Test.class);
 

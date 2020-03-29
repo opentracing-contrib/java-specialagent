@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.twilio</groupId>
     <artifactId>twilio</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.1</version>
   </parent>
   <artifactId>twilio-0.0.1</artifactId>
   <name>SpecialAgent Test for Twilio 0.0.1</name>

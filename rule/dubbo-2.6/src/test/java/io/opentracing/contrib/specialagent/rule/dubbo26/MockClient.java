@@ -12,6 +12,8 @@ public class MockClient {
         client.setApplication(new ApplicationConfig("test"));
         client.setInterface(GreeterService.class);
         client.setUrl("dubbo://" + ip + ":" + port + "?scope=remote");
+        client.setScope("local");
+        client.setInjvm(true);
     }
 
     public GreeterService get() {

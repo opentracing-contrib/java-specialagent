@@ -1,5 +1,26 @@
 # Changes by Version
 
+## v1.6.1 (2020-03-28)
+* Fix `spring-kafka` Static Deferred Attach (#461 #483 #484)
+* Support target runtimes that import OpenTracing API (#440)
+* Add new Instrumentation Rule: **Kafka Streams** (#494)
+* Add compatibility tests for `com.typesafe.akka:akka-http_2.1[123]` (#471 #497)
+* Add support for **Kafka Streams Processor** (#490)
+* Add support for **CXF Interceptors** (#506)
+* Resolve overlapping instrumentations for `spring-web-*` rules (#467)
+* Resolve couplings of `jms-1` and `jms-2` to `spring-jms` (#463)
+* Resolve fingerprint dependency coupling (#464 #507)
+* Revised class loading architecture (#504)
+* Add integration tests for **JDBI** (#511)
+* Add integration tests for **Hystrix** (#512)
+* Add `<passCompatibility>` for **Ratpack** (#513)
+* Add `<passCompatibility>` for **Solr Client** (#514)
+* Add `<passCompatibility>` for **SparkJava** (#516)
+* Support custom span decorators for **Apache Http Client** (#510) 👈 Thank you @jianshaow
+* Support custom span decorators for **Feign** (#515) 👈 Thank you @jianshaow
+* Document pass/fail compatibility spec (#473)
+* Sunset `@AgentRunner.Config(isolateClassLoader=false)` (#517)
+
 ## v1.6.0 (2020-03-14)
 * [Rewritable Tracer](https://github.com/opentracing-contrib/java-specialagent#37-rewritable-tracer) (#407 #415 #437 #479 #486)
 * Support "optional deferrable" rule attibute (#445)

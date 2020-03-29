@@ -21,6 +21,11 @@ public class Mule4ContainerITest {
   private static final String MULE_HOME = "/src/test/mule-home";
 
   public static void main(final String[] args) throws Exception {
+    if (!System.getProperty("java.version").startsWith("1.8.")) {
+      System.err.println("This test is not working: https://github.com/opentracing-contrib/java-specialagent/issues/405");
+      return;
+    }
+
     final String homeDir = new File("").getAbsolutePath() + MULE_HOME;
     final Mule4ContainerITest lock = new Mule4ContainerITest();
     System.setProperty(MuleSystemProperties.MULE_SIMPLE_LOG, "true");

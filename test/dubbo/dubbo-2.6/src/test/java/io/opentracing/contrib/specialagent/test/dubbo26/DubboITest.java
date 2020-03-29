@@ -57,6 +57,8 @@ public class DubboITest {
     client.setApplication(new ApplicationConfig("test"));
     client.setInterface(GreeterService.class);
     client.setUrl("dubbo://" + ip + ":" + port );
+    client.setScope("local");
+    client.setInjvm(true);
     return client;
   }
   
