@@ -208,7 +208,7 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -B -P test -pl test/grizzly-http-server -amd integration-test || (mvn -B -P test -pl test/grizzly-http-server -amd -Dexclude=io.opentracing.contrib.specialagent:opentracing-specialagent-util dependency:purge-local-repository && false)"
-  - name: "gRPC Http Server [openjdk8]"
+  - name: "gRPC [openjdk8]"
     stage: test
     jdk: openjdk8
     install: true
