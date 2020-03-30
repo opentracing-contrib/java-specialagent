@@ -25,7 +25,6 @@ before_install:
 sudo: required
 stages:
 - install
-- test
 - deploy
 jobs:
   include:
@@ -149,6 +148,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -e -B -P test -pl test/couchbase-client -amd integration-test || (mvn -e -B -P test -pl test/couchbase-client -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
+  - name: "Dubbo [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -e -B -P test -pl test/dubbo -amd integration-test || (mvn -e -B -P test -pl test/dubbo -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
+  - name: "Dubbo [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -e -B -P test -pl test/dubbo -amd integration-test || (mvn -e -B -P test -pl test/dubbo -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
   - name: "Dynamic [openjdk8]"
     stage: test
     jdk: openjdk8

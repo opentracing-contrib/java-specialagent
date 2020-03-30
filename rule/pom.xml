@@ -45,6 +45,8 @@
         <module>mongo-driver</module>
         <module>servlet</module>
         <module>camel</module>
+        <module>dubbo-2.6</module>
+        <module>dubbo-2.7</module>
         <module>aws-sdk-1</module>
         <module>aws-sdk-2</module>
         <module>cassandra-driver-3</module>
