@@ -174,7 +174,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
 
 1. **Does the rule have an external JAR that implements the instrumentation logic?**
 
-   Many <ins>Instrumentation Rules</ins> in <ins>SpecialAgent</ins> have the instrumentation logic implemented in external projects. An example of this is the [OkHttp Rule][okhttp] and [OkHttp Plugin][java-okhttp]. This separation is preferred, because it allows the Instrumentation Plugin ([OkHttp Plugin][java-okhttp]) to be used _without <ins>SpecialAgent</ins>_ via manual instrumentation. The [OkHttp Rule][okhttp] therefore is merely a bridge between <ins>SpecialAgent</ins> and the ([OkHttp Plugin][java-okhttp]).
+   Many <ins>Instrumentation Rules</ins> in <ins>SpecialAgent</ins> have the instrumentation logic implemented in external projects. An example of this is the [OkHttp Rule][okhttp] and [OkHttp Plugin][java-okhttp]. This separation is preferred, because it allows the <ins>Instrumentation Plugin</ins> ([OkHttp Plugin][java-okhttp]) to be used _without <ins>SpecialAgent</ins>_ via manual instrumentation. The [OkHttp Rule][okhttp] therefore is merely a bridge between <ins>SpecialAgent</ins> and the ([OkHttp Plugin][java-okhttp]).
 
    * If the rule you are implementing has an external JAR that implements the instrumentation logic, then its maven dependency must be specified in the rule's POM as:
 
@@ -207,7 +207,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
      </dependency>
      ```
 
-   * If the external Instrumentation Plugin JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependencies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
+   * If the external <ins>Instrumentation Plugin</ins> JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependencies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
 
      _If this is not done, it may lead to `LinkageError` due to the existence of multiple versions of the same class in different class loaders._
 

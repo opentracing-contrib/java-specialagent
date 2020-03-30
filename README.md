@@ -181,6 +181,8 @@ The `test-jar` is the **test** artifact that contains the `AgentRunner` class, w
 
 [<ins>Tracer Plugins</ins>](#43-tracer-plugin) must be provided as "fat JARs" that contain the full set of all classes necessary for operation.
 
+If the external [<ins>Tracer Plugin</ins>](#43-tracer-plugin) JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependencies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded from the JAR, as well as from the dependency spec.
+
 [<ins>Tracer Plugins</ins>](#43-tracer-plugin) are integrated with the [<ins>SpecialAgent</ins>](#41-specialagent) by specifying a "provided" dependency in the `!itest` profile in the [root POM][specialagent-pom]. For instance, the dependency for the [Jaeger Tracer Plugin](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is:
 
 ```xml
