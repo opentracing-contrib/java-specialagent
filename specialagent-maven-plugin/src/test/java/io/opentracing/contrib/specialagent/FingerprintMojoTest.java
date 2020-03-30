@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Intended to be used for hands-on debugging")
 public class FingerprintMojoTest {
   private static final Logger logger = Logger.getLogger(FingerprintMojoTest.class);
   private static final String version = MavenUtil.getArtifactVersion(new File("").getAbsoluteFile());
