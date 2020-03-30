@@ -156,6 +156,14 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
             throw new MojoExecutionException("Version of " + dependency + " must be specified in <dependencyManagement>");
 
           dependency.setVersion(MavenUtil.lookupVersion(getProject(), dependency));
+        }
+
+        final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));
+        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
+        MutableMojo.rollbackDependencies(getProject().getDependencies(), rollback);
+        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
+
+        for (final IsolatedDependency dependency : isolatedDependencies) {
           final File jarFile = new File(MavenUtil.getPathOf(localRepository.getBasedir(), dependency));
 
           final String fileName;
@@ -172,11 +180,6 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
 
           fileCopy(jarFile, new File(isoPath, fileName));
         }
-
-        final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));
-        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
-        MutableMojo.rollbackDependencies(getProject().getDependencies(), rollback);
-        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
       }
     }
     catch (final DependencyResolutionException | IOException | LifecycleExecutionException e) {
