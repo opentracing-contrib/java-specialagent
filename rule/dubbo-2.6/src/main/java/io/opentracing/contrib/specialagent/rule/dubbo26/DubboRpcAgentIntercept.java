@@ -15,26 +15,25 @@
 
 package io.opentracing.contrib.specialagent.rule.dubbo26;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ReferenceConfig;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MockClient {
-  private final ReferenceConfig<GreeterService> client;
+import com.alibaba.dubbo.rpc.Filter;
 
-  public MockClient(final String ip, final int port) {
-    client = new ReferenceConfig<>();
-    client.setApplication(new ApplicationConfig("test"));
-    client.setInterface(GreeterService.class);
-    client.setUrl("dubbo://" + ip + ":" + port + "?scope=remote");
-    client.setScope("local");
-    client.setInjvm(true);
-  }
+public class DubboRpcAgentIntercept {
+  @SuppressWarnings("unchecked")
+  public static Object exit(final Object returned) {
+    if (!(returned instanceof List))
+      return returned;
 
-  public GreeterService get() {
-    return client.get();
-  }
+    final List<Filter> filters = (List<Filter>)returned;
+    for (final Filter filter : filters)
+      if (filter instanceof DubboRpcFilter)
+        return filters;
 
-  void stop() {
-    client.destroy();
+    final ArrayList<Filter> newFilters = new ArrayList<>(filters);
+    final DubboRpcFilter filter = new DubboRpcFilter();
+    newFilters.add(filter);
+    return newFilters;
   }
 }

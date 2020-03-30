@@ -1,4 +1,4 @@
-/* Copyright 2019 The OpenTracing Authors
+/* Copyright 2020 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,32 @@
 
 package io.opentracing.contrib.specialagent.test.dubbo26;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import java.util.concurrent.CountDownLatch;
+
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
+
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.config.*;
-import com.alibaba.dubbo.common.utils.NetUtils;
 
-public class DubboITest {
+public class Dubbo26ITest {
   public static void main(final String[] args) throws Exception {
     final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
-    String linkLocalIp = "127.0.0.1";
-    ServiceConfig<GreeterService> service = getService();
+    final String linkLocalIp = "127.0.0.1";
+    final ServiceConfig<GreeterService> service = getService();
     service.export();
-    ReferenceConfig<GreeterService> client =getClient(linkLocalIp, service.getProtocol().getPort());
+    final ReferenceConfig<GreeterService> client = getClient(linkLocalIp, service.getProtocol().getPort());
     client.get().sayHello("jorge");
-    TestUtil.checkSpan(latch, new ComponentSpanCount("java-dubbo", 2) );
+    TestUtil.checkSpan(latch, new ComponentSpanCount("java-dubbo", 2));
     client.destroy();
     service.unexport();
   }
 
-
-
-  private static ServiceConfig<GreeterService>  getService() {
-    ServiceConfig<GreeterService> service = new ServiceConfig<>();
+  private static ServiceConfig<GreeterService> getService() {
+    final ServiceConfig<GreeterService> service = new ServiceConfig<>();
     service.setApplication(new ApplicationConfig("test"));
     service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
     service.setProtocol(new ProtocolConfig("dubbo", TestUtil.nextFreePort()));
@@ -52,14 +49,13 @@ public class DubboITest {
     return service;
   }
 
-  public static ReferenceConfig<GreeterService> getClient(String ip, int port) {
-    ReferenceConfig<GreeterService> client = new ReferenceConfig<>();
+  public static ReferenceConfig<GreeterService> getClient(final String ip, final int port) {
+    final ReferenceConfig<GreeterService> client = new ReferenceConfig<>();
     client.setApplication(new ApplicationConfig("test"));
     client.setInterface(GreeterService.class);
-    client.setUrl("dubbo://" + ip + ":" + port );
+    client.setUrl("dubbo://" + ip + ":" + port);
     client.setScope("local");
     client.setInjvm(true);
     return client;
   }
-  
 }

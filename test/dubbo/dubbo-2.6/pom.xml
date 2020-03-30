@@ -1,5 +1,5 @@
 <!--
-  Copyright 2019 The OpenTracing Authors
+  Copyright 2020 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
     <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>dubbo-2.6</artifactId>
-  <name>SpecialAgent Test for dubbo 2.6</name>
+  <name>SpecialAgent Test for Dubbo 2.6</name>
   <properties>
     <version.dubbo>2.6.2</version.dubbo>
   </properties>

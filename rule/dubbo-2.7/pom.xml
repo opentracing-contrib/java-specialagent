@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018 The OpenTracing Authors
+  Copyright 2020 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,21 +24,24 @@
     <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>dubbo-2.7</artifactId>
-  <name>SpecialAgent Rule for dubbo 2.7</name>
+  <name>SpecialAgent Rule for Dubbo 2.7</name>
   <properties>
-      <maven.compiler.source>1.8</maven.compiler.source>
-      <maven.compiler.target>1.8</maven.compiler.target>
-      <sa.rule.name>dubbo-2.7</sa.rule.name>
-      <apache.dubbo.min.version>2.7.1</apache.dubbo.min.version>
-      <passCompatibility>org.apache.dubbo:dubbo:[${apache.dubbo.min.version},2.7.4]</passCompatibility>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <sa.rule.name>dubbo:2.7</sa.rule.name>
+    <version.apache.dubbo.min>2.7.1</version.apache.dubbo.min>
+    <passCompatibility>org.apache.dubbo:dubbo:[${version.apache.dubbo.min},]</passCompatibility>
+    <version.dubbo.rpc.min>2.6.2</version.dubbo.rpc.min>
+    <version.dubbo.rpc.max>2.6.7</version.dubbo.rpc.max>
+    <failCompatibility>com.alibaba:dubbo:[${version.dubbo.rpc.min},${version.dubbo.rpc.max}]</failCompatibility>
   </properties>
   <dependencies>
-      <dependency>
-          <groupId>org.apache.dubbo</groupId>
-          <artifactId>dubbo</artifactId>
-          <version>${apache.dubbo.min.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo</artifactId>
+      <version>${version.apache.dubbo.min}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 </project>

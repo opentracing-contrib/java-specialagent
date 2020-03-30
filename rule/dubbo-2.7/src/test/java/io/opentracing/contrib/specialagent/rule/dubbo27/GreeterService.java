@@ -13,17 +13,9 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.test.dubbo26;
+package io.opentracing.contrib.specialagent.rule.dubbo27;
 
-public class GreeterServiceImpl implements GreeterService {
-  public static volatile boolean isThrowExecption = false;
-  public static final String errorMesg = "fail to call GreeterService";
-
-  @Override
-  public String sayHello(final String name) {
-    if (isThrowExecption)
-      throw new RuntimeException(errorMesg);
-
-    return "hello " + name;
-  }
+public interface GreeterService {
+  String sayHello(String name);
+  String sayGoodbye(String name);
 }

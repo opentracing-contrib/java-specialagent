@@ -1,5 +1,5 @@
 <!--
-  Copyright 2019 The OpenTracing Authors
+  Copyright 2020 The OpenTracing Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@
   <artifactId>dubbo-2.7</artifactId>
   <name>SpecialAgent Test for Dubbo 2.7</name>
   <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <version.dubbo>2.7.1</version.dubbo>
   </properties>
   <dependencies>
