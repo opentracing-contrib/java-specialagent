@@ -31,11 +31,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class JaxRsTest {
   @Test
   public void test(final MockTracer tracer) throws Exception {

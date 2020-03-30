@@ -24,16 +24,19 @@ import io.opentracing.Span;
 public class MockSpanDecorator implements FeignSpanDecorator {
   public static final String MOCK_TAG_KEY = "mock-tag-key";
   public static final String MOCK_TAG_VALUE = "mock-tag-value";
+
   @Override
-  public void onRequest(Request request, Options options, Span span) {
+  public void onRequest(final Request request, final Options options, final Span span) {
     span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
   }
+
   @Override
-  public void onResponse(Response response, Options options, Span span) {
+  public void onResponse(final Response response, final Options options, final Span span) {
     span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
   }
+
   @Override
-  public void onError(Exception exception, Request request, Span span) {
+  public void onError(final Exception exception, final Request request, final Span span) {
     span.setTag(MOCK_TAG_KEY, MOCK_TAG_VALUE);
   }
 }

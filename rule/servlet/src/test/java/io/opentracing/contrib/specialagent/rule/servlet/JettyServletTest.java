@@ -17,12 +17,15 @@
 
 package io.opentracing.contrib.specialagent.rule.servlet;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.http.HttpServletResponse;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -31,13 +34,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * @author gbrown

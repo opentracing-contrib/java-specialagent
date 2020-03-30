@@ -50,7 +50,6 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class ElasticsearchTransportClientTest {
   private static final int HTTP_PORT = 9205;
   private static final String HTTP_TRANSPORT_PORT = "9305";

@@ -34,7 +34,6 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class HttpServiceTest extends AbstractMuleTestCase {
   private static final String HOST = "localhost";
   private static final int PORT = 9875;

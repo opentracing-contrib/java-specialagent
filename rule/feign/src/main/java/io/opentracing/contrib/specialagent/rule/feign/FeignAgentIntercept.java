@@ -17,7 +17,7 @@ package io.opentracing.contrib.specialagent.rule.feign;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
+
 import feign.Request;
 import feign.Request.Options;
 import feign.Response;
@@ -32,9 +32,8 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class FeignAgentIntercept {
-
   public static Object onRequest(final Object arg1, final Object arg2) {
-    Request request = (Request)arg1;
+    final Request request = (Request)arg1;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer
       .buildSpan(request.method())
@@ -44,17 +43,15 @@ public class FeignAgentIntercept {
     for (final FeignSpanDecorator decorator : Configuration.spanDecorators)
       decorator.onRequest(request, (Options)arg2, span);
 
-    request = inject(span.context(), request);
-
     final Scope scope = tracer.activateSpan(span);
     LocalSpanContext.set(span, scope);
 
-    return request;
+    return inject(tracer, span.context(), request);
   }
 
-  private static Request inject(final SpanContext spanContext, final Request request) {
-    final Map<String,Collection<String>> headersWithTracingContext = new HashMap<>(request.headers());
-    GlobalTracer.get().inject(spanContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(headersWithTracingContext));
+  private static Request inject(final Tracer tracer, final SpanContext spanContext, final Request request) {
+    final HashMap<String,Collection<String>> headersWithTracingContext = new HashMap<>(request.headers());
+    tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersInjectAdapter(headersWithTracingContext));
     return Request.create(request.method(), request.url(), headersWithTracingContext, request.body(), request.charset());
   }
 
@@ -62,20 +59,21 @@ public class FeignAgentIntercept {
     final Response response = (Response)arg1;
     final Request request = (Request)arg2;
     final Options options = (Options)arg3;
+    final Tracer tracer = GlobalTracer.get();
+
     if (e == null)
       for (final FeignSpanDecorator decorator : Configuration.spanDecorators)
-        decorator.onResponse(response, options, GlobalTracer.get().activeSpan());
+        decorator.onResponse(response, options, tracer.activeSpan());
     else
       for (final FeignSpanDecorator decorator : Configuration.spanDecorators)
-        decorator.onError(e, request, GlobalTracer.get().activeSpan());
+        decorator.onError(e, request, tracer.activeSpan());
 
     finish();
   }
 
   private static void finish() {
     final LocalSpanContext context = LocalSpanContext.get();
-    if (context != null) {
+    if (context != null)
       context.closeAndFinish();
-    }
   }
 }

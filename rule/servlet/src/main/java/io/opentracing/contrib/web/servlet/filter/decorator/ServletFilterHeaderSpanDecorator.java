@@ -1,13 +1,14 @@
 package io.opentracing.contrib.web.servlet.filter.decorator;
 
-import io.opentracing.Span;
-import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
-import io.opentracing.tag.StringTag;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
+
+import io.opentracing.Span;
+import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
+import io.opentracing.tag.StringTag;
 
 /**
  * ServletFilterHeaderSpanDecorator will decorate the span based on incoming HTTP headers.

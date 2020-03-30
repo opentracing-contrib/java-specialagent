@@ -30,14 +30,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class SpringScheduleTest {
   @Test
   public void test(final MockTracer tracer) {

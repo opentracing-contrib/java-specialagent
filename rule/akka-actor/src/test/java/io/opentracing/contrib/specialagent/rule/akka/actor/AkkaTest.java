@@ -37,7 +37,6 @@ import akka.actor.Props;
 import akka.util.Timeout;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -48,7 +47,6 @@ import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class AkkaTest {
   private static ActorSystem system;
 

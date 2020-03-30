@@ -27,11 +27,10 @@ import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.Level;
 
 @RunWith(AgentRunner.class)
-@Config(defer = true, isolateClassLoader = false, log = Level.FINE)
+@AgentRunner.Config(defer = true, log = Level.FINE)
 public class SpringWebMvcAgentRuleTest {
   public static Server startServer() throws Exception {
     final Server server = new Server(0);

@@ -28,7 +28,6 @@ import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(isolateClassLoader = false)
 public class Jms1Test extends JmsTest {
   @Before
   public void before(final MockTracer tracer) {

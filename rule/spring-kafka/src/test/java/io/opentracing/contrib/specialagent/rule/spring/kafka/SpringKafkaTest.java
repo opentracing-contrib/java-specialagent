@@ -42,12 +42,10 @@ import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class SpringKafkaTest {
   private static final AtomicInteger counter = new AtomicInteger();
 

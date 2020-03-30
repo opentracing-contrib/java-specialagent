@@ -32,12 +32,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.contrib.specialagent.AgentRunner.Config;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@Config(isolateClassLoader = false)
 public class Spring3WebMvcTest {
   private static Server server;
   private static String url;

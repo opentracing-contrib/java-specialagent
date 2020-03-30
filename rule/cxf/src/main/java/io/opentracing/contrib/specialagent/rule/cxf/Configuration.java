@@ -21,8 +21,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptor;
+
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.Logger;
 

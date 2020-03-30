@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>servlet</artifactId>
   <name>SpecialAgent Rule for Java Servlet API</name>
@@ -29,7 +29,7 @@
     <sa.rule.name>servlet</sa.rule.name>
     <version.org.apache.tomcat.embed>7.0.65</version.org.apache.tomcat.embed>
     <version.org.eclipse.jetty>9.0.0.v20130308</version.org.eclipse.jetty>
-    <passCompatibility>javax.servlet:javax.servlet-api:[3.0.1,];javax.servlet:servlet-api:[2.2,]</passCompatibility>
+    <passCompatibility>javax.servlet:javax.servlet-api:[3.0.1,];javax.servlet:servlet-api:[2.2,];com.sparkjava:spark-core:[2.2,]</passCompatibility>
   </properties>
   <dependencies>
     <!--dependency>
