@@ -566,6 +566,8 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | Akka Http | [`akka:http`][akka-http] | 10.1.0 | LATEST |
 | [Apache Camel](https://github.com/apache/camel/tree/master/components/camel-opentracing) | [`camel`][camel] | 2.24.0 | 2.24.2 |
 | Apache CXF | [`cxf`][cxf] | 3.3.3 | LATEST |
+| Apache Dubbo | [`dubbo:2.6`][dubbo-2.6] | 2.6.2 | 2.6.7 |
+| | [`dubbo:2.7`][dubbo-2.7] | 2.7.1 | LATEST |
 | [Apache HttpClient](https://github.com/opentracing-contrib/java-apache-httpclient) | [`apache:httpclient`][apache-httpclient] | 4.4 | LATEST |
 | [Async Http Client](https://github.com/opentracing-contrib/java-asynchttpclient) | [`asynchttpclient`][asynchttpclient] | 2.7.0 | LATEST |
 | [AWS SDK](https://github.com/opentracing-contrib/java-aws-sdk) | [`aws:sdk:1`][aws-sdk-1] | 1.11.79 | LATEST |
@@ -573,8 +575,6 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | LATEST |
 | Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.13 |
-| Dubbo | [`dubbo:2.6`][dubbo-2.6] | 2.6.2 | 2.6.7 |
-| | [`dubbo:2.7`][dubbo-2.7] | 2.7.1 | LATEST |
 | Dynamic<br>&nbsp; | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\***<br>&nbsp; | **\***<br>&nbsp; |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>6.4.0 | LATEST<br>6.8.7 |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | LATEST |

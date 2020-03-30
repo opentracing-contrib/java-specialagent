@@ -1,4 +1,4 @@
-# SpecialAgent Rule for Dubbo 2.6
+# SpecialAgent Rule for Apache Dubbo 2.6
 
 **Rule Name:** `dubbo:2.6`
 
