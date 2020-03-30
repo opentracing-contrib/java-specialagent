@@ -569,6 +569,16 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -e -B -P test -pl test/spring-boot -amd integration-test || (mvn -e -B -P test -pl test/spring-boot -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
+  - name: "Spring Data [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -e -B -P test -pl test/spring-data -amd integration-test || (mvn -e -B -P test -pl test/spring-data -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
+  - name: "Spring Data [openjdk11]"
+    stage: test
+    jdk: openjdk11
+    install: true
+    script: travis_retry bash -c "mvn -e -B -P test -pl test/spring-data -amd integration-test || (mvn -e -B -P test -pl test/spring-data -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
   - name: "Spring JMS [openjdk8]"
     stage: test
     jdk: openjdk8

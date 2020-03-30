@@ -82,6 +82,7 @@
     <module>servlet-tomcat</module>
     <module>sparkjava</module>
     <module>spring-boot</module>
+    <module>spring-data</module>
     <module>spring-jms</module>
     <module>spring-kafka</module>
     <module>spring-messaging</module>
