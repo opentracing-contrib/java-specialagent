@@ -12,5 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.rule.cxf.CxfRsAgentRule
-io.opentracing.contrib.specialagent.rule.cxf.CxfWsAgentRule
+io.opentracing.contrib.specialagent.rule.cxf.CxfRsServerAgentRule
+io.opentracing.contrib.specialagent.rule.cxf.CxfRsClientAgentRule
+io.opentracing.contrib.specialagent.rule.cxf.CxfWsServerAgentRule
+io.opentracing.contrib.specialagent.rule.cxf.CxfWsClientAgentRule
