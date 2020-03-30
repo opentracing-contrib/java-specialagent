@@ -16,6 +16,7 @@
 package io.opentracing.contrib.specialagent;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -317,11 +318,24 @@ public final class MavenUtil {
     return builder.append('.').append(getExtension(type)).toString();
   }
 
+  private static Model getModel(final File pomFile) throws IOException, XmlPullParserException {
+    final MavenXpp3Reader reader = new MavenXpp3Reader();
+    return reader.read(new FileReader(pomFile));
+  }
+
+  public static String getArtifactVersion(final File dir) {
+    try {
+      final Model model = getModel(new File(dir, "pom.xml"));
+      return model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();
+    }
+    catch (final IOException | XmlPullParserException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   private static String getArtifactFile(final File dir) {
     try {
-      final String doo = XmlPullParserException.class.getName();
-      final MavenXpp3Reader reader = new MavenXpp3Reader();
-      final Model model = reader.read(new FileReader(new File(dir, "pom.xml")));
+      final Model model = getModel(new File(dir, "pom.xml"));
       final String version = model.getVersion() != null ? model.getVersion() : model.getParent().getVersion();
       return model.getArtifactId() + "-" + version + ".jar";
     }

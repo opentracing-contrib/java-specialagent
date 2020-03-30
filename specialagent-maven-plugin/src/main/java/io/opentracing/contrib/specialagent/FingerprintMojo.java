@@ -236,14 +236,21 @@ public final class FingerprintMojo extends TreeMojo {
 
     // The `libDeps` represent the 3rd-Party Library that is being instrumented
     final URL[] libDeps = getDependencyPaths(localRepository, "provided", true, getProject().getArtifacts().iterator(), 0);
-    if (debug)
+    if (debug) {
       getLog().warn("libDeps: " + Arrays.toString(libDeps));
+      getLog().warn("presents: " + presents);
+      getLog().warn("absents: " + absents);
+    }
 
+    final LibraryFingerprint fingerprint = fingerprint(ruleDeps, libDeps, presents, absents, new MavenLogger(getLog()));
+    fingerprint.toFile(destFile);
+    if (debug)
+      getLog().warn(fingerprint.toString());
+  }
+
+  static LibraryFingerprint fingerprint(final URL[] ruleDeps, final URL[] libDeps, final List<String> presents, final List<String> absents, final Logger logger) throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(ruleDeps, new URLClassLoader(libDeps != null ? libDeps : new URL[0], null))) {
-      final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, presents, absents, new MavenLogger(getLog()));
-      fingerprint.toFile(destFile);
-      if (debug)
-        getLog().warn(fingerprint.toString());
+      return new LibraryFingerprint(classLoader, presents, absents, logger);
     }
   }
 

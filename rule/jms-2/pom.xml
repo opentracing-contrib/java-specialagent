@@ -29,7 +29,7 @@
     <sa.rule.name>jms:2</sa.rule.name>
     <min.version>2.0.1</min.version>
     <passCompatibility>javax.jms:javax.jms-api:[${min.version},]</passCompatibility>
-    <!--failCompatibility>javax.jms:jms-api:[1.1-rev-1,]</failCompatibility-->
+    <failCompatibility>javax.jms:jms-api:[1.1-rev-1,]</failCompatibility>
     <version.artemis>2.7.0</version.artemis>
     <version.opentracing.jms>0.1.7</version.opentracing.jms>
   </properties>

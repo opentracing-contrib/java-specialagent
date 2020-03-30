@@ -29,10 +29,23 @@
     <sa.rule.name>jms:1</sa.rule.name>
     <min.version>1.1-rev-1</min.version>
     <passCompatibility>javax.jms:jms-api:[${min.version},]</passCompatibility>
-    <!--failCompatibility>javax.jms:javax.jms-api:[2.0.1,]</failCompatibility-->
+    <failCompatibility>javax.jms:javax.jms-api:[2.0.1,]</failCompatibility>
     <version.activemq>5.15.9</version.activemq>
     <version.opentracing.jms>0.1.7</version.opentracing.jms>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.opentracing.contrib.specialagent</groupId>
+        <artifactId>specialagent-maven-plugin</artifactId>
+        <configuration>
+          <absents>
+            <absent>javax.jms.JMSContext</absent>
+          </absents>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <!-- https://github.com/opentracing-contrib/java-jms -->
