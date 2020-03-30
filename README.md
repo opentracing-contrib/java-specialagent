@@ -573,6 +573,8 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Cassandra Driver](https://github.com/opentracing-contrib/java-cassandra-driver) | [`cassandra:driver:3`][cassandra-driver-3] | 3.0.0 | 3.7.2 |
 | | [`cassandra:driver:4`][cassandra-driver-4] | 4.0.0 | LATEST |
 | Couchbase Client | [`couchbase-client`][couchbase-client] | 2.7.3 | 2.7.13 |
+| Dubbo | [`dubbo:2.6`][dubbo-2.6] | 2.6.2 | 2.6.7 |
+| | [`dubbo:2.7`][dubbo-2.7] | 2.7.1 | LATEST |
 | Dynamic<br>&nbsp; | [`dynamic`<br><sup>(configurable)</sup>][dynamic] | **\***<br>&nbsp; | **\***<br>&nbsp; |
 | [Elasticsearch Client<br>&nbsp;](https://github.com/opentracing-contrib/java-elasticsearch-client) | [`elasticsearch:client-transport`][elasticsearch-7-transport-client]<br>[`elasticsearch:client-rest`][elasticsearch-7-rest-client] | 6.4.0<br>6.4.0 | LATEST<br>6.8.7 |
 | [Feign](https://github.com/OpenFeign/feign-opentracing/tree/master/feign-opentracing) | [`feign`][feign] | 9.0.0 | LATEST |
@@ -714,6 +716,8 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [cassandra-driver-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/cassandra-driver-4
 [concurrent]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/concurrent
 [couchbase-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/couchbase-client
+[dubbo-2.6]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/dubbo-2.6
+[dubbo-2.7]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/dubbo-2.7
 [dynamic]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/dynamic
 [elasticsearch-7-rest-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-rest-client
 [elasticsearch-7-transport-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/elasticsearch-7-transport-client
