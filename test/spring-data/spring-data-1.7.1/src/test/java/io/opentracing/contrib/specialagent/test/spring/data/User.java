@@ -25,14 +25,14 @@ import javax.persistence.Table;
 @Table
 public class User {
   @Id
-  @GeneratedValue(strategy= GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
   public Long getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(final Long id) {
     this.id = id;
   }
 }

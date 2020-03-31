@@ -15,9 +15,8 @@
 
 package io.opentracing.contrib.specialagent.test.spring.data;
 
-import io.opentracing.contrib.specialagent.TestUtil;
-import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 import javax.sql.DataSource;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -25,16 +24,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
+import io.opentracing.contrib.specialagent.TestUtil;
+import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
+
 @SpringBootApplication
 public class SpringDataITest {
-
   @Bean
   public DataSource dataSource() {
-    EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+    final EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
     return builder.setType(EmbeddedDatabaseType.H2).build();
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     try (final ConfigurableApplicationContext context = SpringApplication.run(SpringDataITest.class, args)) {
       final UserRepository userRepository = context.getBean(UserRepository.class);
       userRepository.save(new User());
