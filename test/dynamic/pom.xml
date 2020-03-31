@@ -26,6 +26,6 @@
   <artifactId>dynamic</artifactId>
   <name>SpecialAgent Test for Dynamic Instrumentation</name>
   <properties>
-    <sa.itest.args>-Dsa.instrumentation.plugin.dynamic.rules=io.opentracing.contrib.specialagent.test.dynamic.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.test.dynamic.ExampleMethodClass#test2(java.lang.String):java.lang.String</sa.itest.args>
+    <sa.itest.args>-Dsa.integration.dynamic.rules=io.opentracing.contrib.specialagent.test.dynamic.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.test.dynamic.ExampleMethodClass#test2(java.lang.String):java.lang.String</sa.itest.args>
   </properties>
 </project>

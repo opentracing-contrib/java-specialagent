@@ -1,4 +1,4 @@
-The <ins>Rewritable Tracer</ins> allows one to rewrite data in the spans created by <ins>Instrumentation Plugins</ins> without having to modify the source code.
+The <ins>Rewritable Tracer</ins> allows one to rewrite data in the spans created by <ins>Integrations</ins> without having to modify the source code.
 
 # JSON Configuration
 
@@ -6,7 +6,7 @@ The configuration JSON is comprised of a top-level object that contains properti
 
 ### Property Name
 
-The property name for the rule is interpreted as per the guidelines of [Rule Name Pattern](https://github.com/opentracing-contrib/java-specialagent/#rule-name-pattern). This allows one to define rules that match a single or multiple <ins>Instrumentation Plugins</ins>.
+The property name for the rule is interpreted as per the guidelines of [Rule Name Pattern](https://github.com/opentracing-contrib/java-specialagent/#rule-name-pattern). This allows one to define rules that match a single or multiple <ins>Integrations</ins>.
 
 ## Rule Definitions
 

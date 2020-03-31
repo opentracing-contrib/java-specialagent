@@ -25,12 +25,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An {@link URLClassLoader} that encloses an instrumentation rule, and provides
- * the following functionalities:
+ * An {@link URLClassLoader} that encloses an Integration Rule, and provides the
+ * following functionalities:
  * <ol>
- * <li>{@link #isCompatible(ClassLoader)}: Determines whether the
- * instrumentation rule it repserents is compatible with a specified
- * {@code ClassLoader}.</li>
+ * <li>{@link #isCompatible(ClassLoader)}: Determines whether the Integration
+ * Rule it repserents is compatible with a specified {@code ClassLoader}.</li>
  * </ol>
  *
  * @author Seva Safris
@@ -127,22 +126,22 @@ class RuleClassLoader extends URLClassLoader {
   }
 
   /**
-   * Returns {@code true} if the instrumentation rule represented by this
-   * instance is compatible with its target classes that are loaded in the
-   * specified {@code ClassLoader}.
+   * Returns {@code true} if the Integration Rule represented by this instance
+   * is compatible with its target classes that are loaded in the specified
+   * {@code ClassLoader}.
    * <p>
    * This method utilizes the {@link LibraryFingerprint} class to determine
    * compatibility via "fingerprinting".
    * <p>
    * Once "fingerprinting" has been performed, the resulting value is associated
-   * with the specified {@code ClassLoader} in the {@link #compatibility}
-   * map as a cache.
+   * with the specified {@code ClassLoader} in the {@link #compatibility} map as
+   * a cache.
    *
-   * @param classLoader The {@code ClassLoader} for which the instrumentation
-   *          rule represented by this {@code RuleClassLoader} is to be checked
-   *          for compatibility.
+   * @param classLoader The {@code ClassLoader} for which the Integration Rule
+   *          represented by this {@code RuleClassLoader} is to be checked for
+   *          compatibility.
    * @return {@code true} if the target classes in the specified
-   *         {@code ClassLoader} are compatible with the instrumentation rule
+   *         {@code ClassLoader} are compatible with the Integration Rule
    *         represented by this {@code RuleClassLoader}, and {@code false} if
    *         the specified {@code ClassLoader} is incompatible.
    */
@@ -176,7 +175,7 @@ class RuleClassLoader extends URLClassLoader {
   private boolean isFingerprintCompatible(final ClassLoader classLoader) throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     if (skipFingerprint) {
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"-D" + SKIP_FINGERPRINT + "=true\"");
+        logger.fine("Allowing integration with \"" + pluginManifest.name + "\" due to \"-D" + SKIP_FINGERPRINT + "=true\"");
 
       return true;
     }
@@ -189,19 +188,19 @@ class RuleClassLoader extends URLClassLoader {
       final List<?> errors = (List<?>)isCompatibleMethod.invoke(fingerprint, classLoader);
       if (errors != null) {
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Disallowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + "\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
+          logger.fine("Disallowing integration with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " mismatch\" errors:\n" + AssembleUtil.toIndentedString(errors) + "\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
         return false;
       }
 
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
+        logger.fine("Allowing integration with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " match\" for:\n" + AssembleUtil.toIndentedString(getURLs()));
 
       return true;
     }
 
     if (logger.isLoggable(Level.FINE))
-      logger.fine("Allowing instrumentation with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
+      logger.fine("Allowing integration with \"" + pluginManifest.name + "\" due to \"" + UtilConstants.FINGERPRINT_FILE + " not found\"\nin:\n" + AssembleUtil.toIndentedString(getURLs()));
 
     return true;
   }

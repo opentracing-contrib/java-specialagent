@@ -21,7 +21,7 @@ import java.util.Map;
 import net.bytebuddy.agent.builder.AgentBuilder;
 
 /**
- * Base abstract class for SpecialAgent Instrumentation Rules.
+ * Base abstract class for SpecialAgent Integration Rules.
  *
  * @author Seva Safris
  */
@@ -138,7 +138,7 @@ public abstract class AgentRule {
   }
 
   public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {
-    final boolean pluginsVerbose = AssembleUtil.isSystemProperty("sa.instrumentation.plugin.*.verbose");
+    final boolean pluginsVerbose = AssembleUtil.isSystemProperty("sa.integration.*.verbose");
     if (pluginsVerbose)
       return pluginsVerbose;
 
@@ -146,7 +146,7 @@ public abstract class AgentRule {
     if (pluginName == null)
       throw new IllegalStateException("Plugin name must not be null");
 
-    return AssembleUtil.isSystemProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
+    return AssembleUtil.isSystemProperty("sa.integration." + pluginName + ".verbose");
   }
 
   /**

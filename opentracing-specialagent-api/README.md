@@ -1,6 +1,6 @@
 # SpecialAgent Rule API
 
-> API for auto-instrumentation of OpenTracing <ins>Instrumentation Plugins</ins>
+> API for auto-instrumentation of OpenTracing <ins>Integrations</ins>
 
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.png)](https://travis-ci.org/opentracing-contrib/java-specialagent)
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
@@ -10,13 +10,13 @@
 ## Table of Contents
 
 <samp>&nbsp;&nbsp;</samp>1 [Introduction](#1-introduction)<br>
-<samp>&nbsp;&nbsp;</samp>2 [Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>](#2-developing-instrumentation-rules-for-specialagent)<br>
-<samp>&nbsp;&nbsp;</samp>3 [Implementing the <ins>Instrumentation Rules</ins>](#3-implementing-the-instrumentation-rules)<br>
+<samp>&nbsp;&nbsp;</samp>2 [Developing <ins>Integration Rules</ins> for <ins>SpecialAgent</ins>](#2-developing-integration-rules-for-specialagent)<br>
+<samp>&nbsp;&nbsp;</samp>3 [Implementing the <ins>Integration Rules</ins>](#3-implementing-the-integration-rules)<br>
 <samp>&nbsp;&nbsp;</samp>4 [`AgentRule` Usage](#4-agentrule-usage)<br>
 <samp>&nbsp;&nbsp;</samp>5 [`AgentRunner` Usage](#5-agentrunner-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1 [Configuring `AgentRunner`](#51-configuring-agentrunner)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6 [Packaging](#6-packaging)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>](#61-including-the-instrumentation-rule-in-the-specialagent)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [Including the <ins>Integration Rule</ins> in the <ins>SpecialAgent</ins>](#61-including-the-integration-rule-in-the-specialagent)<br>
 <samp>&nbsp;&nbsp;</samp>7 [Compatibility Testing](#7-compatibility-testing)<br>
 <samp>&nbsp;&nbsp;</samp>8 [Integration Testing](#8-integration-testing)<br>
 <samp>&nbsp;&nbsp;</samp>9 [Debugging](#9-debugging)<br>
@@ -25,23 +25,23 @@
 
 ## 1 Introduction
 
-This project provides the API for <ins>Instrumentation Plugins</ins> to integrate into <ins>SpecialAgent</ins>'s auto-instrumentation rules. The API is a light wrapper on top of [ByteBuddy][bytebuddy], which enables a plugin developer to use the full breadth of ByteBuddy's `@Advice` intercept API.
+This project provides the API for the implementation of <ins>Integration Rules</ins> that allow <ins>Integrations</ins> to become auto-installable with <ins>SpecialAgent</ins>. The API is a light wrapper on top of [ByteBuddy][bytebuddy], which enables a developer to use the full breadth of ByteBuddy's `@Advice` intercept API.
 
-### 2 Developing <ins>Instrumentation Rules</ins> for <ins>SpecialAgent</ins>
+### 2 Developing <ins>Integration Rules</ins> for <ins>SpecialAgent</ins>
 
-The [opentracing-contrib][opentracing-contrib] organization contains 40+ OpenTracing <ins>Instrumentation Plugins</ins> for Java. Many of these plugins are currently [supported by SpecialAgent](https://github.com/opentracing-contrib/java-specialagent/#61-instrumentation-plugins).
+The [opentracing-contrib][opentracing-contrib] organization contains 40+ OpenTracing <ins>Integrations</ins> for Java. Many of these <ins>Integrations</ins> are currently [supported by SpecialAgent](https://github.com/opentracing-contrib/java-specialagent/#41-integrations).
 
-If you are interested in contributing to the <ins>SpecialAgent</ins> project by integrating support for existing plugins in the [opentracing-contrib][opentracing-contrib] organization, or by implementing a new plugin with support for <ins>SpecialAgent</ins>, the following guide is for you:...
+If you are interested in contributing to the <ins>SpecialAgent</ins> project by implementing support for existing <ins>Integrations</ins> in the [opentracing-contrib][opentracing-contrib] organization, or by implementing a new <ins>Integration</ins> with support for <ins>SpecialAgent</ins>, the following guide is for you:...
 
-#### 3 Implementing the <ins>Instrumentation Rules</ins>
+#### 3 Implementing the <ins>Integration Rules</ins>
 
-The [opentracing-contrib][opentracing-contrib] organization contains <ins>Instrumentation Plugins</ins> for a wide variety of 3rd-party libraries, as well as Java standard APIs. The plugins instrument a 3rd-party library of interest by implementing custom library-specific hooks that integrate with the OpenTracing API. To see examples, explore projects named with the prefix **java-...** in the [opentracing-contrib][opentracing-contrib] organization.
+The [opentracing-contrib][opentracing-contrib] organization contains <ins>Integrations</ins> for a wide variety of 3rd-party libraries, as well as Java standard APIs. The <ins>Integrations</ins> instrument a 3rd-party library of interest by implementing custom library-specific hooks that integrate with the OpenTracing API. To see examples, explore projects named with the prefix **java-...** in the [opentracing-contrib][opentracing-contrib] organization.
 
-The <ins>SpecialAgent</ins> uses ByteBuddy as the re/transformation manager for auto-instrumentation. This module defines the API and patterns for implementation of auto-instrumentation rules for OpenTracing <ins>Instrumentation Plugins</ins>.
+The <ins>SpecialAgent</ins> uses [ByteBuddy][bytebuddy] as the re/transformation manager for auto-instrumentation. This module defines the API and patterns for implementation of <ins>Integration Rules</ins> for OpenTracing <ins>Integrations</ins>.
 
 ## 4 `AgentRule` Usage
 
-All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https://github.com/opentracing-contrib/java-specialagent/) codebase, and are coupled to the <ins>SpecialAgent Rule API</ins>. When implementing an <ins>Instrumentation Rule</ins>:
+All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://github.com/opentracing-contrib/java-specialagent/) codebase, and are coupled to the <ins>SpecialAgent Rule API</ins>. When implementing an <ins>Integration Rule</ins>:
 
 1. **Implement the `AgentRule` interface**
 
@@ -51,7 +51,7 @@ All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https:/
    Iterable<? extends AgentBuilder> buildAgent(String agentArgs) throws Exception;
    ```
 
-   An example implementation for an <ins>Instrumentation Rule</ins> that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
+   An example implementation for an <ins>Integration Rule</ins> that instruments the `com.example.TargetBuilder#build(String)` method in an example 3rd-party library:
 
    ```java
    // This class CANNOT directly reference any 3rd-party library classes, because when this class is loaded, the 3rd-party
@@ -80,7 +80,7 @@ All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https:/
 
      // The @Advice method that defines the intercept callback. It is important this method does not require any
      // classes of the 3rd-party library to be loaded, because the classes may not be present in the class loader
-     // from where the intercept rule is being defined. All of the OpenTracing instrumentation logic into the
+     // from where the intercept rule is being defined. All of the OpenTracing integration logic into the
      // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
      @Advice.OnMethodExit
      public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
@@ -94,7 +94,7 @@ All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https:/
    // class path.
    public class TargetAgentIntercept {
      public static Builder exit(final Object returned) {
-       // The OpenTracing instrumentation logic goes here
+       // The OpenTracing integration logic goes here
      }
    }
    ```
@@ -119,7 +119,7 @@ All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https:/
 
 ## 5 `AgentRunner` Usage
 
-The <ins>SpecialAgent</ins> uses the JUnit Runner API to implement a lightweight test methodology that can be easily applied to modules that implement instrumentation for 3rd-party plugins. This runner is named `AgentRunner`, and allows developers to implement tests using vanilla JUnit patterns, transparently providing the following behavior:
+The <ins>SpecialAgent</ins> uses the JUnit Runner API to implement a lightweight test methodology that can be easily applied to modules that implement instrumentation for 3rd-party libraries. This runner is named `AgentRunner`, and allows developers to implement tests using vanilla JUnit patterns, transparently providing the following behavior:
 
 1. Launch the test in a process simulating the `-javaagent` vm argument that points to the <ins>SpecialAgent</ins> (in order to test auto-instrumentation functionality).
 1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
@@ -164,19 +164,19 @@ The `AgentRunner` can be configured via the `@AgentRunner.Config(...)` annotatio
 
 1. `log`<br>The Java Logging Level, which can be set to `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`.<br>**Default:** `WARNING`.
 1. `events`<br>The re/transformation events to log: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`.<br>**Default:** `{ERROR}`.
-1. `disable`<br>Names of plugins to disable during execution.<br>**Default:** `{}`.
+1. `disable`<br>Names of Integration Rules or Trace Exporters to disable during execution.<br>**Default:** `{}`.
 1. `properties`<br>System properties to be set in the test runtime.<br>Specification: `{"NAME_1=VALUE_1", "NAME_2=VALUE_2", ..., "NAME_N=VALUE_N"}`.<br>**Default:** `{}`.
-1. `verbose`<br>Sets verbose mode for the plugin being tested.<br>**Default:** `false`.
+1. `verbose`<br>Sets verbose mode for the rule being tested.<br>**Default:** `false`.
 
 ## 6 Packaging
 
-The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Instrumentation Rules</ins>:
+The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Integration Rules</ins>:
 
-1. **Does the rule have an external JAR that implements the instrumentation logic?**
+1. **Does the rule have an external JAR that implements the instrumentation logic (i.e. an external <ins>Integration</ins>)?**
 
-   Many <ins>Instrumentation Rules</ins> in <ins>SpecialAgent</ins> have the instrumentation logic implemented in external projects. An example of this is the [OkHttp Rule][okhttp] and [OkHttp Plugin][java-okhttp]. This separation is preferred, because it allows the <ins>Instrumentation Plugin</ins> ([OkHttp Plugin][java-okhttp]) to be used _without <ins>SpecialAgent</ins>_ via manual instrumentation. The [OkHttp Rule][okhttp] therefore is merely a bridge between <ins>SpecialAgent</ins> and the ([OkHttp Plugin][java-okhttp]).
+   Many <ins>Integration Rules</ins> in <ins>SpecialAgent</ins> have the instrumentation logic implemented in external projects. An example of this is the [OkHttp Integration Rule][okhttp] and [OkHttp Integration][java-okhttp]. This separation is preferred, because it allows the <ins>Integration</ins> ([OkHttp Integration][java-okhttp]) to be used _without <ins>SpecialAgent</ins>_ via manual instrumentation. The [OkHttp Integration Rule][okhttp] therefore is merely a bridge between <ins>SpecialAgent</ins> and the ([OkHttp Integration][java-okhttp]).
 
-   * If the rule you are implementing has an external JAR that implements the instrumentation logic, then its maven dependency must be specified in the rule's POM as:
+   * If the rule you are implementing has an external JAR that implements the instrumentation logic (i.e. an external <ins>Integration</ins>), then its maven dependency must be specified in the rule's POM as:
 
      ```xml
      <dependency>
@@ -186,7 +186,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
      </dependency>
      ```
 
-     For example, for the [OkHttp Rule][okhttp] the dependency for the [OkHttp Plugin][java-okhttp] is:
+     For example, for the [OkHttp Integration Rule][okhttp] the dependency for the [OkHttp Integration][java-okhttp] is:
 
      ```xml
      <dependency>
@@ -207,19 +207,19 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
      </dependency>
      ```
 
-   * If the external <ins>Instrumentation Plugin</ins> JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependencies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
+   * If the external <ins>Integration</ins> JAR imports any `io.opentracing:opentracing-*` dependencies, the `io.opentracing.contrib:opentracing-tracerresolver`, or any other OpenTracing dependencies that are guaranteed to be provided by <ins>SpecialAgent</ins>, then these dependencies **MUST BE** excluded in the dependency spec (as shown in the example for OkHttp just above).
 
      _If this is not done, it may lead to `LinkageError` due to the existence of multiple versions of the same class in different class loaders._
 
 1. **What is the required library that must be present in a target runtime for this rule to be compatible?**
 
-   For <ins>Instrumentation Rules</ins> that have external <ins>Instrumentation Plugins</ins>, this required library is effectively the dependency that the <ins>Instrumentation Plugin</ins> uses to implement its instrumentation logic for the specific 3rd-party library.
+   For <ins>Integration Rules</ins> that have external <ins>Integrations</ins>, this required library is effectively the dependency that the <ins>Integration</ins> uses to implement its instrumentation logic for the specific 3rd-party library.
 
-   For <ins>Instrumentation Rules</ins> that do not have an external <ins>Instrumentation Plugin</ins>, this is the effectively the same. However, in this case, the <ins>Instrumentation Rules</ins> import this/these dependencies directly.
+   For <ins>Integration Rules</ins> that do not have an external <ins>Integrations</ins>, this is the effectively the same. However, in this case, the <ins>Integration Rules</ins> import this/these dependencies directly.
 
-   <ins>SpecialAgent</ins> needs to know **what is the required library that must be present in a target runtime**, so it can create a `fingerprint.bin` that will later be used to determine compatibility with target runtimes.
+   The <ins>SpecialAgent</ins> needs to know **what is the required library that must be present in a target runtime**, so it can create a `fingerprint.bin` that will later be used to determine compatibility with target runtimes.
 
-   **Required libraries that must be present** must be declared as a dependency in the <ins>Instrumentation Rule's</ins> POM as:
+   **Required libraries that must be present** must be declared as a dependency in the <ins>Integration Rule's</ins> POM as:
 
      ```xml
      <dependency>
@@ -230,7 +230,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
      </dependency>
      ```
 
-     For example, for the [OkHttp Rule][okhttp] the required dependency (coming from [OkHttp Plugin][java-okhttp]) is:
+     For example, for the [OkHttp Rule][okhttp] the required dependency (coming from the [OkHttp Integration][java-okhttp]) is:
 
      ```xml
      <dependency>
@@ -244,15 +244,15 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
 
 1. **Important note!**
 
-   _All_ dependencies declared in a <ins>Instrumentation Rule's</ins> POM must have `<optional>true</optional>` spec.
+   _All_ dependencies declared in a <ins>Integration Rule's</ins> POM must have `<optional>true</optional>` spec.
 
    In case of `<scope>test</scope>` dependencies, this is also true.
 
 1. **Important note!**
 
-   The <ins>Instrumentation Rule/Plugin</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the plugin to be instrumentable (i.e. if the plugin finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
+   The <ins>Integration Rule</ins> and/or <ins>Integration</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the integration to be instrumentable (i.e. if the integration finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
 
-1. Each rule **MUST** declare a unique name. To declare a name, the plugin's `pom.xml` must specify the following:
+1. Each rule **MUST** declare a unique name. To declare a name, the rule's `pom.xml` must specify the following:
    ```xml
    <project>
     ...
@@ -265,7 +265,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
 
    The value of `sa.rule.name` must follow the [Rule Name Pattern](https://github.com/opentracing-contrib/java-specialagent/#rule-name-pattern) pattern: `<WORD>[:WORD][:NUMBER]`. The first `<WORD>` is required, the second `[:WORD]` is optional, and the `[:NUMBER]` suffix is also optional. Please refer to the link in the previous sentence for a description of the use and meaning of this spec.
 
-1. Each plugin can declare a priority for order when plugins are loaded by the SpecialAgent. To declare a priority, the plugin's `pom.xml` must specify the following:
+1. Each <ins>Integration Rule</ins> can declare a priority for order when rules are loaded by the SpecialAgent. To declare a priority, the rule's `pom.xml` must specify the following:
    ```xml
    <project>
     ...
@@ -276,25 +276,25 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inst
    </project>
    ```
 
-   The value of `sa.rule.priority` can be between `0` and `2147483647`. Plugins with the highest `sa.rule.priority` value are loaded last (i.e. the order for loading of plugins is as per inverse `sa.rule.priority`).
+   The value of `sa.rule.priority` can be between `0` and `2147483647`. Rules with the highest `sa.rule.priority` value are loaded last (i.e. the order for loading of rules is as per inverse `sa.rule.priority`).
 
    If the `sa.rule.priority` property is missing, a priority of `0` is used as default.
 
-### 6.1 Including the <ins>Instrumentation Rule</ins> in the <ins>SpecialAgent</ins>
+### 6.1 Including the <ins>Integration Rule</ins> in the <ins>SpecialAgent</ins>
 
-<ins>Instrumentation Rules</ins> must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`][specialagent-pom] for an example of the usage.
+<ins>Integration Rules</ins> must be explicitly packaged into the main JAR of the <ins>SpecialAgent</ins>. Please refer to the `<id>assemble</id>` profile in the [`POM`][specialagent-pom] for an example of the usage.
 
 ## 7 Compatibility Testing
 
-<ins>Instrumentation Rules</ins> must provide a spec for compatibility tests. These tests assert compatibility with different versions of a particular 3rd-party library. For instance, with OkHttp, the API significantly changed when it was upgraded from OkHttp3 to OkHttp4. This information is essential for <ins>SpecialAgent</ins> to be able to assert proper functioning of its fingerprinting utility so as to prevent a target runtime from potential failure due to incompatible instrumentation.
+<ins>Integration Rules</ins> must provide a spec for compatibility tests. These tests assert compatibility with different versions of a particular 3rd-party library. For instance, with OkHttp, the API significantly changed when it was upgraded from OkHttp3 to OkHttp4. This information is essential for <ins>SpecialAgent</ins> to be able to assert proper functioning of its fingerprinting utility so as to prevent a target runtime from potential failure due to incompatible instrumentation.
 
 The <ins>Compatibility Testing</ins> spec is described for `pass` and `fail` conditions. The `pass` condition requires the compatibility test to pass for a particular 3rd-party library, and the `fail` condition requires the compatibility test to fail.
 
-The POM of each <ins>Instrumentation Rule</ins> must describe at least one `pass` compatibility test. This test can be expressed in 2 forms:
+The POM of each <ins>Integration Rule</ins> must describe at least one `pass` compatibility test. This test can be expressed in 2 forms:
 
 1. **Short Form**
 
-   The Short Form is provided in the `<properties>` element of the <ins>Instrumentation Rule's</ins> POM in a `<passCompatibility>` sub-element. The body of the sub-element must be a `groupId:artifactId:versionRange`. For a description of Version Ranges, please refer to [this link](http://www.mojohaus.org/versions-maven-plugin/examples/resolve-ranges.html).
+   The Short Form is provided in the `<properties>` element of the <ins>Integration Rule's</ins> POM in a `<passCompatibility>` sub-element. The body of the sub-element must be a `groupId:artifactId:versionRange`. For a description of Version Ranges, please refer to [this link](http://www.mojohaus.org/versions-maven-plugin/examples/resolve-ranges.html).
 
    For example, the `<passCompatibility>` spec for the [OkHttp Rule][okhttp] is:
 
@@ -308,7 +308,7 @@ The POM of each <ins>Instrumentation Rule</ins> must describe at least one `pass
 
 1. **Long Form**
 
-   The Long Form is provided in the `specialagent-maven-plugin` configuration of the <ins>Instrumentation Rule's</ins> POM. This form allows for the description of complex compatibility situations. Let's look at the `spring-messaging` rule as an example:
+   The Long Form is provided in the `specialagent-maven-plugin` configuration of the <ins>Integration Rule's</ins> POM. This form allows for the description of complex compatibility situations. Let's look at the `spring-messaging` rule as an example:
 
    ```xml
    <plugin>
@@ -358,7 +358,7 @@ The POM of each <ins>Instrumentation Rule</ins> must describe at least one `pass
 
 ## 8 Integration Testing
 
-<ins>Instrumentation Rules</ins> must provide an integration test demonstrating proper functionality of the rule against a runtime with the 3rd-party being instrumented. These tests belong to the [`/test/`](https://github.com/opentracing-contrib/java-specialagent/tree/master/test/) sub-module. These tests resemble the `AgentRunner` tests, but are simpler, because there is no complex class loading architecture involved. The Integration Tests are intended to be as simple as possible, and are only required to demonstrate the proper instrumentation of the particular 3rd-party library.
+<ins>Integration Rules</ins> must provide an integration test demonstrating proper functionality of the rule against a runtime with the 3rd-party being instrumented. These tests belong to the [`/test/`](https://github.com/opentracing-contrib/java-specialagent/tree/master/test/) sub-module. These tests resemble the `AgentRunner` tests, but are simpler, because there is no complex class loading architecture involved. The Integration Tests are intended to be as simple as possible, and are only required to demonstrate the proper instrumentation of the particular 3rd-party library.
 
 **Important note!**
 

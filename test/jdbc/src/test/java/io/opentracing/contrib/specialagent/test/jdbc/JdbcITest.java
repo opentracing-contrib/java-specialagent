@@ -26,8 +26,8 @@ import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class JdbcITest {
   public static void main(final String[] args) throws SQLException, ClassNotFoundException {
-    System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing.separator", "@@@");
-    System.setProperty("sa.instrumentation.plugin.jdbc.ignoreForTracing", "SELECT 1 FROM dual @@@ SELECT 2 FROM dual");
+    System.setProperty("sa.integration.jdbc.ignoreForTracing.separator", "@@@");
+    System.setProperty("sa.integration.jdbc.ignoreForTracing", "SELECT 1 FROM dual @@@ SELECT 2 FROM dual");
 
     Class.forName("org.h2.Driver");
 

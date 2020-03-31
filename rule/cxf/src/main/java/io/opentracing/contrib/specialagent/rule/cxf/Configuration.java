@@ -30,11 +30,11 @@ import io.opentracing.contrib.specialagent.Logger;
 
 public final class Configuration {
   public static final Logger logger = Logger.getLogger(Configuration.class);
-  public static final String INTERCEPTORS_SERVER_IN = "sa.instrumentation.plugin.cxf.interceptors.server.in";
-  public static final String INTERCEPTORS_SERVER_OUT = "sa.instrumentation.plugin.cxf.interceptors.server.out";
-  public static final String INTERCEPTORS_CLIENT_IN = "sa.instrumentation.plugin.cxf.interceptors.client.in";
-  public static final String INTERCEPTORS_CLIENT_OUT = "sa.instrumentation.plugin.cxf.interceptors.client.out";
-  public static final String INTERCEPTORS_CLASSPATH = "sa.instrumentation.plugin.cxf.interceptors.classpath";
+  public static final String INTERCEPTORS_SERVER_IN = "sa.integration.cxf.interceptors.server.in";
+  public static final String INTERCEPTORS_SERVER_OUT = "sa.integration.cxf.interceptors.server.out";
+  public static final String INTERCEPTORS_CLIENT_IN = "sa.integration.cxf.interceptors.client.in";
+  public static final String INTERCEPTORS_CLIENT_OUT = "sa.integration.cxf.interceptors.client.out";
+  public static final String INTERCEPTORS_CLASSPATH = "sa.integration.cxf.interceptors.classpath";
   public static final String INTERCEPTORS_SEPARATOR = ",";
 
   private static ClassLoader interceptorClassLoader;

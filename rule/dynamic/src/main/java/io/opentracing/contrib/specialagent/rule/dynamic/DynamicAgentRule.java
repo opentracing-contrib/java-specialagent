@@ -30,17 +30,15 @@ import net.bytebuddy.matcher.ElementMatcher.Junction;
 import net.bytebuddy.utility.JavaModule;
 
 public class DynamicAgentRule extends AgentRule {
-  private static final String RULES = "sa.instrumentation.plugin.dynamic.rules";
+  private static final String RULES = "sa.integration.dynamic.rules";
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception {
+  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
     final ArrayList<AgentBuilder> builders = new ArrayList<>();
 
     final String rules = System.getProperty(RULES);
-    if (rules == null || rules.isEmpty()) {
-      // sa.config.instrumentation.plugin.method is not config
+    if (rules == null || rules.isEmpty())
       return builders;
-    }
 
     final DynamicSpec[] specs = DynamicSpec.parseRules(rules);
     for (final DynamicSpec spec : specs) {

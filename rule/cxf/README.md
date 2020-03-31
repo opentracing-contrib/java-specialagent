@@ -8,9 +8,9 @@ Following properties are supported by the CXF Rule.
 
 ### Properties
 
-* `-Dsa.instrumentation.plugin.cxf.interceptors.server.in`
+* `-Dsa.integration.cxf.interceptors.server.in`
 
-  Add interceptors to server handling `in` phases, comma delimited. The interceptorss must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
+  Add interceptors to server handling `in` phases, comma delimited. The interceptors must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
 
   **Example:**
 
@@ -18,21 +18,21 @@ Following properties are supported by the CXF Rule.
   com.company.my.project.MyInterceptor1,com.company.my.project.MyInterceptor2
   ```
 
-* `-Dsa.instrumentation.plugin.cxf.interceptors.server.out`
+* `-Dsa.integration.cxf.interceptors.server.out`
 
-  Add interceptors to server process `out` phases, comma delimited. The interceptorss must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
+  Add interceptors to server process `out` phases, comma delimited. The interceptors must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
 
-* `-Dsa.instrumentation.plugin.cxf.interceptors.client.in`
+* `-Dsa.integration.cxf.interceptors.client.in`
 
-  Add interceptors to client process `in` phases, comma delimited. The interceptorss must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
+  Add interceptors to client process `in` phases, comma delimited. The interceptors must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
 
-* `-Dsa.instrumentation.plugin.cxf.interceptors.client.in`
+* `-Dsa.integration.cxf.interceptors.client.in`
 
-  Add interceptors to client process `out` phases, comma delimited. The interceptorss must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
+  Add interceptors to client process `out` phases, comma delimited. The interceptors must be subclasses of `org.apache.cxf.phase.PhaseInterceptor<Message>`.
 
-* `-Dsa.instrumentation.plugin.cxf.interceptors.classpath`
+* `-Dsa.integration.cxf.interceptors.classpath`
 
-  Indicate the casspath of JARs or directories containing interceptors classes specified by `sa.instrumentation.plugin.cxf.interceptors.*`, delimited by `File.pathSeparatorChar`.
+  Indicate the classpath of JARs or directories containing interceptors classes specified by `sa.integration.cxf.interceptors.*`, delimited by `File.pathSeparatorChar`.
 
   **Example:**
 

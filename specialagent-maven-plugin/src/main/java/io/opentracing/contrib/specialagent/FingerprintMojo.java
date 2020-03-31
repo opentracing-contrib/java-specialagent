@@ -54,7 +54,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
- * instrumentation plugins. The implementation uses introspection to record the
+ * Integration Rules. The implementation uses introspection to record the
  * following information from JARs in 3rd-party libraries:
  * <ol>
  * <li>Each class name in each package in each JAR of the 3rd-party
@@ -224,11 +224,11 @@ public final class FingerprintMojo extends TreeMojo {
     final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
     destFile.getParentFile().mkdirs();
 
-    // The `ruleDeps` represent the Instrumentation Plugin (this is the dependency(ies)
-    // that bridges/links between the 3rd-Party Library to the Instrumentation Rule).
+    // The `ruleDeps` represent the Integration (this is the dependency(ies)
+    // that bridges/links between the 3rd-Party Library to the Integration Rule).
     final URL[] ruleDeps = getDependencyPaths(localRepository, "compile", true, getProject().getArtifacts().iterator(), 1);
-    // Include the compile path of the Instrumentation Rule itself, which solves the use-
-    // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
+    // Include the compile path of the Integration Rule itself, which solves the use-
+    // case where there is no Integration (i.e. the Integration Rule directly
     // bridges/links between the 3rd-Party Library to itself).
     ruleDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
     if (debug)

@@ -381,7 +381,7 @@ public final class MavenUtil {
 
   /**
    * Filter the specified array of {@code File} objects to return the
-   * Instrumentation Rule files as specified by the Dependency TGF file at
+   * Integration Rule files as specified by the Dependency TGF file at
    * {@code dependencyUrl}.
    *
    * @param files The array of {@code File} objects to filter.
@@ -391,7 +391,7 @@ public final class MavenUtil {
    *          {@code (optional)}.
    * @param scopes An array of Maven scopes to include in the returned set, or
    *          {@code null} to include all scopes.
-   * @return An array of {@code File} objects representing Instrumentation Rule
+   * @return An array of {@code File} objects representing Integration Rule
    *         files.
    * @throws IOException If an I/O error has occurred.
    */

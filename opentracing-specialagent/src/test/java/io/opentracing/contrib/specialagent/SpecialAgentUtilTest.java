@@ -17,6 +17,11 @@ package io.opentracing.contrib.specialagent;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+
 import org.junit.Test;
 
 /**
@@ -25,6 +30,42 @@ import org.junit.Test;
  * @author Seva Safris
  */
 public class SpecialAgentUtilTest {
+  @Test
+  public void testParseConfiguration() {
+    final LinkedHashMap<String,String> properties = new LinkedHashMap<>();
+    properties.put("sa.integration.*.disable", "");
+    properties.put("sa.exporter.*.disable", "");
+    properties.put("sa.integration.okhttp.enable", "");
+    properties.put("sa.integration.concurrent.enable", "");
+    properties.put("sa.integration.concurrent.verbose", "");
+    properties.put("sa.integration.lettuce:5.?.enable", "");
+    properties.put("sa.integration.okhttp.disable", "");
+    properties.put("sa.exporter.jaeger.enable", "");
+    properties.put("sa.exporter.jaeger.enable", "false");
+    properties.put("sa.exporter.lightstep.enable", "");
+    properties.put("sa.include", "exporter.jar");
+    final ArrayList<String> verbosePluginNames = new ArrayList<>();
+    final HashMap<String,Boolean> integrationRuleNameToEnable = new HashMap<>();
+    final HashMap<String,Boolean> traceExporterNameToEnable = new HashMap<>();
+
+    final File[] includedPlugins = SpecialAgentUtil.parseConfiguration(properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
+
+    assertArrayEquals(new File[] {new File("exporter.jar")}, includedPlugins);
+    final boolean allIntegrationsEnabled = !integrationRuleNameToEnable.containsKey("*") || integrationRuleNameToEnable.remove("*");
+    assertFalse(allIntegrationsEnabled);
+    final boolean allExportersEnabled = !traceExporterNameToEnable.containsKey("*") || traceExporterNameToEnable.remove("*");
+    assertFalse(allExportersEnabled);
+
+    assertTrue(verbosePluginNames.toString(), verbosePluginNames.contains("concurrent"));
+
+    assertFalse(integrationRuleNameToEnable.toString(), integrationRuleNameToEnable.get("okhttp"));
+    assertTrue(integrationRuleNameToEnable.toString(), integrationRuleNameToEnable.get("concurrent"));
+    assertTrue(integrationRuleNameToEnable.toString(), integrationRuleNameToEnable.get("lettuce:5.?"));
+
+    assertFalse(traceExporterNameToEnable.toString(), traceExporterNameToEnable.get("jaeger"));
+    assertTrue(traceExporterNameToEnable.toString(), traceExporterNameToEnable.get("lightstep"));
+  }
+
   @Test
   public void testDigestEventsProperty() {
     Event[] events = SpecialAgentUtil.digestEventsProperty(null);

@@ -29,7 +29,7 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-@AgentRunner.Config(properties = "sa.instrumentation.plugin.dynamic.rules=io.opentracing.contrib.specialagent.rule.dynamic.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.rule.dynamic.ExampleMethodClass#test2(java.lang.String):java.lang.String")
+@AgentRunner.Config(properties = "sa.integration.dynamic.rules=io.opentracing.contrib.specialagent.rule.dynamic.ExampleMethodClass#test1;io.opentracing.contrib.specialagent.rule.dynamic.ExampleMethodClass#test2(java.lang.String):java.lang.String")
 public class DynamicAgentTest {
   @Before
   public void before(final MockTracer tracer) {
