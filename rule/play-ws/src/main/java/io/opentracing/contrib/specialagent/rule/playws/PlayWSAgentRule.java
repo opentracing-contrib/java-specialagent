@@ -36,13 +36,13 @@ public class PlayWSAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(PlayWSAgentRule.class).on(named("execute").and(takesArguments(2)).and(takesArgument(0, named("play.shaded.ahc.org.asynchttpclient.Request"))).and(takesArgument(1, named("play.shaded.ahc.org.asynchttpclient.AsyncHandler")))));
+          return builder.visit(advice().to(PlayWSAgentRule.class).on(named("execute").and(takesArguments(2)).and(takesArgument(0, named("play.shaded.ahc.org.asynchttpclient.Request"))).and(takesArgument(1, named("play.shaded.ahc.org.asynchttpclient.AsyncHandler")))));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object arg1) {
-    if (isEnabled(PlayWSAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object arg1) {
+    if (isEnabled(className, origin))
       arg1 = PlayWSAgentIntercept.executeStart(arg0, arg1);
   }
 }

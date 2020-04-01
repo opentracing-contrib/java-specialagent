@@ -38,9 +38,9 @@ public class CXFITest {
   private static final String BASE_URI = "http://127.0.0.1:48080";
 
   public static void main(final String[] args) {
-    System.setProperty("sa.instrumentation.plugin.cxf.interceptors.client.in", ClientSpanTagInterceptor.class.getName());
-    System.setProperty("sa.instrumentation.plugin.cxf.interceptors.server.out", ServerSpanTagInterceptor.class.getName());
-    System.setProperty("sa.instrumentation.plugin.cxf.interceptors.classpath", "taget/test-classes");
+    System.setProperty("sa.integration.cxf.interceptors.client.in", ClientSpanTagInterceptor.class.getName());
+    System.setProperty("sa.integration.cxf.interceptors.server.out", ServerSpanTagInterceptor.class.getName());
+    System.setProperty("sa.integration.cxf.interceptors.classpath", "taget/test-classes");
 
     final String msg = "hello";
 

@@ -35,20 +35,20 @@ public class SpringWebAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(RestTemplate.class).on(named("execute")));
+          return builder.visit(advice().to(RestTemplate.class).on(named("execute")));
         }}));
   }
 
   public static class RestTemplate {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(className, origin))
         SpringWebAgentIntercept.enter(thiz);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.Return Object response) {
-      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.Return Object response) {
+      if (isEnabled(className, origin))
         SpringWebAgentIntercept.exit(response, thrown);
     }
   }

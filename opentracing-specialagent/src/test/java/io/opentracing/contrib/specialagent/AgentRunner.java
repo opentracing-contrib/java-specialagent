@@ -57,8 +57,8 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
 /**
- * A JUnit runner that is designed to run tests for instrumentation rules that
- * have auto-instrumentation rules implemented as per the {@link AgentRule} API.
+ * A JUnit runner that is designed to run tests for Integrations that have
+ * Integration Rules implemented as per the {@link AgentRule} API.
  * <p>
  * The {@link AgentRunner} uses ByteBuddy's self-attach methodology to obtain
  * the {@link Instrumentation} instance. This architecture allows tests with the
@@ -288,11 +288,12 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
     String[] properties() default {};
 
     /**
-     * Names of rules (either instrumentation or tracer) to be disabled.
+     * Names of rules (either Integration Rule or Trace Exporter) to be
+     * disabled.
      * <p>
      * Default: <code>{}</code>.
      *
-     * @return Names of rules (either instrumentation or tracer) to be
+     * @return Names of rules (either Integration Rule or Trace Exporter) to be
      *         disabled.
      */
     String[] disable() default {};
@@ -314,13 +315,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
   private final PluginManifest ruleManifest;
 
   private void setVerbose(final boolean verbose) {
-    System.setProperty("sa.instrumentation.plugin." + ruleManifest.name + ".verbose", String.valueOf(verbose));
+    System.setProperty("sa.integration." + ruleManifest.name + ".verbose", String.valueOf(verbose));
   }
 
   private static void setDisable(final String[] disable) {
     for (final String name : disable) {
-      System.setProperty("sa.instrumentation.plugin." + name + ".disable", "");
-      System.setProperty("sa.tracer.plugin." + name + ".disable", "");
+      System.setProperty("sa.integration." + name + ".disable", "");
+      System.setProperty("sa.exporter." + name + ".disable", "");
     }
   }
 

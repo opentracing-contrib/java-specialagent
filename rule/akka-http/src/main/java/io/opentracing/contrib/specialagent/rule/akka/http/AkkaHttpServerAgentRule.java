@@ -36,27 +36,27 @@ public class AkkaHttpServerAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SyncHandler.class).on(named("bindAndHandleSync").and(takesArgument(0, named("akka.japi.Function")))));
+          return builder.visit(advice().to(SyncHandler.class).on(named("bindAndHandleSync").and(takesArgument(0, named("akka.japi.Function")))));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncHandler.class).on(named("bindAndHandleAsync").and(takesArgument(0, named("akka.japi.Function")))));
+          return builder.visit(advice().to(AsyncHandler.class).on(named("bindAndHandleAsync").and(takesArgument(0, named("akka.japi.Function")))));
         }}));
   }
 
   public static class SyncHandler {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
-      if (isEnabled(AkkaHttpServerAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
+      if (isEnabled(className, origin))
         arg0 = AkkaAgentIntercept.bindAndHandleSync(arg0);
     }
   }
 
   public static class AsyncHandler {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
-      if (isEnabled(AkkaHttpServerAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg0) {
+      if (isEnabled(className, origin))
         arg0 = AkkaAgentIntercept.bindAndHandleAsync(arg0);
     }
   }

@@ -36,40 +36,40 @@ public class JedisAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SendCommand.class).on(named("sendCommand").and(takesArgument(1, byte[][].class))));
+          return builder.visit(advice().to(SendCommand.class).on(named("sendCommand").and(takesArgument(1, byte[][].class))));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ReadCommandOutput.class).on(named("readProtocolWithCheckingBroken")));
+          return builder.visit(advice().to(ReadCommandOutput.class).on(named("readProtocolWithCheckingBroken")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnError.class).on(named("readProtocolWithCheckingBroken")));
+          return builder.visit(advice().to(OnError.class).on(named("readProtocolWithCheckingBroken")));
         }}));
   }
 
   public static class SendCommand {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
-      if (isEnabled(JedisAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
+      if (isEnabled(className, origin))
         JedisAgentIntercept.sendCommand(command, args);
     }
   }
 
   public static class ReadCommandOutput {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(JedisAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin) {
+      if (isEnabled(className, origin))
         JedisAgentIntercept.readCommandOutput();
     }
   }
 
   public static class OnError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(JedisAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin))
         JedisAgentIntercept.onError(thrown);
     }
   }

@@ -35,13 +35,13 @@ public class ZuulAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ZuulAgentRule.class).on(named("getFiltersByType")));
+          return builder.visit(advice().to(ZuulAgentRule.class).on(named("getFiltersByType")));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 0) Object arg) {
-    if (isEnabled(ZuulAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 0) Object arg) {
+    if (isEnabled(className, origin))
       ZuulAgentIntercept.exit(returned, arg);
   }
 }

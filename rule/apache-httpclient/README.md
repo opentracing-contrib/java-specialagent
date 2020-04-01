@@ -8,7 +8,7 @@ Following properties are supported by the Apache HttpClient Rule.
 
 ### Properties
 
-* `-Dsa.instrumentation.plugin.apache:httpclient.spanDecorators`
+* `-Dsa.integration.apache:httpclient.spanDecorators`
 
   Override default provided Apache HttpClient span decorator (`io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags`), with customized decorator class names, comma separated. The customized decorators must be subclasses of `io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator` (the interface provided by this rule plugin).
 
@@ -18,9 +18,9 @@ Following properties are supported by the Apache HttpClient Rule.
   com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2,io.opentracing.contrib.specialagent.rule.apache.httpclient.ApacheClientSpanDecorator$StandardTags
   ```
 
-* `-Dsa.instrumentation.plugin.apache:httpclient.spanDecorators.classpath`
+* `-Dsa.integration.apache:httpclient.spanDecorators.classpath`
 
-  Indicate the casspath of JARs or directories containing customized decorator classes specified by `sa.instrumentation.plugin.apache:httpclient.spanDecorators`, delimited by `File.pathSeparatorChar`.
+  Indicate the classpath of JARs or directories containing customized decorator classes specified by `sa.integration.apache:httpclient.spanDecorators`, delimited by `File.pathSeparatorChar`.
 
   **Example:**
 

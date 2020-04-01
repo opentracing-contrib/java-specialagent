@@ -36,10 +36,10 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.utility.JavaModule;
 
 public class ScheduledRunnableAgentRule extends AgentRule {
-  public static final Transformer transformer = new Transformer() {
+  public final Transformer transformer = new Transformer() {
     @Override
     public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-      return builder.visit(Advice.to(ScheduledRunnableAgentRule.class).on(named("schedule").and(takesArguments(Runnable.class, long.class, TimeUnit.class))));
+      return builder.visit(advice().to(ScheduledRunnableAgentRule.class).on(named("schedule").and(takesArguments(Runnable.class, long.class, TimeUnit.class))));
     }};
 
   @Override
@@ -50,12 +50,12 @@ public class ScheduledRunnableAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void exit(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!isEnabled(ScheduledRunnableAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
+    if (!isEnabled(className, origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();
-    if (isVerbose(ScheduledRunnableAgentRule.class)) {
+    if (isVerbose(className)) {
       final Span span = tracer
         .buildSpan("schedule")
         .withTag(Tags.COMPONENT, "java-concurrent")

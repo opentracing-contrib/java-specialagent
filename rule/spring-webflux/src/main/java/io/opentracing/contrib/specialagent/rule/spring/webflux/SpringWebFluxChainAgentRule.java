@@ -36,28 +36,28 @@ public class SpringWebFluxChainAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Handler.class).on(named("handle")));
+          return builder.visit(advice().to(Handler.class).on(named("handle")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("org.springframework.web.reactive.function.client.WebClient$Builder"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(FluxClient.class).on(named("build")));
+          return builder.visit(advice().to(FluxClient.class).on(named("build")));
         }}));
   }
 
   public static class Handler {
     @Advice.OnMethodExit
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(typing = Typing.DYNAMIC, value = 0) Object exchange, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
-      if (isEnabled(SpringWebFluxChainAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(typing = Typing.DYNAMIC, value = 0) Object exchange, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
+      if (isEnabled(className, origin))
         returned = SpringWebFluxAgentIntercept.handle(exchange, returned);
     }
   }
 
   public static class FluxClient {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(SpringWebFluxChainAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(className, origin))
         SpringWebFluxAgentIntercept.client(thiz);
     }
   }

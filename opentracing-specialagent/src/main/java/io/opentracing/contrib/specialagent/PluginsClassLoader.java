@@ -25,8 +25,8 @@ import java.util.Enumeration;
 import java.util.Set;
 
 /**
- * {@code ClassLoader} to contain all Instrumentation and Tracer Plugin(s) that
- * are packaged inside SpecialAgent.
+ * {@code ClassLoader} to contain all Integration and Trace Exporter Plugin(s)
+ * that are packaged inside SpecialAgent.
  *
  * @author Seva Safris
  */

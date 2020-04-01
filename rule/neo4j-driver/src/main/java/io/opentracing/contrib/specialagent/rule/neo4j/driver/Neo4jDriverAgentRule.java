@@ -36,13 +36,13 @@ public class Neo4jDriverAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Neo4jDriverAgentRule.class).on(named("driver").and(takesArguments(3)).and(takesArgument(0, named("java.net.URI")))));
+          return builder.visit(advice().to(Neo4jDriverAgentRule.class).on(named("driver").and(takesArguments(3)).and(takesArgument(0, named("java.net.URI")))));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(Neo4jDriverAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(className, origin))
       returned = Neo4jDriverAgentIntercept.exit(returned);
   }
 }

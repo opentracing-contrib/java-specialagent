@@ -51,7 +51,7 @@ import org.apache.maven.project.ProjectDependenciesResolver;
 public final class AssembleMojo extends ResolveDependenciesMojo {
   private static final String pluginsDestDir = "dependencies/" + UtilConstants.META_INF_PLUGIN_PATH;
   private static final String isoDestDir = "dependencies/" + UtilConstants.META_INF_ISO_PATH;
-  private static final String declarationScopeOfInstrumentationPlugins = "provided";
+  private static final String declarationScopeOfIntegrations = "provided";
 
   @Inject
   private MojoExecutor executor;
@@ -94,7 +94,7 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
       return;
 
     isRunning = true;
-    this.includeScope = declarationScopeOfInstrumentationPlugins;
+    this.includeScope = declarationScopeOfIntegrations;
     try {
       final File pluginsPath = new File(getProject().getBuild().getDirectory(), pluginsDestDir);
       pluginsPath.mkdirs();
@@ -111,7 +111,7 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
         if (debug)
           getLog().warn("Assembling artifact: " + artifact.toString());
 
-        final MavenDependency dependency = MavenUtil.getDependency(artifact.toString(), declarationScopeOfInstrumentationPlugins);
+        final MavenDependency dependency = MavenUtil.getDependency(artifact.toString(), declarationScopeOfIntegrations);
         if (dependency != null) {
           File jarFile = new File(MavenUtil.getPathOf(null, dependency));
           jarFile = new File(localRepository.getBasedir(), jarFile.getPath());
@@ -156,13 +156,21 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
             throw new MojoExecutionException("Version of " + dependency + " must be specified in <dependencyManagement>");
 
           dependency.setVersion(MavenUtil.lookupVersion(getProject(), dependency));
+        }
+
+        final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));
+        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
+        MutableMojo.rollbackDependencies(getProject().getDependencies(), rollback);
+        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
+
+        for (final IsolatedDependency dependency : isolatedDependencies) {
           final File jarFile = new File(MavenUtil.getPathOf(localRepository.getBasedir(), dependency));
 
           final String fileName;
           if (AssembleUtil.hasFileInJar(jarFile, "META-INF/services/io.opentracing.contrib.tracerresolver.TracerFactory")) {
             final String pluginName = (String)getProject().getProperties().get(dependency.getArtifactId());
             if (pluginName == null)
-              throw new MojoExecutionException("Name of Tracer Plugin is missing: <properties><" + dependency.getArtifactId() + ">NAME</" + dependency.getArtifactId() + "></properties>");
+              throw new MojoExecutionException("Name of Trace Exporter is missing: <properties><" + dependency.getArtifactId() + ">NAME</" + dependency.getArtifactId() + "></properties>");
 
             fileName = pluginName + ".jar";
           }
@@ -172,11 +180,6 @@ public final class AssembleMojo extends ResolveDependenciesMojo {
 
           fileCopy(jarFile, new File(isoPath, fileName));
         }
-
-        final Dependency[] rollback = MutableMojo.replaceDependencies(getProject().getDependencies(), MavenDependency.toDependencies(isolatedDependencies));
-        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
-        MutableMojo.rollbackDependencies(getProject().getDependencies(), rollback);
-        MutableMojo.resolveDependencies(session, execution, executor, projectDependenciesResolver);
       }
     }
     catch (final DependencyResolutionException | IOException | LifecycleExecutionException e) {

@@ -38,14 +38,14 @@ public class EventContextRule extends AgentRule {
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(EventContextRule.class).on(isConstructor()));
+          return builder.visit(advice().to(EventContextRule.class).on(isConstructor()));
         }
       }));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (!isEnabled(EventContextRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (!isEnabled(className, origin))
       return;
 
     final Span span = GlobalTracer.get().activeSpan();
