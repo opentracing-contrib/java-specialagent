@@ -15,13 +15,16 @@
 
 package io.opentracing.contrib.specialagent;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.instrument.Instrumentation;
 import java.util.Map;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.asm.Advice;
 
 /**
- * Base abstract class for SpecialAgent Instrumentation Rules.
+ * Base abstract class for SpecialAgent Integration Rules.
  *
  * @author Seva Safris
  */
@@ -115,38 +118,47 @@ public abstract class AgentRule {
   private static final Logger logger = Logger.getLogger(AgentRule.class);
   private static final MutexLatch mutexLatch = new MutexLatch();
   private static final ThreadLocal<String> currentAgentRuleClass = new ThreadLocal<>();
-  static Map<String,String> classNameToName;
-
-  public static boolean isEnabled(final String agentRuleClass, final String origin) {
-    final boolean enabled = initialized && mutexLatch.get() == 0 && isThreadInstrumentable.get();
-    final String shortName = agentRuleClass.substring(agentRuleClass.lastIndexOf('.') + 1);
-    if (enabled) {
-      if (logger.isLoggable(Level.FINER))
-        logger.finer("-------> Intercept [" + shortName + "@" + Thread.currentThread().getName() + "]: " + origin);
-
-      currentAgentRuleClass.set(agentRuleClass);
-    }
-    else if (logger.isLoggable(Level.FINEST)) {
-      logger.finest("-------> Intercept [" + shortName + "@" + Thread.currentThread().getName() + "] DROP: " + origin);
-    }
-
-    return enabled;
-  }
+  private static Map<String,String> classNameToName;
 
   public static String getCurrentPluginName() {
     return classNameToName.get(currentAgentRuleClass.get());
   }
 
-  public static boolean isVerbose(final Class<? extends AgentRule> agentRuleClass) {
-    final boolean pluginsVerbose = AssembleUtil.isSystemProperty("sa.instrumentation.plugin.*.verbose");
-    if (pluginsVerbose)
-      return pluginsVerbose;
+  public static boolean isVerbose(final String className) {
+    final boolean integrationsVerbose = AssembleUtil.isSystemProperty("sa.integration.*.verbose");
+    if (integrationsVerbose)
+      return integrationsVerbose;
 
-    final String pluginName = classNameToName.get(agentRuleClass.getName());
-    if (pluginName == null)
+    final String integrationName = classNameToName.get(className);
+    if (integrationName == null)
       throw new IllegalStateException("Plugin name must not be null");
 
-    return AssembleUtil.isSystemProperty("sa.instrumentation.plugin." + pluginName + ".verbose");
+    return AssembleUtil.isSystemProperty("sa.integration." + integrationName + ".verbose");
+  }
+
+  private final String className = getClass().getName();
+
+  @Retention(RetentionPolicy.RUNTIME)
+  public @interface ClassName {
+  }
+
+  public final Advice.WithCustomMapping advice() {
+    return Advice.withCustomMapping().bind(ClassName.class, className);
+  }
+
+  public static boolean isEnabled(final String className, final String origin) {
+    final boolean allowed = initialized && mutexLatch.get() == 0 && isThreadInstrumentable.get();
+    if (allowed) {
+      if (logger.isLoggable(Level.FINER))
+        logger.finer("-------> Intercept [" + className.substring(className.lastIndexOf('.') + 1) + "@" + Thread.currentThread().getName() + "]: " + origin);
+
+      currentAgentRuleClass.set(className);
+    }
+    else if (logger.isLoggable(Level.FINEST)) {
+      logger.finest("-------> Intercept [" + className.substring(className.lastIndexOf('.') + 1) + "@" + Thread.currentThread().getName() + "] DROP: " + origin);
+    }
+
+    return allowed;
   }
 
   /**

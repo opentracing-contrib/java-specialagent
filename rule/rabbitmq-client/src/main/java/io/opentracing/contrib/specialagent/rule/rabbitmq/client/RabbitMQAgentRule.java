@@ -36,48 +36,48 @@ public class RabbitMQAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnEnterPublish.class, OnExitPublish.class).on(named("basicPublish").and(takesArguments(6))));
+          return builder.visit(advice().to(OnEnterPublish.class, OnExitPublish.class).on(named("basicPublish").and(takesArguments(6))));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnExitGet.class).on(named("basicGet")));
+          return builder.visit(advice().to(OnExitGet.class).on(named("basicGet")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnEnterConsume.class).on(named("basicConsume").and(takesArguments(7))));
+          return builder.visit(advice().to(OnEnterConsume.class).on(named("basicConsume").and(takesArguments(7))));
         }}));
   }
 
   public static class OnEnterConsume {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object queue, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (isEnabled(RabbitMQAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object queue, @Advice.Argument(value = 6, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+      if (isEnabled(className, origin))
         callback = RabbitMQAgentIntercept.enterConsume(callback, queue);
     }
   }
 
   public static class OnEnterPublish {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exchange, final @Advice.Argument(value = 1) Object routingKey, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
-      if (isEnabled(RabbitMQAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exchange, final @Advice.Argument(value = 1) Object routingKey, @Advice.Argument(value = 4, readOnly = false, typing = Typing.DYNAMIC) Object props) {
+      if (isEnabled(className, origin))
         props = RabbitMQAgentIntercept.enterPublish(exchange, routingKey, props);
     }
   }
 
   public static class OnExitPublish {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(RabbitMQAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin))
         RabbitMQAgentIntercept.finish(thrown);
     }
   }
 
   public static class OnExitGet {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.Argument(value = 0) Object queue, final @Advice.Return Object returned) {
-      if (isEnabled(RabbitMQAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, final @Advice.Argument(value = 0) Object queue, final @Advice.Return Object returned) {
+      if (isEnabled(className, origin))
         RabbitMQAgentIntercept.exitGet(returned, queue, thrown);
     }
   }

@@ -19,9 +19,14 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 final class FingerprintUtil {
+  private static final String[] includePrefixes = {"javax.jms."};
   private static final String[] excludePrefixes = {"io.opentracing.", "java.", "javax.", "net.bytebuddy.", "org.ietf.jgss", "org.jcp.xml.dsig.internal.", "org.jvnet.staxex.", "org.w3c.dom.", "org.xml.sax.", "sun."};
 
   static boolean isExcluded(final String className) {
+    for (int i = 0; i < includePrefixes.length; ++i)
+      if (className.startsWith(includePrefixes[i]))
+        return false;
+
     for (int i = 0; i < excludePrefixes.length; ++i)
       if (className.startsWith(excludePrefixes[i]))
         return true;

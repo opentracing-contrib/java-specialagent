@@ -36,13 +36,13 @@ public class AsyncHttpClientAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncHttpClientAgentRule.class).on(named("executeRequest").and(takesArguments(2)).and(takesArgument(0, named("org.asynchttpclient.Request")))));
+          return builder.visit(advice().to(AsyncHttpClientAgentRule.class).on(named("executeRequest").and(takesArguments(2)).and(takesArgument(0, named("org.asynchttpclient.Request")))));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object request, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object handler) {
-    if (isEnabled(AsyncHttpClientAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object request, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object handler) {
+    if (isEnabled(className, origin))
       handler = AsyncHttpClientAgentIntercept.enter(request, handler);
   }
 }

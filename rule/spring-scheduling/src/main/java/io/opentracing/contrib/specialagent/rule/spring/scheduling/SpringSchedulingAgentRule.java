@@ -35,19 +35,19 @@ public class SpringSchedulingAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringSchedulingAgentRule.class).on(named("run")));
+          return builder.visit(advice().to(SpringSchedulingAgentRule.class).on(named("run")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(SpringSchedulingAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (isEnabled(className, origin))
       SpringSchedulingAgentIntercept.enter(thiz);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Thrown Throwable thown, final @Advice.Origin String origin) {
-    if (isEnabled(SpringSchedulingAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Thrown Throwable thown, final @Advice.Origin String origin) {
+    if (isEnabled(className, origin))
       SpringSchedulingAgentIntercept.exit(thown);
   }
 }

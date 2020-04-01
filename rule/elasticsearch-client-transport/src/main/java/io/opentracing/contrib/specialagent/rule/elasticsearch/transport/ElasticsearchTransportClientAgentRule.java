@@ -36,14 +36,14 @@ public class ElasticsearchTransportClientAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Transport.class).on(named("doExecute").and(takesArguments(3))));
+          return builder.visit(advice().to(Transport.class).on(named("doExecute").and(takesArguments(3))));
         }}));
   }
 
   public static class Transport {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-      if (isEnabled(ElasticsearchTransportClientAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
+      if (isEnabled(className, origin))
         listener = ElasticsearchTransportClientAgentIntercept.transport(request, listener);
     }
   }

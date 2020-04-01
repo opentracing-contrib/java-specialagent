@@ -116,13 +116,13 @@ public class OpenTracingAdapter extends Adapter {
   }
 
   /**
-   * Returns the {@code JarFile} referencing the Tracer Plugin by the given
+   * Returns the {@code JarFile} referencing the Trace Exporter by the given
    * {@code name} in the specified {@code ClassLoader}.
    *
    * @param classLoader The {@code ClassLoader} in which to find the Tracer
    *          Plugin.
-   * @param name The short name of the Tracer Plugin.
-   * @return The {@code URL} referencing the Tracer Plugin by the given
+   * @param name The short name of the Trace Exporter.
+   * @return The {@code URL} referencing the Trace Exporter by the given
    *         {@code name} in the specified {@code ClassLoader}, or {@code null}
    *         if one was not found.
    */
@@ -149,7 +149,7 @@ public class OpenTracingAdapter extends Adapter {
   }
 
   /**
-   * Connects a Tracer Plugin to the runtime.
+   * Connects a Trace Exporter to the runtime.
    *
    * @return A {@code Tracer} instance to be deferred, or null if no tracer was
    *         specified or the specified tracer was loaded.
@@ -160,7 +160,7 @@ public class OpenTracingAdapter extends Adapter {
   @SuppressWarnings("resource")
   private static Tracer loadDeferredTracer(final ClassLoader isoClassLoader) throws IOException, ReflectiveOperationException {
     if (logger.isLoggable(Level.FINE))
-      logger.fine("\n<<<<<<<<<<<<<<<<<<<< Loading Tracer Plugin >>>>>>>>>>>>>>>>>>>>>\n");
+      logger.fine("\n<<<<<<<<<<<<<<<<<<<< Loading Trace Exporter >>>>>>>>>>>>>>>>>>>>\n");
 
     try {
       if (GlobalTracer.isRegistered()) {
@@ -228,7 +228,7 @@ public class OpenTracingAdapter extends Adapter {
     }
     finally {
       if (logger.isLoggable(Level.FINE))
-        logger.fine("\n>>>>>>>>>>>>>>>>>>>>> Loaded Tracer Plugin <<<<<<<<<<<<<<<<<<<<<\n");
+        logger.fine("\n>>>>>>>>>>>>>>>>>>>> Loaded Trace Exporter <<<<<<<<<<<<<<<<<<<<<\n");
     }
   }
 

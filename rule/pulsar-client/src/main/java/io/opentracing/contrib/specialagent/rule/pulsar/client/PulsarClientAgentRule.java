@@ -36,44 +36,44 @@ public class PulsarClientAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Producer.class).on(named("internalSendAsync").and(takesArguments(1))));
+          return builder.visit(advice().to(Producer.class).on(named("internalSendAsync").and(takesArguments(1))));
         }})
     .type(not(isInterface()).and(hasSuperType(named("org.apache.pulsar.client.api.Consumer"))))
     .transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder
-          .visit(Advice.to(Consumer.class).on(named("receive")))
-          .visit(Advice.to(ConsumerAsync.class).on(named("receiveAsync")));
+          .visit(advice().to(Consumer.class).on(named("receive")))
+          .visit(advice().to(ConsumerAsync.class).on(named("receiveAsync")));
       }}));
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
-      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
+      if (isEnabled(className, origin))
         PulsarClientAgentIntercept.receiveEnd(thiz, returned);
     }
   }
 
   public static class ConsumerAsync {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
-      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
+      if (isEnabled(className, origin))
         PulsarClientAgentIntercept.receiveAsyncEnd(thiz, returned);
     }
   }
 
   public static class Producer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
-      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
+      if (isEnabled(className, origin))
         PulsarClientAgentIntercept.internalSendAsyncEnter(thiz, message);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(PulsarClientAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin))
         returned = PulsarClientAgentIntercept.internalSendAsyncEnd(returned, thrown);
     }
   }

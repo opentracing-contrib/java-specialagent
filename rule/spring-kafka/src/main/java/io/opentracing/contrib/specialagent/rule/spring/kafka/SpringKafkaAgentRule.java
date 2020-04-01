@@ -35,19 +35,19 @@ public class SpringKafkaAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringKafkaAgentRule.class).on(named("onMessage")));
+          return builder.visit(advice().to(SpringKafkaAgentRule.class).on(named("onMessage")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record) {
-    if (isEnabled(SpringKafkaAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record) {
+    if (isEnabled(className, origin))
       SpringKafkaAgentIntercept.onMessageEnter(record);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(SpringKafkaAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+    if (isEnabled(className, origin))
       SpringKafkaAgentIntercept.onMessageExit(thrown);
   }
 }

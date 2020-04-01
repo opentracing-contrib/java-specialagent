@@ -28,9 +28,9 @@ import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 
 public class JdbcAgentIntercept {
-  public static final String IGNORE_FOR_TRACING = "sa.instrumentation.plugin.jdbc.ignoreForTracing";
-  public static final String IGNORE_FOR_TRACING_SEPARATOR = "sa.instrumentation.plugin.jdbc.ignoreForTracing.separator";
-  public static final String WITH_ACTIVE_SPAN_ONLY = "sa.instrumentation.plugin.jdbc.withActiveSpanOnly";
+  public static final String IGNORE_FOR_TRACING = "sa.integration.jdbc.ignoreForTracing";
+  public static final String IGNORE_FOR_TRACING_SEPARATOR = "sa.integration.jdbc.ignoreForTracing.separator";
+  public static final String WITH_ACTIVE_SPAN_ONLY = "sa.integration.jdbc.withActiveSpanOnly";
   public static final AtomicReference<Driver> tracingDriver = new AtomicReference<>();
 
   public static void isDriverAllowed(final Class<?> caller) {

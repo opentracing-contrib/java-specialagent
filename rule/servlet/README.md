@@ -8,7 +8,7 @@ Following properties are supported by the Servlet Rule.
 
 ### Properties
 
-* `-Dsa.instrumentation.plugin.servlet.skipPattern=PATTERN`
+* `-Dsa.integration.servlet.skipPattern=PATTERN`
 
   Skip tracing on the url matching specified regex `PATTERN`.
 
@@ -16,7 +16,7 @@ Following properties are supported by the Servlet Rule.
 
   `/health`
 
-* `-Dsa.instrumentation.plugin.servlet.spanDecorators`
+* `-Dsa.integration.servlet.spanDecorators`
 
   Override default servlet span decorator, with customized decorator class names, comma separated. The customized decorators must be subclasses of `io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator`.
 
@@ -24,9 +24,9 @@ Following properties are supported by the Servlet Rule.
 
   `com.company.my.project.MySpanDecorator1,com.company.my.project.MySpanDecorator2,io.opentracing.contrib.web.servlet.filter.StandardTagsServletFilterSpanDecorator`
 
-* `-Dsa.instrumentation.plugin.servlet.spanDecorators.classpath`
+* `-Dsa.integration.servlet.spanDecorators.classpath`
 
-  Indicate the casspath of JARs or directories containing customized decorator classes specified by `sa.instrumentation.plugin.servlet.spanDecorators`, delimited by `File.pathSeparatorChar`.
+  Indicate the classpath of JARs or directories containing customized decorator classes specified by `sa.integration.servlet.spanDecorators`, delimited by `File.pathSeparatorChar`.
 
   **Example:**
 

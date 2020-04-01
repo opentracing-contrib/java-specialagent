@@ -54,7 +54,7 @@ import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 
 /**
  * Mojo that fingerprints 3rd-party library bytecode to ensure compatibility of
- * instrumentation plugins. The implementation uses introspection to record the
+ * Integration Rules. The implementation uses introspection to record the
  * following information from JARs in 3rd-party libraries:
  * <ol>
  * <li>Each class name in each package in each JAR of the 3rd-party
@@ -224,11 +224,11 @@ public final class FingerprintMojo extends TreeMojo {
     final File destFile = new File(getProject().getBuild().getOutputDirectory(), UtilConstants.FINGERPRINT_FILE);
     destFile.getParentFile().mkdirs();
 
-    // The `ruleDeps` represent the Instrumentation Plugin (this is the dependency(ies)
-    // that bridges/links between the 3rd-Party Library to the Instrumentation Rule).
+    // The `ruleDeps` represent the Integration (this is the dependency(ies)
+    // that bridges/links between the 3rd-Party Library to the Integration Rule).
     final URL[] ruleDeps = getDependencyPaths(localRepository, "compile", true, getProject().getArtifacts().iterator(), 1);
-    // Include the compile path of the Instrumentation Rule itself, which solves the use-
-    // case where there is no Instrumentation Plugin (i.e. the Instrumentation Rule directly
+    // Include the compile path of the Integration Rule itself, which solves the use-
+    // case where there is no Integration (i.e. the Integration Rule directly
     // bridges/links between the 3rd-Party Library to itself).
     ruleDeps[0] = AssembleUtil.toURL(new File(getProject().getBuild().getOutputDirectory()));
     if (debug)
@@ -236,14 +236,21 @@ public final class FingerprintMojo extends TreeMojo {
 
     // The `libDeps` represent the 3rd-Party Library that is being instrumented
     final URL[] libDeps = getDependencyPaths(localRepository, "provided", true, getProject().getArtifacts().iterator(), 0);
-    if (debug)
+    if (debug) {
       getLog().warn("libDeps: " + Arrays.toString(libDeps));
+      getLog().warn("presents: " + presents);
+      getLog().warn("absents: " + absents);
+    }
 
+    final LibraryFingerprint fingerprint = fingerprint(ruleDeps, libDeps, presents, absents, new MavenLogger(getLog()));
+    fingerprint.toFile(destFile);
+    if (debug)
+      getLog().warn(fingerprint.toString());
+  }
+
+  static LibraryFingerprint fingerprint(final URL[] ruleDeps, final URL[] libDeps, final List<String> presents, final List<String> absents, final Logger logger) throws IOException {
     try (final URLClassLoader classLoader = new URLClassLoader(ruleDeps, new URLClassLoader(libDeps != null ? libDeps : new URL[0], null))) {
-      final LibraryFingerprint fingerprint = new LibraryFingerprint(classLoader, presents, absents, new MavenLogger(getLog()));
-      fingerprint.toFile(destFile);
-      if (debug)
-        getLog().warn(fingerprint.toString());
+      return new LibraryFingerprint(classLoader, presents, absents, logger);
     }
   }
 

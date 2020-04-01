@@ -37,42 +37,42 @@ public class Lettuce52AgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StatefulRedis.class).on(named("async")));
+          return builder.visit(advice().to(StatefulRedis.class).on(named("async")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StatefulRedisCluster.class).on(named("async")));
+          return builder.visit(advice().to(StatefulRedisCluster.class).on(named("async")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.pubsub.StatefulRedisPubSubConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AddPubSubListener.class).on(named("addListener")));
+          return builder.visit(advice().to(AddPubSubListener.class).on(named("addListener")));
         }}));
   }
 
   public static class StatefulRedis {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(Lettuce52AgentRule.class.getName(), origin) && !WrapperProxy.isWrapper(returned))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Lettuce52AgentIntercept.getAsyncCommands(returned));
     }
   }
 
   public static class StatefulRedisCluster {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(Lettuce52AgentRule.class.getName(), origin) && !WrapperProxy.isWrapper(returned))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Lettuce52AgentIntercept.getAsyncClusterCommands(returned));
     }
   }
 
   public static class AddPubSubListener {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-      if (isEnabled(Lettuce52AgentRule.class.getName(), origin) && !WrapperProxy.isWrapper(arg))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
+      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(arg))
         arg = WrapperProxy.wrap(arg, Lettuce52AgentIntercept.addPubSubListener(arg));
     }
   }

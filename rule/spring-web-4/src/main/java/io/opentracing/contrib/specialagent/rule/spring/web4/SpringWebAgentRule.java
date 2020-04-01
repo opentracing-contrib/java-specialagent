@@ -36,34 +36,34 @@ public class SpringWebAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(RestTemplate.class).on(named("doExecute")));
+          return builder.visit(advice().to(RestTemplate.class).on(named("doExecute")));
         }})
       .type(named("org.springframework.web.client.AsyncRestTemplate"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncRestTemplate.class).on(named("doExecute")));
+          return builder.visit(advice().to(AsyncRestTemplate.class).on(named("doExecute")));
         }}));
   }
 
   public static class RestTemplate {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(className, origin))
         SpringWebAgentIntercept.enter(thiz);
     }
   }
 
   public static class AsyncRestTemplate {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object url, final @Advice.Argument(value = 1) Object method, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object requestCallback) {
-      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object url, final @Advice.Argument(value = 1) Object method, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object requestCallback) {
+      if (isEnabled(className, origin))
         requestCallback = SpringWebAgentIntercept.asyncStart(url, method, requestCallback);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object response, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(SpringWebAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object response, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin))
         response = SpringWebAgentIntercept.asyncEnd(response, thrown);
     }
   }

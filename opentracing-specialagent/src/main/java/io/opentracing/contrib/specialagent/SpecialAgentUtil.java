@@ -32,6 +32,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -48,6 +50,36 @@ import java.util.zip.ZipEntry;
  */
 public final class SpecialAgentUtil {
 //  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
+
+  static File[] parseConfiguration(final Map<String,String> properties, final List<String> verbosePluginNames, final Map<String,Boolean> integrationRuleNameToEnable, final Map<String,Boolean> traceExporterNameToEnable) {
+    File[] includedPlugins = null;
+    for (final Map.Entry<String,String> property : properties.entrySet()) {
+      final String key = property.getKey();
+      final String value = property.getValue();
+      if (key.startsWith("sa.integration.")) {
+        if (key.indexOf(".verbose", 16) != -1)
+          verbosePluginNames.add(key.substring(15, key.length() - 8));
+        else if (key.indexOf(".enable", 16) != -1)
+          integrationRuleNameToEnable.put(key.substring(15, key.length() - 7), !"false".equals(value));
+        else if (key.indexOf(".disable", 16) != -1)
+          integrationRuleNameToEnable.put(key.substring(15, key.length() - 8), "false".equals(value));
+      }
+      else if (key.startsWith("sa.exporter.")) {
+        if (key.indexOf(".enable", 13) != -1)
+          traceExporterNameToEnable.put(key.substring(12, key.length() - 7), !"false".equals(value));
+        else if (key.indexOf(".disable", 13) != -1)
+          traceExporterNameToEnable.put(key.substring(12, key.length() - 8), "false".equals(value));
+      }
+      else if (key.equals("sa.include")) {
+        final String[] includePaths = value.split(File.pathSeparator);
+        includedPlugins = new File[includePaths.length];
+        for (int i = 0; i < includePaths.length; ++i)
+          includedPlugins[i] = new File(includePaths[i]);
+      }
+    }
+
+    return includedPlugins;
+  }
 
   static JarFile createTempJarFile(final File dir) throws IOException {
     final Path dirPath = dir.toPath();

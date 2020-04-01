@@ -19,7 +19,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 /**
- * {@code ClassLoader} to contain the classes belonging to a Tracer Plugin.
+ * {@code ClassLoader} to contain the classes belonging to a Trace Exporter.
  *
  * @author Seva Safris
  */

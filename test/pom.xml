@@ -42,6 +42,7 @@
     <module>concurrent</module>
     <module>couchbase-client</module>
     <module>cxf</module>
+    <module>dubbo</module>
     <module>dynamic</module>
     <module>elasticsearch-client</module>
     <module>feign</module>
@@ -81,6 +82,7 @@
     <module>servlet-tomcat</module>
     <module>sparkjava</module>
     <module>spring-boot</module>
+    <module>spring-data</module>
     <module>spring-jms</module>
     <module>spring-kafka</module>
     <module>spring-messaging</module>

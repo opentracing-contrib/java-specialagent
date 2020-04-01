@@ -35,14 +35,14 @@ public class NettyAgentRule extends AgentRule {
       .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(ChannelPipelineAdd.class).on(nameStartsWith("add").and(takesArgument(2, named("io.netty.channel.ChannelHandler")))));
+            return builder.visit(advice().to(ChannelPipelineAdd.class).on(nameStartsWith("add").and(takesArgument(2, named("io.netty.channel.ChannelHandler")))));
         }}));
   }
 
   public static class ChannelPipelineAdd {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2, optional = true) Object arg2) {
-      if (isEnabled(NettyAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2, optional = true) Object arg2) {
+      if (isEnabled(className, origin))
         NettyAgentIntercept.pipelineAddExit(thiz, arg2);
     }
   }

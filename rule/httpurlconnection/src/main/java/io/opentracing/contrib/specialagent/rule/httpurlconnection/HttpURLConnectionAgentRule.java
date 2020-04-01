@@ -35,19 +35,19 @@ public class HttpURLConnectionAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(HttpURLConnectionAgentRule.class).on(named("connect").or(named("getOutputStream")).or(named("getInputStream"))));
+          return builder.visit(advice().to(HttpURLConnectionAgentRule.class).on(named("connect").or(named("getOutputStream")).or(named("getInputStream"))));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.FieldValue("connected") final boolean connected) {
-    if (isEnabled(HttpURLConnectionAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.FieldValue("connected") final boolean connected) {
+    if (isEnabled(className, origin))
       HttpURLConnectionAgentIntercept.enter(thiz, connected);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
-    if (isEnabled(HttpURLConnectionAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
+    if (isEnabled(className, origin))
       HttpURLConnectionAgentIntercept.exit(thrown, responseCode);
   }
 }

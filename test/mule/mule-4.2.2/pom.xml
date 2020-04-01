@@ -31,14 +31,13 @@
     <version.mule>4.2.2</version.mule>
     <mule.home>${project.basedir}/src/test/mule-home</mule.home>
     <sa.log.level>FINE</sa.log.level>
-    <sa.itest.args>-Dsa.instrumentation.plugin.*.disable -Dsa.instrumentation.plugin.mule*.enable -Dsa.instrumentation.plugin.grizzly:http-client.enable -Dsa.instrumentation.plugin.jdbc.enable</sa.itest.args>
+    <sa.itest.args>-Dsa.integration.*.disable -Dsa.integration.mule*.enable -Dsa.integration.grizzly:http-client.enable -Dsa.integration.jdbc.enable</sa.itest.args>
   </properties>
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.1.1</version>
         <executions>
           <execution>
             <id>unpack-services</id>

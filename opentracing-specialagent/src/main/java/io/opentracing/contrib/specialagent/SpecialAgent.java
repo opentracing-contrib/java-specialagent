@@ -63,10 +63,9 @@ public class SpecialAgent {
   private static final Instrumenter instrumenter = Instrumenter.BYTEBUDDY;
 
   private static Instrumentation inst;
-  private static final long startTime;
+  private static final long startTime = System.currentTimeMillis();
 
   static {
-    startTime = System.currentTimeMillis();
     SpecialAgentUtil.assertJavaAgentJarName();
   }
 
@@ -165,7 +164,7 @@ public class SpecialAgent {
     // be captured as early in the VM's lifecycle as possible.
     AgentRule.$Access.load();
 
-    // Finally, load the Instrumentation Plugins and Tracer Plugins with the
+    // Finally, load the Integration Rules and Trace Exporters with the
     // provided `Manager`.
     load(instrumenter.manager, ruleFiles, isoClassLoader);
 
@@ -176,7 +175,7 @@ public class SpecialAgent {
 
   /**
    * Main load method for the {@code SpecialAgent}, which is responsible for
-   * loading Instrumentation Plugins and Tracer Plugins.
+   * loading Integration Rules and Trace Exporters.
    *
    * @param manager The {@link Manager} instance.
    * @throws IOException If an I/O error has occurred.
@@ -187,7 +186,7 @@ public class SpecialAgent {
     if (logger.isLoggable(Level.FINEST))
       logger.finest("SpecialAgent#load(" + manager.getClass().getSimpleName() + ") java.class.path:\n  " + System.getProperty("java.class.path").replace(File.pathSeparator, "\n  "));
 
-    final HashMap<String,String> properties = new HashMap<>();
+    final LinkedHashMap<String,String> properties = new LinkedHashMap<>();
     for (final Map.Entry<Object,Object> property : System.getProperties().entrySet()) {
       final String key = String.valueOf(property.getKey());
       final String value = properties.get(key);
@@ -197,43 +196,19 @@ public class SpecialAgent {
       properties.put(key, property.getValue() == null ? null : String.valueOf(property.getValue()));
     }
 
-    // Process the system properties to determine which Instrumentation and Tracer Plugins to enable
+    // Process the system properties to determine which Integration Rules and Trace Exporters to enable
     final ArrayList<String> verbosePluginNames = new ArrayList<>();
-    File[] includedPlugins = null;
-    final HashMap<String,Boolean> instruPluginNameToEnable = new HashMap<>();
-    final HashMap<String,Boolean> tracerPluginNameToEnable = new HashMap<>();
-    for (final Map.Entry<String,String> property : properties.entrySet()) {
-      final String key = property.getKey();
-      final String value = property.getValue();
-      if (key.startsWith("sa.instrumentation.plugin.")) {
-        if (key.indexOf(".verbose", 27) != -1)
-          verbosePluginNames.add(key.substring(26, key.length() - 8));
-        else if (key.indexOf(".enable", 27) != -1)
-          instruPluginNameToEnable.put(key.substring(26, key.length() - 7), !"false".equals(value));
-        else if (key.indexOf(".disable", 27) != -1)
-          instruPluginNameToEnable.put(key.substring(26, key.length() - 8), "false".equals(value));
-        else if (key.length() == 33 && key.endsWith(".include")) {
-          final String[] includedPluginPaths = value.split(File.pathSeparator);
-          includedPlugins = new File[includedPluginPaths.length];
-          for (int i = 0; i < includedPluginPaths.length; ++i)
-            includedPlugins[i] = new File(includedPluginPaths[i]);
-        }
-      }
-      else if (key.startsWith("sa.tracer.plugin.")) {
-        if (key.indexOf(".enable", 18) != -1)
-          tracerPluginNameToEnable.put(key.substring(17, key.length() - 7), !"false".equals(value));
-        else if (key.indexOf(".disable", 18) != -1)
-          tracerPluginNameToEnable.put(key.substring(17, key.length() - 8), "false".equals(value));
-      }
-    }
+    final HashMap<String,Boolean> integrationRuleNameToEnable = new HashMap<>();
+    final HashMap<String,Boolean> traceExporterNameToEnable = new HashMap<>();
+    final File[] includedPlugins = SpecialAgentUtil.parseConfiguration(properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
 
-    final boolean allInstruEnabled = !instruPluginNameToEnable.containsKey("*") || instruPluginNameToEnable.remove("*");
+    final boolean allIntegrationsEnabled = !integrationRuleNameToEnable.containsKey("*") || integrationRuleNameToEnable.remove("*");
     if (logger.isLoggable(Level.FINER))
-      logger.finer("Instrumentation Plugins are " + (allInstruEnabled ? "en" : "dis") + "abled by default");
+      logger.finer("Integration Rules are " + (allIntegrationsEnabled ? "en" : "dis") + "abled");
 
-    final boolean allTracerEnabled = !tracerPluginNameToEnable.containsKey("*") || tracerPluginNameToEnable.remove("*");
+    final boolean allExportersEnabled = !traceExporterNameToEnable.containsKey("*") || traceExporterNameToEnable.remove("*");
     if (logger.isLoggable(Level.FINER))
-      logger.finer("Tracer Plugins are " + (allTracerEnabled ? "en" : "dis") + "abled by default");
+      logger.finer("Trace Exporters are " + (allExportersEnabled ? "en" : "dis") + "abled");
 
     final Supplier<File> destDir = new Supplier<File>() {
       private File destDir;
@@ -280,18 +255,18 @@ public class SpecialAgent {
       final Predicate<File> loadPluginPredicate = new Predicate<File>() {
         @Override
         public boolean test(final File file) {
-          // Then, identify whether the JAR is an Instrumentation or Tracer Plugin
+          // Then, identify whether the JAR is an Integration Rule or Trace Exporter
           final PluginManifest pluginManifest = PluginManifest.getPluginManifest(file);
           boolean enablePlugin = true;
           if (pluginManifest != null) {
-            final boolean isInstruPlugin = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
+            final boolean isIntegration = pluginManifest.type == PluginManifest.Type.INSTRUMENTATION;
             // Next, see if it is included or excluded
-            enablePlugin = isInstruPlugin ? allInstruEnabled : allTracerEnabled;
-            final HashMap<String,Boolean> pluginNameToEnable = isInstruPlugin ? instruPluginNameToEnable : tracerPluginNameToEnable;
+            enablePlugin = isIntegration ? allIntegrationsEnabled : allExportersEnabled;
+            final HashMap<String,Boolean> pluginNameToEnable = isIntegration ? integrationRuleNameToEnable : traceExporterNameToEnable;
             for (final String pluginName : verbosePluginNames) {
               final Pattern namePattern = AssembleUtil.convertToNameRegex(pluginName);
               if (pluginManifest.name.equals(pluginName) || namePattern.matcher(pluginManifest.name).matches()) {
-                System.setProperty("sa." + (isInstruPlugin ? "instrumentation" : "tracer") + ".plugin." + pluginManifest.name + ".verbose", "true");
+                System.setProperty("sa." + (isIntegration ? "integration" : "exporter") + "." + pluginManifest.name + ".verbose", "true");
                 break;
               }
             }
@@ -301,7 +276,7 @@ public class SpecialAgent {
               if (pluginManifest.name.equals(entry.getKey()) || namePattern.matcher(pluginManifest.name).matches()) {
                 enablePlugin = entry.getValue();
                 if (logger.isLoggable(Level.FINER))
-                  logger.finer((isInstruPlugin ? "Instrumentation" : "Tracer") + " Plugin " + pluginManifest.name + " is " + (enablePlugin ? "en" : "dis") + "abled");
+                  logger.finer((isIntegration ? "Integration" : "Trace Exporter") + " " + pluginManifest.name + " is " + (enablePlugin ? "en" : "dis") + "abled");
 
                 break;
               }
@@ -316,7 +291,7 @@ public class SpecialAgent {
         }
       };
 
-      // First, load all plugins explicitly included with the `-Dsa.instrumentation.plugin.include=...` system property.
+      // First, load all plugins explicitly included with the `-Dsa.include=...` system property.
       if (includedPlugins != null)
         for (final File includedPlugin : includedPlugins)
           loadPluginPredicate.test(includedPlugin);
@@ -328,7 +303,7 @@ public class SpecialAgent {
         logger.warning("No JARs were found under " + UtilConstants.META_INF_PLUGIN_PATH + ", and ruleFiles == null");
     }
 
-    // Add instrumentation rule JARs from system class loader
+    // Add Integration Rule JARs from system class loader
     final Enumeration<URL> instrumentationRules = manager.getResources();
     while (instrumentationRules.hasMoreElements()) {
       final File pluginFile = AssembleUtil.getSourceLocation(instrumentationRules.nextElement(), manager.file);
@@ -399,7 +374,7 @@ public class SpecialAgent {
       boolean foundReference = false;
       for (final File dependencyFile : dependencyFiles) {
         if (pluginsClassLoader.containsPath(dependencyFile)) {
-          // When run from a test, it may happen that both the "allPluginsClassLoader"
+          // When run from a test, it may happen that both the "pluginsClassLoader"
           // and SystemClassLoader have the same path, leading to the same dependencies.tgf
           // file to be processed twice. This check asserts the previously registered
           // dependencies are correct.
@@ -550,10 +525,9 @@ public class SpecialAgent {
    * @param pluginManifest The {@link PluginManifest} to be linked to the
    *          provided target {@link ClassLoader classLoader}.
    * @param classLoader The target {@link ClassLoader classLoader} to which the
-   *          Instrumentation Rule at the specified index is to be linked.
-   * @return Whether the Instrumentation Rule was compatible and was
-   *         successfully linked to the provided target {@link ClassLoader
-   *         classLoader}.
+   *          Integration Rule at the specified index is to be linked.
+   * @return Whether the Integration Rule was compatible and was successfully
+   *         linked to the provided target {@link ClassLoader classLoader}.
    */
   @SuppressWarnings("resource")
   public static boolean linkRule(final PluginManifest pluginManifest, final ClassLoader classLoader) {
@@ -649,7 +623,7 @@ public class SpecialAgent {
     for (final StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
       if (DEFINE_CLASS.equals(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName())) {
         if (logger.isLoggable(Level.FINER))
-          logger.finer("[" + pluginManifest.name + "] Injection of instrumentation classes deferred");
+          logger.finer("[" + pluginManifest.name + "] Injection of integration classes deferred");
 
         return true;
       }
@@ -657,7 +631,7 @@ public class SpecialAgent {
 
     // Otherwise, inject the classes immediately.
     if (logger.isLoggable(Level.FINER))
-      logger.finer("[" + pluginManifest.name + "] Injection of instrumentation classes called");
+      logger.finer("[" + pluginManifest.name + "] Injection of integration classes called");
 
     ruleClassLoader.inject(classLoader);
     return true;
@@ -788,7 +762,7 @@ public class SpecialAgent {
   /**
    * Returns the bytecode of the {@code Class} by the name of {@code name}, if
    * the {@code classLoader} matched a rule {@code ClassLoader} that contains
-   * OpenTracing instrumentation classes intended to be loaded into
+   * OpenTracing integration classes intended to be loaded into
    * {@code classLoader}. This method is called by the
    * {@link ClassLoaderAgentRule}. This method returns {@code null} if it cannot
    * locate the bytecode for the requested {@code Class} in the inheritance
@@ -797,8 +771,8 @@ public class SpecialAgent {
    * {@code name}.
    *
    * @param classLoader The {@code ClassLoader} to match to a
-   *          {@link RuleClassLoader} that contains Instrumentation Plugin
-   *          classes intended to be loaded into {@code classLoader}.
+   *          {@link RuleClassLoader} that contains Integration classes intended
+   *          to be loaded into {@code classLoader}.
    * @param name The name of the {@code Class} to be found.
    * @return The bytecode of the {@code Class} by the name of {@code name}, or
    *         {@code null} if this method has already been called for
@@ -837,7 +811,7 @@ public class SpecialAgent {
   /**
    * Returns the resource {@link URL} by the name of {@code name}, if the
    * {@code classLoader} matched a rule {@code ClassLoader} that contains
-   * OpenTracing instrumentation classes intended to be loaded into
+   * OpenTracing integration classes intended to be loaded into
    * {@code classLoader}. This method is called by the
    * {@link ClassLoaderAgentRule}. This method returns {@code null} if it cannot
    * locate the bytecode for the requested {@code Class} in the inheritance
@@ -846,8 +820,8 @@ public class SpecialAgent {
    * {@code name}.
    *
    * @param classLoader The {@code ClassLoader} to match to a
-   *          {@link RuleClassLoader} that contains Instrumentation Plugin
-   *          resources intended to be loaded via {@code classLoader}.
+   *          {@link RuleClassLoader} that contains Integration resources
+   *          intended to be loaded via {@code classLoader}.
    * @param name The name of the resource to be found.
    * @return The resource {@link URL} by the name of {@code name}, or
    *         {@code null} if this method has already been called for
@@ -890,17 +864,17 @@ public class SpecialAgent {
   /**
    * Returns the {@link Enumeration Enumeration&lt;URL&gt;} of resources by the
    * name of {@code name}, if the {@code classLoader} matched a rule
-   * {@code ClassLoader} that contains OpenTracing instrumentation classes
-   * intended to be loaded into {@code classLoader}. This method is called by
-   * the {@link ClassLoaderAgentRule}. This method returns {@code null} if it
-   * cannot locate the bytecode for the requested {@code Class} in the
-   * inheritance chain of parent class loaders starting with the provided
-   * {@link ClassLoader classLoader}, or if it has already been called for
-   * {@code classLoader} and {@code name}.
+   * {@code ClassLoader} that contains OpenTracing integration classes intended
+   * to be loaded into {@code classLoader}. This method is called by the
+   * {@link ClassLoaderAgentRule}. This method returns {@code null} if it cannot
+   * locate the bytecode for the requested {@code Class} in the inheritance
+   * chain of parent class loaders starting with the provided {@link ClassLoader
+   * classLoader}, or if it has already been called for {@code classLoader} and
+   * {@code name}.
    *
    * @param classLoader The {@code ClassLoader} to match to a
-   *          {@link RuleClassLoader} that contains Instrumentation Plugin
-   *          resources intended to be loaded via {@code classLoader}.
+   *          {@link RuleClassLoader} that contains Integration resources
+   *          intended to be loaded via {@code classLoader}.
    * @param name The name of the resource to be found.
    * @return The {@link Enumeration Enumeration&lt;URL&gt;} of resources by the
    *         name of {@code name}, or {@code null} if this method has already

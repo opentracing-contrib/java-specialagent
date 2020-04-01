@@ -33,9 +33,9 @@ import io.opentracing.contrib.web.servlet.filter.decorator.ServletFilterHeaderSp
 
 public class Configuration {
   public static final Logger logger = Logger.getLogger(Configuration.class);
-  public static final String SPAN_DECORATORS = "sa.instrumentation.plugin.servlet.spanDecorators";
-  public static final String SPAN_DECORATORS_CLASSPATH = "sa.instrumentation.plugin.servlet.spanDecorators.classpath";
-  public static final String SKIP_PATTERN = "sa.instrumentation.plugin.servlet.skipPattern";
+  public static final String SPAN_DECORATORS = "sa.integration.servlet.spanDecorators";
+  public static final String SPAN_DECORATORS_CLASSPATH = "sa.integration.servlet.spanDecorators.classpath";
+  public static final String SKIP_PATTERN = "sa.integration.servlet.skipPattern";
   public static final String DECORATOR_SEPARATOR = ",";
 
   public static final List<ServletFilterSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));

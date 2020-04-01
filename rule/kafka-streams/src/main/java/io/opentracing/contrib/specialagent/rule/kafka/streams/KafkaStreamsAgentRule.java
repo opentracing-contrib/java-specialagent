@@ -35,42 +35,42 @@ public class KafkaStreamsAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(NextRecord.class).on(named("nextRecord")));
+          return builder.visit(advice().to(NextRecord.class).on(named("nextRecord")));
         }})
       .type(named("org.apache.kafka.streams.processor.internals.StreamTask"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Process.class).on(named("process")));
+          return builder.visit(advice().to(Process.class).on(named("process")));
         }})
       .type(named("org.apache.kafka.streams.processor.internals.RecordDeserializer"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Deserialize.class).on(named("deserialize")));
+          return builder.visit(advice().to(Deserialize.class).on(named("deserialize")));
         }}));
   }
 
   public static class NextRecord {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-      if (isEnabled(KafkaStreamsAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned) {
+      if (isEnabled(className, origin))
         KafkaStreamsAgentIntercept.onNextRecordExit(returned);
     }
   }
 
   public static class Process {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(KafkaStreamsAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin))
          KafkaStreamsAgentIntercept.onProcessExit(thrown);
     }
   }
 
   public static class Deserialize {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 1) Object record) {
-      if (isEnabled(KafkaStreamsAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 1) Object record) {
+      if (isEnabled(className, origin))
         KafkaStreamsAgentIntercept.onDeserializeExit(returned, record);
     }
   }

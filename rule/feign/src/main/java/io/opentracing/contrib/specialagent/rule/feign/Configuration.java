@@ -28,8 +28,8 @@ import io.opentracing.contrib.specialagent.Logger;
 
 public class Configuration {
   public static final Logger logger = Logger.getLogger(Configuration.class);
-  public static final String SPAN_DECORATORS = "sa.instrumentation.plugin.feign.spanDecorators";
-  public static final String SPAN_DECORATORS_CLASSPATH = "sa.instrumentation.plugin.feign.spanDecorators.classpath";
+  public static final String SPAN_DECORATORS = "sa.integration.feign.spanDecorators";
+  public static final String SPAN_DECORATORS_CLASSPATH = "sa.integration.feign.spanDecorators.classpath";
   public static final String DECORATOR_SEPARATOR = ",";
 
   public static final List<FeignSpanDecorator> spanDecorators = parseSpanDecorators(System.getProperty(SPAN_DECORATORS));

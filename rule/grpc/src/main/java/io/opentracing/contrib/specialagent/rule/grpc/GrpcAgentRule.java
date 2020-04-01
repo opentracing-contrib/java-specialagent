@@ -36,34 +36,34 @@ public class GrpcAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Registry.class).on(named("addService").and(takesArguments(1))));
+          return builder.visit(advice().to(Registry.class).on(named("addService").and(takesArguments(1))));
         }})
       .type(hasSuperType(named("io.grpc.ServerBuilder")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Registry.class).on(named("addService").and(takesArguments(1))));
+          return builder.visit(advice().to(Registry.class).on(named("addService").and(takesArguments(1))));
         }})
       .type(hasSuperType(named("io.grpc.stub.AbstractStub")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Stub.class).on(named("getChannel")));
+          return builder.visit(advice().to(Stub.class).on(named("getChannel")));
         }}));
   }
 
   public static class Registry {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object service) {
-      if (isEnabled(GrpcAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object service) {
+      if (isEnabled(className, origin))
         service = GrpcAgentIntercept.addService(service);
     }
   }
 
   public static class Stub {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(GrpcAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin))
         returned = GrpcAgentIntercept.build(returned);
     }
   }

@@ -36,40 +36,40 @@ public class ThriftAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncMethodCallback.OnComplete.class).on(named("onComplete")));
+          return builder.visit(advice().to(AsyncMethodCallback.OnComplete.class).on(named("onComplete")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncMethodCallback.OnError.class).on(named("onError")));
+          return builder.visit(advice().to(AsyncMethodCallback.OnError.class).on(named("onError")));
         }})
       .type(named("org.apache.thrift.TProcessorFactory"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Processor.class).on(named("getProcessor")));
+          return builder.visit(advice().to(Processor.class).on(named("getProcessor")));
         }})
       .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ProtocolFactory.class).on(named("getProtocol")));
+          return builder.visit(advice().to(ProtocolFactory.class).on(named("getProtocol")));
         }}));
   }
 
   public static class AsyncMethodCallback {
     public static class OnComplete {
       @Advice.OnMethodExit
-      public static void exit(final @Advice.Origin String origin) {
-        if (isEnabled(ThriftAgentRule.class.getName(), origin))
+      public static void exit(final @ClassName String className, final @Advice.Origin String origin) {
+        if (isEnabled(className, origin))
           ThriftAgentIntercept.onComplete();
       }
     }
 
     public static class OnError {
       @Advice.OnMethodExit
-      public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exception) {
-        if (isEnabled(ThriftAgentRule.class.getName(), origin))
+      public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exception) {
+        if (isEnabled(className, origin))
           ThriftAgentIntercept.onError(exception);
       }
     }
@@ -77,16 +77,16 @@ public class ThriftAgentRule extends AgentRule {
 
   public static class Processor {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(ThriftAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin))
         returned = ThriftAgentIntercept.getProcessor(returned);
     }
   }
 
   public static class ProtocolFactory {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(ThriftAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin))
         returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
     }
   }

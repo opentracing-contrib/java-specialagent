@@ -36,13 +36,13 @@ public class Cassandra4AgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Cassandra4AgentRule.class).on(named("buildAsync")));
+          return builder.visit(advice().to(Cassandra4AgentRule.class).on(named("buildAsync")));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(Cassandra4AgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(className, origin))
      returned = Cassandra4AgentIntercept.exit(returned);
   }
 }

@@ -40,6 +40,7 @@ import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.transport.Netty4Plugin;
 import org.junit.AfterClass;
@@ -62,7 +63,7 @@ public class ElasticsearchRestClientTest {
 
   @BeforeClass
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public static void startElasticsearch() throws Exception {
+  public static void startElasticsearch() throws NodeValidationException {
     final Settings settings = Settings.builder()
       .put("path.home", ES_WORKING_DIR)
       .put("path.data", ES_WORKING_DIR + "/data")
@@ -80,7 +81,7 @@ public class ElasticsearchRestClientTest {
   }
 
   @AfterClass
-  public static void stopElasticsearch() throws Exception {
+  public static void stopElasticsearch() throws IOException {
     if (node != null)
       node.close();
   }
@@ -150,11 +151,11 @@ public class ElasticsearchRestClientTest {
           }
         }).build()) {
       final HttpEntity entity = new NStringEntity(
-          "{\n" +
-              "    \"user\" : \"kimchy\",\n" +
-              "    \"post_date\" : \"2009-11-15T14:12:12\",\n" +
-              "    \"message\" : \"trying out Elasticsearch\"\n" +
-              "}", ContentType.APPLICATION_JSON);
+        "{\n" +
+        "    \"user\" : \"kimchy\",\n" +
+        "    \"post_date\" : \"2009-11-15T14:12:12\",\n" +
+        "    \"message\" : \"trying out Elasticsearch\"\n" +
+        "}", ContentType.APPLICATION_JSON);
 
       test1(client, entity);
       test2(client, entity);

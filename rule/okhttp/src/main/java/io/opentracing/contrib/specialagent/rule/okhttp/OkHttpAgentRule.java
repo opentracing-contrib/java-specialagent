@@ -36,13 +36,13 @@ public class OkHttpAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OkHttpAgentRule.class).on(named("interceptors").or(named("networkInterceptors"))));
+          return builder.visit(advice().to(OkHttpAgentRule.class).on(named("interceptors").or(named("networkInterceptors"))));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(OkHttpAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(className, origin))
       returned = OkHttpAgentIntercept.exit(returned);
   }
 }

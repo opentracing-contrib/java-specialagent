@@ -35,42 +35,42 @@ public class ReactorAgentRule extends AgentRule {
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(Mono.class).on(named("onAssembly")));
+            return builder.visit(advice().to(Mono.class).on(named("onAssembly")));
           }}),
       builder.type(hasSuperType(named("reactor.core.publisher.Flux")))
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(Flux.class).on(named("onAssembly")));
+            return builder.visit(advice().to(Flux.class).on(named("onAssembly")));
           }}),
       builder.type(hasSuperType(named("reactor.core.publisher.ParallelFlux")))
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(ParallelFlux.class).on(named("onAssembly")));
+            return builder.visit(advice().to(ParallelFlux.class).on(named("onAssembly")));
           }}));
   }
 
   public static class Mono {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin) {
-      if (isEnabled(ReactorAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin) {
+      if (isEnabled(className, origin))
         MonoAgentIntercept.enter();
     }
   }
 
   public static class Flux {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin) {
-      if (isEnabled(ReactorAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin) {
+      if (isEnabled(className, origin))
         FluxAgentIntercept.enter();
     }
   }
 
   public static class ParallelFlux {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin) {
-      if (isEnabled(ReactorAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin) {
+      if (isEnabled(className, origin))
         ParallelFluxAgentIntercept.enter();
     }
   }

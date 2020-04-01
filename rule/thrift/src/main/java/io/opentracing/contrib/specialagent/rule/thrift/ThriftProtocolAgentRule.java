@@ -35,66 +35,66 @@ public class ThriftProtocolAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(WriteMessageBegin.class).on(named("writeMessageBegin")));
+          return builder.visit(advice().to(WriteMessageBegin.class).on(named("writeMessageBegin")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(WriteMessageEnd.class).on(named("writeMessageEnd")));
+          return builder.visit(advice().to(WriteMessageEnd.class).on(named("writeMessageEnd")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(WriteFieldStop.class).on(named("writeFieldStop")));
+          return builder.visit(advice().to(WriteFieldStop.class).on(named("writeFieldStop")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ReadMessageBegin.class).on(named("readMessageBegin")));
+          return builder.visit(advice().to(ReadMessageBegin.class).on(named("readMessageBegin")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ReadMessageEnd.class).on(named("readMessageEnd")));
+          return builder.visit(advice().to(ReadMessageEnd.class).on(named("readMessageEnd")));
         }}));
   }
 
   public static class WriteMessageBegin {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
-      if (isEnabled(ThriftProtocolAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
+      if (isEnabled(className, origin))
         ThriftProtocolAgentIntercept.writeMessageBegin(thiz, message);
     }
   }
 
   public static class WriteMessageEnd {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(ThriftProtocolAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin) {
+      if (isEnabled(className, origin))
         ThriftProtocolAgentIntercept.writeMessageEnd();
     }
   }
 
   public static class WriteFieldStop {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) throws Exception {
-      if (isEnabled(ThriftProtocolAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) throws Exception {
+      if (isEnabled(className, origin))
         ThriftProtocolAgentIntercept.writeFieldStop(thiz);
     }
   }
 
   public static class ReadMessageBegin {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(ThriftProtocolAgentRule.class.getName(), origin) && thrown != null)
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin) && thrown != null)
         ThriftProtocolAgentIntercept.readMessageBegin(thrown);
     }
   }
 
   public static class ReadMessageEnd {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin) {
-      if (isEnabled(ThriftProtocolAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin) {
+      if (isEnabled(className, origin))
         ThriftProtocolAgentIntercept.readMessageEnd();
     }
   }
