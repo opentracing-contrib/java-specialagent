@@ -529,7 +529,7 @@ A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements t
 Examples:
 * [`rule/okhttp`][okhttp]
 * [`rule/jdbc`][jdbc]
-* [`rule/jms-1`][jms-1]
+* [`rule/jms`][jms]
 
 <sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
 
@@ -585,8 +585,8 @@ Direction for development of [<ins>Instrumentation Rules</ins>](#45-instrumentat
 | [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.6 |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
-| [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1-rev-1 | LATEST |
-| | [`jms:2`][jms-2] | 2.0.1 | LATEST |
+| [Java JMS API \[`javax.jms`\]][java-jms] | [`jms`][jms] | 1.1-rev-1 | LATEST |
+| | [`jms`][jms] | 2.0.1 | LATEST |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter)<br>&nbsp; | [`servlet`<br><sup>(configurable)</sup>][servlet] | 2.3<br>&nbsp; | 3.1<br>&nbsp; |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
@@ -732,8 +732,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [jaxrs]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jaxrs
 [jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jdbc
 [jedis]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jedis
-[jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-1
-[jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-2
+[jms]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms
 [kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-client
 [kafka-streams]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-streams
 [lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.0

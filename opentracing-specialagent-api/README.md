@@ -71,7 +71,7 @@ All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https:/
          .transform(new Transformer() {
            @Override
            public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-             return builder.visit(Advice
+             return builder.visit(advice()             // The method `advice()` is defined in `AgentRule`
                .to(TargetAgentRule.class)              // A class literal reference to this class.
                .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
                  .and(takesArguments(String.class)))); // Additional specification for the method intercept.
@@ -84,7 +84,12 @@ All <ins>Instrumentation Rules</ins> belong to the [`java-specialagent`](https:/
      // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
      @Advice.OnMethodExit
      public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-       if (AgentRuleUtil.isEnabled(className, origin)) // The call to AgentRuleUtil.isEnabled(className, because this class will only be loaded at intercept time,
+       if (isEnabled(className, origin))               // The call to isEnabled(className, origin) is required.
+         returned = TargetAgentIntercept.exit(returned);
+     }
+   }
+
+   // This class CAN reference 3rd-party library classes, because this class will only be loaded at intercept time,
    // where the target object's class loader is guaranteed to have the 3rd-party classes either loaded or on the
    // class path.
    public class TargetAgentIntercept {
