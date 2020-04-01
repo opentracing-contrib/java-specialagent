@@ -52,6 +52,12 @@
       <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.cassandraunit</groupId>
@@ -65,13 +71,6 @@
           <artifactId>netty-all</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>18.0</version>
-      <optional>true</optional>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
