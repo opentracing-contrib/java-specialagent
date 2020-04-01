@@ -163,9 +163,9 @@ The <ins>SpecialAgent</ins> supports two kinds of <ins>[Integrations](#63-integr
 
 ###### 2.1.2.1.1 <ins>Uncoupled [Integrations](#63-integration)</ins>
 
-Uncoupled <ins>[Integrations](#63-integration)</ins> are those that can be used _without_ <ins>SpecialAgent</ins>. These <ins>[Integrations](#63-integration)</ins> are not coupled to <ins>SpecialAgent</ins>, and can be used via **manual integration** in an application.
+<ins>Uncoupled [Integrations](#63-integration)</ins> are those that can be used _without_ <ins>SpecialAgent</ins>. These <ins>[Integrations](#63-integration)</ins> are not coupled to <ins>SpecialAgent</ins>, and can be used via **manual integration** in an application.
 
-Uncoupled <ins>[Integrations](#63-integration)</ins> are implemented in [opentracing-contrib][opentracing-contrib], and do not know about <ins>SpecialAgent</ins>.
+<ins>Uncoupled [Integrations](#63-integration)</ins> are implemented in [opentracing-contrib][opentracing-contrib], and do not know about <ins>SpecialAgent</ins>.
 
 To support <ins>Uncoupled [Integrations](#63-integration)</ins>, <ins>SpecialAgent</ins> requires the implementation of an <ins>[Integration Rule](#64-integration-rule)</ins> that bridges the <ins>Uncoupled [Integrations](#63-integration)</ins> to <ins>SpecialAgent</ins>'s auto-instrumentation mechanism.
 
@@ -173,9 +173,9 @@ The implementation of <ins>[Integrations](#63-integration)</ins> as <ins>uncoupl
 
 ###### 2.1.2.1.2 <ins>Coupled [Integrations](#63-integration)</ins>
 
-Coupled <ins>[Integrations](#63-integration)</ins> are those that _can only be used with_ <ins>SpecialAgent</ins>. These <ins>[Integrations](#63-integration)</ins> are coupled to <ins>SpecialAgent</ins>, and can only be used via **automatic installation** in an application.
+<ins>Coupled [Integrations](#63-integration)</ins> are those that _can only be used with_ <ins>SpecialAgent</ins>. These <ins>[Integrations](#63-integration)</ins> are coupled to <ins>SpecialAgent</ins>, and can only be used via **automatic installation** in an application.
 
-Coupled <ins>[Integrations](#63-integration)</ins> are effectively <ins>[Integration Rules](#64-integration-rule)</ins> that implement the full scope of the instrumentation of the 3rd-party library, and directly bridge this integration into the <ins>SpecialAgent</ins>'s auto-instrumentation mechanism.
+<ins>Coupled [Integrations](#63-integration)</ins> are effectively <ins>[Integration Rules](#64-integration-rule)</ins> that implement the full scope of the instrumentation of the 3rd-party library, and directly bridge this integration into the <ins>SpecialAgent</ins>'s auto-instrumentation mechanism.
 
 The implementation of <ins>[Integrations](#63-integration)</ins> as <ins>coupled</ins> is _discouraged_, as this pattern prohibits users from instrumenting their applications manually, if so desired. However, not all 3rd-party libraries can be instrumented to allow manual integration, leaving <ins>Coupled [Integrations](#63-integration)</ins> as the only option.
 
@@ -500,79 +500,11 @@ For a configuration spec and other use-case examples, please refer to the [`rewr
 
 ## 4 Supported <ins>[Integrations](#63-integration)</ins> and <ins>[Trace Exporters](#62-trace-exporter)</ins>
 
-The following terms are used throughout this documentation.
-
-#### 4.1 <ins>SpecialAgent</ins>
-
-The [<ins>SpecialAgent</ins>](#41-specialagent) is software that attaches to Java applications, and automatically instruments 3rd-party libraries integrated in the application. The [<ins>SpecialAgent</ins>](#41-specialagent) uses the OpenTracing API for [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) that instrument 3rd-party libraries, as well as [<ins>Tracer Plugins</ins>](#62-tracer-plugins) that implement OpenTracing tracer service providers. Both the [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins), as well as the [<ins>Tracer Plugins</ins>](#62-tracer-plugins) are open-source, and are developed and supported by the OpenTracing community.
-
-The [<ins>SpecialAgent</ins>](#41-specialagent) supports Oracle Java and OpenJDK.
-
-#### 4.2 [<ins>Tracer</ins>](#42-tracer)
-
-Service provider of the OpenTracing standard, providing an implementation of the `io.opentracing.Tracer` interface.
-
-Examples:
-* [Jaeger Tracer][jaeger]
-* [LightStep Tracer][lightstep]
-* [Wavefront Tracer][wavefront]
-
-<sub>_[<ins>Tracers</ins>](#42-tracer) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
-
-#### 4.3 [<ins>Tracer Plugin</ins>](#43-tracer-plugin)
-
-A bridge providing automatic discovery of [<ins>Tracers</ins>](#42-tracer) in a runtime instrumented with the OpenTracing API. This bridge implements the `TracerFactory` interface of [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver/blob/master/opentracing-tracerresolver/), and is distributed as a single "fat JAR" that can be conveniently added to the classpath of a Java process.
-
-<sub>_[<ins>Tracer Plugins</ins>](#43-tracer-plugin) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
-
-#### 4.4 [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin)
-
-An OpenTracing Instrumentation project that exist as individual repositories under [opentracing-contrib][opentracing-contrib].
-
-Examples:
-* [`opentracing-contrib/java-okhttp`][java-okhttp]
-* [`opentracing-contrib/java-jdbc`][java-jdbc]
-* [`opentracing-contrib/java-jms`][java-jms]
-
-<sub>_[<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
-
-#### 4.5 [<ins>Instrumentation Rule</ins>](#45-instrumentation-rule)
-
-A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements the auto-instrumentation rules for [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) via the [`opentracing-specialagent-api`][api].
-
-Examples:
-* [`rule/okhttp`][okhttp]
-* [`rule/jdbc`][jdbc]
-* [`rule/jms`][jms]
-
-<sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
-
-## 5 Objectives
-
-### 5.1 Goals
-
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must allow any [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) exists.
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must automatically install the [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the [<ins>SpecialAgent</ins>](#41-specialagent), and cannot apply to the code of the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) made available in [opentracing-contrib][opentracing-contrib].
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Dynamic Attach</ins>](#222-dynamic-attach) to applications running on JVM versions 1.7, 1.8, 9, and 11.
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
-   1. Launch the test in a process simulating the `-javaagent` vm argument that points to the [<ins>SpecialAgent</ins>](#41-specialagent) (in order to test auto-instrumentation functionality).
-   1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
-   1. Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) must provide a means by which [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) can be configured before use on a target application.
-
-### 5.2 Non-Goals
-
-1. The [<ins>SpecialAgent</ins>](#41-specialagent) is not designed to modify application code, beyond the installation of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin). For example, there is no facility for dynamically augmenting arbitrary code.
-
-## 6 Supported Plugins
->>>>>>> master
-
 ### 4.1 <ins>[Integrations](#63-integration)</ins>
 
 Intrinsically, the <ins>SpecialAgent</ins> includes support for the instrumentation of the following 3rd-party libraries. Each row refers to an <ins>[Integration](#63-integration)</ins>, the <ins>[Integration Rule](#64-integration-rule)</ins>, and the minimum and maximum version tested by the build.
 
-For the development of <ins>[Instrumentation Rules](#64-integration-rule)</ins>, please refer to the [`opentracing-specialagent-api`][api] module.
+For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, please refer to the [`opentracing-specialagent-api`][api] module.
 
 | Integration<br/><sup>(link to impl. of <ins>[Integration](#63-integration)</ins>)</sup> | Integration Rule<br/><sup>(link to impl. of <ins>[Integration Rule](#64-integration-rule)</ins>)</sup> | Min Version<br/><sup>(min supported)</sup> | Max Version<br/><sup>(max supported)</sup> |
 |:-|:-|:-:|:-:|
