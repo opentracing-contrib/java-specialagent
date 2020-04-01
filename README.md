@@ -7,17 +7,16 @@
 <sub>**SpecialAgent's <ins>terminology</ins> has changed...**</sub>
 | Old term | New term |
 |:-|:-|
-| Instrumentation Plugin | Integration |
-| Instrumentation Rule | Integration Rule |
-| Tracer Plugin | Trace Exporter |
+| Instrumentation Plugin | <ins>[Integration](#63-integration)</ins> |
+| Instrumentation Rule | <ins>[Integration Rule](#64-integration-rule)</ins> |
+| Tracer Plugin | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
 
 <sub>**SpecialAgent's <ins>config property keys</ins> have changed...**</sub>
 | Old key | New key |
 |:-|:-|
-| `-Dsa.instrumentation.plugin.` | `-Dsa.integration.` |
-| `-Dsa.tracer.plugin.` | `-Dsa.exporter.` |
-| `-Dsa.tracer.plugin.` | `-Dsa.exporter.` |
-| `-Dsa.instrumentation.include` | `-Dsa.include` |
+| `-Dsa.instrumentation.plugin.` | [`-Dsa.integration.`](#322-integration) |
+| `-Dsa.tracer.plugin.` | [`-Dsa.exporter.`](#343-disabling-agentrules-of-an-integration-rule) |
+| `-Dsa.instrumentation.include` | [`-Dsa.include`](#36-including-custom-integration-rules) |
 
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.svg?branch=master)][travis]
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
@@ -44,9 +43,9 @@ The <ins>SpecialAgent</ins> supports Oracle Java and OpenJDK.
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.1.2 [Development](#2112-development)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2 [For Development](#212-for-development)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1 <ins>[Integrations](#2121-integrations)</ins><br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1.1 <ins>[Uncoupled Integrations](#212211-uncoupled-integrations)</ins><br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1.2 <ins>[Coupled Integrations](#212212-coupled-integrations)</ins><br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1.3 [Development of <ins>Integration Rules</ins>](#212213-development-of-integration-rules)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1.1 <ins>[Uncoupled Integrations](#21211-uncoupled-integrations)</ins><br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1.2 <ins>[Coupled Integrations](#21212-coupled-integrations)</ins><br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.1.3 [Development of <ins>Integration Rules</ins>](#21213-development-of-integration-rules)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.2 <ins>[Trace Exporters](#2122-trace-exporters)</ins><br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.1.2.2.1 <ins>[Short Name](#21221-short-name)</ins><br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>2.2 [Usage](#22-usage)<br>
@@ -556,7 +555,6 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
 | [Java JMS API \[`javax.jms`\]][java-jms] | [`jms`][jms] | 1.1-rev-1 | LATEST |
-| | [`jms`][jms] | 2.0.1 | LATEST |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter)<br>&nbsp; | [`servlet`<br><sup>(configurable)</sup>][servlet] | 2.3<br>&nbsp; | 3.1<br>&nbsp; |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
