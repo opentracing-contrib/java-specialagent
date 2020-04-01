@@ -27,8 +27,7 @@
   <name>SpecialAgent Rule for JMS</name>
   <properties>
     <sa.rule.name>jms</sa.rule.name>
-    <min.version></min.version>
-    <passCompatibility>javax.jms:jms-api:[1.1-rev-1,];javax.jms:javax.jms-api:[2.0.1,]</passCompatibility>
+    <passCompatibility>javax.jms:jms-api:[1.1-rev-1,];javax.jms:javax.jms-api:[2.0,]</passCompatibility>
     <version.activemq>5.15.9</version.activemq>
     <version.opentracing.jms>0.1.7</version.opentracing.jms>
   </properties>
@@ -51,6 +50,7 @@
       <groupId>javax.jms</groupId>
       <artifactId>jms-api</artifactId>
       <version>1.1-rev-1</version>
+      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>

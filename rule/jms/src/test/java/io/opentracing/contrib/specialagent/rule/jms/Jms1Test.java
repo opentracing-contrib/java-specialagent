@@ -50,8 +50,8 @@ import io.opentracing.mock.MockTracer;
 import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
-public class JmsTest {
-  static final Logger logger = Logger.getLogger(JmsTest.class);
+public class Jms1Test {
+  static final Logger logger = Logger.getLogger(Jms1Test.class);
 
   static Session session;
   static Connection connection;

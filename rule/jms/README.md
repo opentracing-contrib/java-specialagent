@@ -1,4 +1,4 @@
-# SpecialAgent Rule for JMS v1 and v2
+# SpecialAgent Rule for JMS
 
 **Rule Name:** `jms`
 

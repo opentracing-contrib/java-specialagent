@@ -15,32 +15,24 @@
 
 package io.opentracing.contrib.specialagent.rule.jms;
 
-import java.lang.reflect.Method;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 
-import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
 import io.opentracing.util.GlobalTracer;
 
 public class JmsAgentIntercept {
   public static Object createProducer(final Object thiz) {
-    if (isJms2(thiz))
-      return new io.opentracing.contrib.jms2.TracingMessageProducer((MessageProducer) thiz, GlobalTracer.get());
-    return new TracingMessageProducer((MessageProducer) thiz, GlobalTracer.get());
+    try {
+      Class.forName("javax.jms.JMSContext", false, thiz.getClass().getClassLoader());
+      return new io.opentracing.contrib.jms2.TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
+    }
+    catch (final ClassNotFoundException e) {
+      return new io.opentracing.contrib.jms.TracingMessageProducer((MessageProducer)thiz, GlobalTracer.get());
+    }
   }
 
   public static Object createConsumer(final Object thiz) {
     return new TracingMessageConsumer((MessageConsumer)thiz, GlobalTracer.get(), true);
-  }
-
-  private static boolean isJms2(Object thiz) {
-    final Method[] methods = thiz.getClass().getMethods();
-    for (Method method : methods) {
-      if ("createSharedConsumer".equals(method.getName())) {
-        return true;
-      }
-    }
-    return false;
   }
 }
