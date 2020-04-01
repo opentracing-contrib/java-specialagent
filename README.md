@@ -2,14 +2,14 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
-#### NOTE: SpecialAgent is transitioning to the OpenTelemetry ecosystem...
+#### NOTE: As of v1.6.2, SpecialAgent is transitioning to the OpenTelemetry ecosystem...
 
 <sub>**SpecialAgent's <ins>terminology</ins> has changed...**</sub>
 | Old term | New term |
 |:-|:-|
-| Instrumentation Plugin | <ins>[Integration](#63-integration)</ins> |
-| Instrumentation Rule | <ins>[Integration Rule](#64-integration-rule)</ins> |
-| Tracer Plugin | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
+| <ins>Instrumentation Plugin</ins> | <ins>[Integration](#63-integration)</ins> |
+| <ins>Instrumentation Rule</ins> | <ins>[Integration Rule](#64-integration-rule)</ins> |
+| <ins>Tracer Plugin</ins> | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
 
 <sub>**SpecialAgent's <ins>config property keys</ins> have changed...**</sub>
 | Old key | New key |
