@@ -35,14 +35,14 @@ public class AbstractProcessorChainRule extends AgentRule {
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AbstractProcessorChainRule.class).on(named("resolveInterceptors")));
+          return builder.visit(advice().to(AbstractProcessorChainRule.class).on(named("resolveInterceptors")));
         }
       }));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.FieldValue(value = "muleContext") Object muleContext, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object interceptors) {
-    if (isEnabled(AbstractProcessorChainRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.FieldValue(value = "muleContext") Object muleContext, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object interceptors) {
+    if (isEnabled(className, origin))
       interceptors = AbstractProcessorChainIntercept.exit(muleContext, interceptors);
   }
 }

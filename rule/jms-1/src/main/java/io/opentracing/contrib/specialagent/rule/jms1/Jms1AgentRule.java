@@ -38,29 +38,29 @@ public class Jms1AgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return !AgentRuleUtil.hasMethodNamed(typeDescription, "createSharedConsumer") ? builder.visit(Advice.to(Producer.class).on(named("createProducer").and(returns(named("javax.jms.MessageProducer"))))) : builder.visit(Advice.to(Producer.class).on(none()));
+          return !AgentRuleUtil.hasMethodNamed(typeDescription, "createSharedConsumer") ? builder.visit(advice().to(Producer.class).on(named("createProducer").and(returns(named("javax.jms.MessageProducer"))))) : builder.visit(advice().to(Producer.class).on(none()));
         }
       })
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return !AgentRuleUtil.hasMethodNamed(typeDescription, "createSharedConsumer") ? builder.visit(Advice.to(Consumer.class).on(named("createConsumer").and(returns(named("javax.jms.MessageConsumer"))))) : builder.visit(Advice.to(Consumer.class).on(none()));
+          return !AgentRuleUtil.hasMethodNamed(typeDescription, "createSharedConsumer") ? builder.visit(advice().to(Consumer.class).on(named("createConsumer").and(returns(named("javax.jms.MessageConsumer"))))) : builder.visit(advice().to(Consumer.class).on(none()));
         }
       }));
   }
 
   public static class Producer {
     @Advice.OnMethodExit
-    public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(Jms1AgentRule.class.getName(), origin) && !WrapperProxy.isWrapper(returned))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Jms1AgentIntercept.createProducer(returned));
     }
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(Jms1AgentRule.class.getName(), origin) && !WrapperProxy.isWrapper(returned))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Jms1AgentIntercept.createConsumer(returned));
     }
   }

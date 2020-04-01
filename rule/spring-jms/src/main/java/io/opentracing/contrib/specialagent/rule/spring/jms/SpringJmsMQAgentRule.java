@@ -36,34 +36,34 @@ public class SpringJmsMQAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringJmsMQAgentRule.class).on(named("onMessage").and(takesArguments(2))));
+          return builder.visit(advice().to(SpringJmsMQAgentRule.class).on(named("onMessage").and(takesArguments(2))));
         }})
       .type(hasSuperType(named("org.springframework.jms.listener.AbstractPollingMessageListenerContainer")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(ReceiveMessage.class).on(named("receiveMessage").and(takesArguments(1))));
+          return builder.visit(advice().to(ReceiveMessage.class).on(named("receiveMessage").and(takesArguments(1))));
         }})
     );
   }
 
   public static class ReceiveMessage {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object consumer, final @Advice.Return Object message) {
-      if (isEnabled(SpringJmsMQAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object consumer, final @Advice.Return Object message) {
+      if (isEnabled(className, origin))
         SpringJmsAgentIntercept.onReceiveMessage(consumer, message);
     }
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
-    if (isEnabled(SpringJmsMQAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
+    if (isEnabled(className, origin))
       SpringJmsAgentIntercept.onMessageEnter(message);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(SpringJmsMQAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+    if (isEnabled(className, origin))
       SpringJmsAgentIntercept.onMessageExit(thrown);
   }
 }

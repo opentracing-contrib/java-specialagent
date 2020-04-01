@@ -35,28 +35,28 @@ public class CxfWsAgentRule extends AgentRule {
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(CxfWsClientAdvice.class).on(named("create")));
+            return builder.visit(advice().to(CxfWsClientAdvice.class).on(named("create")));
           }}),
       builder.type(hasSuperType(named("org.apache.cxf.frontend.ServerFactoryBean")))
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(CxfWsServerAdvice.class).on(named("create")));
+            return builder.visit(advice().to(CxfWsServerAdvice.class).on(named("create")));
           }}));
   }
 
   public static class CxfWsClientAdvice {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(CxfWsAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(className, origin))
         CxfAgentIntercept.addClientTracingFeature(thiz);
     }
   }
 
   public static class CxfWsServerAdvice {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(CxfWsAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(className, origin))
         CxfAgentIntercept.addServerTracingFeauture(thiz);
     }
   }

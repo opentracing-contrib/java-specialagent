@@ -35,34 +35,34 @@ public class SpringWebSocketAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(MessageChannelSend.class).on(named("send").and(takesArguments(2))));
+          return builder.visit(advice().to(MessageChannelSend.class).on(named("send").and(takesArguments(2))));
         }})
       .type(not(isInterface()).and(hasSuperType(named("org.springframework.messaging.simp.stomp.StompSession"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(StompSessionSend.class).on(named("send").and(takesArguments(2).and(takesArgument(0, named("org.springframework.messaging.simp.stomp.StompHeaders"))))));
+          return builder.visit(advice().to(StompSessionSend.class).on(named("send").and(takesArguments(2).and(takesArgument(0, named("org.springframework.messaging.simp.stomp.StompHeaders"))))));
         }}));
   }
 
   public static class MessageChannelSend {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(SpringWebSocketAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+      if (isEnabled(className, origin))
         SpringWebSocketAgentIntercept.messageChannelSend(thiz);
     }
   }
 
   public static class StompSessionSend {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg) {
-      if (isEnabled(SpringWebSocketAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg) {
+      if (isEnabled(className, origin))
         SpringWebSocketAgentIntercept.sendEnter(arg);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(SpringWebSocketAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin))
         SpringWebSocketAgentIntercept.sendExit(thrown);
     }
   }

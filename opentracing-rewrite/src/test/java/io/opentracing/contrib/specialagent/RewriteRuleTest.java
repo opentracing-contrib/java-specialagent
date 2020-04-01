@@ -33,7 +33,7 @@ import io.opentracing.mock.MockTracer;
 
 public class RewriteRuleTest {
   private static void assertTags(final RewritableTracer tracer, final MockTracer mockTracer, final String key, final List<Map<String,String>> logs) {
-    AgentRule.classNameToName = Collections.singletonMap(null, key);
+    AgentRule.$Access.configure(null, Collections.<String,String>singletonMap(null, key));
     final Span span = tracer.buildSpan("op").start();
     span.log(Collections.singletonMap("db.statement", "select a"));
     span.log(Collections.singletonMap("db.statement", "not matched"));

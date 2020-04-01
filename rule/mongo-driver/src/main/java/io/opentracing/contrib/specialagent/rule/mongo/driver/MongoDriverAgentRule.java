@@ -35,13 +35,13 @@ public class MongoDriverAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(MongoDriverAgentRule.class).on(named("builder")));
+          return builder.visit(advice().to(MongoDriverAgentRule.class).on(named("builder")));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-    if (isEnabled(MongoDriverAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned) {
+    if (isEnabled(className, origin))
       MongoDriverAgentIntercept.exit(returned);
   }
 }

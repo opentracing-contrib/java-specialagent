@@ -35,13 +35,13 @@ public class AsyncHttpClientAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AsyncHttpClientAgentRule.class).on(isDefaultConstructor()));
+          return builder.visit(advice().to(AsyncHttpClientAgentRule.class).on(isDefaultConstructor()));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(AsyncHttpClientAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (isEnabled(className, origin))
       AsyncHttpClientAgentIntercept.exit(thiz);
   }
 }

@@ -36,19 +36,19 @@ public class AkkaHttpClientAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AkkaHttpClientAgentRule.class).on(named("singleRequest").and(takesArgument(0, named("akka.http.javadsl.model.HttpRequest")))));
+          return builder.visit(advice().to(AkkaHttpClientAgentRule.class).on(named("singleRequest").and(takesArgument(0, named("akka.http.javadsl.model.HttpRequest")))));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request) {
-    if (isEnabled(AkkaHttpClientAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request) {
+    if (isEnabled(className, origin))
      request = AkkaAgentIntercept.requestStart(request);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(AkkaHttpClientAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
+    if (isEnabled(className, origin))
       returned = AkkaAgentIntercept.requestEnd(returned, thrown);
   }
 }

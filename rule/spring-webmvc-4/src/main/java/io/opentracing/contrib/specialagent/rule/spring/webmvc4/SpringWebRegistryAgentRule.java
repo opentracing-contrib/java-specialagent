@@ -36,13 +36,13 @@ public class SpringWebRegistryAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
+          return builder.visit(advice().to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void enter(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(SpringWebRegistryAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(className, origin))
       returned = SpringWebMvcAgentIntercept.getInterceptors(returned);
   }
 }

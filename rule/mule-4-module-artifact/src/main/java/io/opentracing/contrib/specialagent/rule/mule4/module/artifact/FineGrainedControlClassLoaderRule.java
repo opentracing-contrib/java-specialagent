@@ -22,11 +22,6 @@ import java.util.Collections;
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.asm.Advice.Argument;
-import net.bytebuddy.asm.Advice.OnMethodExit;
-import net.bytebuddy.asm.Advice.Origin;
-import net.bytebuddy.asm.Advice.Return;
-import net.bytebuddy.asm.Advice.This;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
@@ -40,15 +35,15 @@ public class FineGrainedControlClassLoaderRule extends AgentRule {
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnExit.class).on(named("getResource")));
+          return builder.visit(advice().to(OnExit.class).on(named("getResource")));
         }
       }));
   }
 
   public static class OnExit {
-    @OnMethodExit
-    public static void exit(final @Origin String origin, final @This Object thiz, @Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned, final @Argument(value = 0) Object resObj) {
-      if (isEnabled(FineGrainedControlClassLoaderRule.class.getName(), origin))
+    @Advice.OnMethodExit
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object resObj, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin))
         returned = FineGrainedControlAgentIntercept.exit(thiz, returned, resObj);
     }
   }

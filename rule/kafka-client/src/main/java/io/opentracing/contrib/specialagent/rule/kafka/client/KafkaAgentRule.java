@@ -36,28 +36,28 @@ public class KafkaAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Consumer.class).on(named("onConsume")));
+          return builder.visit(advice().to(Consumer.class).on(named("onConsume")));
         }})
       .type(named("org.apache.kafka.clients.producer.KafkaProducer"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Producer.class).on(named("send").and(takesArguments(2))));
+          return builder.visit(advice().to(Producer.class).on(named("send").and(takesArguments(2))));
         }}));
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(KafkaAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
+      if (isEnabled(className, origin))
         KafkaAgentIntercept.onConsumerExit(returned);
     }
   }
 
   public static class Producer {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (isEnabled(KafkaAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
+      if (isEnabled(className, origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
   }

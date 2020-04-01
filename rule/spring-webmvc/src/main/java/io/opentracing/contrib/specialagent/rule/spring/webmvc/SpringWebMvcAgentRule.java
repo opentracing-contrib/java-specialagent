@@ -56,7 +56,7 @@ public class SpringWebMvcAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringWebMvcAgentRule.class).on(named("initServletBean")));
+          return builder.visit(advice().to(SpringWebMvcAgentRule.class).on(named("initServletBean")));
         }}));
   }
 

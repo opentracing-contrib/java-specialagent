@@ -35,13 +35,13 @@ public class JaxRsAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(JaxRsAgentRule.class).on(named("build")));
+          return builder.visit(advice().to(JaxRsAgentRule.class).on(named("build")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(JaxRsAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (isEnabled(className, origin))
       JaxRsAgentIntercept.enter(thiz);
   }
 }
