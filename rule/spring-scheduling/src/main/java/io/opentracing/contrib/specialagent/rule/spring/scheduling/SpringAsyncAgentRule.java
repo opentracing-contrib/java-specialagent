@@ -36,13 +36,13 @@ public class SpringAsyncAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringAsyncAgentRule.class).on(named("invoke")));
+          return builder.visit(advice().to(SpringAsyncAgentRule.class).on(named("invoke")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-    if (isEnabled(SpringAsyncAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
+    if (isEnabled(className, origin))
       arg = SpringSchedulingAgentIntercept.invoke(arg);
   }
 }

@@ -500,6 +500,74 @@ For a configuration spec and other use-case examples, please refer to the [`rewr
 
 ## 4 Supported <ins>[Integrations](#63-integration)</ins> and <ins>[Trace Exporters](#62-trace-exporter)</ins>
 
+The following terms are used throughout this documentation.
+
+#### 4.1 <ins>SpecialAgent</ins>
+
+The [<ins>SpecialAgent</ins>](#41-specialagent) is software that attaches to Java applications, and automatically instruments 3rd-party libraries integrated in the application. The [<ins>SpecialAgent</ins>](#41-specialagent) uses the OpenTracing API for [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins) that instrument 3rd-party libraries, as well as [<ins>Tracer Plugins</ins>](#62-tracer-plugins) that implement OpenTracing tracer service providers. Both the [<ins>Instrumentation Plugins</ins>](#61-instrumentation-plugins), as well as the [<ins>Tracer Plugins</ins>](#62-tracer-plugins) are open-source, and are developed and supported by the OpenTracing community.
+
+The [<ins>SpecialAgent</ins>](#41-specialagent) supports Oracle Java and OpenJDK.
+
+#### 4.2 [<ins>Tracer</ins>](#42-tracer)
+
+Service provider of the OpenTracing standard, providing an implementation of the `io.opentracing.Tracer` interface.
+
+Examples:
+* [Jaeger Tracer][jaeger]
+* [LightStep Tracer][lightstep]
+* [Wavefront Tracer][wavefront]
+
+<sub>_[<ins>Tracers</ins>](#42-tracer) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
+
+#### 4.3 [<ins>Tracer Plugin</ins>](#43-tracer-plugin)
+
+A bridge providing automatic discovery of [<ins>Tracers</ins>](#42-tracer) in a runtime instrumented with the OpenTracing API. This bridge implements the `TracerFactory` interface of [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver/blob/master/opentracing-tracerresolver/), and is distributed as a single "fat JAR" that can be conveniently added to the classpath of a Java process.
+
+<sub>_[<ins>Tracer Plugins</ins>](#43-tracer-plugin) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
+
+#### 4.4 [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin)
+
+An OpenTracing Instrumentation project that exist as individual repositories under [opentracing-contrib][opentracing-contrib].
+
+Examples:
+* [`opentracing-contrib/java-okhttp`][java-okhttp]
+* [`opentracing-contrib/java-jdbc`][java-jdbc]
+* [`opentracing-contrib/java-jms`][java-jms]
+
+<sub>_[<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) **are not** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
+
+#### 4.5 [<ins>Instrumentation Rule</ins>](#45-instrumentation-rule)
+
+A submodule of the [<ins>SpecialAgent</ins>](#41-specialagent) that implements the auto-instrumentation rules for [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) via the [`opentracing-specialagent-api`][api].
+
+Examples:
+* [`rule/okhttp`][okhttp]
+* [`rule/jdbc`][jdbc]
+* [`rule/jms`][jms]
+
+<sub>_[<ins>Instrumentation Rules</ins>](#45-instrumentation-rule) **are** coupled to the [<ins>SpecialAgent</ins>](#41-specialagent)._</sub>
+
+## 5 Objectives
+
+### 5.1 Goals
+
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must allow any [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) available in [opentracing-contrib][opentracing-contrib] to be automatically installable in applications that utilize a 3rd-party library for which an [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) exists.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must automatically install the [<ins>Instrumentation Plugin</ins>](#44-instrumentation-plugin) for each 3rd-party library for which a module exists, regardless in which class loader the 3rd-party library is loaded.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must not adversely affect the runtime stability of the application on which it is intended to be used. This goal applies only to the code in the [<ins>SpecialAgent</ins>](#41-specialagent), and cannot apply to the code of the [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) made available in [opentracing-contrib][opentracing-contrib].
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must [<ins>Static Attach</ins>](#221-static-attach) and [<ins>Dynamic Attach</ins>](#222-dynamic-attach) to applications running on JVM versions 1.7, 1.8, 9, and 11.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must implement a lightweight test methodology that can be easily applied to a module that implements instrumentation for a 3rd-party library. This test must simulate:
+   1. Launch the test in a process simulating the `-javaagent` vm argument that points to the [<ins>SpecialAgent</ins>](#41-specialagent) (in order to test auto-instrumentation functionality).
+   1. Elevate the test code to be executed from a custom class loader that is disconnected from the system class loader (in order to test bytecode injection into an isolated class loader that cannot resolve classes on the system classpath).
+   1. Allow tests to specify their own `Tracer` instances via `GlobalTracer`, or initialize a `MockTracer` if no instance is specified. The test must provide a reference to the `Tracer` instance in the test method for assertions with JUnit.
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) must provide a means by which [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin) can be configured before use on a target application.
+
+### 5.2 Non-Goals
+
+1. The [<ins>SpecialAgent</ins>](#41-specialagent) is not designed to modify application code, beyond the installation of [<ins>Instrumentation Plugins</ins>](#44-instrumentation-plugin). For example, there is no facility for dynamically augmenting arbitrary code.
+
+## 6 Supported Plugins
+>>>>>>> master
+
 ### 4.1 <ins>[Integrations](#63-integration)</ins>
 
 Intrinsically, the <ins>SpecialAgent</ins> includes support for the instrumentation of the following 3rd-party libraries. Each row refers to an <ins>[Integration](#63-integration)</ins>, the <ins>[Integration Rule](#64-integration-rule)</ins>, and the minimum and maximum version tested by the build.
@@ -531,8 +599,8 @@ For the development of <ins>[Instrumentation Rules](#64-integration-rule)</ins>,
 | [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.6 |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
-| [Java JMS API \[`javax.jms`\]][java-jms] | [`jms:1`][jms-1] | 1.1-rev-1 | LATEST |
-| | [`jms:2`][jms-2] | 2.0.1 | LATEST |
+| [Java JMS API \[`javax.jms`\]][java-jms] | [`jms`][jms] | 1.1-rev-1 | LATEST |
+| | [`jms`][jms] | 2.0.1 | LATEST |
 | [Java Servlet API \[`javax.servlet`\]](https://github.com/opentracing-contrib/java-web-servlet-filter)<br>&nbsp; | [`servlet`<br><sup>(configurable)</sup>][servlet] | 2.3<br>&nbsp; | 3.1<br>&nbsp; |
 | &nbsp;&nbsp;&nbsp;&nbsp;Jetty | | 7.6.21.v20160908 | 9.2.15.v20160210 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tomcat | | 7.0.65 | 9.0.27 |
@@ -739,8 +807,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [jaxrs]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jaxrs
 [jdbc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jdbc
 [jedis]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jedis
-[jms-1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-1
-[jms-2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms-2
+[jms]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms
 [kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-client
 [kafka-streams]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-streams
 [lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.0

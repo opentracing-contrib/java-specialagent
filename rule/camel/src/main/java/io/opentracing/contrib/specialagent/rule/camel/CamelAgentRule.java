@@ -35,13 +35,13 @@ public class CamelAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(CamelAgentRule.class).on(named("startRouteDefinitions")));
+          return builder.visit(advice().to(CamelAgentRule.class).on(named("startRouteDefinitions")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(CamelAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (isEnabled(className, origin))
       CamelAgentIntercept.enter(thiz);
   }
 }

@@ -35,14 +35,14 @@ public class ElasticsearchRestClientAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(Rest.class).on(named("build")));
+          return builder.visit(advice().to(Rest.class).on(named("build")));
         }}));
   }
 
   public static class Rest {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.FieldValue(value = "httpClientConfigCallback") Object httpClientConfigCallback) {
-      if (isEnabled(ElasticsearchRestClientAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.FieldValue(value = "httpClientConfigCallback") Object httpClientConfigCallback) {
+      if (isEnabled(className, origin))
         ElasticsearchRestClientAgentIntercept.rest(thiz, httpClientConfigCallback);
     }
   }

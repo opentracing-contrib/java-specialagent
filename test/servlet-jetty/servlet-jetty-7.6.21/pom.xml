@@ -28,18 +28,6 @@
   <properties>
     <version.jetty>7.6.21.v20160908</version.jetty>
   </properties>
-  <!-- FIXME: https://github.com/opentracing-contrib/java-specialagent/issues/509 -->
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.opentracing.contrib.specialagent</groupId>
-        <artifactId>itest-maven-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>

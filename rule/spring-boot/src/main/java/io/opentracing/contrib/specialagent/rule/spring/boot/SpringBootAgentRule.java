@@ -59,7 +59,7 @@ public class SpringBootAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(SpringBootAgentRule.class).on(named("logStarted")));
+          return builder.visit(advice().to(SpringBootAgentRule.class).on(named("logStarted")));
         }}));
   }
 

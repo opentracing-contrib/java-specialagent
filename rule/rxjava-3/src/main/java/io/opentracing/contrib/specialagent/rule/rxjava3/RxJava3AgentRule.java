@@ -36,17 +36,17 @@ public class RxJava3AgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnEnter1.class, OnExit.class).on(named("subscribe").and(takesArguments(1))));
+          return builder.visit(advice().to(OnEnter1.class, OnExit.class).on(named("subscribe").and(takesArguments(1))));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnEnter2.class, OnExit.class).on(named("subscribe").and(takesArguments(2))));
+          return builder.visit(advice().to(OnEnter2.class, OnExit.class).on(named("subscribe").and(takesArguments(2))));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(OnEnter3.class, OnExit.class).on(named("subscribe").and(takesArguments(3))));
+          return builder.visit(advice().to(OnEnter3.class, OnExit.class).on(named("subscribe").and(takesArguments(3))));
         }}));
   }
 
@@ -63,8 +63,8 @@ public class RxJava3AgentRule extends AgentRule {
 
   public static class OnEnter1 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext) {
-      if (!isEnabled(RxJava3AgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext) {
+      if (!isEnabled(className, origin))
         return;
 
       final Object enter = RxJava3AgentIntercept.enter(thiz, 1, onNext, null, null);
@@ -75,8 +75,8 @@ public class RxJava3AgentRule extends AgentRule {
 
   public static class OnEnter2 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError) {
-      if (!isEnabled(RxJava3AgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError) {
+      if (!isEnabled(className, origin))
         return;
 
       final Object enter = RxJava3AgentIntercept.enter(thiz, 2, onNext, onError, null);
@@ -87,8 +87,8 @@ public class RxJava3AgentRule extends AgentRule {
 
   public static class OnEnter3 {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete) {
-      if (!isEnabled(RxJava3AgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object onNext, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object onError, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object onComplete) {
+      if (!isEnabled(className, origin))
         return;
 
       final Object enter = RxJava3AgentIntercept.enter(thiz, 3, onNext, onError, onComplete);

@@ -71,7 +71,7 @@ All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://git
          .transform(new Transformer() {
            @Override
            public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-             return builder.visit(Advice
+             return builder.visit(advice()             // The method `advice()` is defined in `AgentRule`
                .to(TargetAgentRule.class)              // A class literal reference to this class.
                .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
                  .and(takesArguments(String.class)))); // Additional specification for the method intercept.
@@ -83,8 +83,8 @@ All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://git
      // from where the intercept rule is being defined. All of the OpenTracing integration logic into the
      // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
      @Advice.OnMethodExit
-     public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-       if (AgentRuleUtil.isEnabled("TargetAgentRule", origin)) // The call to AgentRuleUtil.isEnabled(...) is required.
+     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
+       if (isEnabled(className, origin))               // The call to isEnabled(className, origin) is required.
          returned = TargetAgentIntercept.exit(returned);
      }
    }

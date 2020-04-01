@@ -34,14 +34,14 @@ public class DubboRpcAgentRule extends AgentRule {
     return Arrays.asList(builder.type(named("com.alibaba.dubbo.common.extension.ExtensionLoader")).transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(DubboRpcAgentRule.class).on(named("getActivateExtension")));
+        return builder.visit(advice().to(DubboRpcAgentRule.class).on(named("getActivateExtension")));
       }
     }));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object key, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (key instanceof String && ("service.filter".equals(key) || "reference.filter".equals(key)) && isEnabled(DubboRpcAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object key, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (key instanceof String && ("service.filter".equals(key) || "reference.filter".equals(key)) && isEnabled(className, origin))
       returned = DubboRpcAgentIntercept.exit(returned);
   }
 }

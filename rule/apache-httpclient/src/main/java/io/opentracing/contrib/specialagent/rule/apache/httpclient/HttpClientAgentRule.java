@@ -37,14 +37,14 @@ public class HttpClientAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(Advice.to(HttpClientAgentRule.class).on(named("execute")))
-            .visit(Advice.to(OnException.class).on(named("execute")));
+            .visit(advice().to(HttpClientAgentRule.class).on(named("execute")))
+            .visit(advice().to(OnException.class).on(named("execute")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg1, @Advice.Argument(value = 2, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg2) {
-    if (!isEnabled(HttpClientAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg1, @Advice.Argument(value = 2, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg2) {
+    if (!isEnabled(className, origin))
       return;
 
     final Object[] objects = HttpClientAgentIntercept.enter(arg0, arg1, arg2);
@@ -58,8 +58,8 @@ public class HttpClientAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Return Object returned) {
-    if (isEnabled(HttpClientAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned) {
+    if (isEnabled(className, origin))
       HttpClientAgentIntercept.exit(returned);
   }
 

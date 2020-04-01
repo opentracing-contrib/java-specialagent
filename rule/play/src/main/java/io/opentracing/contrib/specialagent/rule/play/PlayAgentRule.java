@@ -35,19 +35,19 @@ public class PlayAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(PlayAgentRule.class).on(named("apply").and(takesArgument(0, named("play.api.mvc.Request")))));
+          return builder.visit(advice().to(PlayAgentRule.class).on(named("apply").and(takesArgument(0, named("play.api.mvc.Request")))));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0) {
-    if (isEnabled(PlayAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0) {
+    if (isEnabled(className, origin))
       PlayAgentIntercept.applyStart(arg0);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(PlayAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
+    if (isEnabled(className, origin))
       PlayAgentIntercept.applyEnd(thiz, returned, thrown);
   }
 }

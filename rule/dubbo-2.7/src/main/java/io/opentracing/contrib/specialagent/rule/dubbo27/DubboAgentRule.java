@@ -33,14 +33,14 @@ public class DubboAgentRule extends AgentRule {
     return Arrays.asList(builder.type(named("org.apache.dubbo.common.extension.ExtensionLoader")).transform(new AgentBuilder.Transformer() {
       @Override
       public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(DubboAgentRule.class).on(named("getActivateExtension")));
+        return builder.visit(advice().to(DubboAgentRule.class).on(named("getActivateExtension")));
       }
     }));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object key, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned) {
-    if (key instanceof String && ("service.filter".equals(key) || "reference.filter".equals(key)) && isEnabled(DubboAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object key, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned) {
+    if (key instanceof String && ("service.filter".equals(key) || "reference.filter".equals(key)) && isEnabled(className, origin))
       returned = DubboAgentIntercept.exit(returned);
   }
 }

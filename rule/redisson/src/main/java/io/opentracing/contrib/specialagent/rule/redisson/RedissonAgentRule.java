@@ -36,13 +36,13 @@ public class RedissonAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(RedissonAgentRule.class).on(named("create")));
+          return builder.visit(advice().to(RedissonAgentRule.class).on(named("create")));
         }}));
   }
 
   @Advice.OnMethodExit
-  public static void exit(final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(RedissonAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    if (isEnabled(className, origin))
       returned = RedissonAgentIntercept.exit(returned);
   }
 }

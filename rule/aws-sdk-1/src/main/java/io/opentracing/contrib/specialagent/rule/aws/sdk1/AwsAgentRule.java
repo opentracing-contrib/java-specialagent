@@ -35,13 +35,13 @@ public class AwsAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(AwsAgentRule.class).on(named("build")));
+          return builder.visit(advice().to(AwsAgentRule.class).on(named("build")));
         }}));
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(AwsAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+    if (isEnabled(className, origin))
       AwsAgentIntercept.enter(thiz);
   }
 }

@@ -38,21 +38,21 @@ public class FilterChainAgentRule extends AgentRule {
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(OnEnter.class).on(named("build")));
+            return builder.visit(advice().to(OnEnter.class).on(named("build")));
           }}),
       builder
         .type(hasSuperType(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder")))
         .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(Advice.to(OnExit.class).on(named("build")));
+            return builder.visit(advice().to(OnExit.class).on(named("build")));
           }}));
   }
 
   public static class OnEnter {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Object thiz) throws EarlyReturnException {
-      if (!isEnabled(FilterChainAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) throws EarlyReturnException {
+      if (!isEnabled(className, origin))
         return;
 
       final Object filterChain = FilterChainAgentIntercept.enter(thiz);

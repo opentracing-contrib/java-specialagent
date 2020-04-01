@@ -41,14 +41,14 @@ public class PrivilegedEventRule extends AgentRule {
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(Advice.to(PrivilegedEventRule.class).on(named("setCurrentEvent")));
+          return builder.visit(advice().to(PrivilegedEventRule.class).on(named("setCurrentEvent")));
         }
       }));
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object event) {
-    if (!isEnabled(PrivilegedEventRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object event) {
+    if (!isEnabled(className, origin))
       return;
 
     if (event == null) {

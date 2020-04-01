@@ -63,7 +63,7 @@ public class DynamicAgentRule extends AgentRule {
               methodDesc = methodDesc.and(returns(named(spec.returning)));
           }
 
-          return builder.visit(Advice.to(DynamicAgentRule.class).on(methodDesc));
+          return builder.visit(advice().to(DynamicAgentRule.class).on(methodDesc));
         }
       }));
     }
@@ -72,14 +72,14 @@ public class DynamicAgentRule extends AgentRule {
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @Advice.Origin String origin) {
-    if (isEnabled(DynamicAgentRule.class.getName(), origin))
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin) {
+    if (isEnabled(className, origin))
       DynamicAgentIntercept.enter(origin);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(DynamicAgentRule.class.getName(), origin))
+  public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
+    if (isEnabled(className, origin))
       DynamicAgentIntercept.exit(thrown);
   }
 }

@@ -36,38 +36,38 @@ public class ThreadAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(Advice.to(Start.class).on(named("start")))
-            .visit(Advice.to(Run.class).on(named("run")))
-            .visit(Advice.to(RunError.class).on(named("run")));
+            .visit(advice().to(Start.class).on(named("start")))
+            .visit(advice().to(Run.class).on(named("run")))
+            .visit(advice().to(RunError.class).on(named("run")));
         }}));
   }
 
   public static class Start {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(ThreadAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (isEnabled(className, origin))
         ThreadAgentIntercept.start(thiz);
     }
   }
 
   public static class Run {
     @Advice.OnMethodEnter
-    public static void enter(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(ThreadAgentRule.class.getName(), origin))
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (isEnabled(className, origin))
         ThreadAgentIntercept.runEnter(thiz);
     }
 
     @Advice.OnMethodExit
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(ThreadAgentRule.class.getName(), origin))
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz) {
+      if (isEnabled(className, origin))
         ThreadAgentIntercept.runExit(thiz);
     }
   }
 
   public static class RunError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @Advice.Origin String origin, final @Advice.This Thread thiz, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(ThreadAgentRule.class.getName(), origin) && thrown != null)
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz, final @Advice.Thrown Throwable thrown) {
+      if (isEnabled(className, origin) && thrown != null)
         ThreadAgentIntercept.runExit(thiz);
     }
   }
