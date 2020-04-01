@@ -2,6 +2,23 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
+#### NOTE: SpecialAgent is transitioning to the OpenTelemetry ecosystem...
+
+<sub>**SpecialAgent's <ins>terminology</ins> has changed...**</sub>
+| Old term | New term |
+|:-|:-|
+| Instrumentation Plugin | Integration |
+| Instrumentation Rule | Integration Rule |
+| Tracer Plugin | Trace Exporter |
+
+<sub>**SpecialAgent's <ins>config property keys</ins> have changed...**</sub>
+| Old key | New key |
+|:-|:-|
+| `-Dsa.instrumentation.plugin.` | `-Dsa.integration.` |
+| `-Dsa.tracer.plugin.` | `-Dsa.exporter.` |
+| `-Dsa.tracer.plugin.` | `-Dsa.exporter.` |
+| `-Dsa.instrumentation.include` | `-Dsa.include` |
+
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.svg?branch=master)][travis]
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
@@ -39,6 +56,9 @@ The <ins>SpecialAgent</ins> supports Oracle Java and OpenJDK.
 <samp>&nbsp;&nbsp;</samp>3 [Configuration](#3-configuration)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.1 [Overview](#31-overview)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2 [Properties](#32-properties)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2.1 [Logging](#321-logging)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2.2 [Integration](#322-integration)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.2.3 [General](#323-general)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.3 [Selecting the <ins>Trace Exporter</ins>](#33-selecting-the-trace-exporter)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4 [Disabling <ins>Integration Rules</ins>](#34-disabling-integration-rules)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>3.4.1 [Disabling All <ins>Integration Rules</ins>](#341-disabling-all-integration-rules)<br>
@@ -313,21 +333,23 @@ The <ins>SpecialAgent</ins> exposes a simple pattern for configuration of <ins>S
 
 The following properties are supported by all <ins>[Integration Rules](#64-integration-rule)</ins>:
 
-1. Logging:
+#### 3.2.1 Logging
 
-   * `-Dsa.log.level`
+* `-Dsa.log.level`
 
-     Set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
+  Set the logging level for <ins>SpecialAgent</ins>. Acceptable values are: `SEVERE`, `WARNING`, `INFO`, `CONFIG`, `FINE`, `FINER`, or `FINEST`, or any numerical log level value is accepted also. The default logging level is set to `WARNING`.
 
-   * `-Dsa.log.events`
+* `-Dsa.log.events`
 
-     Set the re/transformation events to be logged: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, the `ERROR` event is logged (only when run with `AgentRunner`).
+  Set the re/transformation events to be logged: `DISCOVERY`, `IGNORED`, `TRANSFORMATION`, `ERROR`, `COMPLETE`. The property accepts a comma-delimited list of event names. By default, the `ERROR` event is logged (only when run with `AgentRunner`).
 
-   * `-Dsa.log.file`
+* `-Dsa.log.file`
 
-     Set the logging output file for <ins>SpecialAgent</ins>.
+  Set the logging output file for <ins>SpecialAgent</ins>.
 
-1. Verbose Mode:
+#### 3.2.2 Integration
+
+1. <ins>Verbose mode</ins>
 
    &nbsp;&nbsp;&nbsp;&nbsp;`-Dsa.integration.*.verbose`<br>
    &nbsp;&nbsp;&nbsp;&nbsp;`-Dsa.integration.${INTEGRATION_NAME_PATTERN}.verbose`
@@ -336,7 +358,9 @@ The following properties are supported by all <ins>[Integration Rules](#64-integ
 
    The [Java Concurrent API plugin](https://github.com/opentracing-contrib/java-concurrent) supports verbose mode, which is disabled by default. To enable, set `sa.integration.concurrent.verbose=true`. In non-verbose mode, parent span context is propagating to task execution (if a parent span context exists). In verbose mode, a parent span is always created upon task submission to the executor, and a child span is created when the task is started.
 
-1. Skip fingerprint verification:
+#### 3.2.3 General
+
+1. <ins>Skip fingerprint verification:</ins>
 
    &nbsp;&nbsp;&nbsp;&nbsp;`-Dsa.fingerprint.skip`
 
