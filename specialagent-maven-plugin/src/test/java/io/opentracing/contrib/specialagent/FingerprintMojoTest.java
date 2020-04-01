@@ -38,7 +38,7 @@ public class FingerprintMojoTest {
   @Test
   public void testJms1() throws IOException {
     final URL[] ruleDeps = new URL[] {
-      getPath(new MavenDependency("io.opentracing.contrib.specialagent.rule", "jms-1", version)),
+      getPath(new MavenDependency("io.opentracing.contrib.specialagent.rule", "jms", version)),
       getPath(new MavenDependency("io.opentracing.contrib", "opentracing-jms-1", "0.1.7")),
       getPath(new MavenDependency("io.opentracing.contrib", "opentracing-jms-common", "0.1.7"))
     };
@@ -54,7 +54,7 @@ public class FingerprintMojoTest {
   @Test
   public void testJms2() throws IOException {
     final URL[] ruleDeps = new URL[] {
-      getPath(new MavenDependency("io.opentracing.contrib.specialagent.rule", "jms-2", version)),
+      getPath(new MavenDependency("io.opentracing.contrib.specialagent.rule", "jms", version)),
       getPath(new MavenDependency("io.opentracing.contrib", "opentracing-jms-2", "0.1.7")),
       getPath(new MavenDependency("io.opentracing.contrib", "opentracing-jms-common", "0.1.7"))
     };
