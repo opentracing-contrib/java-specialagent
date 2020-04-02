@@ -625,8 +625,8 @@ The following libraries are instrumented by other <ins>[Integration Rules](#64-i
 | Ratpack | [`netty`][netty] | 1.4.0 | LATEST |
 | Solr Client | [`apache:httpclient`][apache-httpclient] | 4.0.0 | LATEST |
 | SparkJava | [`javax.servlet`][servlet] | 2.2 | LATEST |
-| Spring Data<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | \*<br>&nbsp; | \*<br>&nbsp; |
 | Spring Cloud | \*<br>&nbsp; | \*<br>&nbsp; | \*<br>&nbsp; |
+| Spring Data<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | \*<br>&nbsp; | \*<br>&nbsp; |
 | Twilio | [`apache:httpclient`][apache-httpclient] | 0.0.1 | LATEST |
 
 ## 5 Objectives
