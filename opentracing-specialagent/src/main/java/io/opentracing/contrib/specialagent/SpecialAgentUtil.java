@@ -29,6 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -79,6 +80,20 @@ public final class SpecialAgentUtil {
     }
 
     return includedPlugins;
+  }
+
+  static Map<String, String[]> parseIntegrationConfiguration(final Map<String,String> properties) {
+    final HashMap<String,String[]> integrationClasspaths = new HashMap<>();
+    for (final Map.Entry<String,String> property : properties.entrySet()) {
+      final String key = property.getKey();
+      final String value = property.getValue();
+
+      if (key.contains("integration") && key.endsWith("classpath")) {
+        final String[] classpaths = value.split(File.pathSeparator);
+        integrationClasspaths.put(key, classpaths);
+      }
+    }
+    return integrationClasspaths;
   }
 
   static JarFile createTempJarFile(final File dir) throws IOException {
