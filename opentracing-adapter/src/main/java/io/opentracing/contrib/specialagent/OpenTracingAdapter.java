@@ -170,10 +170,10 @@ public class OpenTracingAdapter extends Adapter {
         return null;
       }
 
-      final String tracerProperty = System.getProperty(TRACER_PROPERTY);
+      final String tracerProperty = System.getProperty(EXPORTER_PROPERTY);
       if (tracerProperty == null) {
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Tracer was not specified with \"" + TRACER_PROPERTY + "\" system property");
+          logger.fine("Tracer was not specified with \"" + EXPORTER_PROPERTY + "\" system property");
 
         return null;
       }
@@ -191,7 +191,7 @@ public class OpenTracingAdapter extends Adapter {
 
         final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(isoClassLoader, tracerProperty);
         if (tracerUrl == null)
-          throw new IllegalStateException(TRACER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
+          throw new IllegalStateException(EXPORTER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
 
         final String tracerResolverUrl = isoClassLoader.getResource("io/opentracing/contrib/tracerresolver/TracerResolver.class").toString();
         Adapter.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!')))});

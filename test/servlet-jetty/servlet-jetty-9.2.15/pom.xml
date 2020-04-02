@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.servlet-jetty</groupId>
     <artifactId>servlet-jetty</artifactId>
-    <version>1.6.2-SNAPSHOT</version>
+    <version>1.7.0-SNAPSHOT</version>
   </parent>
   <artifactId>servlet-jetty-9.2.15</artifactId>
   <name>SpecialAgent Test for Jetty 9.2.15</name>
