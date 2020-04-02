@@ -106,7 +106,8 @@
         <module>pulsar-client</module>
         <module>pulsar-functions</module>
         <module>dynamic</module>
-        <module>cxf</module>
+        <module>cxf-client</module>
+        <module>cxf-server</module>
       </modules>
       <build>
         <resources>
