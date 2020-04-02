@@ -2,21 +2,22 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
-#### NOTE: As of v1.6.2, SpecialAgent is transitioning to the OpenTelemetry ecosystem...
+#### NOTE: As of v1.7.0, SpecialAgent is starting its transition to the [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java) ecosystem...
 
-<sub>**SpecialAgent's <ins>terminology</ins> has changed...**</sub>
-| Old term | New term |
-|:-|:-|
-| <ins>Instrumentation Plugin</ins> | <ins>[Integration](#63-integration)</ins> |
-| <ins>Instrumentation Rule</ins> | <ins>[Integration Rule](#64-integration-rule)</ins> |
-| <ins>Tracer Plugin</ins> | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
+<sub>:warning: **SpecialAgent's <ins>terminology</ins> has changed... :warning:**</sub>
+| <samp>[,1.6.1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
+|:-|:-:|:-|
+| <ins>Instrumentation Plugin</ins> | :arrow_right: | <ins>[Integration](#63-integration)</ins> |
+| <ins>Instrumentation Rule</ins> | :arrow_right: | <ins>[Integration Rule](#64-integration-rule)</ins> |
+| <ins>Tracer Plugin</ins> | :arrow_right: | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
 
-<sub>**SpecialAgent's <ins>config property keys</ins> have changed...**</sub>
-| Old key | New key |
-|:-|:-|
-| `-Dsa.instrumentation.plugin.` | [`-Dsa.integration.`](#322-integration) |
-| `-Dsa.tracer.plugin.` | [`-Dsa.exporter.`](#343-disabling-agentrules-of-an-integration-rule) |
-| `-Dsa.instrumentation.include` | [`-Dsa.include`](#36-including-custom-integration-rules) |
+<sub>:warning: **SpecialAgent's <ins>config property keys</ins> have changed... :warning:**</sub>
+| <samp>[,1.6.1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
+|:-|:-:|:-|
+| `-Dsa.tracer` | :arrow_right: | [`-Dsa.exporter`](#36-including-custom-integration-rules) |
+| `-Dsa.tracer.plugin.` | :arrow_right: | [`-Dsa.exporter.`](#343-disabling-agentrules-of-an-integration-rule) |
+| `-Dsa.instrumentation.plugin.` | :arrow_right: | [`-Dsa.integration.`](#322-integration) |
+| `-Dsa.instrumentation.include` | :arrow_right: | [`-Dsa.classpath`](#36-including-custom-integration-rules) |
 
 [![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.svg?branch=master)][travis]
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
@@ -114,23 +115,23 @@ wget -O opentracing-specialagent-1.6.1.jar "https://repo1.maven.org/maven2/io/op
 
 ##### 2.1.1.2 Development
 
-The latest development release is: [1.6.2-SNAPSHOT][main-snapshot]
+The latest development release is: [1.7.0-SNAPSHOT][main-snapshot]
 
 ```bash
-wget -O opentracing-specialagent-1.6.2-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.7.0-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 **Note**: Sometimes the web service call (in the line above) to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command (for Linux and Mac OS):
 
 ```bash
-wget -O opentracing-specialagent-1.6.2-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.6.2-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+wget -O opentracing-specialagent-1.7.0-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.0-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
 
 #### 2.1.2 For Development
 
 The <ins>SpecialAgent</ins> is built in 2 passes utilizing different profiles:
 
-1. The `default` profile is used for development of <ins>[Integration Rules](#64-integration-rule)</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into the main JAR (i.e. `opentracing-specialagent-1.6.2-SNAPSHOT.jar`).
+1. The `default` profile is used for development of <ins>[Integration Rules](#64-integration-rule)</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into the main JAR (i.e. `opentracing-specialagent-1.7.0-SNAPSHOT.jar`).
 
    To run this profile:
    ```bash
@@ -139,9 +140,9 @@ The <ins>SpecialAgent</ins> is built in 2 passes utilizing different profiles:
 
    _**Note**: If you skip tests, the `assemble` profile will display an error stating that tests have not been run. See [Convenient One-Liners](#convenient-one-liners) for quick ways to build and package <ins>SpecialAgent</ins>_.
 
-1. The `assemble` profile is used to bundle the <ins>[Integrations](#64-integration-rule)</ins> into the main JAR (i.e. `opentracing-specialagent-1.6.2-SNAPSHOT.jar`). It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the main JAR (i.e. `opentracing-specialagent-1.6.2-SNAPSHOT.jar`) will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the <ins>[Integrations](#64-integration-rule)</ins> into the main JAR (i.e. `opentracing-specialagent-1.7.0-SNAPSHOT.jar`). It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the main JAR (i.e. `opentracing-specialagent-1.7.0-SNAPSHOT.jar`) will contain the built rules inside it.
 
-   _**Note**: If you do not run this step, the `opentracing-specialagent-1.6.2-SNAPSHOT.jar` from the previous step will not contain any <ins>[Integrations](#63-integration)</ins>!_
+   _**Note**: If you do not run this step, the `opentracing-specialagent-1.7.0-SNAPSHOT.jar` from the previous step will not contain any <ins>[Integrations](#63-integration)</ins>!_
 
    _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile, otherwise the <ins>[Integrations](#63-integration)</ins> built in with the `default` profile will be cleared._
 
@@ -229,7 +230,7 @@ If the <ins>[Trace Exporter](#62-trace-exporter)</ins> JAR imports any `io.opent
 
 ###### 2.1.2.2.1 <ins>Short Name</ins>
 
-Each <ins>[Trace Exporter](#62-trace-exporter)</ins> integrated with the <ins>SpecialAgent</ins> must define a <ins>Short Name</ins>, which is a string that is used to reference the plugin with the `-Dsa.tracer=${SHORT_NAME}` system property. To provide a <ins>Short Name</ins> for the <ins>[Trace Exporter](#62-trace-exporter)</ins>, you must define a Maven property in the [root POM][specialagent-pom] with the name matching the `artifactId` of the <ins>[Trace Exporter](#62-trace-exporter)</ins> module. For instance, the <ins>Short Name</ins> for the [Jaeger Trace Exporter](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is defined as:
+Each <ins>[Trace Exporter](#62-trace-exporter)</ins> integrated with the <ins>SpecialAgent</ins> must define a <ins>Short Name</ins>, which is a string that is used to reference the plugin with the `-Dsa.exporter=${SHORT_NAME}` system property. To provide a <ins>Short Name</ins> for the <ins>[Trace Exporter](#62-trace-exporter)</ins>, you must define a Maven property in the [root POM][specialagent-pom] with the name matching the `artifactId` of the <ins>[Trace Exporter](#62-trace-exporter)</ins> module. For instance, the <ins>Short Name</ins> for the [Jaeger Trace Exporter](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle) is defined as:
 
 ```xml
 <properties>
@@ -379,15 +380,15 @@ The <ins>SpecialAgent</ins> supports OpenTracing-compatible <ins>[Tracers](#61-t
     1. [OpenTelemetry Bridge Trace Exporter](https://github.com/opentracing-contrib/java-opentelemetry-bridge)
     1. [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)
 
-    The `-Dsa.tracer=${SHORT_NAME}` property specifies which <ins>[Trace Exporter](#62-trace-exporter)</ins> is to be used. The value of `${SHORT_NAME}` is the <ins>[Short Name](#21221-short-name)</ins> of the <ins>[Trace Exporter](#62-trace-exporter)</ins>, i.e. `jaeger`, `lightstep`, `wavefront`, `otel`, or `mock`.
+    The `-Dsa.exporter=${SHORT_NAME}` property specifies which <ins>[Trace Exporter](#62-trace-exporter)</ins> is to be used. The value of `${SHORT_NAME}` is the <ins>[Short Name](#21221-short-name)</ins> of the <ins>[Trace Exporter](#62-trace-exporter)</ins>, i.e. `jaeger`, `lightstep`, `wavefront`, `otel`, or `mock`.
 
 1. **External <ins>[Trace Exporters](#62-trace-exporter)</ins>**
 
     The <ins>SpecialAgent</ins> allows external <ins>[Trace Exporters](#62-trace-exporter)</ins> to be attached to the runtime.
 
-    The `-Dsa.tracer=${TRACE_EXPORTER_JAR}` property specifies the JAR path of the <ins>[Trace Exporter](#62-trace-exporter)</ins> to be used. The `${TRACE_EXPORTER_JAR}` must be a JAR that supplies an implementation of the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) interface of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
+    The `-Dsa.exporter=${TRACE_EXPORTER_JAR}` property specifies the JAR path of the <ins>[Trace Exporter](#62-trace-exporter)</ins> to be used. The `${TRACE_EXPORTER_JAR}` must be a JAR that supplies an implementation of the [`TracerFactory`](https://github.com/opentracing-contrib/java-tracerresolver#tracer-factory) interface of the [TracerResolver](https://github.com/opentracing-contrib/java-tracerresolver) project.
 
-_**NOTE**: If a tracer is not specified with the `-Dsa.tracer=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._
+_**NOTE**: If a tracer is not specified with the `-Dsa.exporter=...` property, the <ins>SpecialAgent</ins> will present a warning in the log that states: `Tracer NOT RESOLVED`._
 
 ### 3.4 Disabling <ins>[Integration Rules](#64-integration-rule)</ins>
 
@@ -472,7 +473,7 @@ The value of `${SHORT_NAME}` is the <ins>[Short Name](#21221-short-name)</ins> o
 Custom <ins>[Integration Rules](#64-integration-rule)</ins> can be implemented by following the [SpecialAgent Rule API](https://github.com/opentracing-contrib/java-specialagent/tree/master/opentracing-specialagent-api). JARs containing custom <ins>[Integration Rules](#64-integration-rule)</ins> can be loaded by <ins>SpecialAgent</ins> via:
 
 ```
--Dsa.include=${JARs}
+-Dsa.classpath=${JARs}
 ```
 
 Here, `${JARs}` refers to a `File.pathSeparator`-delimited (`:` for \*NIX, `;` for Windows) string of JARs containing the custom <ins>[Integration Rules](#64-integration-rule)</ins>.
@@ -605,7 +606,7 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 
 Intrinsically, the <ins>SpecialAgent</ins> includes support for the following <ins>[Trace Exporters](#62-trace-exporter)</ins>. A demo can be referenced [here](https://github.com/opentracing-contrib/java-specialagent-demo).
 
-| Trace Exporter<br/><sup>(link to impl. of <ins>trace exporter</ins>)</sup> | [Short Name](#21221-short-name)<br/><sup>(`-Dsa.tracer=${short_name}`)</sup> |
+| Trace Exporter<br/><sup>(link to impl. of <ins>trace exporter</ins>)</sup> | [Short Name](#21221-short-name)<br/><sup>(`-Dsa.exporter=${short_name}`)</sup> |
 |:-|:-|
 | [Jaeger Trace Exporter](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)<br/><sup>[(configuration reference)](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment)</sup> | `jaeger`<br/>&nbsp; |
 | [LightStep Trace Exporter](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)<br/><sup>[(configuration reference)](https://docs.lightstep.com/docs/create-projects-for-your-environments)</sup> | `lightstep`<br/>&nbsp; |
@@ -818,4 +819,4 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
 
 [main-release]: https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.6.1/opentracing-specialagent-1.6.1.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.6.2-SNAPSHOT
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.0-SNAPSHOT

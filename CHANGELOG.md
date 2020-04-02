@@ -285,7 +285,7 @@
 * Resolve bugs in dependency correlation for rule wiring in SpecialAgent runtime.
 * Standardize `-Dsa.` prefix for properties of SpecialAgent.
 * Support execution of SpecialAgent with a tracer in IDEs.
-* Implement `ProxyMockTracer`, which allows all tests to plug into a real tracer as specified by the `-Dsa.tracer=...` property.
+* Implement `ProxyMockTracer`, which allows all tests to plug into a real tracer as specified by the `-Dsa.tracer=...` property (`-Dsa.exporter=...` property as of `v1.7.0`).
 * General performance improvements.
 
 ## v1.0.0 (2019-03-15)

@@ -200,7 +200,7 @@ public class SpecialAgent {
     final ArrayList<String> verbosePluginNames = new ArrayList<>();
     final HashMap<String,Boolean> integrationRuleNameToEnable = new HashMap<>();
     final HashMap<String,Boolean> traceExporterNameToEnable = new HashMap<>();
-    final File[] includedPlugins = SpecialAgentUtil.parseConfiguration(properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
+    final File[] classPaths = SpecialAgentUtil.parseConfiguration(properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
 
     final boolean allIntegrationsEnabled = !integrationRuleNameToEnable.containsKey("*") || integrationRuleNameToEnable.remove("*");
     if (logger.isLoggable(Level.FINER))
@@ -291,10 +291,10 @@ public class SpecialAgent {
         }
       };
 
-      // First, load all plugins explicitly included with the `-Dsa.include=...` system property.
-      if (includedPlugins != null)
-        for (final File includedPlugin : includedPlugins)
-          loadPluginPredicate.test(includedPlugin);
+      // First, load all plugins explicitly included with the `-Dsa.classpath=...` system property.
+      if (classPaths != null)
+        for (final File classPath : classPaths)
+          loadPluginPredicate.test(classPath);
 
       // Then, load the plugins inside the SpecialAgent JAR.
       SpecialAgentUtil.findJarResources(UtilConstants.META_INF_PLUGIN_PATH, destDir, loadPluginPredicate);
