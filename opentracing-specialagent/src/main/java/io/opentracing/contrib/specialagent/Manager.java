@@ -20,6 +20,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,7 +77,7 @@ public abstract class Manager {
    *         {@link #loadRules(Instrumentation,Map,Event[])}.
    * @throws IOException If an I/O error has occurred.
    */
-  abstract Map<AgentRule,PluginManifest> scanRules(Instrumentation inst, ClassLoader pluginsClassLoader, PluginManifest.Directory pluginManifestDirectory, Map<AgentRule,PluginManifest> pluginManifests, Map<String,String> classNameToName) throws IOException;
+  abstract int scanRules(Instrumentation inst, ClassLoader pluginsClassLoader, PluginManifest.Directory pluginManifestDirectory, List<IntegrationRule> integrationRules, Map<String,String> classNameToName) throws IOException;
 
   /**
    * Loads the rules of this {@code Manager} and associates relevant state in
@@ -88,5 +89,5 @@ public abstract class Manager {
    *          rules to be loaded.
    * @param events Manager events to log.
    */
-  abstract void loadRules(Instrumentation inst, Map<AgentRule,PluginManifest> pluginManifests, String[] tracerExcludedClasses, Event[] events);
+  abstract void loadRules(Instrumentation inst, boolean loadDeferrers, List<IntegrationRule> integrationRules, String[] tracerExcludedClasses, Event[] events);
 }

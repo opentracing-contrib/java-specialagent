@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.netty;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,20 +27,20 @@ import net.bytebuddy.utility.JavaModule;
 
 public class NettyAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(hasSuperType(named("io.netty.channel.ChannelPipeline"))))
       .transform(new Transformer() {
           @Override
           public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(advice().to(ChannelPipelineAdd.class).on(nameStartsWith("add").and(takesArgument(2, named("io.netty.channel.ChannelHandler")))));
-        }}));
+            return builder.visit(advice(typeDescription).to(ChannelPipelineAdd.class).on(nameStartsWith("add").and(takesArgument(2, named("io.netty.channel.ChannelHandler")))));
+        }});
   }
 
   public static class ChannelPipelineAdd {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2, optional = true) Object arg2) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         NettyAgentIntercept.pipelineAddExit(thiz, arg2);
     }
   }

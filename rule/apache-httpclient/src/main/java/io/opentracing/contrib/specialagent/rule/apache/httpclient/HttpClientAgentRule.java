@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,21 +28,21 @@ import net.bytebuddy.utility.JavaModule;
 
 public class HttpClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(hasSuperType(named("org.apache.http.client.HttpClient"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(advice().to(HttpClientAgentRule.class).on(named("execute")))
-            .visit(advice().to(OnException.class).on(named("execute")));
-        }}));
+            .visit(advice(typeDescription).to(HttpClientAgentRule.class).on(named("execute")))
+            .visit(advice(typeDescription).to(OnException.class).on(named("execute")));
+        }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, @Advice.Argument(value = 1, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg1, @Advice.Argument(value = 2, optional = true, readOnly = false, typing = Typing.DYNAMIC) Object arg2) {
-    if (!isEnabled(className, origin))
+    if (!isAllowed(className, origin))
       return;
 
     final Object[] objects = HttpClientAgentIntercept.enter(arg0, arg1, arg2);
@@ -59,7 +57,7 @@ public class HttpClientAgentRule extends AgentRule {
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       HttpClientAgentIntercept.exit(returned);
   }
 

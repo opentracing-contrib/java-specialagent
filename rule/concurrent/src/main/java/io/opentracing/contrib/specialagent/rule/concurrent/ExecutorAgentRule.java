@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.concurrent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
 import java.util.concurrent.Executor;
 
 import io.opentracing.Span;
@@ -38,19 +37,19 @@ public class ExecutorAgentRule extends AgentRule {
   public final Transformer transformer = new Transformer() {
     @Override
     public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-      return builder.visit(advice().to(ExecutorAgentRule.class).on(named("execute").and(takesArguments(Runnable.class))));
+      return builder.visit(advice(typeDescription).to(ExecutorAgentRule.class).on(named("execute").and(takesArguments(Runnable.class))));
     }};
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(isSubTypeOf(Executor.class)))
-      .transform(transformer));
+      .transform(transformer);
   }
 
   @Advice.OnMethodEnter
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Runnable arg) throws Exception {
-    if (!isEnabled(className, origin))
+    if (!isAllowed(className, origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();

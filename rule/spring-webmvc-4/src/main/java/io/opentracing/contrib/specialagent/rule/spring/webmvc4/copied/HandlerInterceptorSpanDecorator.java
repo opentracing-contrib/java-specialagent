@@ -13,13 +13,15 @@
  */
 package io.opentracing.contrib.specialagent.rule.spring.webmvc4.copied;
 
-import io.opentracing.Span;
-import org.springframework.web.method.HandlerMethod;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.springframework.web.method.HandlerMethod;
+
+import io.opentracing.Span;
 
 /**
  * SpanDecorator to decorate span at different stages in filter processing.

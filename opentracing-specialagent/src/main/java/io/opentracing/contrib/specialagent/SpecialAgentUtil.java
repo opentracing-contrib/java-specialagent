@@ -49,33 +49,59 @@ import java.util.zip.ZipEntry;
  * @author Seva Safris
  */
 public final class SpecialAgentUtil {
-//  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
+  private static final Logger logger = Logger.getLogger(SpecialAgentUtil.class);
 
   static File[] parseConfiguration(final Map<String,String> properties, final List<String> verbosePluginNames, final Map<String,Boolean> integrationRuleNameToEnable, final Map<String,Boolean> traceExporterNameToEnable) {
+    final String[] deprecatedKeys = new String[] {"sa.instrumentation.plugin.include", "sa.instrumentation.plugin.", "sa.tracer.plugin."};
+    final String[] currentKeys = new String[] {"sa.include", "sa.integration.", "sa.exporter."};
+    final File[] includedPlugins1 = parseConfiguration(deprecatedKeys, currentKeys, properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
+    final File[] includedPlugins2 = parseConfiguration(currentKeys, currentKeys, properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
+    if (includedPlugins1 == null)
+      return includedPlugins2;
+
+    if (includedPlugins2 != null)
+      throw new IllegalArgumentException("Conflicting \"sa.instrumentation.plugin.include\" (" + Arrays.toString(includedPlugins1) + ") and \"sa.include\" (" + Arrays.toString(includedPlugins2) + ") properties specified");
+
+    return includedPlugins1;
+  }
+
+  private static File[] parseConfiguration(final String[] keys, final String[] currentKeys, final Map<String,String> properties, final List<String> verbosePluginNames, final Map<String,Boolean> integrationRuleNameToEnable, final Map<String,Boolean> traceExporterNameToEnable) {
     File[] includedPlugins = null;
     for (final Map.Entry<String,String> property : properties.entrySet()) {
       final String key = property.getKey();
       final String value = property.getValue();
-      if (key.startsWith("sa.integration.")) {
-        if (key.indexOf(".verbose", 16) != -1)
-          verbosePluginNames.add(key.substring(15, key.length() - 8));
-        else if (key.indexOf(".enable", 16) != -1)
-          integrationRuleNameToEnable.put(key.substring(15, key.length() - 7), !"false".equals(value));
-        else if (key.indexOf(".disable", 16) != -1)
-          integrationRuleNameToEnable.put(key.substring(15, key.length() - 8), "false".equals(value));
-      }
-      else if (key.startsWith("sa.exporter.")) {
-        if (key.indexOf(".enable", 13) != -1)
-          traceExporterNameToEnable.put(key.substring(12, key.length() - 7), !"false".equals(value));
-        else if (key.indexOf(".disable", 13) != -1)
-          traceExporterNameToEnable.put(key.substring(12, key.length() - 8), "false".equals(value));
-      }
-      else if (key.equals("sa.include")) {
+      if (key.equals(keys[0])) {
         final String[] includePaths = value.split(File.pathSeparator);
         includedPlugins = new File[includePaths.length];
         for (int i = 0; i < includePaths.length; ++i)
           includedPlugins[i] = new File(includePaths[i]);
       }
+      else if (key.startsWith(keys[1])) {
+        final int len = keys[1].length();
+        if (key.indexOf(".verbose", len + 1) != -1)
+          verbosePluginNames.add(key.substring(len, key.length() - 8));
+        else if (key.indexOf(".enable", len + 1) != -1)
+          integrationRuleNameToEnable.put(key.substring(len, key.length() - 7), !"false".equals(value));
+        else if (key.indexOf(".disable", len + 1) != -1)
+          integrationRuleNameToEnable.put(key.substring(len, key.length() - 8), "false".equals(value));
+        else
+          continue;
+      }
+      else if (key.startsWith(keys[2])) {
+        final int len = keys[2].length();
+        if (key.indexOf(".enable", len + 1) != -1)
+          traceExporterNameToEnable.put(key.substring(len, key.length() - 7), !"false".equals(value));
+        else if (key.indexOf(".disable", len + 1) != -1)
+          traceExporterNameToEnable.put(key.substring(len, key.length() - 8), "false".equals(value));
+        else
+          continue;
+      }
+      else {
+        continue;
+      }
+
+      if (keys != currentKeys)
+        logger.warning("Deprecated key (as of v1.7.0): \"" + keys[0] + "\" should be changed to \"" + currentKeys[0] + "\"");
     }
 
     return includedPlugins;

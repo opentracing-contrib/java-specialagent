@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.cxf;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,26 +27,29 @@ import net.bytebuddy.utility.JavaModule;
 
 public class CxfRsAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(
-      builder.type(hasSuperType(named("org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(advice().to(CxfRsClientAdvice.class).on(named("createWithValues").or(named("createWebClient"))));
-          }}),
-      builder.type(hasSuperType(named("org.apache.cxf.jaxrs.JAXRSServerFactoryBean")))
-        .transform(new Transformer() {
-          @Override
-          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-            return builder.visit(advice().to(CxfRsServerAdvice.class).on(named("create")));
-          }}));
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder.type(hasSuperType(named("org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(advice(typeDescription).to(CxfRsClientAdvice.class).on(named("createWithValues").or(named("createWebClient"))));
+        }});
+  }
+
+  @Override
+  public AgentBuilder buildAgentChainedGlobal2(final AgentBuilder builder) {
+    return builder.type(hasSuperType(named("org.apache.cxf.jaxrs.JAXRSServerFactoryBean")))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(advice(typeDescription).to(CxfRsServerAdvice.class).on(named("create")));
+        }});
   }
 
   public static class CxfRsClientAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         CxfAgentIntercept.addClientTracingFeature(thiz);
     }
   }
@@ -56,7 +57,7 @@ public class CxfRsAgentRule extends AgentRule {
   public static class CxfRsServerAdvice {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         CxfAgentIntercept.addServerTracingFeauture(thiz);
     }
   }

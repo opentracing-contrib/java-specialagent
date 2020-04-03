@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.pulsar.client;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,28 +28,28 @@ import net.bytebuddy.utility.JavaModule;
 
 public class PulsarClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.apache.pulsar.client.impl.ProducerBase")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Producer.class).on(named("internalSendAsync").and(takesArguments(1))));
+          return builder.visit(advice(typeDescription).to(Producer.class).on(named("internalSendAsync").and(takesArguments(1))));
         }})
     .type(not(isInterface()).and(hasSuperType(named("org.apache.pulsar.client.api.Consumer"))))
     .transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
         return builder
-          .visit(advice().to(Consumer.class).on(named("receive")))
-          .visit(advice().to(ConsumerAsync.class).on(named("receiveAsync")));
-      }}));
+          .visit(advice(typeDescription).to(Consumer.class).on(named("receive")))
+          .visit(advice(typeDescription).to(ConsumerAsync.class).on(named("receiveAsync")));
+      }});
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         PulsarClientAgentIntercept.receiveEnd(thiz, returned);
     }
   }
@@ -59,7 +57,7 @@ public class PulsarClientAgentRule extends AgentRule {
   public static class ConsumerAsync {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Return Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         PulsarClientAgentIntercept.receiveAsyncEnd(thiz, returned);
     }
   }
@@ -67,13 +65,13 @@ public class PulsarClientAgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object message) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         PulsarClientAgentIntercept.internalSendAsyncEnter(thiz, message);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         returned = PulsarClientAgentIntercept.internalSendAsyncEnd(returned, thrown);
     }
   }

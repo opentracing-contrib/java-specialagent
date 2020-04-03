@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.thread;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,23 +27,23 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ThreadAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(isSubTypeOf(Thread.class))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(advice().to(Start.class).on(named("start")))
-            .visit(advice().to(Run.class).on(named("run")))
-            .visit(advice().to(RunError.class).on(named("run")));
-        }}));
+            .visit(advice(typeDescription).to(Start.class).on(named("start")))
+            .visit(advice(typeDescription).to(Run.class).on(named("run")))
+            .visit(advice(typeDescription).to(RunError.class).on(named("run")));
+        }});
   }
 
   public static class Start {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         ThreadAgentIntercept.start(thiz);
     }
   }
@@ -53,13 +51,13 @@ public class ThreadAgentRule extends AgentRule {
   public static class Run {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         ThreadAgentIntercept.runEnter(thiz);
     }
 
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         ThreadAgentIntercept.runExit(thiz);
     }
   }
@@ -67,7 +65,7 @@ public class ThreadAgentRule extends AgentRule {
   public static class RunError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Thread thiz, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(className, origin) && thrown != null)
+      if (isAllowed(className, origin) && thrown != null)
         ThreadAgentIntercept.runExit(thiz);
     }
   }

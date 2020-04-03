@@ -22,13 +22,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,19 +61,32 @@ public class ByteBuddyManager extends Manager {
     }
   };
 
-  private static AgentBuilder newBuilder() {
+  private TransformationListener transformationListener;
+
+  private AgentBuilder newBuilder(final Instrumentation inst, final PluginManifest pluginManifest, final Event[] events) {
     // Prepare the builder to be used to implement transformations in AgentRule(s)
     AgentBuilder agentBuilder = new Default(byteBuddy);
     if (Adapter.tracerClassLoader != null)
       agentBuilder = agentBuilder.ignore(any(), is(Adapter.tracerClassLoader));
 
-    return agentBuilder
+    agentBuilder = agentBuilder
       .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
       .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE)
       .with(bootFallbackLocationStrategy);
+
+    if (inst == null)
+      return agentBuilder;
+
+    if (pluginManifest != null)
+      return agentBuilder.with(new TransformationListener(inst, pluginManifest, events));
+
+    if (transformationListener == null)
+      transformationListener = new TransformationListener(inst, null, events);
+
+    return agentBuilder.with(transformationListener);
   }
 
   private static void log(final Level level, final String message, final Throwable t) {
@@ -87,22 +100,6 @@ public class ByteBuddyManager extends Manager {
     logger.log(level, message);
   }
 
-  private static void assertParent(final AgentBuilder expected, final AgentBuilder builder) {
-    try {
-      final Class<?> cls = Class.forName("net.bytebuddy.agent.builder.AgentBuilder$Default$Transforming");
-      final Field field = cls.getDeclaredField("this$0");
-      field.setAccessible(true);
-      for (AgentBuilder parent = builder; (parent = (AgentBuilder)field.get(parent)) != null;)
-        if (parent == expected)
-          return;
-
-      throw new IllegalArgumentException("AgentBuilder instance provided by AgentRule#buildAgent(AgentBuilder) was not used");
-    }
-    catch (final ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
   ByteBuddyManager() {
     super("otarules.mf");
   }
@@ -110,8 +107,8 @@ public class ByteBuddyManager extends Manager {
   private final Set<String> loadedRules = new HashSet<>();
 
   @Override
-  Map<AgentRule,PluginManifest> scanRules(final Instrumentation inst, final ClassLoader pluginsClassLoader, final PluginManifest.Directory pluginManifestDirectory, final Map<AgentRule,PluginManifest> pluginManifests, final Map<String,String> classNameToName) throws IOException {
-    LinkedHashMap<AgentRule,PluginManifest> deferrers = null;
+  int scanRules(final Instrumentation inst, final ClassLoader pluginsClassLoader, final PluginManifest.Directory pluginManifestDirectory, final List<IntegrationRule> integrationRules, final Map<String,String> classNameToName) throws IOException {
+    int noDeferrers = 0;
     AgentRule agentRule = null;
     try {
       // Prepare the agent rules
@@ -122,7 +119,9 @@ public class ByteBuddyManager extends Manager {
         if (logger.isLoggable(Level.FINEST))
           logger.finest("Dereferencing index for " + ruleJar);
 
-//        final int index = ruleJarToIndex.get(ruleJar);
+        final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
+        List<AgentRule> deferrers = null;
+        List<AgentRule> agentRules = null;
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(scriptUrl.openStream()))) {
           for (String line; (line = reader.readLine()) != null;) {
             line = line.trim();
@@ -142,9 +141,9 @@ public class ByteBuddyManager extends Manager {
               continue;
             }
 
-            final PluginManifest pluginManifest = pluginManifestDirectory.get(ruleJar);
             final String simpleClassName = line.substring(line.lastIndexOf('.') + 1);
-            if (AssembleUtil.isSystemProperty("sa.integration." + pluginManifest.name + "#" + simpleClassName + ".disable")) {
+            final String suffix = pluginManifest.name + "#" + simpleClassName + ".disable";
+            if (AssembleUtil.isSystemProperty("sa.integration." + suffix, "sa.instrumentation.plugin." + suffix)) {
               if (logger.isLoggable(Level.FINE))
                 logger.fine("Skipping rule: " + line);
 
@@ -157,18 +156,26 @@ public class ByteBuddyManager extends Manager {
 
               classNameToName.put(agentClass.getName(), pluginManifest.name);
               agentRule = (AgentRule)agentClass.getConstructor().newInstance();
+              AgentRule.$Access.setPluginManifest(agentRule, pluginManifest);
               if (agentRule.isDeferrable(inst)) {
                 if (deferrers == null)
-                  deferrers = new LinkedHashMap<>(1);
+                  deferrers = new ArrayList<>(1);
 
-                deferrers.put(agentRule, pluginManifest);
+                ++noDeferrers;
+                deferrers.add(agentRule);
               }
               else {
-                pluginManifests.put(agentRule, pluginManifest);
+                if (agentRules == null)
+                  agentRules = new ArrayList<>(1);
+
+                agentRules.add(agentRule);
               }
             }
           }
         }
+
+        if (deferrers != null || agentRules != null)
+          integrationRules.add(new IntegrationRule(pluginManifest, deferrers, agentRules));
       }
     }
     catch (final UnsupportedClassVersionError | InvocationTargetException e) {
@@ -181,56 +188,99 @@ public class ByteBuddyManager extends Manager {
       throw new IllegalStateException(e);
     }
 
-    return deferrers;
+    return noDeferrers;
   }
 
   private boolean loadedDefaultRules;
 
-  private void loadDefaultRules(final Instrumentation inst, final String[] tracerExcludedClasses, final Event[] events) {
+  private void loadDefaultRules(final Instrumentation inst, final String[] tracerExcludedClasses) {
     if (loadedDefaultRules)
       return;
 
     loadedDefaultRules = true;
 
     // Load ClassLoaderAgentRule
-    loadAgentRule(inst, new ClassLoaderAgentRule(), newBuilder(), null, events);
+    ClassLoaderAgentRule.premain(newBuilder(null, null, null)).installOn(inst);
 
     // Load TracerExclusionAgent
-    final AgentBuilder builder = TracerExclusionAgent.premain(tracerExcludedClasses, newBuilder());
+    final AgentBuilder builder = TracerExclusionAgent.premain(tracerExcludedClasses, newBuilder(null, null, null));
     if (builder != null)
       builder.installOn(inst);
   }
 
   @Override
-  void loadRules(final Instrumentation inst, final Map<AgentRule,PluginManifest> pluginManifests, final String[] tracerExcludedClasses, final Event[] events) {
+  void loadRules(final Instrumentation inst, boolean loadDeferrers, final List<IntegrationRule> integrationRules, final String[] tracerExcludedClasses, final Event[] events) {
     // Ensure default rules are loaded
-    loadDefaultRules(inst, tracerExcludedClasses, events);
+    loadDefaultRules(inst, tracerExcludedClasses);
+
+    boolean hasGlobal1 = false;
+    boolean hasGlobal2 = false;
+    AgentBuilder chainedGlobalBuilder1 = newBuilder(inst, null, events);
+    AgentBuilder chainedGlobalBuilder2 = newBuilder(inst, null, events);
 
     // Load the rest of the specified rules
-    if (pluginManifests != null) {
-      for (final Map.Entry<AgentRule,PluginManifest> entry : pluginManifests.entrySet()) {
-        loadAgentRule(inst, entry.getKey(), newBuilder(), entry.getValue(), events);
-        loadedRules.add(entry.getKey().getClass().getName());
-      }
-    }
-  }
+    if (integrationRules != null) {
+      for (final IntegrationRule integrationRule : integrationRules) {
+        final List<AgentRule> agentRules = loadDeferrers ? integrationRule.getDeferrers() : integrationRule.getAgentRules();
+        if (agentRules != null) {
+          boolean hasLocal1 = false;
+          boolean hasLocal2 = false;
+          AgentBuilder chainedLocalBuilder1 = newBuilder(inst, null, events);
+          AgentBuilder chainedLocalBuilder2 = newBuilder(inst, null, events);
+          for (final AgentRule agentRule : agentRules) {
+            loadedRules.add(agentRule.getClass().getName());
+            try {
+              final AgentBuilder[] unchainedBuilders = agentRule.buildAgentUnchained(newBuilder(inst, integrationRule.getPluginManifest(), events));
+              if (unchainedBuilders != null)
+                for (final AgentBuilder unchainedBuilder : unchainedBuilders)
+                  unchainedBuilder.installOn(inst);
 
-  private void loadAgentRule(final Instrumentation inst, final AgentRule agentRule, final AgentBuilder agentBuilder, final PluginManifest pluginManifest, final Event[] events) {
-    try {
-      final Iterable<? extends AgentBuilder> builders = agentRule.buildAgent(agentBuilder);
-      if (builders != null) {
-        for (final AgentBuilder builder : builders) {
-//          assertParent(agentBuilder, builder);
-          builder.with(new TransformationListener(inst, pluginManifest, events)).installOn(inst);
+              AgentBuilder builder = agentRule.buildAgentChainedLocal1(chainedLocalBuilder1);
+              if (builder != null) {
+                hasLocal1 = true;
+                chainedLocalBuilder1 = builder;
+              }
+
+              builder = agentRule.buildAgentChainedLocal2(chainedLocalBuilder2);
+              if (builder != null) {
+                hasLocal2 = true;
+                chainedLocalBuilder2 = builder;
+              }
+
+              builder = agentRule.buildAgentChainedGlobal1(chainedGlobalBuilder1);
+              if (builder != null) {
+                hasGlobal1 = true;
+                chainedGlobalBuilder1 = builder;
+              }
+
+              builder = agentRule.buildAgentChainedGlobal2(chainedGlobalBuilder2);
+              if (builder != null) {
+                hasGlobal2 = true;
+                chainedGlobalBuilder2 = builder;
+              }
+            }
+            catch (final Exception e) {
+              logger.log(Level.SEVERE, "Error invoking " + agentRule.getClass().getName() + "#buildAgent(AgentBuilderProvider)", e);
+            }
+          }
+
+          if (hasLocal1)
+            chainedLocalBuilder1.installOn(inst);
+
+          if (hasLocal2)
+            chainedLocalBuilder2.installOn(inst);
         }
       }
-    }
-    catch (final Exception e) {
-      logger.log(Level.SEVERE, "Error invoking " + agentRule.getClass().getName() + "#buildAgent(AgentBuilder)", e);
+
+      if (hasGlobal1)
+        chainedGlobalBuilder1.installOn(inst);
+
+      if (hasGlobal2)
+        chainedGlobalBuilder2.installOn(inst);
     }
   }
 
-  class TransformationListener implements Listener {
+  static class TransformationListener implements Listener {
     private final Instrumentation inst;
     private final PluginManifest pluginManifest;
     private final Event[] events;
@@ -252,6 +302,9 @@ public class ByteBuddyManager extends Manager {
       if (events[Event.TRANSFORMATION.ordinal()] != null)
         log(Level.SEVERE, "Event::onTransformation(" + typeDescription.getName() + ", " + AssembleUtil.getNameId(classLoader) + ", " + module + ", " + loaded + ", " + dynamicType + ")");
 
+      // FIXME: Should remove the `pluginManifest != null` condition, because a pluginManifest here should be required!
+      // FIXME: How to communicate an error here? Cause ByteBuddy swallows all exceptions in this context.
+      final PluginManifest pluginManifest = this.pluginManifest != null ? this.pluginManifest : AgentRule.getPluginManifest(typeDescription);
       if (pluginManifest != null && !SpecialAgent.linkRule(pluginManifest, classLoader))
         throw new IncompatiblePluginException(typeDescription.getName());
 

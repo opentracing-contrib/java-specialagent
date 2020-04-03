@@ -170,28 +170,34 @@ public class OpenTracingAdapter extends Adapter {
         return null;
       }
 
-      final String tracerProperty = System.getProperty(EXPORTER_PROPERTY);
-      if (tracerProperty == null) {
+      String exporterProperty = System.getProperty(EXPORTER_PROPERTY);
+      if (exporterProperty == null) {
+        exporterProperty = System.getProperty("sa.tracer");
+        if (exporterProperty != null)
+          logger.warning("Deprecated key (as of v1.7.0): \"sa.tracer\" should be changed to \"" + EXPORTER_PROPERTY + "\"");
+      }
+
+      if (exporterProperty == null) {
         if (logger.isLoggable(Level.FINE))
-          logger.fine("Tracer was not specified with \"" + EXPORTER_PROPERTY + "\" system property");
+          logger.fine("Trace exporter was not specified with \"" + EXPORTER_PROPERTY + "\" system property");
 
         return null;
       }
 
       if (logger.isLoggable(Level.FINE))
-        logger.fine("Resolving tracer:\n  " + tracerProperty);
+        logger.fine("Resolving tracer:\n  " + exporterProperty);
 
       Tracer tracer;
-      if ("mock".equals(tracerProperty)) {
+      if ("mock".equals(exporterProperty)) {
         tracer = new MockTracer();
       }
       else {
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        final File file = new File(tracerProperty);
+        final File file = new File(exporterProperty);
 
-        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(isoClassLoader, tracerProperty);
+        final URL tracerUrl = file.exists() ? new URL("file", null, file.getPath()) : findTracer(isoClassLoader, exporterProperty);
         if (tracerUrl == null)
-          throw new IllegalStateException(EXPORTER_PROPERTY + "=" + tracerProperty + " did not resolve to a tracer JAR or name");
+          throw new IllegalStateException(EXPORTER_PROPERTY + "=" + exporterProperty + " did not resolve to a tracer JAR or name");
 
         final String tracerResolverUrl = isoClassLoader.getResource("io/opentracing/contrib/tracerresolver/TracerResolver.class").toString();
         Adapter.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!')))});
@@ -213,7 +219,7 @@ public class OpenTracingAdapter extends Adapter {
       }
 
       if (tracer == null) {
-        logger.warning("Tracer was NOT RESOLVED");
+        logger.warning("Trace exporter was NOT RESOLVED");
         return null;
       }
 

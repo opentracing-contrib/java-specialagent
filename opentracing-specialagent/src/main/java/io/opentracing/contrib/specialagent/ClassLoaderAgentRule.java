@@ -15,18 +15,17 @@
 
 package io.opentracing.contrib.specialagent;
 
+import static io.opentracing.contrib.specialagent.DefaultAgentRule.*;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.ProtectionDomain;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Set;
 
+import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Extendable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -43,16 +42,14 @@ import net.bytebuddy.utility.JavaModule;
  *
  * @author Seva Safris
  */
-public class ClassLoaderAgentRule extends DefaultAgentRule {
+public class ClassLoaderAgentRule {
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
-  @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
+  public static AgentBuilder premain(final AgentBuilder builder) {
     log("\n<<<<<<<<<<<<<<<<< Installing ClassLoaderAgent >>>>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
-
-//    final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(nameStartsWith(RuleClassLoader.class.getName()))).and(not(nameStartsWith(PluginsClassLoader.class.getName()))));
-    final List<Extendable> builders = Arrays.asList(
-      builder.type(isSubTypeOf(ClassLoader.class)).transform(new Transformer() {
+    try {
+//      final Narrowable narrowable = builder.type(isSubTypeOf(ClassLoader.class).and(not(nameStartsWith(RuleClassLoader.class.getName()))).and(not(nameStartsWith(PluginsClassLoader.class.getName()))));
+      return builder.type(isSubTypeOf(ClassLoader.class)).transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
@@ -60,10 +57,11 @@ public class ClassLoaderAgentRule extends DefaultAgentRule {
             .visit((locatorProxy != null ? Advice.to(LoadClass.class, locatorProxy) : Advice.to(LoadClass.class)).on(named("loadClass").and(returns(Class.class).and(takesArguments(String.class)))))
             .visit((locatorProxy != null ? Advice.to(FindResource.class, locatorProxy) : Advice.to(FindResource.class)).on(named("findResource").and(returns(URL.class).and(takesArguments(String.class)))))
             .visit((locatorProxy != null ? Advice.to(FindResources.class, locatorProxy) : Advice.to(FindResources.class)).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(String.class)))));
-        }}));
-
-    log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
-    return builders;
+        }});
+    }
+    finally {
+      log("\n>>>>>>>>>>>>>>>>>> Installed ClassLoaderAgent <<<<<<<<<<<<<<<<<<\n", null, DefaultLevel.FINE);
+    }
   }
 
   public static boolean isExcluded(final ClassLoader thiz) {

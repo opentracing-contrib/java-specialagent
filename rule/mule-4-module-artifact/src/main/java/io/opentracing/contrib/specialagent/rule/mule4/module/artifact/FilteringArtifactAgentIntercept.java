@@ -24,6 +24,7 @@ import org.mule.runtime.module.artifact.api.classloader.ClassLoaderFilter;
 public class FilteringArtifactAgentIntercept {
   private static final Logger logger = Logger.getLogger(FilteringArtifactAgentIntercept.class.getName());
   private static final String CLS_SFX = ".class";
+  private static final int CLS_SFX_LENGTH = CLS_SFX.length();
 
   public static Object exit(final Object thiz, final Object returned, final Object resObj, final Object filter, final Object artifactClassLoader) {
     final String resName = (String)resObj;
@@ -34,7 +35,7 @@ public class FilteringArtifactAgentIntercept {
 
     // @see https://github.com/mulesoft/mule/blob/mule-4.2.2/modules/artifact/src/main/java/org/mule/runtime/module/artifact/api/classloader/FilteringArtifactClassLoader.java#L91
     final ClassLoaderFilter classLoaderFilter = (ClassLoaderFilter)filter;
-    final String className = resName.substring(0, resName.length() - CLS_SFX.length()).replace('/', '.');
+    final String className = resName.substring(0, resName.length() - CLS_SFX_LENGTH).replace('/', '.');
     if (!classLoaderFilter.exportsClass(className))
       return null;
 

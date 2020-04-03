@@ -52,13 +52,12 @@ public class JdbcAgentIntercept {
       }
     }
 
-    System.out.println("JdbcAgentIntercept: " + JdbcAgentIntercept.class.getClassLoader());
     return tracingDriver.get().connect(url, info);
   }
 
   private static void initTracingDriver() {
     TracingDriver.setInterceptorMode(true);
-    TracingDriver.setInterceptorProperty(AssembleUtil.isSystemProperty(WITH_ACTIVE_SPAN_ONLY));
+    TracingDriver.setInterceptorProperty(AssembleUtil.isSystemProperty(WITH_ACTIVE_SPAN_ONLY, "sa.instrumentation.plugin.jdbc.withActiveSpanOnly"));
 
     // multi-statement separated by the separator specified by a system property
     // "@@" is default separator if the system property not present

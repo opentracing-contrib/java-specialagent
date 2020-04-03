@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.servlet;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -31,13 +29,13 @@ public class ServletContextAgentRule extends AgentRule {
   public static boolean filterAdded = false;
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.eclipse.jetty.servlet.ServletContextHandler"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(JettyAdvice.class).on(isConstructor()));
+          return builder.visit(advice(typeDescription).to(JettyAdvice.class).on(isConstructor()));
         }})
       .type(not(isInterface()).and(hasSuperType(named("javax.servlet.ServletContext"))
         // Jetty is handled separately due to the (otherwise) need for tracking state of the ServletContext
@@ -49,14 +47,14 @@ public class ServletContextAgentRule extends AgentRule {
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(ServletContextAdvice.class).on(isConstructor()));
-        }}));
+          return builder.visit(advice(typeDescription).to(ServletContextAdvice.class).on(isConstructor()));
+        }});
   }
 
   public static class JettyAdvice {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         filterAdded = JettyAgentIntercept.addFilter(thiz);
     }
   }
@@ -64,7 +62,7 @@ public class ServletContextAgentRule extends AgentRule {
   public static class ServletContextAdvice {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         filterAdded = ServletContextAgentIntercept.addFilter(thiz);
     }
   }

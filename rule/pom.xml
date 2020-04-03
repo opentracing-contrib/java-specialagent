@@ -37,13 +37,15 @@
         </property>
       </activation>
       <modules>
+        <module>thread</module>
         <module>spring-boot</module>
         <module>spring-webmvc</module>
         <module>okhttp</module>
         <module>jdbc</module>
         <module>concurrent</module>
-        <module>mongo-driver</module>
+        <module>httpurlconnection</module>
         <module>servlet</module>
+        <module>mongo-driver</module>
         <module>camel</module>
         <module>dubbo-2.6</module>
         <module>dubbo-2.7</module>
@@ -93,12 +95,10 @@
         <module>grizzly-http-server</module>
         <module>reactor</module>
         <module>jaxrs</module>
-        <module>thread</module>
         <module>akka-actor</module>
         <module>akka-http</module>
         <module>play</module>
         <module>play-ws</module>
-        <module>httpurlconnection</module>
         <module>couchbase-client</module>
         <module>google-http-client</module>
         <module>neo4j-driver</module>

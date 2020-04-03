@@ -1,4 +1,4 @@
-/* Copyright 2019 The OpenTracing Authors
+/* Copyright 2018 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.spring.scheduling;
+package io.opentracing.contrib.specialagent.rule.reactor;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -25,27 +25,20 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class SpringSchedulingAgentRule extends AgentRule {
+public class MonoAgentRule extends AgentRule {
   @Override
   public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
-    return builder
-      .type(hasSuperType(named("org.springframework.scheduling.support.ScheduledMethodRunnable")))
+    return builder.type(hasSuperType(named("reactor.core.publisher.Mono")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice(typeDescription).to(SpringSchedulingAgentRule.class).on(named("run")));
+          return builder.visit(advice(typeDescription).to(MonoAgentRule.class).on(named("onAssembly")));
         }});
   }
 
   @Advice.OnMethodEnter
-  public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
+  public static void enter(final @ClassName String className, final @Advice.Origin String origin) {
     if (isAllowed(className, origin))
-      SpringSchedulingAgentIntercept.enter(thiz);
-  }
-
-  @Advice.OnMethodExit(onThrowable = Throwable.class)
-  public static void exit(final @ClassName String className, final @Advice.Thrown Throwable thown, final @Advice.Origin String origin) {
-    if (isAllowed(className, origin))
-      SpringSchedulingAgentIntercept.exit(thown);
+      MonoAgentIntercept.enter();
   }
 }

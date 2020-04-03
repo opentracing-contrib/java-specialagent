@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.camel;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,19 +27,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class CamelAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.apache.camel.impl.DefaultCamelContext"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(CamelAgentRule.class).on(named("startRouteDefinitions")));
-        }}));
+          return builder.visit(advice(typeDescription).to(CamelAgentRule.class).on(named("startRouteDefinitions")));
+        }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       CamelAgentIntercept.enter(thiz);
   }
 }

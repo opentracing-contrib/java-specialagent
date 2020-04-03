@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.mule4;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Collections;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -29,20 +27,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class AbstractProcessorChainRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Collections.singletonList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.mule.runtime.core.privileged.processor.chain.AbstractMessageProcessorChain")))// .and(is(TypeDescription.Generic.Builder.))
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AbstractProcessorChainRule.class).on(named("resolveInterceptors")));
-        }
-      }));
+          return builder.visit(advice(typeDescription).to(AbstractProcessorChainRule.class).on(named("resolveInterceptors")));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.FieldValue(value = "muleContext") Object muleContext, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object interceptors) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       interceptors = AbstractProcessorChainIntercept.exit(muleContext, interceptors);
   }
 }

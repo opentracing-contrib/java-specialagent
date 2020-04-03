@@ -16,8 +16,6 @@ package io.opentracing.contrib.specialagent.rule.spring.rabbitmq;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -28,45 +26,45 @@ import net.bytebuddy.utility.JavaModule;
 
 public class SpringRabbitMQAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(hasSuperType(named("org.springframework.amqp.core.MessageListener"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(SpringRabbitMQAgentRule.class).on(named("onMessage")));
+          return builder.visit(advice(typeDescription).to(SpringRabbitMQAgentRule.class).on(named("onMessage")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("com.rabbitmq.client.Consumer"))).and(not(named("io.opentracing.contrib.rabbitmq.TracingConsumer"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module) {
-          return builder.visit(advice().to(Consumer.class).on(named("handleDelivery")));
-        }}));
+          return builder.visit(advice(typeDescription).to(Consumer.class).on(named("handleDelivery")));
+        }});
   }
 
   public static class Consumer {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 2) Object properties) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         SpringRabbitMQAgentIntercept.handleDeliveryStart(thiz, properties);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         SpringRabbitMQAgentIntercept.handleDeliveryEnd(thrown);
     }
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object message) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       SpringRabbitMQAgentIntercept.onMessageEnter(message);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       SpringRabbitMQAgentIntercept.onMessageExit(thrown);
   }
 }

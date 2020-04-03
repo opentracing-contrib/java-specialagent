@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.lettuce50;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -31,32 +29,32 @@ import net.bytebuddy.utility.JavaModule;
 
 public class Lettuce50AgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
+    return new AgentBuilder[] {builder
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.api.StatefulRedisConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(StatefulRedis.class).on(named("async")));
+          return builder.visit(advice(typeDescription).to(StatefulRedis.class).on(named("async")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.cluster.api.StatefulRedisClusterConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(StatefulRedisCluster.class).on(named("async")));
+          return builder.visit(advice(typeDescription).to(StatefulRedisCluster.class).on(named("async")));
         }})
       .type(not(isInterface()).and(hasSuperType(named("io.lettuce.core.pubsub.StatefulRedisPubSubConnection")).and(not(nameStartsWith("io.opentracing.contrib.redis.lettuce")))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AddPubSubListener.class).on(named("addListener")));
-        }}));
+          return builder.visit(advice(typeDescription).to(AddPubSubListener.class).on(named("addListener")));
+        }})};
   }
 
   public static class StatefulRedis {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(returned))
+      if (isAllowed(className, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Lettuce50AgentIntercept.getAsyncCommands(returned));
     }
   }
@@ -64,7 +62,7 @@ public class Lettuce50AgentRule extends AgentRule {
   public static class StatefulRedisCluster {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(returned))
+      if (isAllowed(className, origin) && !WrapperProxy.isWrapper(returned))
         returned = WrapperProxy.wrap(returned, Lettuce50AgentIntercept.getAsyncClusterCommands(returned));
     }
   }
@@ -72,7 +70,7 @@ public class Lettuce50AgentRule extends AgentRule {
   public static class AddPubSubListener {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object arg) {
-      if (isEnabled(className, origin) && !WrapperProxy.isWrapper(arg))
+      if (isAllowed(className, origin) && !WrapperProxy.isWrapper(arg))
         arg = WrapperProxy.wrap(arg, Lettuce50AgentIntercept.addPubSubListener(arg));
     }
   }

@@ -27,7 +27,7 @@ public class TestThread extends Thread {
   /**
    * Launch 1 thread with 2 child threads having 2 child threads of their own.
    *
-   * @param shouldBeEnabled The value {@link AgentRule#isEnabled(String,String)} should
+   * @param shouldBeEnabled The value {@link AgentRule#isAllowed(String,String)} should
    *          return for the spawned threads.
    * @param latch The {@link CountDownLatch}.
    */
@@ -61,7 +61,7 @@ public class TestThread extends Thread {
   @Override
   public void run() {
     try {
-      assertEquals(shouldBeEnabled, AgentRule.isEnabled(getName(), String.valueOf(getId())));
+      assertEquals(shouldBeEnabled, AgentRule.isAllowed(getName(), String.valueOf(getId())));
     }
     finally {
       latch.countDown();

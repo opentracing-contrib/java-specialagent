@@ -38,7 +38,7 @@ public class ZuulITest {
   public CommandLineRunner commandLineRunner() {
     return new CommandLineRunner() {
       @Override
-      public void run(final String... args) {
+      public void run(final String ... args) {
         final RestTemplate restTemplate = new RestTemplate();
         final ResponseEntity<String> entity = restTemplate.getForEntity("http://localhost:8080", String.class);
         final int statusCode = entity.getStatusCode().value();

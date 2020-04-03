@@ -17,7 +17,6 @@ package io.opentracing.contrib.specialagent.rule.concurrent;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,19 +38,19 @@ public class ScheduledCallableAgentRule extends AgentRule {
   public final Transformer transformer = new Transformer() {
     @Override
     public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-      return builder.visit(advice().to(ScheduledCallableAgentRule.class).on(named("schedule").and(takesArguments(Callable.class, long.class, TimeUnit.class))));
+      return builder.visit(advice(typeDescription).to(ScheduledCallableAgentRule.class).on(named("schedule").and(takesArguments(Callable.class, long.class, TimeUnit.class))));
     }};
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(isSubTypeOf(ScheduledExecutorService.class)))
-      .transform(transformer));
+      .transform(transformer);
   }
 
   @Advice.OnMethodEnter
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Callable<?> arg) throws Exception {
-    if (!isEnabled(className, origin))
+    if (!isAllowed(className, origin))
       return;
 
     final Tracer tracer = GlobalTracer.get();

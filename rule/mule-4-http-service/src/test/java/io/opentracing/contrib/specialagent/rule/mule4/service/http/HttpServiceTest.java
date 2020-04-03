@@ -66,7 +66,7 @@ public class HttpServiceTest extends AbstractMuleTestCase {
   }
 
   @Test
-  // @TestConfig(verbose = true)
+  // @AgentRunner.TestConfig(verbose = true)
   public void httpServiceTest(final MockTracer tracer) throws Exception {
     final Response response = Request.Get("http://" + HOST + ":" + PORT + "/").execute();
     assertEquals(response.returnResponse().getStatusLine().getStatusCode(), 503);

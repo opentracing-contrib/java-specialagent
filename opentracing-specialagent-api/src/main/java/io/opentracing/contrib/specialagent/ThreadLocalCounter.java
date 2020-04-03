@@ -15,7 +15,7 @@
 
 package io.opentracing.contrib.specialagent;
 
-public class MutexLatch extends ThreadLocal<Integer> {
+public class ThreadLocalCounter extends ThreadLocal<Integer> {
   @Override
   protected Integer initialValue() {
     return 0;

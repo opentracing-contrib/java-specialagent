@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.spring.webmvc3;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,19 +28,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class SpringWebRegistryAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
+    return new AgentBuilder[] {builder
       .type(named("org.springframework.web.servlet.HandlerExecutionChain"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
-        }}));
+          return builder.visit(advice(typeDescription).to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
+        }})};
   }
 
   @Advice.OnMethodExit
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(typing = Typing.DYNAMIC, readOnly = false) Object returned) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       returned = SpringWebMvcAgentIntercept.getInterceptors(returned);
   }
 }

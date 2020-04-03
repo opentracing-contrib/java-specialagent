@@ -19,7 +19,6 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,15 +38,16 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.jms.TracingMessageProducer;
 import io.opentracing.contrib.jms.common.TracingMessageConsumer;
+import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
-import org.junit.runner.RunWith;
 
 @RunWith(AgentRunner.class)
 public class Jms1Test {

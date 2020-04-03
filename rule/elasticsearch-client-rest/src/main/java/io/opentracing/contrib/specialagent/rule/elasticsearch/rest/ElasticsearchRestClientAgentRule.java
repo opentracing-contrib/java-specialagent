@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.elasticsearch.rest;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,20 +27,20 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ElasticsearchRestClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.elasticsearch.client.RestClientBuilder"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Rest.class).on(named("build")));
-        }}));
+          return builder.visit(advice(typeDescription).to(Rest.class).on(named("build")));
+        }});
   }
 
   public static class Rest {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.FieldValue(value = "httpClientConfigCallback") Object httpClientConfigCallback) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         ElasticsearchRestClientAgentIntercept.rest(thiz, httpClientConfigCallback);
     }
   }

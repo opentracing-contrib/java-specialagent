@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.spring.web5;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,26 +27,26 @@ import net.bytebuddy.utility.JavaModule;
 
 public class SpringWebAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
+    return new AgentBuilder[] {builder
       .type(named("org.springframework.web.client.RestTemplate"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(RestTemplate.class).on(named("doExecute")));
+          return builder.visit(advice(typeDescription).to(RestTemplate.class).on(named("doExecute")));
         }})
       .type(named("org.springframework.web.client.AsyncRestTemplate"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AsyncRestTemplate.class).on(named("doExecute")));
-        }}));
+          return builder.visit(advice(typeDescription).to(AsyncRestTemplate.class).on(named("doExecute")));
+        }})};
   }
 
   public static class RestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         SpringWebAgentIntercept.enter(thiz);
     }
   }
@@ -56,7 +54,7 @@ public class SpringWebAgentRule extends AgentRule {
   public static class AsyncRestTemplate {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         SpringWebAgentIntercept.enterAsync(thiz);
     }
   }

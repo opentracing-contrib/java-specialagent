@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.pulsar.functions;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,24 +27,23 @@ import net.bytebuddy.utility.JavaModule;
 
 public class PulsarFunctionsAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder.type(named("org.apache.pulsar.functions.instance.JavaInstance")).transform(new Transformer() {
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder.type(named("org.apache.pulsar.functions.instance.JavaInstance")).transform(new Transformer() {
       @Override
       public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(advice().to(PulsarFunctionsAgentRule.class).on(named("handleMessage")));
-      }
-    }));
+        return builder.visit(advice(typeDescription).to(PulsarFunctionsAgentRule.class).on(named("handleMessage")));
+      }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg0, final @Advice.FieldValue(value = "function") Object function, final @Advice.FieldValue(value = "javaUtilFunction") Object javaUtilFunction, final @Advice.FieldValue(value = "context") Object context) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       PulsarFunctionsAgentIntercept.handleMessageEnter(function != null ? function : javaUtilFunction, context, arg0);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       PulsarFunctionsAgentIntercept.handleMessageEnd(returned, thrown);
   }
 }

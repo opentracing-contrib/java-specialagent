@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.redisson;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,19 +28,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class RedissonAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.redisson.Redisson")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(RedissonAgentRule.class).on(named("create")));
-        }}));
+          return builder.visit(advice(typeDescription).to(RedissonAgentRule.class).on(named("create")));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       returned = RedissonAgentIntercept.exit(returned);
   }
 }

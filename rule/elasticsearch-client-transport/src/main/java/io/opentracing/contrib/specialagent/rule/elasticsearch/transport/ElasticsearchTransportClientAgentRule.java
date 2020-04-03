@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.elasticsearch.transport;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,20 +28,20 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ElasticsearchTransportClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.elasticsearch.client.transport.TransportClient")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Transport.class).on(named("doExecute").and(takesArguments(3))));
-        }}));
+          return builder.visit(advice(typeDescription).to(Transport.class).on(named("doExecute").and(takesArguments(3))));
+        }});
   }
 
   public static class Transport {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object request, @Advice.Argument(value = 2, readOnly = false, typing = Typing.DYNAMIC) Object listener) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         listener = ElasticsearchTransportClientAgentIntercept.transport(request, listener);
     }
   }

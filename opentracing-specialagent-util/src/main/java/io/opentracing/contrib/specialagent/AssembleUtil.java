@@ -47,6 +47,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public final class AssembleUtil {
+  private static final Logger logger = Logger.getLogger(AssembleUtil.class);
   private static final int DEFAULT_SOCKET_BUFFER_SIZE = 65536;
 
   public static boolean hasFileInJar(final File jarFile, final String name) throws IOException {
@@ -755,9 +756,20 @@ public final class AssembleUtil {
    * @return {@code true} if and only if the system property named by the
    *         argument exists and is not equal to the string {@code "false"}.
    */
-  public static boolean isSystemProperty(final String key) {
-    final String value = System.getProperty(key);
-    return value != null && !"false".equals(value);
+  public static boolean isSystemProperty(final String key, final String deprecatedKey) {
+    String value = System.getProperty(key);
+    if (value != null)
+      return !"false".equals(value);
+
+    if (deprecatedKey == null)
+      return false;
+
+    value = System.getProperty(deprecatedKey);
+    if (value == null)
+      return false;
+
+    logger.warning("Deprecated key (as of v1.7.0): \"" + deprecatedKey + "\" should be changed to \"" + key + "\"");
+    return !"false".equals(value);
   }
 
   public static Pattern convertToNameRegex(String pattern) {
@@ -787,12 +799,12 @@ public final class AssembleUtil {
   }
 
   /**
-   * Returns the source location of the specified resource in the specified URL.
+   * Returns the source location of the specified resource in the provided URL.
    *
    * @param url The {@code URL} from which to find the source location.
    * @param resourcePath The resource path that is the suffix of the specified
    *          URL.
-   * @return The source location of the specified resource in the specified URL.
+   * @return The source location of the specified resource in the provided URL.
    * @throws MalformedURLException If no protocol is specified, or an unknown
    *           protocol is found, or spec is null.
    * @throws IllegalArgumentException If the specified resource path is not the

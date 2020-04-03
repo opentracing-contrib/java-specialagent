@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.thrift;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,38 +28,38 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ThriftAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal2(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(hasSuperType(named("org.apache.thrift.async.AsyncMethodCallback"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AsyncMethodCallback.OnComplete.class).on(named("onComplete")));
+          return builder.visit(advice(typeDescription).to(AsyncMethodCallback.OnComplete.class).on(named("onComplete")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AsyncMethodCallback.OnError.class).on(named("onError")));
+          return builder.visit(advice(typeDescription).to(AsyncMethodCallback.OnError.class).on(named("onError")));
         }})
       .type(named("org.apache.thrift.TProcessorFactory"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Processor.class).on(named("getProcessor")));
+          return builder.visit(advice(typeDescription).to(Processor.class).on(named("getProcessor")));
         }})
       .type(hasSuperType(named("org.apache.thrift.protocol.TProtocolFactory")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(ProtocolFactory.class).on(named("getProtocol")));
-        }}));
+          return builder.visit(advice(typeDescription).to(ProtocolFactory.class).on(named("getProtocol")));
+        }});
   }
 
   public static class AsyncMethodCallback {
     public static class OnComplete {
       @Advice.OnMethodExit
       public static void exit(final @ClassName String className, final @Advice.Origin String origin) {
-        if (isEnabled(className, origin))
+        if (isAllowed(className, origin))
           ThriftAgentIntercept.onComplete();
       }
     }
@@ -69,7 +67,7 @@ public class ThriftAgentRule extends AgentRule {
     public static class OnError {
       @Advice.OnMethodExit
       public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object exception) {
-        if (isEnabled(className, origin))
+        if (isAllowed(className, origin))
           ThriftAgentIntercept.onError(exception);
       }
     }
@@ -78,7 +76,7 @@ public class ThriftAgentRule extends AgentRule {
   public static class Processor {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         returned = ThriftAgentIntercept.getProcessor(returned);
     }
   }
@@ -86,7 +84,7 @@ public class ThriftAgentRule extends AgentRule {
   public static class ProtocolFactory {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         returned = ThriftProtocolFactoryAgentIntercept.exit(returned);
     }
   }

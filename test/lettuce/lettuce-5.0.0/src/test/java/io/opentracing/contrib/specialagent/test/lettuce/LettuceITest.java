@@ -66,11 +66,12 @@ public class LettuceITest {
 
       TestUtil.checkSpan(new ComponentSpanCount("java-redis", expectedSpanCount));
     }
-
-    client.shutdown();
-    redisServer.stop();
-    // RedisServer process doesn't exit on 'stop' therefore call System.exit
-    System.exit(0);
+    finally {
+      client.shutdown();
+      redisServer.stop();
+      // RedisServer process doesn't exit on 'stop' therefore call System.exit
+      System.exit(0);
+    }
   }
 
   private static Method getMethod(final RedisCommands<String,String> commands, final String name) {

@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.jedis;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,30 +28,30 @@ import net.bytebuddy.utility.JavaModule;
 
 public class JedisAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("redis.clients.jedis.Connection")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(SendCommand.class).on(named("sendCommand").and(takesArgument(1, byte[][].class))));
+          return builder.visit(advice(typeDescription).to(SendCommand.class).on(named("sendCommand").and(takesArgument(1, byte[][].class))));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(ReadCommandOutput.class).on(named("readProtocolWithCheckingBroken")));
+          return builder.visit(advice(typeDescription).to(ReadCommandOutput.class).on(named("readProtocolWithCheckingBroken")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OnError.class).on(named("readProtocolWithCheckingBroken")));
-        }}));
+          return builder.visit(advice(typeDescription).to(OnError.class).on(named("readProtocolWithCheckingBroken")));
+        }});
   }
 
   public static class SendCommand {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object command, final @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) byte[][] args) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         JedisAgentIntercept.sendCommand(command, args);
     }
   }
@@ -61,7 +59,7 @@ public class JedisAgentRule extends AgentRule {
   public static class ReadCommandOutput {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         JedisAgentIntercept.readCommandOutput();
     }
   }
@@ -69,7 +67,7 @@ public class JedisAgentRule extends AgentRule {
   public static class OnError {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         JedisAgentIntercept.onError(thrown);
     }
   }

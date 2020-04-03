@@ -27,6 +27,7 @@
   <name>SpecialAgent Test for Spring Web 4.1.0</name>
   <properties>
     <version.spring>4.1.0.RELEASE</version.spring>
+    <sa.itest.args>-Dsa.init.defer=false</sa.itest.args>
   </properties>
   <dependencies>
     <dependency>

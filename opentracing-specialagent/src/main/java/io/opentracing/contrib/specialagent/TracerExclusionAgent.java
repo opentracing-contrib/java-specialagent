@@ -28,7 +28,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
 public class TracerExclusionAgent {
-  public static final MutexLatch latch = AgentRule.$Access.mutexLatch();
+  public static final ThreadLocalCounter entryCounter = AgentRule.$Access.entryCounter();
 
   public static AgentBuilder premain(final String[] traceExcludedClasses, final AgentBuilder builder) {
     log("\n<<<<<<<<<<<<<<< Installing TracerExclusionAgent >>>>>>>>>>>>>>>>\n", null, DefaultLevel.FINE);
@@ -55,11 +55,11 @@ public class TracerExclusionAgent {
 
   @Advice.OnMethodEnter
   public static void enter() {
-    latch.set(latch.get() + 1);
+    entryCounter.set(entryCounter.get() + 1);
   }
 
   @Advice.OnMethodExit
   public static void exit() {
-    latch.set(latch.get() - 1);
+    entryCounter.set(entryCounter.get() - 1);
   }
 }

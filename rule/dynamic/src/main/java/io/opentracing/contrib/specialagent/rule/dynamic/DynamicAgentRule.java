@@ -33,13 +33,12 @@ public class DynamicAgentRule extends AgentRule {
   private static final String RULES = "sa.integration.dynamic.rules";
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    final ArrayList<AgentBuilder> builders = new ArrayList<>();
-
+  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
     final String rules = System.getProperty(RULES);
     if (rules == null || rules.isEmpty())
-      return builders;
+      return null;
 
+    final ArrayList<AgentBuilder> builders = new ArrayList<>();
     final DynamicSpec[] specs = DynamicSpec.parseRules(rules);
     for (final DynamicSpec spec : specs) {
       Junction<TypeDescription> type = named(spec.className);
@@ -63,23 +62,23 @@ public class DynamicAgentRule extends AgentRule {
               methodDesc = methodDesc.and(returns(named(spec.returning)));
           }
 
-          return builder.visit(advice().to(DynamicAgentRule.class).on(methodDesc));
+          return builder.visit(advice(typeDescription).to(DynamicAgentRule.class).on(methodDesc));
         }
       }));
     }
 
-    return builders;
+    return builders.toArray(new AgentBuilder[builders.size()]);
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       DynamicAgentIntercept.enter(origin);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       DynamicAgentIntercept.exit(thrown);
   }
 }

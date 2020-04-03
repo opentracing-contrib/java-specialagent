@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.hazelcast;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,56 +28,56 @@ import net.bytebuddy.utility.JavaModule;
 
 public class HazelcastAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("com.hazelcast.core.Hazelcast")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OneInstance.class).on(named("newHazelcastInstance")));
+          return builder.visit(advice(typeDescription).to(OneInstance.class).on(named("newHazelcastInstance")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OneInstance.class).on(named("getHazelcastInstanceByName")));
+          return builder.visit(advice(typeDescription).to(OneInstance.class).on(named("getHazelcastInstanceByName")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OneInstance.class).on(named("getOrCreateHazelcastInstance")));
+          return builder.visit(advice(typeDescription).to(OneInstance.class).on(named("getOrCreateHazelcastInstance")));
         }})
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AllInstances.class).on(named("getAllHazelcastInstances")));
+          return builder.visit(advice(typeDescription).to(AllInstances.class).on(named("getAllHazelcastInstances")));
         }})
       .type(hasSuperType(named("com.hazelcast.client.HazelcastClient")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OneInstance.class).on(named("newHazelcastClient")));
+          return builder.visit(advice(typeDescription).to(OneInstance.class).on(named("newHazelcastClient")));
         }})
       .transform(new Transformer() {
       @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OneInstance.class).on(named("getHazelcastClientByName")));
+          return builder.visit(advice(typeDescription).to(OneInstance.class).on(named("getHazelcastClientByName")));
         }})
       .transform(new Transformer() {
       @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OneInstance.class).on(named("getHazelcastClientByName")));
+          return builder.visit(advice(typeDescription).to(OneInstance.class).on(named("getHazelcastClientByName")));
         }})
       .transform(new Transformer() {
       @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AllInstances.class).on(named("getAllHazelcastClients")));
-        }}));
+          return builder.visit(advice(typeDescription).to(AllInstances.class).on(named("getAllHazelcastClients")));
+        }});
   }
 
   public static class OneInstance {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         returned = HazelcastAgentIntercept.getOneInstance(returned);
     }
   }
@@ -87,7 +85,7 @@ public class HazelcastAgentRule extends AgentRule {
   public static class AllInstances {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         returned = HazelcastAgentIntercept.getAllInstances(returned);
     }
   }

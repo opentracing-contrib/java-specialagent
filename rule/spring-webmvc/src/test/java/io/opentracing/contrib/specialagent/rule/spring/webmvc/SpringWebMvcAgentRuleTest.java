@@ -49,13 +49,13 @@ public class SpringWebMvcAgentRuleTest {
 
   @Test
   public void test() throws Exception {
-    assertFalse(AgentRule.isEnabled(AgentRule.class.getName(), null));
+    assertFalse(AgentRule.isAllowed(AgentRule.class.getName(), null));
     final Server server = startServer();
     final int port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
     final String url = "http://localhost:" + port;
     final ResponseEntity<String> responseEntity = new RestTemplate().getForEntity(url, String.class);
     assertEquals("test", responseEntity.getBody());
-    assertTrue(AgentRule.isEnabled(AgentRule.class.getName(), null));
+    assertTrue(AgentRule.isAllowed(AgentRule.class.getName(), null));
     server.stop();
     server.join();
   }

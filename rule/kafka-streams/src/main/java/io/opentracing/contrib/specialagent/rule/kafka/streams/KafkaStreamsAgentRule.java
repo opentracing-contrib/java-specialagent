@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.kafka.streams;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,32 +27,32 @@ import net.bytebuddy.utility.JavaModule;
 
 public class KafkaStreamsAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.apache.kafka.streams.processor.internals.PartitionGroup"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(NextRecord.class).on(named("nextRecord")));
+          return builder.visit(advice(typeDescription).to(NextRecord.class).on(named("nextRecord")));
         }})
       .type(named("org.apache.kafka.streams.processor.internals.StreamTask"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Process.class).on(named("process")));
+          return builder.visit(advice(typeDescription).to(Process.class).on(named("process")));
         }})
       .type(named("org.apache.kafka.streams.processor.internals.RecordDeserializer"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Deserialize.class).on(named("deserialize")));
-        }}));
+          return builder.visit(advice(typeDescription).to(Deserialize.class).on(named("deserialize")));
+        }});
   }
 
   public static class NextRecord {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         KafkaStreamsAgentIntercept.onNextRecordExit(returned);
     }
   }
@@ -62,7 +60,7 @@ public class KafkaStreamsAgentRule extends AgentRule {
   public static class Process {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
          KafkaStreamsAgentIntercept.onProcessExit(thrown);
     }
   }
@@ -70,7 +68,7 @@ public class KafkaStreamsAgentRule extends AgentRule {
   public static class Deserialize {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 1) Object record) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         KafkaStreamsAgentIntercept.onDeserializeExit(returned, record);
     }
   }

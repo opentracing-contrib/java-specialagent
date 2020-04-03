@@ -407,13 +407,13 @@ public class SpecialAgent {
 
   private static final HashSet<Class<?>> adapterClasses = new HashSet<>(1);
 
-  private static void loadAdapter(final List<String> tracerExcludedClasses, final Map<AgentRule,PluginManifest> pluginManifests) {
-    if (pluginManifests == null)
+  private static void loadAdapter(final List<String> tracerExcludedClasses, final List<IntegrationRule> integraitonRules) {
+    if (integraitonRules == null)
       return;
 
     try {
-      for (final PluginManifest pluginManifest : pluginManifests.values()) {
-        final Class<?> cls = isoClassLoader.loadClass(pluginManifest.adapterClassName);
+      for (final IntegrationRule integraitonRule : integraitonRules) {
+        final Class<?> cls = isoClassLoader.loadClass(integraitonRule.getPluginManifest().adapterClassName);
         if (adapterClasses.add(cls)) {
           Collections.addAll(tracerExcludedClasses, ((Adapter)cls.getConstructor().newInstance()).loadTracer(isoClassLoader));
         }
@@ -439,18 +439,17 @@ public class SpecialAgent {
 
       final ArrayList<String> tracerExcludedClasses = new ArrayList<>();
       try {
-        final LinkedHashMap<AgentRule,PluginManifest> pluginManifests = new LinkedHashMap<>();
+        final List<IntegrationRule> integrationRules = new ArrayList<>();
         final HashMap<String,String> classNameToName = new HashMap<>();
         AgentRule.$Access.configure(new Runnable() {
           @Override
           public void run() {
-            manager.loadRules(inst, pluginManifests, tracerExcludedClasses.size() == 0 ? null : tracerExcludedClasses.toArray(new String[tracerExcludedClasses.size()]), events);
+            manager.loadRules(inst, false, integrationRules, tracerExcludedClasses.size() == 0 ? null : tracerExcludedClasses.toArray(new String[tracerExcludedClasses.size()]), events);
           }
         }, classNameToName);
 
-        final Map<AgentRule,PluginManifest> deferrers = manager.scanRules(inst, pluginsClassLoader, pluginManifestDirectory, pluginManifests, classNameToName);
-        loadAdapter(tracerExcludedClasses, deferrers);
-        loadAdapter(tracerExcludedClasses, pluginManifests);
+        final int noDeferrers = manager.scanRules(inst, pluginsClassLoader, pluginManifestDirectory, integrationRules, classNameToName);
+        loadAdapter(tracerExcludedClasses, integrationRules);
         if (tracerExcludedClasses.size() == 0)
           logger.warning("No adapter was loaded!");
 
@@ -478,7 +477,7 @@ public class SpecialAgent {
           logger.info("|=============================================================='");
         }
 
-        if (deferrers == null) {
+        if (noDeferrers == 0) {
           if (attachMode == AttachMode.STATIC_DEFERRED) {
             logger.info("' 0 deferrers were detected, overriding to: -Dsa.init.defer=false");
             attachMode = AttachMode.STATIC;
@@ -489,13 +488,15 @@ public class SpecialAgent {
           }
         }
         else {
-          logger.info("' " + deferrers.size() + " deferrers were detected:");
-          for (final AgentRule deferrer : deferrers.keySet())
-            logger.info("  " + deferrer.getClass().getName());
+          logger.info("' " + noDeferrers + " deferrers were detected:");
+          for (final IntegrationRule integrationRule : integrationRules)
+            if (integrationRule.getDeferrers() != null)
+              for (final AgentRule deferrer : integrationRule.getDeferrers())
+                logger.info("  " + deferrer.getClass().getName());
 
           if (attachMode == AttachMode.STATIC_DEFERRED) {
             // Just load the deferrers
-            manager.loadRules(inst, deferrers, tracerExcludedClasses.size() == 0 ? null : tracerExcludedClasses.toArray(new String[tracerExcludedClasses.size()]), events);
+            manager.loadRules(inst, true, integrationRules, tracerExcludedClasses.size() == 0 ? null : tracerExcludedClasses.toArray(new String[tracerExcludedClasses.size()]), events);
             return;
           }
         }

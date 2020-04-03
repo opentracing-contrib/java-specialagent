@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.mule4;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Collections;
-
 import org.mule.runtime.core.internal.event.DefaultEventContext;
 
 import io.opentracing.Span;
@@ -32,20 +30,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class EventContextRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Collections.singletonList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.mule.runtime.core.internal.event.DefaultEventContext"))
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(EventContextRule.class).on(isConstructor()));
-        }
-      }));
+          return builder.visit(advice(typeDescription).to(EventContextRule.class).on(isConstructor()));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (!isEnabled(className, origin))
+    if (!isAllowed(className, origin))
       return;
 
     final Span span = GlobalTracer.get().activeSpan();

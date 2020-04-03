@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.mule4;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Collections;
-
 import org.mule.runtime.api.event.Event;
 import org.slf4j.MDC;
 
@@ -35,20 +33,19 @@ public class PrivilegedEventRule extends AgentRule {
   public static final String SPAN_ID_MDC_KEY = "spanId";
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Collections.singletonList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.mule.runtime.core.privileged.event.PrivilegedEvent"))
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(PrivilegedEventRule.class).on(named("setCurrentEvent")));
-        }
-      }));
+          return builder.visit(advice(typeDescription).to(PrivilegedEventRule.class).on(named("setCurrentEvent")));
+        }});
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object event) {
-    if (!isEnabled(className, origin))
+    if (!isAllowed(className, origin))
       return;
 
     if (event == null) {

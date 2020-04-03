@@ -17,11 +17,10 @@ package io.opentracing.contrib.specialagent.rule.mule4.service.http;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -31,28 +30,27 @@ import net.bytebuddy.utility.JavaModule;
 
 public class MuleFilterChainAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
-      .type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OnEnter.class).on(named("build")));
-        }
-      }), builder
-      .type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OnExit.class).on(named("build")));
-        }
-      }));
+  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
+    final Narrowable narrowable = builder.type(named("org.glassfish.grizzly.filterchain.FilterChainBuilder$StatelessFilterChainBuilder"));
+    return new AgentBuilder[] {
+      narrowable
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(advice(typeDescription).to(OnEnter.class).on(named("build")));
+          }}),
+      narrowable
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(advice(typeDescription).to(OnExit.class).on(named("build")));
+          }})};
   }
 
   public static class OnEnter {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) throws EarlyReturnException {
-      if (!isEnabled(className, origin))
+      if (!isAllowed(className, origin))
         return;
 
       final Object filterChain = MuleFilterChainAgentIntercept.enter(thiz);

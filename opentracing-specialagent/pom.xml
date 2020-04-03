@@ -73,6 +73,27 @@
       <dependencies>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>thread</artifactId>
+          <version>${project.version}</version>
+          <optional>true</optional>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>spring-boot</artifactId>
+          <version>${project.version}</version>
+          <optional>true</optional>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>spring-webmvc</artifactId>
+          <version>${project.version}</version>
+          <optional>true</optional>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
           <artifactId>okhttp</artifactId>
           <version>${project.version}</version>
           <optional>true</optional>
@@ -94,7 +115,7 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>mongo-driver</artifactId>
+          <artifactId>httpurlconnection</artifactId>
           <version>${project.version}</version>
           <optional>true</optional>
           <scope>provided</scope>
@@ -102,6 +123,13 @@
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
           <artifactId>servlet</artifactId>
+          <version>${project.version}</version>
+          <optional>true</optional>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
+          <artifactId>mongo-driver</artifactId>
           <version>${project.version}</version>
           <optional>true</optional>
           <scope>provided</scope>
@@ -430,27 +458,6 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>thread</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>spring-boot</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>spring-webmvc</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
           <artifactId>akka-actor</artifactId>
           <version>${project.version}</version>
           <optional>true</optional>
@@ -473,13 +480,6 @@
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
           <artifactId>play-ws</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>httpurlconnection</artifactId>
           <version>${project.version}</version>
           <optional>true</optional>
           <scope>provided</scope>

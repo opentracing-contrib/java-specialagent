@@ -55,8 +55,7 @@ public class AkkaAgentIntercept {
     }
     else {
       tracedMessage = null;
-      final AbstractActor actor = (AbstractActor)thiz;
-      spanBuilder.withTag(Tags.MESSAGE_BUS_DESTINATION, actor.getSelf().path().toString());
+      spanBuilder.withTag(Tags.MESSAGE_BUS_DESTINATION, ((AbstractActor)thiz).getSelf().path().toString());
     }
 
     final Span span = spanBuilder.start();

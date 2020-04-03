@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.grizzly.http.client;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,19 +27,18 @@ import net.bytebuddy.utility.JavaModule;
 
 public class AsyncHttpClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(
-     builder.type(hasSuperType(named("com.ning.http.client.AsyncHttpClientConfig$Builder")))
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder.type(hasSuperType(named("com.ning.http.client.AsyncHttpClientConfig$Builder")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AsyncHttpClientAgentRule.class).on(isDefaultConstructor()));
-        }}));
+          return builder.visit(advice(typeDescription).to(AsyncHttpClientAgentRule.class).on(isDefaultConstructor()));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       AsyncHttpClientAgentIntercept.exit(thiz);
   }
 }

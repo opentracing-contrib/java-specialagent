@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.rule.spring.webmvc;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
-import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.Level;
@@ -50,14 +49,14 @@ public class SpringWebMvcAgentRule extends AgentRule {
   }
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.springframework.web.servlet.FrameworkServlet")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(SpringWebMvcAgentRule.class).on(named("initServletBean")));
-        }}));
+          return builder.visit(advice(typeDescription).to(SpringWebMvcAgentRule.class).on(named("initServletBean")));
+        }});
   }
 
   @Advice.OnMethodExit

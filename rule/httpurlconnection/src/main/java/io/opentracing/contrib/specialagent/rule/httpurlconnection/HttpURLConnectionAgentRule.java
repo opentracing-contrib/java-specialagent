@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.httpurlconnection;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,25 +27,25 @@ import net.bytebuddy.utility.JavaModule;
 
 public class HttpURLConnectionAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(isPublic().and(hasSuperType(named("java.net.HttpURLConnection"))).and(not(named("sun.net.www.protocol.https.HttpsURLConnectionImpl"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(HttpURLConnectionAgentRule.class).on(named("connect").or(named("getOutputStream")).or(named("getInputStream"))));
-        }}));
+          return builder.visit(advice(typeDescription).to(HttpURLConnectionAgentRule.class).on(named("connect").or(named("getOutputStream")).or(named("getInputStream"))));
+        }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, @Advice.FieldValue("connected") final boolean connected) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       HttpURLConnectionAgentIntercept.enter(thiz, connected);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown, @Advice.FieldValue("responseCode") final int responseCode) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       HttpURLConnectionAgentIntercept.exit(thrown, responseCode);
   }
 }

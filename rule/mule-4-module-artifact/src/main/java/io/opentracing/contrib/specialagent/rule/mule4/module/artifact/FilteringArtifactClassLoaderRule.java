@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.mule4.module.artifact;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Collections;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -29,20 +27,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class FilteringArtifactClassLoaderRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Collections.singletonList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.mule.runtime.module.artifact.api.classloader.FilteringArtifactClassLoader")))
       .transform(new AgentBuilder.Transformer() {
         @Override
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(FilteringArtifactClassLoaderRule.class).on(named("getResource")));
-        }
-      }));
+          return builder.visit(advice(typeDescription).to(FilteringArtifactClassLoaderRule.class).on(named("getResource")));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz, final @Advice.Argument(value = 0) Object resObj, final @Advice.FieldValue(value = "filter") Object filter, final @Advice.FieldValue(value = "artifactClassLoader") Object artifactClassLoader, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object returned) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       returned = FilteringArtifactAgentIntercept.exit(thiz, returned, resObj, filter, artifactClassLoader);
   }
 }

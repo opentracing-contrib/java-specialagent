@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.neo4j.driver;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,19 +28,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class Neo4jDriverAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.neo4j.driver.GraphDatabase")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Neo4jDriverAgentRule.class).on(named("driver").and(takesArguments(3)).and(takesArgument(0, named("java.net.URI")))));
-        }}));
+          return builder.visit(advice(typeDescription).to(Neo4jDriverAgentRule.class).on(named("driver").and(takesArguments(3)).and(takesArgument(0, named("java.net.URI")))));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       returned = Neo4jDriverAgentIntercept.exit(returned);
   }
 }

@@ -30,20 +30,7 @@ import org.junit.Test;
  * @author Seva Safris
  */
 public class SpecialAgentUtilTest {
-  @Test
-  public void testParseConfiguration() {
-    final LinkedHashMap<String,String> properties = new LinkedHashMap<>();
-    properties.put("sa.integration.*.disable", "");
-    properties.put("sa.exporter.*.disable", "");
-    properties.put("sa.integration.okhttp.enable", "");
-    properties.put("sa.integration.concurrent.enable", "");
-    properties.put("sa.integration.concurrent.verbose", "");
-    properties.put("sa.integration.lettuce:5.?.enable", "");
-    properties.put("sa.integration.okhttp.disable", "");
-    properties.put("sa.exporter.jaeger.enable", "");
-    properties.put("sa.exporter.jaeger.enable", "false");
-    properties.put("sa.exporter.lightstep.enable", "");
-    properties.put("sa.include", "exporter.jar");
+  public static void testParseConfiguration(final LinkedHashMap<String,String> properties) {
     final ArrayList<String> verbosePluginNames = new ArrayList<>();
     final HashMap<String,Boolean> integrationRuleNameToEnable = new HashMap<>();
     final HashMap<String,Boolean> traceExporterNameToEnable = new HashMap<>();
@@ -64,6 +51,40 @@ public class SpecialAgentUtilTest {
 
     assertFalse(traceExporterNameToEnable.toString(), traceExporterNameToEnable.get("jaeger"));
     assertTrue(traceExporterNameToEnable.toString(), traceExporterNameToEnable.get("lightstep"));
+  }
+
+  @Test
+  public void testParseConfiguration() {
+    final LinkedHashMap<String,String> properties = new LinkedHashMap<>();
+    properties.put("sa.integration.*.disable", "");
+    properties.put("sa.exporter.*.disable", "");
+    properties.put("sa.integration.okhttp.enable", "");
+    properties.put("sa.integration.concurrent.enable", "");
+    properties.put("sa.integration.concurrent.verbose", "");
+    properties.put("sa.integration.lettuce:5.?.enable", "");
+    properties.put("sa.integration.okhttp.disable", "");
+    properties.put("sa.exporter.jaeger.enable", "");
+    properties.put("sa.exporter.jaeger.enable", "false");
+    properties.put("sa.exporter.lightstep.enable", "");
+    properties.put("sa.include", "exporter.jar");
+    testParseConfiguration(properties);
+  }
+
+  @Test
+  public void testParseDeprecatedConfiguration() {
+    final LinkedHashMap<String,String> properties = new LinkedHashMap<>();
+    properties.put("sa.instrumentation.plugin.*.disable", "");
+    properties.put("sa.tracer.plugin.*.disable", "");
+    properties.put("sa.instrumentation.plugin.okhttp.enable", "");
+    properties.put("sa.instrumentation.plugin.concurrent.enable", "");
+    properties.put("sa.instrumentation.plugin.concurrent.verbose", "");
+    properties.put("sa.instrumentation.plugin.lettuce:5.?.enable", "");
+    properties.put("sa.instrumentation.plugin.okhttp.disable", "");
+    properties.put("sa.tracer.plugin.jaeger.enable", "");
+    properties.put("sa.tracer.plugin.jaeger.enable", "false");
+    properties.put("sa.tracer.plugin.lightstep.enable", "");
+    properties.put("sa.instrumentation.plugin.include", "exporter.jar");
+    testParseConfiguration(properties);
   }
 
   @Test

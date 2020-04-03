@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.akka.http;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,25 +28,25 @@ import net.bytebuddy.utility.JavaModule;
 
 public class AkkaHttpClientAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("akka.http.javadsl.Http")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(AkkaHttpClientAgentRule.class).on(named("singleRequest").and(takesArgument(0, named("akka.http.javadsl.model.HttpRequest")))));
-        }}));
+          return builder.visit(advice(typeDescription).to(AkkaHttpClientAgentRule.class).on(named("singleRequest").and(takesArgument(0, named("akka.http.javadsl.model.HttpRequest")))));
+        }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, @Advice.Argument(value = 0, readOnly = false, typing = Typing.DYNAMIC) Object request) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
      request = AkkaAgentIntercept.requestStart(request);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       returned = AkkaAgentIntercept.requestEnd(returned, thrown);
   }
 }

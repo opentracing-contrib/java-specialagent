@@ -26,15 +26,17 @@ import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class GrizzlyHttpClientITest {
+  private static final String url = "http://www.google.com";
+  
   public static void main(final String[] args) throws InterruptedException, IOException, ExecutionException {
     try (final AsyncHttpClient client = new AsyncHttpClient()) {
-      final Response response = client.prepareGet("http://www.google.com").execute().get();
+      final Response response = client.prepareGet(url).execute().get();
       final int statusCode = response.getStatusCode();
       if (200 != statusCode)
         throw new AssertionError("ERROR: response: " + statusCode);
     }
 
-    try (final SimpleAsyncHttpClient simpleAsyncHttpClient = new SimpleAsyncHttpClient.Builder().setUrl("http://www.google.com").build()) {
+    try (final SimpleAsyncHttpClient simpleAsyncHttpClient = new SimpleAsyncHttpClient.Builder().setUrl(url).build()) {
       final Response response = simpleAsyncHttpClient.get().get();
       final int statusCode = response.getStatusCode();
       if (200 != statusCode)

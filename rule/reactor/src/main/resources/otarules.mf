@@ -12,4 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-io.opentracing.contrib.specialagent.rule.reactor.ReactorAgentRule
+io.opentracing.contrib.specialagent.rule.reactor.MonoAgentRule
+io.opentracing.contrib.specialagent.rule.reactor.FluxAgentRule
+io.opentracing.contrib.specialagent.rule.reactor.ParallelFluxAgentRule

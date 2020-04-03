@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.kafka.client;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,26 +28,26 @@ import net.bytebuddy.utility.JavaModule;
 
 public class KafkaAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.apache.kafka.clients.consumer.internals.ConsumerInterceptors"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Consumer.class).on(named("onConsume")));
+          return builder.visit(advice(typeDescription).to(Consumer.class).on(named("onConsume")));
         }})
       .type(named("org.apache.kafka.clients.producer.KafkaProducer"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(Producer.class).on(named("send").and(takesArguments(2))));
-        }}));
+          return builder.visit(advice(typeDescription).to(Producer.class).on(named("send").and(takesArguments(2))));
+        }});
   }
 
   public static class Consumer {
     @Advice.OnMethodExit
     public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         KafkaAgentIntercept.onConsumerExit(returned);
     }
   }
@@ -57,7 +55,7 @@ public class KafkaAgentRule extends AgentRule {
   public static class Producer {
     @Advice.OnMethodEnter
     public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record, @Advice.Argument(value = 1, readOnly = false, typing = Typing.DYNAMIC) Object callback) {
-      if (isEnabled(className, origin))
+      if (isAllowed(className, origin))
         callback = KafkaAgentIntercept.onProducerEnter(record, callback);
     }
   }

@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.spring.kafka;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,25 +27,25 @@ import net.bytebuddy.utility.JavaModule;
 
 public class SpringKafkaAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(hasSuperType(named("org.springframework.kafka.listener.MessageListener"))))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(SpringKafkaAgentRule.class).on(named("onMessage")));
-        }}));
+          return builder.visit(advice(typeDescription).to(SpringKafkaAgentRule.class).on(named("onMessage")));
+        }});
   }
 
   @Advice.OnMethodEnter
   public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object record) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       SpringKafkaAgentIntercept.onMessageEnter(record);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class)
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Thrown Throwable thrown) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       SpringKafkaAgentIntercept.onMessageExit(thrown);
   }
 }

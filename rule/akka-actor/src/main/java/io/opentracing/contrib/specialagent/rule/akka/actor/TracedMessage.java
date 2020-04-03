@@ -22,8 +22,8 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 
 public class TracedMessage<T> {
-  private T message;
-  private Map<String,String> headers;
+  private final T message;
+  private final Map<String,String> headers;
 
   public TracedMessage(final T message, final Map<String,String> headers) {
     this.message = message;

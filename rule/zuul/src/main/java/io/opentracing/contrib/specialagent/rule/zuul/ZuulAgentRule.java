@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.zuul;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -29,19 +27,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class ZuulAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("com.netflix.zuul.FilterLoader"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(ZuulAgentRule.class).on(named("getFiltersByType")));
-        }}));
+          return builder.visit(advice(typeDescription).to(ZuulAgentRule.class).on(named("getFiltersByType")));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Argument(value = 0) Object arg) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       ZuulAgentIntercept.exit(returned, arg);
   }
 }

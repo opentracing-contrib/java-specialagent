@@ -18,10 +18,12 @@ package io.opentracing.contrib.specialagent;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.instrument.Instrumentation;
+import java.util.HashMap;
 import java.util.Map;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.type.TypeDescription;
 
 /**
  * Base abstract class for SpecialAgent Integration Rules.
@@ -80,10 +82,23 @@ public abstract class AgentRule {
     }
 
     /**
-     * @return The {@link MutexLatch} instance from {@link AgentRule}.
+     * @return The {@link ThreadLocalCounter} instance from {@link AgentRule}.
      */
-    static MutexLatch mutexLatch() {
-      return mutexLatch;
+    static ThreadLocalCounter entryCounter() {
+      return entryCounter;
+    }
+
+    /**
+     * Set the provided {@link PluginManifest} for the specified
+     * {@link AgentRule}.
+     *
+     * @param agentRule The {@link AgentRule} for which to set the specified
+     *          {@link PluginManifest}.
+     * @param pluginManifest The {@link PluginManifest} to set in the provided
+     *          {@link AgentRule}.
+     */
+    public static void setPluginManifest(final AgentRule agentRule, final PluginManifest pluginManifest) {
+      agentRule.pluginManifest = pluginManifest;
     }
   }
 
@@ -116,7 +131,7 @@ public abstract class AgentRule {
   };
 
   private static final Logger logger = Logger.getLogger(AgentRule.class);
-  private static final MutexLatch mutexLatch = new MutexLatch();
+  private static final ThreadLocalCounter entryCounter = new ThreadLocalCounter();
   private static final ThreadLocal<String> currentAgentRuleClass = new ThreadLocal<>();
   private static Map<String,String> classNameToName;
 
@@ -125,7 +140,7 @@ public abstract class AgentRule {
   }
 
   public static boolean isVerbose(final String className) {
-    final boolean integrationsVerbose = AssembleUtil.isSystemProperty("sa.integration.*.verbose");
+    final boolean integrationsVerbose = AssembleUtil.isSystemProperty("sa.integration.*.verbose", "sa.instrumentation.plugin.*.verbose");
     if (integrationsVerbose)
       return integrationsVerbose;
 
@@ -133,21 +148,28 @@ public abstract class AgentRule {
     if (integrationName == null)
       throw new IllegalStateException("Plugin name must not be null");
 
-    return AssembleUtil.isSystemProperty("sa.integration." + integrationName + ".verbose");
+    return AssembleUtil.isSystemProperty("sa.integration." + integrationName + ".verbose", "sa.instrumentation.plugin." + integrationName + ".verbose");
   }
 
   private final String className = getClass().getName();
+  private PluginManifest pluginManifest;
 
   @Retention(RetentionPolicy.RUNTIME)
   public @interface ClassName {
   }
 
-  public final Advice.WithCustomMapping advice() {
+  public final Advice.WithCustomMapping advice(final TypeDescription typeDescription) {
+    final PluginManifest pluginManifest = typeDescriptionToPluginManifest.get(typeDescription);
+    if (pluginManifest != null && pluginManifest != this.pluginManifest)
+      logger.severe("<><><><> Multiple integrations registered for: " + typeDescription);
+    else
+      typeDescriptionToPluginManifest.put(typeDescription, this.pluginManifest);
+
     return Advice.withCustomMapping().bind(ClassName.class, className);
   }
 
-  public static boolean isEnabled(final String className, final String origin) {
-    final boolean allowed = initialized && mutexLatch.get() == 0 && isThreadInstrumentable.get();
+  public static boolean isAllowed(final String className, final String origin) {
+    final boolean allowed = initialized && entryCounter.get() == 0 && isThreadInstrumentable.get();
     if (allowed) {
       if (logger.isLoggable(Level.FINER))
         logger.finer("-------> Intercept [" + className.substring(className.lastIndexOf('.') + 1) + "@" + Thread.currentThread().getName() + "]: " + origin);
@@ -159,6 +181,12 @@ public abstract class AgentRule {
     }
 
     return allowed;
+  }
+
+  private static Map<TypeDescription,PluginManifest> typeDescriptionToPluginManifest = new HashMap<>();
+
+  public static PluginManifest getPluginManifest(final TypeDescription typeDescription) {
+    return typeDescriptionToPluginManifest.get(typeDescription);
   }
 
   /**
@@ -174,5 +202,138 @@ public abstract class AgentRule {
     return false;
   }
 
-  public abstract Iterable<? extends AgentBuilder> buildAgent(AgentBuilder builder) throws Exception;
+  /**
+   * Callback method for the construction of {@link AgentBuilder} rules off of
+   * the provided {@link AgentBuilder} instance.
+   * <p>
+   * The {@link AgentBuilder} instances returned by this method will be
+   * installed independently, resulting in a re/transformation cycle for each
+   * instance.
+   * <p>
+   * <i><b>Note</b>: The use of this callback will result in the <b>worst</b>
+   * performance profile for the loading of declared rules.</i>
+   * <p>
+   * <i>This method <b>should only be used</b> if the rule(s) being created
+   * involve a {@link TypeDescription} that is <b>not unique amongst all the
+   * rules</b> (i.e. the same {@link TypeDescription} is declared in another
+   * rule).</i>
+   *
+   * @param builder The {@link AgentBuilder} to be used as the seed instance for
+   *          the returned {@link AgentBuilder} instances.
+   * @return An array of {@link AgentBuilder} instances declaring
+   *         re/transformation rules.
+   */
+  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
+    return null;
+  }
+
+  /**
+   * Callback method for the construction of a single {@link AgentBuilder} rule
+   * off of the provided {@link AgentBuilder} instance.
+   * <p>
+   * The {@link AgentBuilder} instance returned by this method will be installed
+   * in a chain that is local to the scope of the module in which it is
+   * declared. For instance, if a rule module has 3 classes extending
+   * {@link AgentRule}, and each implements a
+   * {@link #buildAgentChainedLocal1(AgentBuilder)} callback, then the rules
+   * declared in all {@link AgentRule} subclasses for the
+   * {@link #buildAgentChainedLocal1(AgentBuilder)} callback will be installed
+   * in a single call, resulting in one re/transformation cycle per module.
+   * <p>
+   * <i><b>Note</b>: The use of this callback will result in the <b>second
+   * best</b> performance profile for the loading of declared rules.</i>
+   * <p>
+   * <i>This method <b>cannot be used</b> if the rule(s) being created involve a
+   * {@link TypeDescription} that is <b>not unique amongst all the rules</b>
+   * (i.e. the same {@link TypeDescription} is declared in another rule).</i>
+   *
+   * @param builder The {@link AgentBuilder} to be used as the seed instance for
+   *          the returned {@link AgentBuilder} instances.
+   * @return A {@link AgentBuilder} instance declaring re/transformation rules.
+   */
+  public AgentBuilder buildAgentChainedLocal1(final AgentBuilder builder) {
+    return null;
+  }
+
+  /**
+   * Callback method for the construction of a single {@link AgentBuilder} rule
+   * off of the provided {@link AgentBuilder} instance.
+   * <p>
+   * The {@link AgentBuilder} instance returned by this method will be installed
+   * in a chain that is local to the scope of the module in which it is
+   * declared. For instance, if a rule module has 3 classes extending
+   * {@link AgentRule}, and each implements a
+   * {@link #buildAgentChainedLocal2(AgentBuilder)} callback, then the rules
+   * declared in all {@link AgentRule} subclasses for the
+   * {@link #buildAgentChainedLocal2(AgentBuilder)} callback will be installed
+   * in a single call, resulting in one re/transformation cycle per module.
+   * <p>
+   * <i><b>Note</b>: The use of this callback will result in the <b>second
+   * best</b> performance profile for the loading of declared rules.</i>
+   * <p>
+   * <i>This method <b>cannot be used</b> if the rule(s) being created involve a
+   * {@link TypeDescription} that is <b>not unique amongst all the rules</b>
+   * (i.e. the same {@link TypeDescription} is declared in another rule).</i>
+   *
+   * @param builder The {@link AgentBuilder} to be used as the seed instance for
+   *          the returned {@link AgentBuilder} instances.
+   * @return A {@link AgentBuilder} instance declaring re/transformation rules.
+   */
+  public AgentBuilder buildAgentChainedLocal2(final AgentBuilder builder) {
+    return null;
+  }
+
+  /**
+   * Callback method for the construction of a single {@link AgentBuilder} rule
+   * off of the provided {@link AgentBuilder} instance.
+   * <p>
+   * The {@link AgentBuilder} instance returned by this method will be installed
+   * in a chain that is globally shared in the full scope of the VM. For
+   * instance, for all rule modules that extend {@link AgentRule} and implement
+   * a {@link #buildAgentChainedGlobal1(AgentBuilder)} callback, the rules
+   * declared in all {@link AgentRule} subclasses for the
+   * {@link #buildAgentChainedGlobal1(AgentBuilder)} callback will be installed
+   * in a single call, resulting in one re/transformation cycle.
+   * <p>
+   * <i><b>Note</b>: The use of this callback will result in the <b>best</b>
+   * performance profile for the loading of declared rules.</i>
+   * <p>
+   * <i>This method <b>cannot be used</b> if the rule(s) being created involve a
+   * {@link TypeDescription} that is <b>not unique amongst all the rules</b>
+   * (i.e. the same {@link TypeDescription} is declared in another rule).</i>
+   *
+   * @param builder The {@link AgentBuilder} to be used as the seed instance for
+   *          the returned {@link AgentBuilder} instances.
+   * @return A {@link AgentBuilder} instance declaring re/transformation rules.
+   */
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return null;
+  }
+
+  /**
+   * Callback method for the construction of a single {@link AgentBuilder} rule
+   * off of the provided {@link AgentBuilder} instance.
+   * <p>
+   * The {@link AgentBuilder} instance returned by this method will be installed
+   * in a chain that is globally shared in the full scope of the VM. For
+   * instance, for all rule modules that extend {@link AgentRule} and implement
+   * a {@link #buildAgentChainedGlobal2(AgentBuilder)} callback, the rules
+   * declared in all {@link AgentRule} subclasses for the
+   * {@link #buildAgentChainedGlobal2(AgentBuilder)} callback will be installed
+   * in a single call, resulting in one re/transformation cycle.
+   * <p>
+   * <i><b>Note</b>: The use of this callback will result in the <b>best</b>
+   * performance profile for the loading of declared rules.</i>
+   * <p>
+   * <i>This method <b>cannot be used</b> if the rule(s) being created involve a
+   * {@link TypeDescription} that is <b>not unique amongst all the rules</b>
+   * (i.e. the same {@link TypeDescription} is declared in another rule).</i>
+   *
+   * @param builder The {@link AgentBuilder} to be used as the seed instance for
+   *          the returned {@link AgentBuilder} instances.
+   * @return A {@link AgentBuilder} instance declaring re/transformation rules.
+   */
+  public AgentBuilder buildAgentChainedGlobal2(final AgentBuilder builder) {
+    return null;
+  }
 }

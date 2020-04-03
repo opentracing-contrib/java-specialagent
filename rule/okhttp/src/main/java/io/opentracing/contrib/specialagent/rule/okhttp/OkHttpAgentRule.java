@@ -17,8 +17,6 @@ package io.opentracing.contrib.specialagent.rule.okhttp;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import java.util.Arrays;
-
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -30,19 +28,19 @@ import net.bytebuddy.utility.JavaModule;
 
 public class OkHttpAgentRule extends AgentRule {
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("okhttp3.OkHttpClient"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(OkHttpAgentRule.class).on(named("interceptors").or(named("networkInterceptors"))));
-        }}));
+          return builder.visit(advice(typeDescription).to(OkHttpAgentRule.class).on(named("interceptors").or(named("networkInterceptors"))));
+        }});
   }
 
   @Advice.OnMethodExit
   public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
-    if (isEnabled(className, origin))
+    if (isAllowed(className, origin))
       returned = OkHttpAgentIntercept.exit(returned);
   }
 }

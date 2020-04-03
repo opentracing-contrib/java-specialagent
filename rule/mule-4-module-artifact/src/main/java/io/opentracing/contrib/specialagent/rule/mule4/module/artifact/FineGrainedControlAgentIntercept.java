@@ -22,8 +22,9 @@ import org.mule.runtime.module.artifact.api.classloader.FineGrainedControlClassL
 import org.mule.runtime.module.artifact.api.classloader.LookupStrategy;
 
 public class FineGrainedControlAgentIntercept {
-  private static final String CLS_SFX = ".class";
   private static final Logger logger = Logger.getLogger(FilteringArtifactAgentIntercept.class.getName());
+  private static final String CLS_SFX = ".class";
+  private static final int CLS_SFX_LENGTH = CLS_SFX.length();
 
   public static Object exit(final Object thiz, final Object returned, final Object resObj) {
     final String resName = (String)resObj;
@@ -32,7 +33,7 @@ public class FineGrainedControlAgentIntercept {
     if (returned != null || !resName.endsWith(CLS_SFX))
       return returned;
 
-    final String clazzName = resName.substring(0, resName.length() - CLS_SFX.length()).replace('/', '.');
+    final String clazzName = resName.substring(0, resName.length() - CLS_SFX_LENGTH).replace('/', '.');
 
     // @see https://github.com/mulesoft/mule/blob/mule-4.2.2/modules/artifact/src/main/java/org/mule/runtime/module/artifact/api/classloader/FineGrainedControlClassLoader.java#L67
     final FineGrainedControlClassLoader loader = (FineGrainedControlClassLoader)thiz;

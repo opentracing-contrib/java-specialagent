@@ -57,8 +57,8 @@ All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://git
    // This class CANNOT directly reference any 3rd-party library classes, because when this class is loaded, the 3rd-party
    // library will not be available, as it will be loaded in premain.
    public class TargetAgentRule implements AgentRule {
-     public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-       return Arrays.asList(builder.                   // All rules must be based off of the `builder` variable
+     public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+       return builder.                   // All rules must be based off of the `builder` variable
          .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
                                                        // the class name is expressed in string form, as opposed
                                                        // to is(com.example.TargetBuilder.class), or
@@ -84,7 +84,7 @@ All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://git
      // 3rd-party library must be defined in the TargetAgentIntercept class (in this example).
      @Advice.OnMethodExit
      public static void exit(final @ClassName String className, final @Advice.Origin String origin, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) throws Exception {
-       if (isEnabled(className, origin))               // The call to isEnabled(className, origin) is required.
+       if (isAllowed(className, origin))               // The call to isAllowed(className, origin) is required.
          returned = TargetAgentIntercept.exit(returned);
      }
    }

@@ -18,7 +18,6 @@ package io.opentracing.contrib.specialagent.rule.spring.boot;
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import java.lang.instrument.Instrumentation;
-import java.util.Arrays;
 
 import io.opentracing.contrib.specialagent.AgentRule;
 import io.opentracing.contrib.specialagent.Level;
@@ -53,14 +52,14 @@ public class SpringBootAgentRule extends AgentRule {
   }
 
   @Override
-  public Iterable<? extends AgentBuilder> buildAgent(final AgentBuilder builder) throws Exception {
-    return Arrays.asList(builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(hasSuperType(named("org.springframework.boot.StartupInfoLogger")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice().to(SpringBootAgentRule.class).on(named("logStarted")));
-        }}));
+          return builder.visit(advice(typeDescription).to(SpringBootAgentRule.class).on(named("logStarted")));
+        }});
   }
 
   @Advice.OnMethodEnter

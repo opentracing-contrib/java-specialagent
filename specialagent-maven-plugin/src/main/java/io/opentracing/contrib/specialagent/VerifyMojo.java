@@ -45,7 +45,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 @Mojo(name = "verify", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "verify")
 public final class VerifyMojo extends AbstractMojo {
-  private static final boolean ignoreMissingTestManifest = AssembleUtil.isSystemProperty("ignoreMissingTestManifest");
+  private static final boolean ignoreMissingTestManifest = AssembleUtil.isSystemProperty("ignoreMissingTestManifest", null);
 
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
   private MavenProject project;
