@@ -222,30 +222,64 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
 
    **Required libraries that must be present** must be declared as a dependency in the <ins>Integration Rule's</ins> POM as:
 
-     ```xml
-     <dependency>
-       ...
-       <optional>true</optional>
-       <scope>provided</scope>
-       ...
-     </dependency>
-     ```
+   ```xml
+   <dependency>
+     ...
+     <optional>true</optional>
+     <scope>provided</scope>
+     ...
+   </dependency>
+   ```
 
-     For example, for the [OkHttp Rule][okhttp] the required dependency (coming from the [OkHttp Integration][java-okhttp]) is:
+   For example, for the [OkHttp Rule][okhttp] the required dependency (coming from the [OkHttp Integration][java-okhttp]) is:
 
-     ```xml
-     <dependency>
-       <groupId>com.squareup.okhttp3</groupId>
-       <artifactId>okhttp</artifactId>
-       <version>${version.library}</version>
-       <optional>true</optional>
-       <scope>provided</scope>
-     </dependency>
-     ```
+   ```xml
+   <dependency>
+     <groupId>com.squareup.okhttp3</groupId>
+     <artifactId>okhttp</artifactId>
+     <version>${version.library}</version>
+     <optional>true</optional>
+     <scope>provided</scope>
+   </dependency>
+   ```
+
+1. Once the **required library** is tagged with `optional=true` and `scope=provided`, the <ins>Integration Rule</ins> must conigure the `specialagent-maven-plugin` to generate a `fingerprint.bin` file.
+
+   If you are implementing your <ins>Integration Rule</ins> outside of the `java-specialagent` project, then make sure the following `build/resources` and `build/plugins/plugin` spec is present:
+
+   ```xml
+   <resources>
+     <resource>
+       <directory>src/main/resources</directory>
+     </resource>
+     <resource>
+       <directory>${project.build.directory}/generated-resources</directory>
+     </resource>
+   </resources>
+   ```
+
+   ```xml
+   <plugin>
+     <groupId>io.opentracing.contrib.specialagent</groupId>
+     <artifactId>specialagent-maven-plugin</artifactId>
+     <version>1.7.0</version> <!-- 1.7.1-SNAPSHOT -->
+     <executions>
+       <execution>
+         <id>fingerprint</id>
+         <goals>
+           <goal>fingerprint</goal>
+         </goals>
+         <phase>process-classes</phase>
+       </execution>
+       ...
+     </executions>
+     ...
+   </plugin>
+   ```
 
 1. **Important note!**
 
-   _All_ dependencies declared in a <ins>Integration Rule's</ins> POM must have `<optional>true</optional>` spec.
+   _All_ dependencies declared in an <ins>Integration Rule's</ins> POM must have `<optional>true</optional>` spec.
 
    In case of `<scope>test</scope>` dependencies, this is also true.
 
@@ -254,6 +288,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
    The <ins>Integration Rule</ins> and/or <ins>Integration</ins> is instrumenting a 3rd-party library. This library is guaranteed to be present in a target runtime for the integration to be instrumentable (i.e. if the integration finds its way to a runtime that does not have the 3rd-party library, its presence is moot). For non-moot use-cases, since the 3rd-party library is guaranteed to be present, it is important that the dependency scope for the 3rd-party library artifacts is set to `provided`. This will prevent from runtime linkage errors due to duplicate class definitions in different class loaders.
 
 1. Each rule **MUST** declare a unique name. To declare a name, the rule's `pom.xml` must specify the following:
+
    ```xml
    <project>
     ...
@@ -266,7 +301,22 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
 
    The value of `sa.rule.name` must follow the [Rule Name Pattern](https://github.com/opentracing-contrib/java-specialagent/#rule-name-pattern) pattern: `<WORD>[:WORD][:NUMBER]`. The first `<WORD>` is required, the second `[:WORD]` is optional, and the `[:NUMBER]` suffix is also optional. Please refer to the link in the previous sentence for a description of the use and meaning of this spec.
 
+   If you are implementing your <ins>Integration Rule</ins> outside of the `java-specialagent` project, then make sure to provide the following configuration to the `specialagent-maven-plugin`:
+
+   ```xml
+   <plugin>
+     <groupId>io.opentracing.contrib.specialagent</groupId>
+     <artifactId>specialagent-maven-plugin</artifactId>
+     <version>1.7.0</version> <!-- 1.7.1-SNAPSHOT -->
+     ...
+     <configuration>
+       <name>${sa.rule.name}</name>
+     </configuration>
+   </plugin>
+   ```
+
 1. Each <ins>Integration Rule</ins> can declare a priority for order when rules are loaded by the SpecialAgent. To declare a priority, the rule's `pom.xml` must specify the following:
+
    ```xml
    <project>
     ...
@@ -315,7 +365,9 @@ The POM of each <ins>Integration Rule</ins> must describe at least one `pass` co
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
+     <version>1.7.0</version> <!-- 1.7.1-SNAPSHOT -->
      <executions>
+       ...
        <execution>
          <id>test-compatibility</id>
          <configuration>
