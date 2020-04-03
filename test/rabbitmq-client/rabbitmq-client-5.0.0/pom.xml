@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.rabbitmq-client</groupId>
     <artifactId>rabbitmq-client</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.7.0</version>
   </parent>
   <artifactId>rabbitmq-client-5.0.0</artifactId>
   <name>SpecialAgent Test for RabbitMQ Client 5.0.0</name>

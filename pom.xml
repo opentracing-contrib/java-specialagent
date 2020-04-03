@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib.specialagent</groupId>
   <artifactId>specialagent</artifactId>
-  <version>1.7.0-SNAPSHOT</version>
+  <version>1.7.0</version>
   <packaging>pom</packaging>
   <name>Java SpecialAgent</name>
   <description>Java Agent for OpenTracing, with automatic instrumentation</description>
@@ -240,7 +240,10 @@
       </activation>
       <modules>
         <module>opentracing-specialagent-util</module>
+        <module>opentracing-adapter</module>
         <module>opentracing-specialagent-api</module>
+        <module>specialagent-fingerprint</module>
+        <module>specialagent-maven-plugin</module>
         <module>opentracing-specialagent</module>
       </modules>
       <dependencies>
@@ -272,10 +275,7 @@
         </property>
       </activation>
       <modules>
-        <module>opentracing-adapter</module>
-        <module>specialagent-fingerprint</module>
         <module>opentracing-rewrite</module>
-        <module>specialagent-maven-plugin</module>
         <module>itest-maven-plugin</module>
         <module>rule</module>
       </modules>
@@ -678,6 +678,11 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-compat</artifactId>
+        <version>${version.maven}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
         <version>${version.maven}</version>
       </dependency>
 

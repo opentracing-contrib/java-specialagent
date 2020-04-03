@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.kafka-streams</groupId>
     <artifactId>kafka-streams</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.7.0</version>
   </parent>
   <artifactId>kafka-streams-2.3.1</artifactId>
   <name>SpecialAgent Test for Kafka Streams 2.3.1</name>

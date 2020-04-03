@@ -58,7 +58,7 @@ All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://git
    // library will not be available, as it will be loaded in premain.
    public class TargetAgentRule implements AgentRule {
      public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
-       return builder.                   // All rules must be based off of the `builder` variable
+       return builder.                                 // All rules must be based off of the `builder` variable
          .type(named("com.example.TargetBuilder"))     // The type name to be intercepted. It is important that
                                                        // the class name is expressed in string form, as opposed
                                                        // to is(com.example.TargetBuilder.class), or
@@ -71,7 +71,8 @@ All <ins>Integration Rules</ins> belong to the [`java-specialagent`](https://git
          .transform(new Transformer() {
            @Override
            public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-             return builder.visit(advice()             // The method `advice()` is defined in `AgentRule`
+             return
+               builder.visit(advice(typeDescription)   // The method `advice(TypeDescription)` is defined in `AgentRule`
                .to(TargetAgentRule.class)              // A class literal reference to this class.
                .on(named("builder")                    // The method name which to intercept on the "com.example.TargetBuilder" class.
                  .and(takesArguments(String.class)))); // Additional specification for the method intercept.
