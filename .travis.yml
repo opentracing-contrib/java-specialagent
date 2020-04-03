@@ -35,11 +35,11 @@ jobs:
     script:
     - 'if [ "$TRAVIS_BRANCH" = "master" ] &&
           [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        travis_retry bash -c "(mvn -e -B -P test --fail-at-end -Dsilent dependency:go-offline || true) && mvn -e -B -P report install || (rm -rf ~/.m2/repository/* && false)" &&
+        travis_retry bash -c "(mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true) && mvn -e -B -P report install || (rm -rf ~/.m2/repository/* && false)" &&
         travis_retry mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
         travis_retry mvn -e -B -Dassemble install;
       else
-        travis_retry bash -c "(mvn -e -B -P test --fail-at-end -Dsilent dependency:go-offline || true) && mvn -e -B install || (rm -rf ~/.m2/repository/* && false)" &&
+        travis_retry bash -c "(mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true) && mvn -e -B install || (rm -rf ~/.m2/repository/* && false)" &&
         travis_retry mvn -e -B -Dassemble install;
       fi'
     before_cache: find . -name target -exec rsync -R -r '{}' $BUILD_PATH \;

@@ -1,5 +1,16 @@
 # Changes by Version
 
+## v1.7.0 (2020-04-03)
+* Improve rule loading performance (#492 #524)
+* Switch to OpenTelemetry's terminology {#522)
+* Fix for: `CassandraTest` (#508)
+* Fix for: Jetty 7.6.21: "Illegal type in constant pool" (#509)
+* Combine `jms:1` and `jms:2` rules in `jms` rule (#521 #498 #523)
+* Determine min & max instrumented versions of libs supported by default (#468)
+* Add integration tests for `spring-data` (#520)
+* Add integration rules for Dubbo 2.6 and 2.7 (#505) 👈 Thank you @limfriend
+* Upgrade LightStep trace exporter to `v0.20.0` with support for metrics
+
 ## v1.6.1 (2020-03-28)
 * Fix `spring-kafka` Static Deferred Attach (#661 #583 #484)
 * Support target runtimes that import OpenTracing API (#640)

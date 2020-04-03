@@ -253,7 +253,7 @@ public class PluginManifest {
     }
   }
 
-  private HashMap<ClassLoader,Boolean> classLoaderToCompatibility = new HashMap<>();
+  private final HashMap<ClassLoader,Boolean> classLoaderToCompatibility = new HashMap<>();
 
   public Map<ClassLoader,Boolean> getClassLoaderToCompatibility() {
     return classLoaderToCompatibility;
