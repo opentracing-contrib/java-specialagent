@@ -239,6 +239,8 @@
         </property>
       </activation>
       <modules>
+        <module>opentracing-specialagent-util</module>
+        <module>opentracing-specialagent-api</module>
         <module>opentracing-specialagent</module>
       </modules>
       <dependencies>
@@ -271,8 +273,6 @@
       </activation>
       <modules>
         <module>opentracing-adapter</module>
-        <module>opentracing-specialagent-api</module>
-        <module>opentracing-specialagent-util</module>
         <module>specialagent-fingerprint</module>
         <module>opentracing-rewrite</module>
         <module>specialagent-maven-plugin</module>
