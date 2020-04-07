@@ -399,11 +399,11 @@ jobs:
     jdk: openjdk11
     install: true
     script: travis_retry bash -c "mvn -e -B -P test -pl test/mongo-driver -amd integration-test || (mvn -e -B -P test -pl test/mongo-driver -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
-#  - name: "Mule 4 [openjdk8]"
-#    stage: test
-#    jdk: openjdk8
-#    install: true
-#    script: travis_retry bash -c "mvn -e -B -P test -pl test/mule -amd integration-test || (mvn -e -B -P test -pl test/mule -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
+  - name: "Mule 4 [openjdk8]"
+    stage: test
+    jdk: openjdk8
+    install: true
+    script: travis_retry bash -c "mvn -e -B -P test -pl test/mule -amd integration-test || (mvn -e -B -P test -pl test/mule -amd -Dexclude=$PURGE_EXCLUDE dependency:purge-local-repository && false)"
 #  - name: "Mule 4 [openjdk11]" # This is commented out, because Mule 4 tests does not run on the openjdk11 ver on travis
 #    stage: test
 #    jdk: openjdk11
