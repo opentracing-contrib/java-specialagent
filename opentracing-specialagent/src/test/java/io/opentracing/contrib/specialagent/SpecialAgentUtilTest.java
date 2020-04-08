@@ -66,7 +66,7 @@ public class SpecialAgentUtilTest {
     properties.put("sa.exporter.jaeger.enable", "");
     properties.put("sa.exporter.jaeger.enable", "false");
     properties.put("sa.exporter.lightstep.enable", "");
-    properties.put("sa.include", "exporter.jar");
+    properties.put("sa.classpath", "exporter.jar");
     testParseConfiguration(properties);
   }
 

@@ -53,14 +53,14 @@ public final class SpecialAgentUtil {
 
   static File[] parseConfiguration(final Map<String,String> properties, final List<String> verbosePluginNames, final Map<String,Boolean> integrationRuleNameToEnable, final Map<String,Boolean> traceExporterNameToEnable) {
     final String[] deprecatedKeys = new String[] {"sa.instrumentation.plugin.include", "sa.instrumentation.plugin.", "sa.tracer.plugin."};
-    final String[] currentKeys = new String[] {"sa.include", "sa.integration.", "sa.exporter."};
+    final String[] currentKeys = new String[] {"sa.classpath", "sa.integration.", "sa.exporter."};
     final File[] includedPlugins1 = parseConfiguration(deprecatedKeys, currentKeys, properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
     final File[] includedPlugins2 = parseConfiguration(currentKeys, currentKeys, properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
     if (includedPlugins1 == null)
       return includedPlugins2;
 
     if (includedPlugins2 != null)
-      throw new IllegalArgumentException("Conflicting \"sa.instrumentation.plugin.include\" (" + Arrays.toString(includedPlugins1) + ") and \"sa.include\" (" + Arrays.toString(includedPlugins2) + ") properties specified");
+      throw new IllegalArgumentException("Conflicting \"sa.instrumentation.plugin.include\" (" + Arrays.toString(includedPlugins1) + ") and \"sa.classpath\" (" + Arrays.toString(includedPlugins2) + ") properties specified");
 
     return includedPlugins1;
   }
