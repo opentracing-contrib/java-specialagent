@@ -18,11 +18,11 @@ executors:
   openjdk8:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
-    working_directory: /tmp/jdk8
+    working_directory: /tmp/${CIRCLE_WORKFLOW_ID}/jdk8
   openjdk11:
     docker:
       - image: circleci/openjdk:11-jdk-stretch
-    working_directory: /tmp/jdk11
+    working_directory: /tmp/${CIRCLE_WORKFLOW_ID}/jdk11
 
 env: &env
   steps:
@@ -56,14 +56,14 @@ install: &install
           mvn -e -B -DignoreMissingTestManifest -Dassemble install;
         fi
     - persist_to_workspace:
-        root: /tmp
+        root: ./
         paths:
-          - ${CIRCLE_JOB}
+          - ./*
 
 test: &test
   steps:
     - attach_workspace:
-        at: /tmp/${CIRCLE_JOB}
+        at: ${CIRCLE_WORKING_DIRECTORY}
     - run:
         command: |
           TEST=$(circleci tests glob "test/*" | circleci tests split)
@@ -88,7 +88,7 @@ jobs:
     steps:
       - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - attach_workspace:
-          at: /tmp/${CIRCLE_JOB}
+          at: ${CIRCLE_WORKING_DIRECTORY}
       - run: |
           if [ "$CIRCLE_BRANCH" = "master" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
