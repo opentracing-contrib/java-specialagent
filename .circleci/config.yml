@@ -27,18 +27,21 @@ executors:
 env: &env
   steps:
     - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+    - restore_cache:
+      - keys: # Reset the cache approx every release
+        - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+        - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}
+        - trace-java-{{ checksum "pom.xml" }}
 
 install: &install
+  <<: *env
   steps:
     - checkout
-    - restore_cache:
-        key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
         paths:
           - ~/.m2
         key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
-    <<: *env
     - run: |
         mkdir -p ~/.m2
         cp settings.xml ~/.m2/settings.xml
@@ -60,7 +63,7 @@ install: &install
 test: &test
   steps:
     - attach_workspace:
-      at: /tmp/${CIRCLE_JOB}
+        at: /tmp/${CIRCLE_JOB}
     - run:
         command: |
           TEST=$(circleci tests glob "test/*" | circleci tests split)
@@ -68,23 +71,24 @@ test: &test
 
 jobs:
   install-jdk8:
-    executor: openjdk8
     <<: *install
+    executor: openjdk8
   install-jdk11:
-    executor: openjdk11
     <<: *install
-  test-jdk8:
-    executor: openjdk8
-    <<: *test
-  test-jdk11:
     executor: openjdk11
+  test-jdk8:
     <<: *test
+    executor: openjdk8
+  test-jdk11:
+    <<: *test
+    executor: openjdk11
   deploy:
+    <<: *env
     executor: openjdk8
     steps:
+      - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - attach_workspace:
-        at: /tmp/${CIRCLE_JOB}
-      <<: *env
+          at: /tmp/${CIRCLE_JOB}
       - run: |
           if [ "$CIRCLE_BRANCH" = "master" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
