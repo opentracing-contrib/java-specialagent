@@ -1,3 +1,17 @@
+# Copyright 2020 The OpenTracing Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 version: 2.1
 
 executors:
@@ -19,7 +33,7 @@ install: &install
     - checkout
     - restore_cache:
         key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
-    - run: mvn dependency:go-offline
+    - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
         paths:
           - ~/.m2
@@ -29,14 +43,14 @@ install: &install
         mkdir -p ~/.m2
         cp settings.xml ~/.m2/settings.xml
         rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
-        if [ "$CIRCLE_BRANCH" = "master" ] &&
+        if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
            [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-          mvn -B -P report install &&
-          mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-          mvn -B -Dassemble install;
+          mvn -e -B -P report install &&
+          mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+          mvn -e -B -Dassemble install;
         else
-          mvn -B install &&
-          mvn -B -Dassemble install;
+          mvn -e -B -DskipTests install &&
+          mvn -e -B -DignoreMissingTestManifest -Dassemble install;
         fi
     - persist_to_workspace:
         root: /tmp
@@ -49,8 +63,8 @@ test: &test
       at: /tmp/${CIRCLE_JOB}
     - run:
         command: |
-          TESTS=$(circleci tests glob "test/???[!.]*" | circleci tests split)
-          mvn -B -P test -pl $TESTS -amd install
+          TEST=$(circleci tests glob "test/*" | circleci tests split)
+          mvn -e -B -P test -pl $TEST -amd test-compile
 
 jobs:
   install-jdk8:
@@ -75,7 +89,7 @@ jobs:
           if [ "$CIRCLE_BRANCH" = "master" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
             eval "$SIGNING_KEY" &> /dev/null &&
-            mvn -B -Dassemble -P deploy deploy;
+            mvn -e -B -DignoreMissingTestManifest -Dassemble -P deploy install;
           fi
 
 workflows:
