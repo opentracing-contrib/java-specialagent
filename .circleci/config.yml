@@ -37,6 +37,7 @@ install: &install
   <<: *env
   steps:
     - checkout
+    - run: pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
         paths:
