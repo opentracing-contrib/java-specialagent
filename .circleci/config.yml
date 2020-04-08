@@ -18,11 +18,11 @@ executors:
   openjdk8:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
-    working_directory: /tmp/${CIRCLE_WORKFLOW_ID}/jdk8
+    working_directory: /tmp/${CIRCLE_SHA1}/jdk8
   openjdk11:
     docker:
       - image: circleci/openjdk:11-jdk-stretch
-    working_directory: /tmp/${CIRCLE_WORKFLOW_ID}/jdk11
+    working_directory: /tmp/${CIRCLE_SHA1}/jdk11
 
 env: &env
   steps:
