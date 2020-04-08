@@ -18,20 +18,24 @@ executors:
   openjdk8:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
-    working_directory: /tmp/${CIRCLE_SHA1}/jdk8
+    working_directory: /tmp/$CIRCLE_SHA1/jdk8
   openjdk11:
     docker:
       - image: circleci/openjdk:11-jdk-stretch
-    working_directory: /tmp/${CIRCLE_SHA1}/jdk11
+    working_directory: /tmp/$CIRCLE_SHA1/jdk11
+
+cache_keys: &cache_keys
+  # Reset the cache approx every release
+  keys:
+    - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+    - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}
+    - trace-java-{{ checksum "pom.xml" }}
 
 env: &env
   steps:
     - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
     - restore_cache:
-      - keys: # Reset the cache approx every release
-        - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-        - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}
-        - trace-java-{{ checksum "pom.xml" }}
+        <<: *cache_keys
 
 install: &install
   <<: *env
@@ -41,8 +45,8 @@ install: &install
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
         paths:
+          <<: *cache_keys
           - ~/.m2
-        key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
     - run: |
         mkdir -p ~/.m2
         cp settings.xml ~/.m2/settings.xml
@@ -64,7 +68,7 @@ install: &install
 test: &test
   steps:
     - attach_workspace:
-        at: ${CIRCLE_WORKING_DIRECTORY}
+        at: $CIRCLE_WORKING_DIRECTORY
     - run:
         command: |
           TEST=$(circleci tests glob "test/*" | circleci tests split)
@@ -89,7 +93,7 @@ jobs:
     steps:
       - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - attach_workspace:
-          at: ${CIRCLE_WORKING_DIRECTORY}
+          at: $CIRCLE_WORKING_DIRECTORY
       - run: |
           if [ "$CIRCLE_BRANCH" = "master" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
