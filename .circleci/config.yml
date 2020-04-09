@@ -46,19 +46,19 @@ install: &install
         <<: *cache_keys
     - run: echo $MAVEN_OPTS && echo $CIRCLE_WORKING_DIRECTORY && pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
-    - run: |
-        mkdir -p ~/.m2 && cp settings.xml ~/.m2/settings.xml
-        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
-        export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-        if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
-           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-          mvn -e -B -P report install &&
-          mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-          mvn -e -B -Dassemble install;
-        else
-          mvn -e -B -DskipTests install &&
-          mvn -e -B -DignoreMissingTestManifest -Dassemble install;
-        fi
+#    - run: |
+#        mkdir -p ~/.m2 && cp settings.xml ~/.m2/settings.xml
+#        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
+#        export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+#        if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
+#           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+#          mvn -e -B -P report install &&
+#          mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+#          mvn -e -B -Dassemble install;
+#        else
+#          mvn -e -B -DskipTests install &&
+#          mvn -e -B -DignoreMissingTestManifest -Dassemble install;
+#        fi
     - save_cache:
         key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
         paths: ~/.m2
@@ -73,11 +73,10 @@ test: &test
         at: .
     - run:
         command: |
-          gem install bundler
-          echo $(circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//') | xargs -n 1 echo
+          echo $(circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}') | xargs -n 1 echo
           circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
           cat /tmp/tests-to-run
-          bundle exec rspec $(cat /tmp/tests-to-run)
+          bash -c "$(cat /tmp/tests-to-run)"
 
 jobs:
   install-jdk8:
