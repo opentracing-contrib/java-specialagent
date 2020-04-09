@@ -32,7 +32,7 @@ jobs:
       - run: |
           mv .m2 ~ || mkdir -p ~/.m2
           rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
-          mkdir -p << parameters.jdk >> && mv * << parameters.jdk >>
+          mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
           cd << parameters.jdk >>
           export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
           mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
