@@ -68,13 +68,12 @@ install: &install
           - ./*
 
 test: &test
-  parallelism: 16
+  parallelism: 4
   steps:
     - attach_workspace:
         at: .
     - run:
         command: |
-          echo $(circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}') | xargs -n 1 echo
           circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
           cat /tmp/tests-to-run
           bash -c "$(cat /tmp/tests-to-run)"
