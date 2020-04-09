@@ -45,8 +45,9 @@ install: &install
         <<: *cache_keys
     - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
     - run: |
-        mkdir -p ~/.m2 && cp settings.xml ~/.m2/settings.xml
-        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
+        mv .m2 ~ || mkdir -p ~/.m2
+        cp settings.xml ~/.m2/settings.xml
+        rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
         export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
         mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
         if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
