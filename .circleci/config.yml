@@ -44,7 +44,7 @@ install: &install
     - run: pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
-          key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+        key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
         paths: ~/.m2
     - run: |
         mkdir -p ~/.m2
