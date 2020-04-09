@@ -39,21 +39,12 @@ cache_keys: &cache_keys
     - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
     - specialagent-{{ checksum "pom.xml" }}
 
-env: &env
-  steps:
-    - run:
-        name: Setup Environment Variables
-        command: |
-          echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
-          source $BASH_ENV
-
 install: &install
   steps:
     - run:
         name: Setup Environment Variables
         command: |
-          echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
-          source $BASH_ENV
+          export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
     - checkout
     - restore_cache:
         <<: *cache_keys
@@ -103,12 +94,11 @@ jobs:
     <<: *test
     executor: openjdk11
   deploy:
-    <<: *env
     executor: openjdk8
     steps:
       - restore_cache:
           <<: *cache_keys
-      - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      - run: export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
       - attach_workspace:
           at: $CIRCLE_WORKING_DIRECTORY
       - run: |
