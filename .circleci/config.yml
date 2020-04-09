@@ -43,7 +43,7 @@ install: &install
     - checkout
     - restore_cache:
         <<: *cache_keys
-    - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2
+    - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
     - run: |
         mkdir -p ~/.m2 && cp settings.xml ~/.m2/settings.xml
         rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
@@ -59,7 +59,7 @@ install: &install
           mvn -e -B -DignoreMissingTestManifest -Dassemble install;
         fi
         mv ~/.m2 .
-        echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2
+        echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
     - save_cache:
         key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
         paths: .m2
