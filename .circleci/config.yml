@@ -82,12 +82,13 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
-          if [ "$CIRCLE_BRANCH" = "master" ] &&
+          if [ "$CIRCLE_BRANCH" = "circleci" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+            cd << parameters.jdk >> &&
+            ls -alF && ls -alF ~ &&
+            mv .m2 ~ &&
             eval "$SIGNING_KEY" &> /dev/null &&
             export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
-            mv .m2 ~ &&
-            cd << parameters.jdk >> &&
             mvn -e -B -DignoreMissingTestManifest -Dassemble -P deploy install;
           fi
 
