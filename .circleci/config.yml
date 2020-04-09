@@ -19,7 +19,7 @@ executors:
 #    parameters:
 #      jdk:
 #        type: string
-#        default: jdk8
+#        default: openjdk8
     docker:
       - image: circleci/openjdk:8-jdk-stretch
     working_directory: ~/openjdk8
@@ -27,8 +27,7 @@ executors:
 #    parameters:
 #      jdk:
 #        type: string
-#        default: jdk11
-#          echo 'export CIRCLE_WORKING_DIRECTORY="/tmp/$CIRCLE_SHA1/<< parameters.jdk >>"' >> $BASH_ENV
+#        default: openjdk11
     docker:
       - image: circleci/openjdk:11-jdk-stretch
     working_directory: ~/openjdk11
@@ -62,11 +61,11 @@ install: &install
     - save_cache:
         key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
         paths: ~/.m2
+    - run: mv ~/.m2 $CIRCLE_WORKING_DIRECTORY
     - persist_to_workspace:
         root: .
         paths:
           - .
-          - ../.m2
 
 test: &test
   parallelism: 4
