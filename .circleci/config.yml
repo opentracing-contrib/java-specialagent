@@ -14,23 +14,13 @@
 
 version: 2.1
 
-executors:
-  openjdk8:
-#    parameters:
-#      jdk:
-#        type: string
-#        default: openjdk8
-    docker:
-      - image: circleci/openjdk:8-jdk-stretch
-    working_directory: ~/openjdk8
-  openjdk11:
-#    parameters:
-#      jdk:
-#        type: string
-#        default: openjdk11
-    docker:
-      - image: circleci/openjdk:11-jdk-stretch
-    working_directory: ~/openjdk11
+#executors:
+#  parameters:
+#    jdk:
+#      type: string
+#  openjdk:
+#    docker:
+#      - image: circleci/openjdk:<< parameters.jdk >>-stretch
 
 cache_keys: &cache_keys
   keys: # Reset the cache approx every release
@@ -38,65 +28,66 @@ cache_keys: &cache_keys
     - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
     - specialagent-{{ checksum "pom.xml" }}
 
-install: &install
-  steps:
-    - checkout
-    - restore_cache:
-        <<: *cache_keys
-    - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
-    - run: |
-        mv .m2 ~ || mkdir -p ~/.m2
-        cp settings.xml ~/.m2/settings.xml
-        rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent
-        export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-        mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
-        if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
-           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-          mvn -e -B -P report install &&
-          mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-          mvn -e -B -Dassemble install;
-        else
-          mvn -e -B -DskipTests install &&
-          mvn -e -B -DignoreMissingTestManifest -Dassemble install;
-        fi
-        mv ~/.m2 .
-        echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
-    - save_cache:
-        key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-        paths: .m2
-    - persist_to_workspace:
-        root: .
-        paths:
-          - .
-
-test: &test
-  parallelism: 4
-  steps:
-    - attach_workspace:
-        at: .
-    - run:
-        command: |
-          mv .m2 ~
-          echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2
-          circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "ls -alF ~/.m2 && mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
-          cat /tmp/tests-to-run
-          bash -c "$(cat /tmp/tests-to-run)"
-
 jobs:
-  install-jdk8:
-    <<: *install
-    executor: openjdk8
-  install-jdk11:
-    <<: *install
-    executor: openjdk11
-  test-jdk8:
-    <<: *test
-    executor: openjdk8
-  test-jdk11:
-    <<: *test
-    executor: openjdk11
+  install:
+    parameters:
+      jdk:
+        type: string
+    docker:
+      - image: circleci/openjdk:<< parameters.jdk >>-stretch
+    steps:
+      - checkout
+      - restore_cache:
+          <<: *cache_keys
+      - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF $CIRCLE_WORKING_DIRECTORY
+      - run: |
+          mv .m2 ~ || mkdir -p ~/.m2
+          rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
+          mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> && cd << parameters.jdk >>
+          export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+          mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
+          if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
+             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+            mvn -e -B -P report install &&
+            mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+            mvn -e -B -Dassemble install;
+          else
+            mvn -e -B -DskipTests install &&
+            mvn -e -B -DignoreMissingTestManifest -Dassemble install;
+          fi
+          mv ~/.m2 .
+          echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF $CIRCLE_WORKING_DIRECTORY
+      - save_cache:
+          key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+          paths: .m2
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.jdk >>
+  test:
+    parameters:
+      jdk:
+        type: string
+    docker:
+      - image: circleci/openjdk:<< parameters.jdk >>-stretch
+    parallelism: 4
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          command: |
+            mv .m2 ~
+            cd << parameters.jdk >>
+            echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2 && ls -alF << parameters.jdk >>
+            circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
+            cat /tmp/tests-to-run
+            bash -c "$(cat /tmp/tests-to-run)"
   deploy:
-    executor: openjdk8
+    parameters:
+      jdk:
+        type: string
+    docker:
+      - image: circleci/openjdk:<< parameters.jdk >>-stretch
     steps:
       - attach_workspace:
           at: .
@@ -104,7 +95,9 @@ jobs:
           if [ "$CIRCLE_BRANCH" = "master" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
             eval "$SIGNING_KEY" &> /dev/null &&
-            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
+            mv .m2 ~ &&
+            cd << parameters.jdk >> &&
             mvn -e -B -DignoreMissingTestManifest -Dassemble -P deploy install;
           fi
 
@@ -112,15 +105,24 @@ workflows:
   version: 2
   build:
     jobs:
-      - install-jdk8
-      - install-jdk11
-      - test-jdk8:
+      - install:
+          name: install-jdk8
+          jdk: "8-jdk"
+      - install:
+          name: install-jdk11
+          jdk: "11-jdk"
+      - test:
+          name: test-jdk8
+          jdk: "8-jdk"
           requires:
             - install-jdk8
-      - test-jdk11:
+      - test:
+          name: test-jdk11
+          jdk: "11-jdk"
           requires:
             - install-jdk11
       - deploy:
+          jdk: "8-jdk"
           requires:
             - test-jdk8
             - test-jdk11
