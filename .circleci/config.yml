@@ -39,14 +39,24 @@ env: &env
           echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
           source $BASH_ENV
     - restore_cache:
-      - keys: # Reset the cache approx every release
-        - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-        - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
-        - specialagent-{{ checksum "pom.xml" }}
+        keys: # Reset the cache approx every release
+          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+          - specialagent-{{ checksum "pom.xml" }}
 
 install: &install
-  <<: *env
   steps:
+    - run:
+        name: Setup Environment Variables
+        command: |
+          echo 'export CIRCLE_WORKING_DIRECTORY="/tmp/$CIRCLE_SHA1/$JDK"' >> $BASH_ENV
+          echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
+          source $BASH_ENV
+    - restore_cache:
+        keys: # Reset the cache approx every release
+          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+          - specialagent-{{ checksum "pom.xml" }}
     - checkout
     - run: echo $MAVEN_OPTS && echo $CIRCLE_WORKING_DIRECTORY && pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
@@ -67,14 +77,14 @@ install: &install
           mvn -e -B -DignoreMissingTestManifest -Dassemble install;
         fi
     - persist_to_workspace:
-        root: ./
+        root: .
         paths:
           - ./*
 
 test: &test
   steps:
     - attach_workspace:
-        at: ./
+        at: .
     - run:
         command: |
           TEST=$(circleci tests glob "test/*" | circleci tests split)
