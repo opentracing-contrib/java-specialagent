@@ -22,6 +22,7 @@ executors:
 #        default: jdk8
     docker:
       - image: circleci/openjdk:8-jdk-stretch
+    working_directory: /tmp/openjdk8
   openjdk11:
 #    parameters:
 #      jdk:
@@ -30,6 +31,13 @@ executors:
 #          echo 'export CIRCLE_WORKING_DIRECTORY="/tmp/$CIRCLE_SHA1/<< parameters.jdk >>"' >> $BASH_ENV
     docker:
       - image: circleci/openjdk:11-jdk-stretch
+    working_directory: /tmp/openjdk11
+
+cache_keys: &cache_keys
+  keys: # Reset the cache approx every release
+    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+    - specialagent-{{ checksum "pom.xml" }}
 
 env: &env
   steps:
@@ -38,11 +46,6 @@ env: &env
         command: |
           echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
           source $BASH_ENV
-    - restore_cache:
-        keys: # Reset the cache approx every release
-          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
-          - specialagent-{{ checksum "pom.xml" }}
 
 install: &install
   steps:
@@ -51,12 +54,9 @@ install: &install
         command: |
           echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
           source $BASH_ENV
-    - restore_cache:
-        keys: # Reset the cache approx every release
-          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-          - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
-          - specialagent-{{ checksum "pom.xml" }}
     - checkout
+    - restore_cache:
+        <<: *cache_keys
     - run: echo $MAVEN_OPTS && echo $CIRCLE_WORKING_DIRECTORY && pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
@@ -106,6 +106,8 @@ jobs:
     <<: *env
     executor: openjdk8
     steps:
+      - restore_cache:
+          <<: *cache_keys
       - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - attach_workspace:
           at: $CIRCLE_WORKING_DIRECTORY
