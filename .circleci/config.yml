@@ -14,20 +14,6 @@
 
 version: 2.1
 
-#executors:
-#  parameters:
-#    jdk:
-#      type: string
-#  openjdk:
-#    docker:
-#      - image: circleci/openjdk:<< parameters.jdk >>-stretch
-
-cache_keys: &cache_keys
-  keys: # Reset the cache approx every release
-    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
-    - specialagent-{{ checksum "pom.xml" }}
-
 jobs:
   install:
     parameters:
@@ -38,7 +24,10 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          <<: *cache_keys
+          keys: # Reset the cache approx every release
+            - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+            - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+            - specialagent-{{ checksum "pom.xml" }}
       - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - run: |
           mv .m2 ~ || mkdir -p ~/.m2
@@ -58,7 +47,7 @@ jobs:
           mv ~/.m2 .
           echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - save_cache:
-          key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+          key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
           paths: .m2
       - persist_to_workspace:
           root: .
