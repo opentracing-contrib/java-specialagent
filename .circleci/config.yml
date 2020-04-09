@@ -27,9 +27,9 @@ executors:
 cache_keys: &cache_keys
   # Reset the cache approx every release
   keys:
-    - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-    - trace-java-{{ checksum "pom.xml" }}-{{ .Branch }}
-    - trace-java-{{ checksum "pom.xml" }}
+    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+    - specialagent-{{ checksum "pom.xml" }}
 
 env: &env
   steps:
@@ -44,9 +44,8 @@ install: &install
     - run: pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
-        paths:
-          <<: *cache_keys
-          - ~/.m2
+          key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+        paths: ~/.m2
     - run: |
         mkdir -p ~/.m2
         cp settings.xml ~/.m2/settings.xml
