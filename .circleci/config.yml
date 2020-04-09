@@ -16,26 +16,32 @@ version: 2.1
 
 executors:
   openjdk8:
+    parameters:
+      JDK:
+        type: string
+        default: jdk8
     docker:
       - image: circleci/openjdk:8-jdk-stretch
-    working_directory: /tmp/jdk8
   openjdk11:
+    parameters:
+      JDK:
+        type: string
+        default: jdk11
     docker:
       - image: circleci/openjdk:11-jdk-stretch
-    working_directory: /tmp/jdk11
-
-cache_keys: &cache_keys
-  # Reset the cache approx every release
-  keys:
-    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-    - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
-    - specialagent-{{ checksum "pom.xml" }}
 
 env: &env
   steps:
-    - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+    - run:
+        name: Setup Environment Variables
+        command: |
+          echo 'export CIRCLE_WORKING_DIRECTORY="/tmp/$CIRCLE_SHA1/$JDK"' >> $BASH_ENV
+          echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
     - restore_cache:
-        <<: *cache_keys
+      - keys: # Reset the cache approx every release
+        - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+        - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+        - specialagent-{{ checksum "pom.xml" }}
 
 install: &install
   <<: *env
