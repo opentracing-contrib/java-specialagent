@@ -45,11 +45,11 @@ install: &install
     - restore_cache:
         <<: *cache_keys
     - run: echo $MAVEN_OPTS && echo $CIRCLE_WORKING_DIRECTORY && pwd && ls -alF
-    - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - run: |
         mkdir -p ~/.m2 && cp settings.xml ~/.m2/settings.xml
         rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
         export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+        mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
         if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
            [ "$CIRCLE_PULL_REQUEST" = "" ]; then
           mvn -e -B -P report install &&
@@ -65,7 +65,7 @@ install: &install
     - persist_to_workspace:
         root: .
         paths:
-          - ./*
+          - .
 
 test: &test
   parallelism: 4
@@ -74,7 +74,7 @@ test: &test
         at: .
     - run:
         command: |
-          circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
+          circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "ls -alF && mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
           cat /tmp/tests-to-run
           bash -c "$(cat /tmp/tests-to-run)"
 
