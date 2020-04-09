@@ -43,22 +43,23 @@ install: &install
     - checkout
     - restore_cache:
         <<: *cache_keys
-    - run: echo $HOME && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && pwd && ls -alF
+    - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2
     - run: |
         mkdir -p ~/.m2 && cp settings.xml ~/.m2/settings.xml
+        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
+        export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+        mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
+        if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
+           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+          mvn -e -B -P report install &&
+          mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+          mvn -e -B -Dassemble install;
+        else
+          mvn -e -B -DskipTests install &&
+          mvn -e -B -DignoreMissingTestManifest -Dassemble install;
+        fi
         mv ~/.m2 .
-#        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
-#        export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-#        mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
-#        if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
-#           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-#          mvn -e -B -P report install &&
-#          mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-#          mvn -e -B -Dassemble install;
-#        else
-#          mvn -e -B -DskipTests install &&
-#          mvn -e -B -DignoreMissingTestManifest -Dassemble install;
-#        fi
+        echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2
     - save_cache:
         key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
         paths: .m2
@@ -75,6 +76,7 @@ test: &test
     - run:
         command: |
           mv .m2 ~
+          echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2
           circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "ls -alF ~/.m2 && mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
           cat /tmp/tests-to-run
           bash -c "$(cat /tmp/tests-to-run)"
