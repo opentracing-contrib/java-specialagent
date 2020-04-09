@@ -35,8 +35,8 @@ env: &env
     - run:
         name: Setup Environment Variables
         command: |
-          echo 'export CIRCLE_WORKING_DIRECTORY="/tmp/$CIRCLE_SHA1/$JDK"' >> $BASH_ENV
-          echo 'export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"' >> $BASH_ENV
+          export CIRCLE_WORKING_DIRECTORY="/tmp/$CIRCLE_SHA1/$JDK"
+          export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
     - restore_cache:
       - keys: # Reset the cache approx every release
         - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
@@ -47,7 +47,7 @@ install: &install
   <<: *env
   steps:
     - checkout
-    - run: echo $CIRCLE_SHA1 && pwd && ls -alF
+    - run: echo $CIRCLE_WORKING_DIRECTORY && pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
         key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
