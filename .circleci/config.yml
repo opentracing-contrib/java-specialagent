@@ -68,6 +68,7 @@ install: &install
           - ./*
 
 test: &test
+  parallelism: 16
   steps:
     - attach_workspace:
         at: .
