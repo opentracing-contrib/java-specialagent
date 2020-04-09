@@ -39,7 +39,7 @@ jobs:
       - checkout
       - restore_cache:
           <<: *cache_keys
-      - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF $CIRCLE_WORKING_DIRECTORY
+      - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - run: |
           mv .m2 ~ || mkdir -p ~/.m2
           rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
@@ -56,7 +56,7 @@ jobs:
             mvn -e -B -DignoreMissingTestManifest -Dassemble install;
           fi
           mv ~/.m2 .
-          echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF $CIRCLE_WORKING_DIRECTORY
+          echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - save_cache:
           key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
           paths: .m2
