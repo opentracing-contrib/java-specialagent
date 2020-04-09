@@ -18,9 +18,9 @@ common: &common
   parameters:
     jdk:
       type: enum
-      enum: ["8-jdk", "11-jdk"]
+      enum: ["8", "11"]
   docker:
-    - image: circleci/openjdk:<< parameters.jdk >>-stretch
+    - image: circleci/openjdk:<< parameters.jdk >>-jdk-stretch
 
 jobs:
   install:
@@ -78,8 +78,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
-          if [ "$CIRCLE_BRANCH" = "circleci" ] &&
-             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+          if [ "$CIRCLE_BRANCH" = "circleci" ]; then
             cd << parameters.jdk >> &&
             ls -alF && ls -alF ~ &&
             mv .m2 ~ &&
@@ -94,22 +93,22 @@ workflows:
     jobs:
       - install:
           name: install-jdk8
-          jdk: "8-jdk"
+          jdk: "8"
       - install:
           name: install-jdk11
-          jdk: "11-jdk"
+          jdk: "11"
       - test:
           name: test-jdk8
-          jdk: "8-jdk"
+          jdk: "8"
           requires:
             - install-jdk8
       - test:
           name: test-jdk11
-          jdk: "11-jdk"
+          jdk: "11"
           requires:
             - install-jdk11
       - deploy:
-          jdk: "8-jdk"
+          jdk: "8"
           requires:
             - test-jdk8
             - test-jdk11
