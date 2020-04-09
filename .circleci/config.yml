@@ -14,26 +14,30 @@
 
 version: 2.1
 
+common: &common
+  parameters:
+    jdk:
+      type: enum
+      enum: ["8-jdk", "11-jdk"]
+  docker:
+    - image: circleci/openjdk:<< parameters.jdk >>-stretch
+
 jobs:
   install:
-    parameters:
-      jdk:
-        type: string
-    docker:
-      - image: circleci/openjdk:<< parameters.jdk >>-stretch
+    <<: *common
     steps:
       - checkout
       - restore_cache:
-          keys: # Reset the cache approx every release
+          keys:
             - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
             - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
             - specialagent-{{ checksum "pom.xml" }}
       - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - run: |
-          mv .m2 ~ || mkdir -p ~/.m2
-          rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
           mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
           cd << parameters.jdk >>
+          mv .m2 ~ || mkdir -p ~/.m2
+          rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
           export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
           mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
           if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
@@ -55,11 +59,7 @@ jobs:
           paths:
             - << parameters.jdk >>
   test:
-    parameters:
-      jdk:
-        type: string
-    docker:
-      - image: circleci/openjdk:<< parameters.jdk >>-stretch
+    <<: *common
     parallelism: 4
     steps:
       - attach_workspace:
@@ -73,11 +73,7 @@ jobs:
             cat /tmp/tests-to-run
             bash -c "$(cat /tmp/tests-to-run)"
   deploy:
-    parameters:
-      jdk:
-        type: string
-    docker:
-      - image: circleci/openjdk:<< parameters.jdk >>-stretch
+    <<: *common
     steps:
       - attach_workspace:
           at: .
