@@ -49,7 +49,7 @@ jobs:
           echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - save_cache:
           key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-          paths: .m2
+          paths: << parameters.jdk >>/.m2
       - persist_to_workspace:
           root: .
           paths:
@@ -66,10 +66,9 @@ jobs:
           at: .
       - run:
           command: |
+            cd << parameters.jdk >>
             ls -alF && ls -alF ~
             mv .m2 ~
-            cd << parameters.jdk >>
-            echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~ && ls -alF ~/.m2 && ls -alF << parameters.jdk >>
             circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
             cat /tmp/tests-to-run
             bash -c "$(cat /tmp/tests-to-run)"
