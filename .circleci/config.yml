@@ -73,8 +73,9 @@ test: &test
         at: .
     - run:
         command: |
+          gem install bundler
           echo $(circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//') | xargs -n 1 echo
-          circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | circleci tests split > /tmp/tests-to-run
+          circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
           cat /tmp/tests-to-run
           bundle exec rspec $(cat /tmp/tests-to-run)
 
