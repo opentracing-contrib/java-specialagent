@@ -18,11 +18,11 @@ executors:
   openjdk8:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
-    working_directory: /tmp/$CIRCLE_SHA1/jdk8
+    working_directory: /tmp/jdk8
   openjdk11:
     docker:
       - image: circleci/openjdk:11-jdk-stretch
-    working_directory: /tmp/$CIRCLE_SHA1/jdk11
+    working_directory: /tmp/jdk11
 
 cache_keys: &cache_keys
   # Reset the cache approx every release
@@ -41,7 +41,7 @@ install: &install
   <<: *env
   steps:
     - checkout
-    - run: pwd && ls -alF
+    - run: echo $CIRCLE_SHA1 && pwd && ls -alF
     - run: mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
     - save_cache:
         key: specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
@@ -67,7 +67,7 @@ install: &install
 test: &test
   steps:
     - attach_workspace:
-        at: $CIRCLE_WORKING_DIRECTORY
+        at: ./
     - run:
         command: |
           TEST=$(circleci tests glob "test/*" | circleci tests split)
