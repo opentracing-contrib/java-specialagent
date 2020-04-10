@@ -32,28 +32,23 @@ jobs:
             - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
             - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
             - specialagent-{{ checksum "pom.xml" }}
-      - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - run: |
-          gpg --version &&
-          eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
-          echo $?
           mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
           cd << parameters.jdk >>
           mv .m2 ~ || mkdir -p ~/.m2
           rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
           export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
           mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
-          if [ "$CIRCLE_BRANCH" = "XXX-master-XXX" ] &&
+          if [ "$CIRCLE_BRANCH" = "master" ] &&
              [ "$CIRCLE_PULL_REQUEST" = "" ]; then
             mvn -e -B -P report install &&
             mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
             mvn -e -B -Dassemble install;
           else
-            mvn -e -B -DskipTests install &&
-            mvn -e -B -DignoreMissingTestManifest -Dassemble install;
+            mvn -e -B install &&
+            mvn -e -B -Dassemble install;
           fi
           mv ~/.m2 .
-          echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - save_cache:
           key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
           paths: << parameters.jdk >>/.m2
@@ -73,7 +68,6 @@ jobs:
             ls -alF && ls -alF ~
             mv .m2 ~
             circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
-            cat /tmp/tests-to-run
             bash -c "$(cat /tmp/tests-to-run)"
   deploy:
     <<: *common
@@ -81,14 +75,14 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
-          if [ "$CIRCLE_BRANCH" = "circleci" ]; then
+          if [ "$CIRCLE_BRANCH" = "master" ] &&
+             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
             cd << parameters.jdk >> &&
-            ls -alF && ls -alF ~ &&
             mv .m2 ~ &&
             eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
             export GPG_TTY=$(tty) &&
             export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
-            mvn -e -B -DignoreMissingTestManifest -Dassemble -P deploy install;
+            mvn -e -B -Dassemble -P deploy deploy;
           fi
 
 workflows:
