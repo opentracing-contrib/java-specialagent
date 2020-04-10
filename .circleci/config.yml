@@ -45,13 +45,16 @@ jobs:
             mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
             if [ "$CIRCLE_BRANCH" = "master" ] &&
                [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-              mvn -e -B -P report install &&
-              mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-              mvn -e -B -Dassemble install;
+              mvn -e -B -P report install
+              mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report
+              echo $?
             else
-              mvn -e -B install &&
-              mvn -e -B -Dassemble install;
+              mvn -e -B install
+              echo $?
             fi
+            echo $?
+            mvn -e -B -Dassemble install
+            echo $?
             mv ~/.m2 .
       - save_cache:
           key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
@@ -71,7 +74,6 @@ jobs:
           no_output_timeout: 20m
           command: |
             cd << parameters.jdk >>
-            ls -alF && ls -alF ~
             mv .m2 ~
             export MAVEN_OPTS="-Xmx2G -Xms64M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
             java -XX:+PrintFlagsFinal -version | grep -iE 'HeapSize|PermSize|ThreadStackSize'
@@ -88,12 +90,12 @@ jobs:
           command: |
             if [ "$CIRCLE_BRANCH" = "master" ] &&
                [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-              cd << parameters.jdk >> &&
-              mv .m2 ~ &&
-              eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
-              export GPG_TTY=$(tty) &&
-              export MAVEN_OPTS="-Xmx2G -Xms64M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
-              java -XX:+PrintFlagsFinal -version | grep -iE 'HeapSize|PermSize|ThreadStackSize' &&
+              cd << parameters.jdk >>
+              mv .m2 ~
+              eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null
+              export GPG_TTY=$(tty)
+              export MAVEN_OPTS="-Xmx2G -Xms64M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+              java -XX:+PrintFlagsFinal -version | grep -iE 'HeapSize|PermSize|ThreadStackSize'
               mvn -e -B -Dassemble -P deploy deploy;
             fi
 
