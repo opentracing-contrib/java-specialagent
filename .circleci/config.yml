@@ -32,23 +32,25 @@ jobs:
             - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
             - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
             - specialagent-{{ checksum "pom.xml" }}
-      - run: |
-          mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
-          cd << parameters.jdk >>
-          mv .m2 ~ || mkdir -p ~/.m2
-          rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
-          export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-          mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
-          if [ "$CIRCLE_BRANCH" = "master" ] &&
-             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-            mvn -e -B -P report install &&
-            mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-            mvn -e -B -Dassemble install;
-          else
-            mvn -e -B install &&
-            mvn -e -B -Dassemble install;
-          fi
-          mv ~/.m2 .
+      - run:
+          name: Installing
+          command: |
+            mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
+            cd << parameters.jdk >>
+            mv .m2 ~ || mkdir -p ~/.m2
+            rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
+            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+            mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
+            if [ "$CIRCLE_BRANCH" = "master" ] &&
+               [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+              mvn -e -B -P report install &&
+              mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+              mvn -e -B -Dassemble install;
+            else
+              mvn -e -B install &&
+              mvn -e -B -Dassemble install;
+            fi
+            mv ~/.m2 .
       - save_cache:
           key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
           paths: << parameters.jdk >>/.m2
@@ -63,6 +65,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Testing
           command: |
             cd << parameters.jdk >>
             ls -alF && ls -alF ~
@@ -74,16 +77,18 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: |
-          if [ "$CIRCLE_BRANCH" = "master" ] &&
-             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-            cd << parameters.jdk >> &&
-            mv .m2 ~ &&
-            eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
-            export GPG_TTY=$(tty) &&
-            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
-            mvn -e -B -Dassemble -P deploy deploy;
-          fi
+      - run:
+          name: Deploying
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ] &&
+               [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+              cd << parameters.jdk >> &&
+              mv .m2 ~ &&
+              eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
+              export GPG_TTY=$(tty) &&
+              export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
+              mvn -e -B -Dassemble -P deploy deploy;
+            fi
 
 workflows:
   version: 2
