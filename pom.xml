@@ -374,13 +374,13 @@
                 <goals>
                   <goal>sign</goal>
                 </goals>
-                <!-- Necessary for GPG v2.2+ -->
-                <!--configuration>
+                <configuration>
                   <gpgArguments>
-                    <arg>- -pinentry-mode</arg>
+                    <!-- Necessary for GPG v2.2+ -->
+                    <arg>--pinentry-mode</arg>
                     <arg>loopback</arg>
                   </gpgArguments>
-                </configuration-->
+                </configuration>
               </execution>
             </executions>
           </plugin>
