@@ -1,96 +1,117 @@
+# Copyright 2020 The OpenTracing Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 version: 2.1
 
-executors:
-  openjdk8:
-    docker:
-      - image: circleci/openjdk:8-jdk-stretch
-    working_directory: /tmp/jdk8
-  openjdk11:
-    docker:
-      - image: circleci/openjdk:11-jdk-stretch
-    working_directory: /tmp/jdk11
-
-env: &env
-  steps:
-    - run: export MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-install: &install
-  steps:
-    - checkout
-    - restore_cache:
-        key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
-    - run: mvn dependency:go-offline
-    - save_cache:
-        paths:
-          - ~/.m2
-        key: cache-{{ .Branch }}-{{ checksum "pom.xml" }}
-    <<: *env
-    - run: |
-        mkdir -p ~/.m2
-        cp settings.xml ~/.m2/settings.xml
-        rm -rf ~/.m2/build ~/.m2/repository/io/opentracing/contrib/specialagent
-        if [ "$CIRCLE_BRANCH" = "master" ] &&
-           [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-          mvn -B -P report install &&
-          mvn -B -DrepoToken=$REPO_TOKEN coveralls:report &&
-          mvn -B -Dassemble install;
-        else
-          mvn -B install &&
-          mvn -B -Dassemble install;
-        fi
-    - persist_to_workspace:
-        root: /tmp
-        paths:
-          - ${CIRCLE_JOB}
-
-test: &test
-  steps:
-    - attach_workspace:
-      at: /tmp/${CIRCLE_JOB}
-    - run:
-        command: |
-          TESTS=$(circleci tests glob "test/???[!.]*" | circleci tests split)
-          mvn -B -P test -pl $TESTS -amd install
+common: &common
+  parameters:
+    jdk:
+      type: enum
+      enum: ["8", "11"]
+  docker:
+    - image: circleci/openjdk:<< parameters.jdk >>-jdk-stretch
 
 jobs:
-  install-jdk8:
-    executor: openjdk8
-    <<: *install
-  install-jdk11:
-    executor: openjdk11
-    <<: *install
-  test-jdk8:
-    executor: openjdk8
-    <<: *test
-  test-jdk11:
-    executor: openjdk11
-    <<: *test
-  deploy:
-    executor: openjdk8
+  install:
+    <<: *common
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+            - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
+            - specialagent-{{ checksum "pom.xml" }}
+      - run:
+          name: Installing
+          command: |
+            mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
+            cd << parameters.jdk >>
+            mv .m2 ~ || mkdir -p ~/.m2
+            rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
+            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+            mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
+            if [ "$CIRCLE_BRANCH" = "master" ] &&
+               [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+              mvn -e -B -P report install &&
+              mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report &&
+              mvn -e -B -Dassemble install;
+            else
+              mvn -e -B install &&
+              mvn -e -B -Dassemble install;
+            fi
+            mv ~/.m2 .
+      - save_cache:
+          key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+          paths: << parameters.jdk >>/.m2
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.jdk >>
+  test:
+    <<: *common
+    parallelism: 4
     steps:
       - attach_workspace:
-        at: /tmp/${CIRCLE_JOB}
-      <<: *env
-      - run: |
-          if [ "$CIRCLE_BRANCH" = "master" ] &&
-             [ "$CIRCLE_PULL_REQUEST" = "" ]; then
-            eval "$SIGNING_KEY" &> /dev/null &&
-            mvn -B -Dassemble -P deploy deploy;
-          fi
+          at: .
+      - run:
+          name: Testing
+          command: |
+            cd << parameters.jdk >>
+            ls -alF && ls -alF ~
+            mv .m2 ~
+            circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd test-compile"}' | circleci tests split > /tmp/tests-to-run
+            bash -c "$(cat /tmp/tests-to-run)"
+  deploy:
+    <<: *common
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploying
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ] &&
+               [ "$CIRCLE_PULL_REQUEST" = "" ]; then
+              cd << parameters.jdk >> &&
+              mv .m2 ~ &&
+              eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
+              export GPG_TTY=$(tty) &&
+              export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
+              mvn -e -B -Dassemble -P deploy deploy;
+            fi
 
 workflows:
   version: 2
-  build-and-deploy:
+  build:
     jobs:
-      - install-jdk8
-      - install-jdk11
-      - test-jdk8:
+      - install:
+          name: install-jdk8
+          jdk: "8"
+      - install:
+          name: install-jdk11
+          jdk: "11"
+      - test:
+          name: test-jdk8
+          jdk: "8"
           requires:
             - install-jdk8
-      - test-jdk11:
+      - test:
+          name: test-jdk11
+          jdk: "11"
           requires:
             - install-jdk11
       - deploy:
+          jdk: "8"
           requires:
             - test-jdk8
             - test-jdk11

@@ -121,7 +121,7 @@ public class SpecialAgent {
 
   /**
    * Test entrypoint to load the {@code SpecialAgent} for tests with
-   * {@link AgentRunner}.
+   * {@code AgentRunner}.
    *
    * @param agentArgs Agent arguments.
    * @param inst The {@code Instrumentation}.
