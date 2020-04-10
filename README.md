@@ -19,7 +19,7 @@
 | `-Dsa.instrumentation.plugin.` | :arrow_right: | [`-Dsa.integration.`](#322-integration) |
 | `-Dsa.instrumentation.include` | :arrow_right: | [`-Dsa.classpath`](#36-including-custom-integration-rules) |
 
-[![Build Status](https://travis-ci.org/opentracing-contrib/java-specialagent.svg?branch=master)][travis]
+[![Build Status](https://img.shields.io/circleci/build/gh/opentracing-contrib/java-specialagent/master)][circleci]
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
 [![Released Version](https://img.shields.io/maven-central/v/io.opentracing.contrib.specialagent/specialagent.svg)](https://mvnrepository.com/artifact/io.opentracing.contrib.specialagent/opentracing-specialagent)
@@ -91,7 +91,7 @@ This file contains the operational instructions for the use and development of <
 
 The <ins>SpecialAgent</ins> is a Java Agent that attaches to an application (either [statically or dynamically](#22-usage)). Once attached, the <ins>SpecialAgent</ins> it loads its bundled <ins>[Integrations](#63-integration)</ins>, which are all enabled by default.
 
-The <ins>SpecialAgent</ins> is stable -- any exception that occurs during attachment of <ins>SpecialAgent</ins> will not adversely affect the stability of the target application. It is, however, important to note that <ins>SpecialAgent</ins> bundles <ins>[Integrations](#63-integration)</ins> that are developed by 3rd parties and individual contributors. We strive to assert the stability of <ins>SpecialAgent</ins> with rigorous [integration tests][travis], yet it is still possible that the code in a bundled <ins>[Integration](#63-integration)</ins> may result in an exception that is not properly handled, which could potentially destabilize a target application.
+The <ins>SpecialAgent</ins> is stable -- any exception that occurs during attachment of <ins>SpecialAgent</ins> will not adversely affect the stability of the target application. It is, however, important to note that <ins>SpecialAgent</ins> bundles <ins>[Integrations](#63-integration)</ins> that are developed by 3rd parties and individual contributors. We strive to assert the stability of <ins>SpecialAgent</ins> with rigorous [integration tests][circleci], yet it is still possible that the code in a bundled <ins>[Integration](#63-integration)</ins> may result in an exception that is not properly handled, which could potentially destabilize a target application.
 
 ### 2.1 Installation
 
@@ -848,7 +848,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [java-okhttp]: https://github.com/opentracing-contrib/java-okhttp
 [opentracing-contrib]: https://github.com/opentracing-contrib/
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
-[travis]: https://travis-ci.org/opentracing-contrib/java-specialagent
+[circleci]: https://circleci.com/gh/opentracing-contrib/java-specialagent/tree/master
 
 [main-release]: https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.0/opentracing-specialagent-1.7.0.jar
 [main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.1-SNAPSHOT
