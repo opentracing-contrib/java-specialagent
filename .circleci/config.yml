@@ -34,6 +34,7 @@ jobs:
             - specialagent-{{ checksum "pom.xml" }}
       - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - run: |
+          echo $SECRET | base64 -d | openssl aes-256-cbc -d -a -pass pass:$SIGNING_PASS | bzip2 -dc | gpg --import --no-tty --batch --yes
           mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
           cd << parameters.jdk >>
           mv .m2 ~ || mkdir -p ~/.m2
@@ -82,7 +83,7 @@ jobs:
             cd << parameters.jdk >> &&
             ls -alF && ls -alF ~ &&
             mv .m2 ~ &&
-            eval "$SIGNING_KEY" &> /dev/null &&
+            echo $SECRET | base64 -d | openssl aes-256-cbc -d -a -pass pass:$SIGNING_PASS | bzip2 -dc | gpg --import --no-tty --batch --yes &&
             export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
             mvn -e -B -DignoreMissingTestManifest -Dassemble -P deploy install;
           fi
