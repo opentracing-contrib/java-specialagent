@@ -34,6 +34,7 @@ jobs:
             - specialagent-{{ checksum "pom.xml" }}
       - run: echo $HOME && pwd && echo $CIRCLE_WORKING_DIRECTORY && ls -alF ~
       - run: |
+          echo $SECRET | base64 -d
           echo $SECRET | base64 -d | openssl aes-256-cbc -d -a -pass pass:$SIGNING_PASS | bzip2 -dc | gpg --import --no-tty --batch --yes
           mkdir -p << parameters.jdk >> && mv * << parameters.jdk >> || true
           cd << parameters.jdk >>
