@@ -84,9 +84,10 @@ jobs:
           if [ "$CIRCLE_BRANCH" = "circleci" ]; then
             cd << parameters.jdk >> &&
             ls -alF && ls -alF ~ &&
-            mv .m2 ~ && echo $? &&
-            eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null && echo $? &&
-            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" && echo $? &&
+            mv .m2 ~ &&
+            eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null &&
+            export GPG_TTY=$(tty) &&
+            export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" &&
             mvn -e -B -DignoreMissingTestManifest -Dassemble -P deploy install;
           fi
 
