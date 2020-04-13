@@ -199,8 +199,9 @@ public class OpenTracingAdapter extends Adapter {
         if (tracerUrl == null)
           throw new IllegalStateException(EXPORTER_PROPERTY + "=" + exporterProperty + " did not resolve to a tracer JAR or name");
 
+        // FIXME: This looks like a hack...
         final String tracerResolverUrl = isoClassLoader.getResource("io/opentracing/contrib/tracerresolver/TracerResolver.class").toString();
-        Adapter.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!')))});
+        Adapter.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!')))}, null);
         Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
 
         // If the desired tracer is in its own JAR file, or if this is not
