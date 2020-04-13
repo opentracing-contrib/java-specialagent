@@ -508,6 +508,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.0.0-M4</version>
           <configuration>
+            <argLine>-Xmx1600m</argLine>
             <useSystemClassLoader>false</useSystemClassLoader>
             <systemPropertyVariables>
               <java.awt.headless>true</java.awt.headless>
