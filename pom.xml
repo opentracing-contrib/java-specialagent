@@ -46,6 +46,8 @@
     </developer>
   </developers>
   <properties>
+    <xms>64M</xms>
+    <xmx>2G</xmx>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
@@ -59,6 +61,15 @@
     <opentelemetry-bridge>otel</opentelemetry-bridge>
   </properties>
   <profiles>
+    <profile>
+      <id>jdk9+</id>
+      <activation>
+        <jdk>[9,]</jdk>
+      </activation>
+      <properties>
+        <argLine></argLine> <!-- Necessary for maven-surefire-plugin in lieu of no jacoco execution -->
+      </properties>
+    </profile>
     <profile>
       <id>tools.jar</id>
       <activation>
@@ -508,7 +519,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.0.0-M4</version>
           <configuration>
-            <argLine>-Xmx1600m</argLine>
+            <argLine>-Xms${xms} -Xmx${xmx} ${argLine}</argLine>
             <useSystemClassLoader>false</useSystemClassLoader>
             <systemPropertyVariables>
               <java.awt.headless>true</java.awt.headless>
