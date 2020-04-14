@@ -30,6 +30,7 @@ public class LettuceITest {
     TestUtil.retry(redisServer::start, 10);
 
     final RedisClient client = RedisClient.create("redis://localhost");
+    AssertionError assertionError = null;
     try (final StatefulRedisConnection<String,String> connection = client.connect()) {
       final RedisCommands<String,String> commands = connection.sync();
       if (!"OK".equals(commands.set("key", "value")))
@@ -38,7 +39,7 @@ public class LettuceITest {
       if (!"value".equals(commands.get("key")))
         throw new AssertionError("ERROR: failed to get key value");
 
-      int expectedSpanCount = 2;
+      int expectedSpanCount = 3;
 
       // Lettuce 5.1+ has new method 'xlen'
       final Method xlenMethod = getMethod(commands, "xlen");
@@ -65,10 +66,17 @@ public class LettuceITest {
       }
 
       TestUtil.checkSpan(new ComponentSpanCount("java-redis", expectedSpanCount));
+    } catch (AssertionError e) {
+        assertionError = e;
     }
     finally {
       client.shutdown();
       redisServer.stop();
+      if (assertionError != null) {
+        System.err.println("[ERROR] " + assertionError.getMessage());
+        assertionError.printStackTrace();
+        System.exit(-1);
+      }
       // RedisServer process doesn't exit on 'stop' therefore call System.exit
       System.exit(0);
     }

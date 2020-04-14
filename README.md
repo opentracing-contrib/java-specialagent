@@ -459,14 +459,14 @@ sa.integration.${INTEGRATION_NAME_PATTERN}.enable
 
 The value of `${INTEGRATION_NAME_PATTERN}` represents the name of the <ins>[Integration Rule](#64-integration-rule)</ins>, as specified in <ins>[Integrations](#41-integrations)</ins> ("Integration Rule" column). The `${INTEGRATION_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
-1. `lettuce:5.?`<br>Matches all <ins>Lettuce</ins> rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
+1. `dubbo:2.?`<br>Matches all <ins>Dubbo</ins> rules, including `dubbo:2.6`, and `dubbo:2.7`.
 1. `spring:web:*`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
 1. `spring:web*`<br>Matches all <ins>Spring Web</ins> and <ins>Spring WebMVC</ins> rules, including `spring:web:3`, `spring:web:5`, `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
 1. `spring:webmvc`<br>Matches all <ins>Spring WebMVC</ins> rules, including `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
 
 If the _version part_ of the `${INTEGRATION_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
 
-1. `lettuce:5`<br>Matches all <ins>Lettuce</ins> v5 rules, including `lettuce:5.0`, `lettuce:5.1`, and `lettuce:5.2`.
+1. `dubbo:2`<br>Matches all <ins>Dubbo</ins> v2 rules, including `dubbo:2.6`, and `dubbo:2.7`.
 1. `spring:web`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
 1. `spring`<br>Matches all <ins>Spring</ins> rules.
 1. `spring:w`<br>Does not match any rules.
@@ -599,9 +599,7 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | [Jedis Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-jedis) | [`jedis`][jedis] | 2.7.0 | 3.1.0 |
 | [Kafka Client](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:client`][kafka-client] | 1.1.0 | LATEST |
 | [Kafka Streams](https://github.com/opentracing-contrib/java-kafka-client) | [`kafka:streams`][kafka-streams] | 1.1.0 | LATEST |
-| [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | [`lettuce:5.0`][lettuce-5.0] | 5.0.0.RELEASE | 5.0.5.RELEASE |
-| | [`lettuce:5.1`][lettuce-5.1] | 5.1.0.RELEASE | 5.1.8.RELEASE |
-| | [`lettuce:5.2`][lettuce-5.2] | 5.2.0.RELEASE | LATEST |
+| [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | [`lettuce`][lettuce] | 5.0.0.RELEASE | LATEST |
 | [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | LATEST |
 | Mule 4 Artifact Module | [`mule:artifact-module:4`][mule-4-module-artifact] | 4.2.2 | LATEST |
 | Mule 4 Http Service | [`mule:http-service:4`][mule-4-http-service] | 1.4.7 | LATEST |
@@ -797,9 +795,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [jms]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/jms
 [kafka-client]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-client
 [kafka-streams]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/kafka-streams
-[lettuce-5.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.0
-[lettuce-5.1]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.1
-[lettuce-5.2]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce-5.2
+[lettuce]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
 [mule-4-core]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-core
 [mule-4-http-service]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-http-service
