@@ -121,7 +121,7 @@
                   <executable>sh</executable>
                   <arguments>
                     <argument>-c</argument>
-                    <argument>apt-get -y update &amp;&amp; apt-get -y install memcached</argument>
+                    <argument>sudo apt-get -y update &amp;&amp; sudo apt-get -y install memcached</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -135,7 +135,7 @@
                   <executable>sh</executable>
                   <arguments>
                     <argument>-c</argument>
-                    <argument>service memcached start</argument>
+                    <argument>sudo service memcached start</argument>
                   </arguments>
                 </configuration>
               </execution>
