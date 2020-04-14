@@ -139,6 +139,8 @@
                 <argument>-Dsa.log.level=${sa.log.level}</argument>
                 <argument>-Dsa.exporter=mock</argument>
                 <argument>%${sa.itest.args}%</argument>
+                <argument>-Xms${xms}</argument>
+                <argument>-Xmx${xmx}</argument>
                 <argument>-classpath</argument>
                 <classpath/>
               </arguments>
