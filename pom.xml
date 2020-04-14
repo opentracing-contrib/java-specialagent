@@ -62,6 +62,15 @@
   </properties>
   <profiles>
     <profile>
+      <id>jdk9+</id>
+      <activation>
+        <jdk>[9,]</jdk>
+      </activation>
+      <properties>
+        <argLine></argLine> <!-- Necessary for maven-surefire-plugin in lieu of no jacoco execution -->
+      </properties>
+    </profile>
+    <profile>
       <id>tools.jar</id>
       <activation>
         <jdk>(,9)</jdk>
