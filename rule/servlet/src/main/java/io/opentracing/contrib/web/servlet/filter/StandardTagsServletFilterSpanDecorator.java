@@ -34,7 +34,9 @@ public class StandardTagsServletFilterSpanDecorator implements ServletFilterSpan
     @Override
     public void onResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                            Span span) {
-      Tags.HTTP_STATUS.set(span, FilterAgentIntercept.getSatusCode(httpServletResponse));
+      final Integer statusCode = FilterAgentIntercept.getSatusCode(httpServletResponse);
+      if (statusCode != null)
+        Tags.HTTP_STATUS.set(span, statusCode);
     }
 
     @Override

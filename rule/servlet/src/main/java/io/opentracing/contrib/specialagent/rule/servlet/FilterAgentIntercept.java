@@ -16,6 +16,8 @@
 package io.opentracing.contrib.specialagent.rule.servlet;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.WeakHashMap;
 
 import javax.servlet.Filter;
@@ -25,12 +27,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
+import io.opentracing.contrib.web.servlet.filter.ClassUtil;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
@@ -66,14 +68,14 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
         return;
 
       if (logger.isLoggable(Level.FINER))
-        logger.finer(">> TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
+        logger.finer(">> TracingFilter.doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
 
       tracingFilter.doFilter(request, (ServletResponse)res, new FilterChain() {
         @Override
         public void doFilter(final ServletRequest request, final ServletResponse response) throws IOException, ServletException {
           filter.doFilter(request, response, (FilterChain)chain);
           if (logger.isLoggable(Level.FINER))
-            logger.finer("<< TracingFilter#doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(response) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
+            logger.finer("<< TracingFilter.doFilter(" + AgentRuleUtil.getSimpleNameId(request) + "," + AgentRuleUtil.getSimpleNameId(response) + "," + AgentRuleUtil.getSimpleNameId(context[0]) + ")");
         }
       });
     }
@@ -85,12 +87,32 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
     throw new EarlyReturnException();
   }
 
-  public static void setStatusCode(final Object thiz, final int status) {
-    servletResponseToStatus.put((ServletResponse)thiz, status);
+  public static void setStatusCode(final Object response, final int status) {
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("<> FilterAgentIntercept.setStatusCode(" + AgentRuleUtil.getSimpleNameId(response) + "," + status + ")");
+
+    servletResponseToStatus.put((ServletResponse)response, status);
   }
 
-  public static int getSatusCode(final ServletResponse response) {
-    final Integer statusCode = servletResponseToStatus.get(response);
-    return statusCode != null ? statusCode : HttpServletResponse.SC_OK;
+  public static Integer getSatusCode(final ServletResponse response) {
+    final Integer statusCode = servletResponseToStatus.remove(response);
+    if (logger.isLoggable(Level.FINER))
+      logger.finer("<> FilterAgentIntercept.getSatusCode(" + AgentRuleUtil.getSimpleNameId(response) + "): " + statusCode);
+
+    if (statusCode != null)
+      return statusCode;
+    
+    final Method getStatusMethod = ClassUtil.getMethod(response.getClass(), "getStatus");
+    try {
+      return getStatusMethod == null ? null : (Integer)getStatusMethod.invoke(response);
+    }
+    catch (final IllegalAccessException e) {
+      logger.log(Level.WARNING, e.getMessage(), e);
+    }
+    catch (final InvocationTargetException e) {
+      logger.log(Level.WARNING, e.getCause().getMessage(), e.getCause());
+    }
+    
+    return null;
   }
 }

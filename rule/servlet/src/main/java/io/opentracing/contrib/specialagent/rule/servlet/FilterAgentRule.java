@@ -44,9 +44,10 @@ public class FilterAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder
-            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("setStatus").and(takesArguments(1)).and(takesArguments(Integer.class))))
-            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("sendError").and(takesArguments(2)).and(takesArguments(Integer.class, String.class))))
-            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("sendError").and(takesArguments(1)).and(takesArguments(Integer.class))))
+            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("setStatus").and(takesArguments(1)).and(takesArguments(int.class))))
+            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("setStatus").and(takesArguments(2)).and(takesArguments(int.class, String.class))))
+            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("sendError").and(takesArguments(2)).and(takesArguments(int.class, String.class))))
+            .visit(advice(typeDescription).to(StatusAdvice.class).on(named("sendError").and(takesArguments(1)).and(takesArguments(int.class))))
             .visit(advice(typeDescription).to(ResetAdvice.class).on(named("reset")))
             .visit(advice(typeDescription).to(SendRedirectAdvice.class).on(named("sendRedirect").and(takesArguments(1)).and(takesArgument(0, String.class))));
         }})
