@@ -67,9 +67,7 @@
         <module>grpc</module>
         <module>jedis</module>
         <module>apache-httpclient</module>
-        <module>lettuce-5.0</module>
-        <module>lettuce-5.1</module>
-        <module>lettuce-5.2</module>
+        <module>lettuce</module>
         <module>mule-4-core</module>
         <module>mule-4-http-service</module>
         <module>mule-4-module-artifact</module>
