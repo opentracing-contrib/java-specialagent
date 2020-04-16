@@ -25,33 +25,15 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.utility.JavaModule;
 
-public class CxfWsAgentRule extends AgentRule {
+public class CxfWsServerAgentRule extends AgentRule {
   @Override
   public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
-    return builder.type(hasSuperType(named("org.apache.cxf.frontend.ClientFactoryBean")))
-      .transform(new Transformer() {
-        @Override
-        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-          return builder.visit(advice(typeDescription).to(CxfWsClientAdvice.class).on(named("create")));
-        }});
-  }
-
-  @Override
-  public AgentBuilder buildAgentChainedGlobal2(final AgentBuilder builder) {
     return builder.type(hasSuperType(named("org.apache.cxf.frontend.ServerFactoryBean")))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(advice(typeDescription).to(CxfWsServerAdvice.class).on(named("create")));
         }});
-  }
-
-  public static class CxfWsClientAdvice {
-    @Advice.OnMethodEnter
-    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.This Object thiz) {
-      if (isAllowed(className, origin))
-        CxfAgentIntercept.addClientTracingFeature(thiz);
-    }
   }
 
   public static class CxfWsServerAdvice {
