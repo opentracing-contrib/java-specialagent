@@ -15,6 +15,12 @@
 
 package io.opentracing.contrib.specialagent.rule.lettuce;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+
 import io.lettuce.core.ConnectionFuture;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.protocol.AsyncCommand;
@@ -25,35 +31,35 @@ import io.opentracing.contrib.specialagent.LocalSpanContext;
 import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class LettuceAgentIntercept {
   static final String COMPONENT_NAME = "java-redis";
   static final String DB_TYPE = "redis";
-  private static final String[] NON_INSTRUMENTING_COMMAND_WORDS = new String[] {"SHUTDOWN", "DEBUG", "OOM", "SEGFAULT"};
-  public static final Set<String> nonInstrumentingCommands = new HashSet<>(Arrays.asList(NON_INSTRUMENTING_COMMAND_WORDS));
 
-  public static void dispatchStart(Object arg) {
-    final RedisCommand command = (RedisCommand) arg;
+  public static final Set<String> nonInstrumentingCommands = new HashSet<>();
+
+  static {
+    final String[] NON_INSTRUMENTING_COMMAND_WORDS = {"SHUTDOWN", "DEBUG", "OOM", "SEGFAULT"};
+    Collections.addAll(nonInstrumentingCommands, NON_INSTRUMENTING_COMMAND_WORDS);
+  }
+
+  public static void dispatchStart(final Object arg) {
+    final RedisCommand command = (RedisCommand)arg;
     final Tracer tracer = GlobalTracer.get();
 
     final Span span = tracer.buildSpan(getCommandName(command))
-        .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.DB_TYPE.getKey(), DB_TYPE)
-        .start();
+      .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.DB_TYPE.getKey(), DB_TYPE)
+      .start();
 
     LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
-  public static void dispatchEnd(Object arg, Object returned, Throwable thrown) {
+  public static void dispatchEnd(final Object command, final Object returned, final Throwable thrown) {
     final LocalSpanContext context = LocalSpanContext.get();
     if (context == null || context.decrementAndGet() != 0)
       return;
@@ -66,30 +72,30 @@ public class LettuceAgentIntercept {
 
     context.closeScope();
 
-    final RedisCommand command = (RedisCommand) arg;
-    final AsyncCommand<?, ?, ?> asyncCommand = (AsyncCommand<?, ?, ?>) returned;
-
     final Span span = context.getSpan();
-    if (!doFinishSpanEarly(command)) {
-      asyncCommand.handleAsync(new BiFunction<Object, Throwable, Object>() {
+    if (doFinishSpanEarly((RedisCommand)command)) {
+      span.finish();
+    }
+    else {
+      ((AsyncCommand<?,?,?>)returned).handleAsync(new BiFunction<Object,Throwable,Object>() {
         @Override
-        public Object apply(Object o, Throwable throwable) {
-          if(throwable != null)
+        public Object apply(final Object o, final Throwable throwable) {
+          if (throwable != null)
             OpenTracingApiUtil.setErrorTag(span, throwable);
+
           span.finish();
           return null;
         }
       });
-    } else {
-      span.finish();
     }
+
     context.closeScope();
   }
 
   public static String getCommandName(final RedisCommand command) {
-    if (command != null && command.getType() != null) {
+    if (command != null && command.getType() != null)
       return command.getType().name().trim();
-    }
+
     return "Redis Command";
   }
 
@@ -98,31 +104,25 @@ public class LettuceAgentIntercept {
     return nonInstrumentingCommands.contains(commandName);
   }
 
-  public static Object createMonoEnd(Object arg, Object returned) {
-    final RedisCommand command = ((Supplier<RedisCommand>) arg).get();
+  public static Object createMonoEnd(final Object supplier, final Object returned) {
+    final RedisCommand command = ((Supplier<RedisCommand>)supplier).get();
 
     final boolean finishSpanOnClose = doFinishSpanEarly(command);
     final LettuceMonoDualConsumer lettuceMonoDualConsumer = new LettuceMonoDualConsumer(command, finishSpanOnClose);
 
-    final Mono<?> publisher = ((Mono<?>) returned).doOnSubscribe(lettuceMonoDualConsumer);
+    final Mono<?> publisher = ((Mono<?>)returned).doOnSubscribe(lettuceMonoDualConsumer);
     // register the call back to close the span only if necessary
-    if (!finishSpanOnClose) {
-      return publisher.doOnSuccessOrError(lettuceMonoDualConsumer);
-    }
-    return publisher;
+    return finishSpanOnClose ? publisher : publisher.doOnSuccessOrError(lettuceMonoDualConsumer);
   }
 
-  public static Object createFluxEnd(Object arg, Object returned) {
-    final RedisCommand command = ((Supplier<RedisCommand>) arg).get();
+  public static Object createFluxEnd(final Object supplier, final Object returned) {
+    final RedisCommand command = ((Supplier<RedisCommand>)supplier).get();
     final boolean finishSpanOnClose = doFinishSpanEarly(command);
 
     final LettuceFluxTerminationRunnable handler = new LettuceFluxTerminationRunnable(command, finishSpanOnClose);
-    final Flux<?> publisher = ((Flux<?>) returned).doOnSubscribe(handler.getOnSubscribeConsumer());
+    final Flux<?> publisher = ((Flux<?>)returned).doOnSubscribe(handler.getOnSubscribeConsumer());
 
-    if (!finishSpanOnClose) {
-      return publisher.doOnEach(handler).doOnCancel(handler);
-    }
-    return publisher;
+    return finishSpanOnClose ? publisher : publisher.doOnEach(handler).doOnCancel(handler);
   }
 
   public static void connectStart(Object arg) {
@@ -130,18 +130,18 @@ public class LettuceAgentIntercept {
     final Tracer tracer = GlobalTracer.get();
 
     final Span span = tracer.buildSpan("CONNECT")
-        .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.DB_TYPE.getKey(), DB_TYPE)
-        .withTag(Tags.PEER_HOSTNAME, redisURI.getHost())
-        .withTag(Tags.PEER_PORT, redisURI.getPort())
-        .withTag("db.redis.dbIndex", redisURI.getDatabase())
-        .start();
+      .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.DB_TYPE.getKey(), DB_TYPE)
+      .withTag(Tags.PEER_HOSTNAME, redisURI.getHost())
+      .withTag(Tags.PEER_PORT, redisURI.getPort())
+      .withTag("db.redis.dbIndex", redisURI.getDatabase())
+      .start();
 
     LocalSpanContext.set(span, tracer.activateSpan(span));
   }
 
-  public static void connectEnd(Object returned, Throwable thrown) {
+  public static void connectEnd(final Object returned, final Throwable thrown) {
     final LocalSpanContext context = LocalSpanContext.get();
     if (context == null || context.decrementAndGet() != 0)
       return;
@@ -151,18 +151,19 @@ public class LettuceAgentIntercept {
       context.closeAndFinish();
       return;
     }
-    final ConnectionFuture<?> connectionFuture = (ConnectionFuture<?>) returned;
+
     final Span span = context.getSpan();
-    connectionFuture.handleAsync(new BiFunction<Object, Throwable, Object>() {
+    ((ConnectionFuture<?>)returned).handleAsync(new BiFunction<Object,Throwable,Object>() {
       @Override
-      public Object apply(Object o, Throwable throwable) {
-        if(throwable != null)
+      public Object apply(final Object o, final Throwable throwable) {
+        if (throwable != null)
           OpenTracingApiUtil.setErrorTag(span, throwable);
+
         span.finish();
         return null;
       }
     });
-    context.closeScope();
 
+    context.closeScope();
   }
 }

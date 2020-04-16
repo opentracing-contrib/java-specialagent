@@ -15,21 +15,22 @@
 
 package io.opentracing.contrib.specialagent.rule.lettuce;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import io.lettuce.core.protocol.RedisCommand;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 @SuppressWarnings("rawtypes")
-public class LettuceMonoDualConsumer<R, T, U extends Throwable> implements Consumer<R>, BiConsumer<T, Throwable> {
+public class LettuceMonoDualConsumer<R,T,U extends Throwable> implements Consumer<R>, BiConsumer<T,Throwable> {
   private static final Logger logger = Logger.getLogger(LettuceMonoDualConsumer.class);
-  private Span span = null;
   private final RedisCommand command;
   private final boolean finishSpanOnClose;
+  private Span span;
 
   public LettuceMonoDualConsumer(final RedisCommand command, final boolean finishSpanOnClose) {
     this.command = command;
@@ -39,23 +40,25 @@ public class LettuceMonoDualConsumer<R, T, U extends Throwable> implements Consu
   @Override
   public void accept(final R r) {
     span = GlobalTracer.get().buildSpan(LettuceAgentIntercept.getCommandName(command))
-        .withTag(Tags.COMPONENT.getKey(), LettuceAgentIntercept.COMPONENT_NAME)
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-        .withTag(Tags.DB_TYPE.getKey(), LettuceAgentIntercept.DB_TYPE)
-        .start();
-    if (finishSpanOnClose) {
+      .withTag(Tags.COMPONENT.getKey(), LettuceAgentIntercept.COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+      .withTag(Tags.DB_TYPE.getKey(), LettuceAgentIntercept.DB_TYPE)
+      .start();
+
+    if (finishSpanOnClose)
       span.finish();
-    }
   }
 
   @Override
   public void accept(final T t, final Throwable throwable) {
-    if (span != null) {
-      if (throwable != null)
-        OpenTracingApiUtil.setErrorTag(span, throwable);
-      span.finish();
-    } else {
-      logger.warning("Failed to finish span, BiConsumer cannot find span because it probably wasn't started.");
+    if (span == null) {
+      logger.warning("Failed to finish span, BiConsumer cannot find span because it probably wasn't started");
+      return;
     }
+
+    if (throwable != null)
+      OpenTracingApiUtil.setErrorTag(span, throwable);
+
+    span.finish();
   }
 }

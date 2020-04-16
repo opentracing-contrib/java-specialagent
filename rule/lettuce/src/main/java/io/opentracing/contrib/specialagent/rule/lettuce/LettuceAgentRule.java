@@ -58,13 +58,13 @@ public class LettuceAgentRule extends AgentRule {
 
   public static class Connect {
     @Advice.OnMethodEnter
-    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 1, typing = Typing.DYNAMIC) Object arg) {
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 1) Object arg) {
       if (isAllowed(className, origin))
         LettuceAgentIntercept.connectStart(arg);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return(typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
       if (isAllowed(className, origin))
         LettuceAgentIntercept.connectEnd(returned, thrown);
     }
@@ -72,13 +72,13 @@ public class LettuceAgentRule extends AgentRule {
 
   public static class AsyncCommands {
     @Advice.OnMethodEnter
-    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object arg) {
+    public static void enter(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg) {
       if (isAllowed(className, origin))
         LettuceAgentIntercept.dispatchStart(arg);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
-    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object arg, final @Advice.Return(typing = Typing.DYNAMIC) Object returned, final @Advice.Thrown Throwable thrown) {
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg, final @Advice.Return Object returned, final @Advice.Thrown Throwable thrown) {
       if (isAllowed(className, origin))
        LettuceAgentIntercept.dispatchEnd(arg, returned, thrown);
     }
@@ -86,7 +86,7 @@ public class LettuceAgentRule extends AgentRule {
 
   public static class ReactiveCommandsMono {
     @Advice.OnMethodExit
-    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object arg, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isAllowed(className, origin))
         returned = LettuceAgentIntercept.createMonoEnd(arg, returned);
     }
@@ -94,7 +94,7 @@ public class LettuceAgentRule extends AgentRule {
 
   public static class ReactiveCommandsFlux {
     @Advice.OnMethodExit
-    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0, typing = Typing.DYNAMIC) Object arg, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
+    public static void exit(final @ClassName String className, final @Advice.Origin String origin, final @Advice.Argument(value = 0) Object arg, @Advice.Return(readOnly = false, typing = Typing.DYNAMIC) Object returned) {
       if (isAllowed(className, origin))
         returned = LettuceAgentIntercept.createFluxEnd(arg, returned);
     }

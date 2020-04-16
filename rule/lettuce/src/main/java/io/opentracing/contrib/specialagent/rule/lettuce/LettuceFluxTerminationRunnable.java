@@ -15,23 +15,25 @@
 
 package io.opentracing.contrib.specialagent.rule.lettuce;
 
+import java.util.function.Consumer;
+
+import org.reactivestreams.Subscription;
+
 import io.lettuce.core.protocol.RedisCommand;
 import io.opentracing.Span;
 import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.OpenTracingApiUtil;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.function.Consumer;
-import org.reactivestreams.Subscription;
 import reactor.core.publisher.Signal;
 import reactor.core.publisher.SignalType;
 
 @SuppressWarnings("rawtypes")
 public class LettuceFluxTerminationRunnable implements Consumer<Signal>, Runnable {
   private static final Logger logger = Logger.getLogger(LettuceFluxTerminationRunnable.class);
-  private Span span = null;
-  private int numResults = 0;
   private final FluxOnSubscribeConsumer onSubscribeConsumer;
+  private Span span;
+  private int numResults;
 
   public LettuceFluxTerminationRunnable(final RedisCommand command, final boolean finishSpanOnClose) {
     onSubscribeConsumer = new FluxOnSubscribeConsumer(this, command, finishSpanOnClose);
@@ -42,35 +44,39 @@ public class LettuceFluxTerminationRunnable implements Consumer<Signal>, Runnabl
   }
 
   private void finishSpan(final boolean isCommandCancelled, final Throwable throwable) {
-    if (span != null) {
-      span.setTag("db.command.results.count", numResults);
-      if (isCommandCancelled) {
-        span.setTag("db.command.cancelled", true);
-      }
-      if (throwable != null)
-        OpenTracingApiUtil.setErrorTag(span, throwable);
-      span.finish();
-    } else {
+    if (span == null) {
       logger.warning("Failed to finish span, LettuceFluxTerminationRunnable cannot find span because it probably wasn't started.");
+      return;
     }
+
+    span.setTag("db.command.results.count", numResults);
+    if (isCommandCancelled)
+      span.setTag("db.command.cancelled", true);
+
+    if (throwable != null)
+      OpenTracingApiUtil.setErrorTag(span, throwable);
+
+    span.finish();
   }
 
   @Override
   public void accept(final Signal signal) {
     if (SignalType.ON_COMPLETE.equals(signal.getType()) || SignalType.ON_ERROR.equals(signal.getType())) {
       finishSpan(false, signal.getThrowable());
-    } else if (SignalType.ON_NEXT.equals(signal.getType())) {
+    }
+    else if (SignalType.ON_NEXT.equals(signal.getType())) {
       ++numResults;
     }
   }
 
   @Override
   public void run() {
-    if (span != null) {
-      finishSpan(true, null);
-    } else {
+    if (span == null) {
       logger.warning("Failed to finish span to indicate cancellation, LettuceFluxTerminationRunnable cannot find this.span because it probably wasn't started.");
+      return;
     }
+
+    finishSpan(true, null);
   }
 
   public static class FluxOnSubscribeConsumer implements Consumer<Subscription> {
@@ -87,14 +93,14 @@ public class LettuceFluxTerminationRunnable implements Consumer<Signal>, Runnabl
     @Override
     public void accept(final Subscription subscription) {
       final Span span = GlobalTracer.get().buildSpan(LettuceAgentIntercept.getCommandName(command))
-          .withTag(Tags.COMPONENT.getKey(), LettuceAgentIntercept.COMPONENT_NAME)
-          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-          .withTag(Tags.DB_TYPE.getKey(), LettuceAgentIntercept.DB_TYPE)
-          .start();
+        .withTag(Tags.COMPONENT.getKey(), LettuceAgentIntercept.COMPONENT_NAME)
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+        .withTag(Tags.DB_TYPE.getKey(), LettuceAgentIntercept.DB_TYPE)
+        .start();
+
       owner.span = span;
-      if (finishSpanOnClose) {
+      if (finishSpanOnClose)
         span.finish();
-      }
     }
   }
 }

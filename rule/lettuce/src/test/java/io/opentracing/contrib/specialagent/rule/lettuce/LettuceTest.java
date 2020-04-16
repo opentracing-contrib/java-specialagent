@@ -19,11 +19,10 @@ import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
 import static org.junit.Assert.*;
 
-import io.lettuce.core.api.reactive.RedisReactiveCommands;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import java.util.function.Consumer;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,6 +34,7 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.reactive.RedisReactiveCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.pubsub.RedisPubSubAdapter;
@@ -116,14 +116,14 @@ public class LettuceTest {
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(3, spans.size());
   }
-  
+
   @Test
   public void testReactiveMono(MockTracer tracer) {
     try (final StatefulRedisConnection<String,String> connection = client.connect()) {
       final RedisReactiveCommands<String, String> commands = connection.reactive();
       commands.set("key", "value").subscribe(new Consumer<String>() {
         @Override
-        public void accept(String res) {
+        public void accept(final String res) {
           assertEquals("OK", res);
         }
       });
