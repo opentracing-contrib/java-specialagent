@@ -34,9 +34,7 @@ public class StandardTagsServletFilterSpanDecorator implements ServletFilterSpan
     @Override
     public void onResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                            Span span) {
-      final Integer statusCode = FilterAgentIntercept.getSatusCode(httpServletResponse);
-      if (statusCode != null)
-        Tags.HTTP_STATUS.set(span, statusCode);
+      Tags.HTTP_STATUS.set(span, FilterAgentIntercept.getSatusCode(httpServletResponse));
     }
 
     @Override
@@ -60,7 +58,7 @@ public class StandardTagsServletFilterSpanDecorator implements ServletFilterSpan
       span.log(timeoutLogs);
     }
 
-    private Map<String, String> logsForException(Throwable throwable) {
+    private static Map<String, String> logsForException(Throwable throwable) {
       Map<String, String> errorLog = new HashMap<>(3);
       errorLog.put("event", Tags.ERROR.getKey());
 

@@ -94,14 +94,14 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
     servletResponseToStatus.put((ServletResponse)response, status);
   }
 
-  public static Integer getSatusCode(final ServletResponse response) {
+  public static int getSatusCode(final ServletResponse response) {
     final Integer statusCode = servletResponseToStatus.remove(response);
     if (logger.isLoggable(Level.FINER))
       logger.finer("<> FilterAgentIntercept.getSatusCode(" + AgentRuleUtil.getSimpleNameId(response) + "): " + statusCode);
 
     if (statusCode != null)
       return statusCode;
-    
+
     final Method getStatusMethod = ClassUtil.getMethod(response.getClass(), "getStatus");
     try {
       return getStatusMethod == null ? null : (Integer)getStatusMethod.invoke(response);
@@ -112,7 +112,7 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
     catch (final InvocationTargetException e) {
       logger.log(Level.WARNING, e.getCause().getMessage(), e.getCause());
     }
-    
-    return null;
+
+    return 200;
   }
 }
