@@ -40,7 +40,7 @@ public class JdbcAgentIntercept {
   }
 
   public static Connection connect(final String url, final Properties info) throws SQLException {
-    if (AgentRuleUtil.callerEquals(2, TracingDriver.class.getName() + ".connect"))
+    if (AgentRuleUtil.callerEquals(2, 10, TracingDriver.class.getName() + ".connect"))
       return null;
 
     if (tracingDriver.get() == null) {
