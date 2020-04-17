@@ -41,7 +41,7 @@ jobs:
             mv .m2 ~ || mkdir -p ~/.m2
             rm -rf ~/.m2/repository/io/opentracing/contrib/specialagent && cp settings.xml ~/.m2/settings.xml
             export MAVEN_OPTS="-Xms64M -Xmx1600M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-            java -XX:+PrintFlagsFinal -version | grep -iE 'HeapSize|PermSize|ThreadStackSize'
+            mvn -version
             mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
             if [ "$CIRCLE_BRANCH" = "master" ] &&
                [ "$CIRCLE_PULL_REQUEST" = "" ] &&
@@ -75,7 +75,6 @@ jobs:
             cd << parameters.jdk >>
             mv .m2 ~
             export MAVEN_OPTS="-Xms64M -Xmx1600M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-            java -XX:+PrintFlagsFinal -version | grep -iE 'HeapSize|PermSize|ThreadStackSize'
             circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd integration-test"}' | circleci tests split > /tmp/tests-to-run
             bash -c "$(cat /tmp/tests-to-run)"
   deploy:
@@ -94,7 +93,6 @@ jobs:
               eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null
               export GPG_TTY=$(tty)
               export MAVEN_OPTS="-Xms64M -Xmx1600M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-              java -XX:+PrintFlagsFinal -version | grep -iE 'HeapSize|PermSize|ThreadStackSize'
               mvn -e -B -Dassemble -P deploy deploy
             fi
 
