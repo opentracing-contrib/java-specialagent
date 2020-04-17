@@ -52,6 +52,7 @@ public class HttpClientAgentIntercept {
     final Span span = tracer
       .buildSpan(request.getRequestLine().getMethod())
       .withTag(Tags.COMPONENT, COMPONENT_NAME)
+      .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
       .withTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod())
       .withTag(Tags.HTTP_URL, request.getRequestLine().getUri()).start();
 
