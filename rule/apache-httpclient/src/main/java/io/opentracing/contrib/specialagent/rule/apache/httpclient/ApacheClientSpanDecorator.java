@@ -15,16 +15,15 @@
 
 package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
-import java.net.URI;
-import java.util.HashMap;
-
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
-import io.opentracing.Span;
-import io.opentracing.tag.Tags;
+import java.net.URI;
+import java.util.HashMap;
 
 public interface ApacheClientSpanDecorator {
   void onRequest(HttpRequest request, HttpHost httpHost, Span span);
@@ -37,6 +36,7 @@ public interface ApacheClientSpanDecorator {
     @Override
     public void onRequest(HttpRequest request, HttpHost httpHost, Span span) {
       Tags.COMPONENT.set(span, COMPONENT_NAME);
+      Tags.SPAN_KIND.set(span, Tags.SPAN_KIND_CLIENT);
       Tags.HTTP_METHOD.set(span, request.getRequestLine().getMethod());
       Tags.HTTP_URL.set(span, request.getRequestLine().getUri());
 

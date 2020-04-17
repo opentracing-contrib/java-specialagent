@@ -15,10 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
+import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.mock.MockSpan;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -31,10 +31,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.opentracing.contrib.specialagent.AgentRunner;
-import io.opentracing.mock.MockSpan;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.tag.Tags;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(AgentRunner.class)
 public class HttpClientTest {
@@ -81,6 +80,7 @@ public class HttpClientTest {
       assertEquals("localhost", span.tags().get(Tags.PEER_HOSTNAME.getKey()));
       assertEquals(12345, span.tags().get(Tags.PEER_PORT.getKey()));
       assertEquals(MockSpanDecorator.MOCK_TAG_VALUE, span.tags().get(MockSpanDecorator.MOCK_TAG_KEY));
+      assertEquals(Tags.SPAN_KIND_CLIENT, Tags.SPAN_KIND.getKey());
     }
   }
 }
