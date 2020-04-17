@@ -15,15 +15,16 @@
 
 package io.opentracing.contrib.specialagent.rule.apache.httpclient;
 
-import io.opentracing.Span;
-import io.opentracing.tag.Tags;
+import java.net.URI;
+import java.util.HashMap;
+
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
-import java.net.URI;
-import java.util.HashMap;
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 
 public interface ApacheClientSpanDecorator {
   void onRequest(HttpRequest request, HttpHost httpHost, Span span);
@@ -34,11 +35,11 @@ public interface ApacheClientSpanDecorator {
     static final String COMPONENT_NAME = "java-httpclient";
 
     @Override
-    public void onRequest(HttpRequest request, HttpHost httpHost, Span span) {
-      Tags.COMPONENT.set(span, COMPONENT_NAME);
-      Tags.SPAN_KIND.set(span, Tags.SPAN_KIND_CLIENT);
-      Tags.HTTP_METHOD.set(span, request.getRequestLine().getMethod());
-      Tags.HTTP_URL.set(span, request.getRequestLine().getUri());
+    public void onRequest(final HttpRequest request, final HttpHost httpHost, final Span span) {
+      span.setTag(Tags.COMPONENT, COMPONENT_NAME);
+      span.setTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CLIENT);
+      span.setTag(Tags.HTTP_METHOD, request.getRequestLine().getMethod());
+      span.setTag(Tags.HTTP_URL, request.getRequestLine().getUri());
 
       if (request instanceof HttpUriRequest) {
         final URI uri = ((HttpUriRequest)request).getURI();
@@ -59,7 +60,7 @@ public interface ApacheClientSpanDecorator {
       final HashMap<String,Object> errorLogs = new HashMap<>(2);
       errorLogs.put("event", Tags.ERROR.getKey());
       errorLogs.put("error.object", thrown);
-      Tags.ERROR.set(span, Boolean.TRUE);
+      span.setTag(Tags.ERROR, Boolean.TRUE);
       span.log(errorLogs);
     }
 
