@@ -19,8 +19,11 @@ common: &common
     jdk:
       type: enum
       enum: ["8", "11"]
+    image:
+      type: enum
+      enum: ["jdk8:0.1.1", "openjdk:11-jdk-stretch"]
   docker:
-    - image: circleci/openjdk:<< parameters.jdk >>-jdk-stretch
+    - image: circleci/<< parameters.image >>
 
 jobs:
   install:
@@ -45,7 +48,7 @@ jobs:
             mvn -B -P test --fail-at-end -Dsilent dependency:go-offline || true
             if [ "$CIRCLE_BRANCH" = "master" ] &&
                [ "$CIRCLE_PULL_REQUEST" = "" ] &&
-               [ "<< parameters.jdk >>" = "8" ]; then
+               [ "<< parameters.jdk >>" = "jdk8:0.1.1" ]; then
               echo "Installing with reports"
               mvn -e -B -P report install
               mvn -e -B -DrepoToken=$REPO_TOKEN coveralls:report
@@ -103,21 +106,27 @@ workflows:
       - install:
           name: install-jdk8
           jdk: "8"
+          image: "jdk8:0.1.1"
       - install:
           name: install-jdk11
           jdk: "11"
+          image: "openjdk:11-jdk-stretch"
       - test:
           name: test-jdk8
           jdk: "8"
+          image: "jdk8:0.1.1"
           requires:
             - install-jdk8
       - test:
           name: test-jdk11
           jdk: "11"
+          image: "openjdk:11-jdk-stretch"
           requires:
             - install-jdk11
       - deploy:
+          name: deploy
           jdk: "8"
+          image: "jdk8:0.1.1"
           requires:
             - test-jdk8
             - test-jdk11
