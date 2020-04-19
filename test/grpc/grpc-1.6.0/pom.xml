@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.grpc</groupId>
     <artifactId>grpc</artifactId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.7.1</version>
   </parent>
   <artifactId>grpc-1.6.0</artifactId>
   <name>SpecialAgent Test for gRPC 1.6.0</name>

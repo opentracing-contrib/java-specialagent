@@ -2,17 +2,17 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
-#### NOTE: As of v1.7.0, SpecialAgent is starting its transition to the [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java) ecosystem...
+#### NOTE: As of v1.7.1, SpecialAgent is starting its transition to the [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java) ecosystem...
 
 <sub>:warning: **SpecialAgent's <ins>terminology</ins> has changed... :warning:**</sub>
-| <samp>[,1.7.0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
+| <samp>[,1.7.1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.1,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
 |:-|:-:|:-|
 | <ins>Instrumentation Plugin</ins> | :arrow_right: | <ins>[Integration](#63-integration)</ins> |
 | <ins>Instrumentation Rule</ins> | :arrow_right: | <ins>[Integration Rule](#64-integration-rule)</ins> |
 | <ins>Tracer Plugin</ins> | :arrow_right: | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
 
 <sub>:warning: **SpecialAgent's <ins>config property keys</ins> have changed... :warning:**</sub>
-| <samp>[,1.7.0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
+| <samp>[,1.7.1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.1,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
 |:-|:-:|:-|
 | `-Dsa.tracer` | :arrow_right: | [`-Dsa.exporter`](#36-including-custom-integration-rules) |
 | `-Dsa.tracer.plugin.` | :arrow_right: | [`-Dsa.exporter.`](#343-disabling-agentrules-of-an-integration-rule) |
@@ -95,7 +95,7 @@ The <ins>SpecialAgent</ins> is stable -- any exception that occurs during attach
 
 ### 2.1 Installation
 
-The Maven build of the <ins>SpecialAgent</ins> project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by downloading directly from [Maven's Central Repository](https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.0/), or by cloning this repository and following the [Development Instructions](#212-for-development).
+The Maven build of the <ins>SpecialAgent</ins> project generates 2 artifacts: **main** and **test**. These artifacts can be obtained by downloading directly from [Maven's Central Repository](https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.1/), or by cloning this repository and following the [Development Instructions](#212-for-development).
 
 #### 2.1.1 In Application
 
@@ -107,31 +107,31 @@ The artifact JAR can be provided to an application with the `-javaagent:${SPECIA
 
 ##### 2.1.1.1 Stable
 
-The latest stable release is: [1.7.0][main-release]
+The latest stable release is: [1.7.1][main-release]
 
 ```bash
-wget -O opentracing-specialagent-1.7.0.jar "https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.0/opentracing-specialagent-1.7.0.jar"
+wget -O opentracing-specialagent-1.7.1.jar "https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.1/opentracing-specialagent-1.7.1.jar"
 ```
 
 ##### 2.1.1.2 Development
 
-The latest development release is: [1.7.1-SNAPSHOT][main-snapshot]
+The latest development release is: [1.7.2-SNAPSHOT][main-snapshot]
 
 ```bash
-wget -O opentracing-specialagent-1.7.1-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
+wget -O opentracing-specialagent-1.7.2-SNAPSHOT.jar "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.opentracing.contrib.specialagent&a=opentracing-specialagent&v=LATEST"
 ```
 
 **Note**: Sometimes the web service call (in the line above) to retrieve the latest SNAPSHOT build fails to deliver the correct download. In order to work around this issue, please consider using the following command (for Linux and Mac OS):
 
 ```bash
-wget -O opentracing-specialagent-1.7.1-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.1-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
+wget -O opentracing-specialagent-1.7.2-SNAPSHOT.jar $(curl -s https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.2-SNAPSHOT/ | grep '".*\d\.jar"' | tail -1 | awk -F\" '{print $2}')
 ```
 
 #### 2.1.2 For Development
 
 The <ins>SpecialAgent</ins> is built in 2 passes utilizing different profiles:
 
-1. The `default` profile is used for development of <ins>[Integration Rules](#64-integration-rule)</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into the main JAR (i.e. `opentracing-specialagent-1.7.1-SNAPSHOT.jar`).
+1. The `default` profile is used for development of <ins>[Integration Rules](#64-integration-rule)</ins>. It builds and runs tests for each rule, but _does not bundle the rules_ into the main JAR (i.e. `opentracing-specialagent-1.7.2-SNAPSHOT.jar`).
 
    To run this profile:
    ```bash
@@ -140,9 +140,9 @@ The <ins>SpecialAgent</ins> is built in 2 passes utilizing different profiles:
 
    _**Note**: If you skip tests, the `assemble` profile will display an error stating that tests have not been run. See [Convenient One-Liners](#convenient-one-liners) for quick ways to build and package <ins>SpecialAgent</ins>_.
 
-1. The `assemble` profile is used to bundle the <ins>[Integrations](#64-integration-rule)</ins> into the main JAR (i.e. `opentracing-specialagent-1.7.1-SNAPSHOT.jar`). It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the main JAR (i.e. `opentracing-specialagent-1.7.1-SNAPSHOT.jar`) will contain the built rules inside it.
+1. The `assemble` profile is used to bundle the <ins>[Integrations](#64-integration-rule)</ins> into the main JAR (i.e. `opentracing-specialagent-1.7.2-SNAPSHOT.jar`). It builds each rule, but _does not run tests._ Once the build with the `assemble` profile is finished, the main JAR (i.e. `opentracing-specialagent-1.7.2-SNAPSHOT.jar`) will contain the built rules inside it.
 
-   _**Note**: If you do not run this step, the `opentracing-specialagent-1.7.1-SNAPSHOT.jar` from the previous step will not contain any <ins>[Integrations](#63-integration)</ins>!_
+   _**Note**: If you do not run this step, the `opentracing-specialagent-1.7.2-SNAPSHOT.jar` from the previous step will not contain any <ins>[Integrations](#63-integration)</ins>!_
 
    _**Note**: It is important to **not** run Maven's `clean` lifecycle when executing the `assemble` profile, otherwise the <ins>[Integrations](#63-integration)</ins> built in with the `default` profile will be cleared._
 
@@ -205,7 +205,7 @@ For development of <ins>[Integration Rules](#64-integration-rule)</ins>, import 
 
 ```xml
 <properties>
-  <special-agent-version>1.7.0</special-agent-version> <!-- 1.7.1-SNAPSHOT -->
+  <special-agent-version>1.7.1</special-agent-version> <!-- 1.7.2-SNAPSHOT -->
 </properties>
 ...
 <dependency>
@@ -293,7 +293,7 @@ With <ins>[Static Attach](#221-static-attach)</ins>, the application is executed
 Statically attaching to a Java application involves the use of the `-javaagent` vm argument at the time of startup of the target Java application. The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.7.0.jar -jar MyApp.jar
+java -javaagent:opentracing-specialagent-1.7.1.jar -jar MyApp.jar
 ```
 
 This command statically attaches <ins>SpecialAgent</ins> to the application in `MyApp.jar`.
@@ -312,12 +312,12 @@ Dynamically attaching to a Java application involves the use of a running applic
 1. To attach to the target `PID`:
    * For jdk1.8
      ```bash
-     java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.7.0.jar ${PID}
+     java -Xbootclasspath/a:$JAVA_HOME/lib/tools.jar -jar opentracing-specialagent-1.7.1.jar ${PID}
      ```
 
    * For jdk9+
      ```bash
-     java -jar opentracing-specialagent-1.7.0.jar ${PID}
+     java -jar opentracing-specialagent-1.7.1.jar ${PID}
      ```
 
 **Note:** Properties that are provided in the command to dynamically attach will be absorbed by the target application. This applies to properties specific to <ins>SpecialAgent</ins>, such as `-Dsa.log.level=FINER`, as well as other properties such as `-Djava.util.logging.config.file=out.log`.
@@ -344,7 +344,7 @@ If the above supported application environment is detected, <ins>Static Deferred
 The following command can be used as an example:
 
 ```bash
-java -javaagent:opentracing-specialagent-1.7.0.jar -Dsa.init.defer=false -jar MySpringBootApp.jar
+java -javaagent:opentracing-specialagent-1.7.1.jar -Dsa.init.defer=false -jar MySpringBootApp.jar
 ```
 
 ## 3 Configuration
@@ -585,7 +585,7 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | Google Http Client | [`google-http-client`][google-http-client] | 1.19.0 | LATEST |
 | [Grizzly AsyncHttpClient](https://github.com/opentracing-contrib/java-grizzly-ahc) | [`grizzly:ahc`][grizzly-ahc] | 1.15 | LATEST |
 | [Grizzly HTTP Server](https://github.com/opentracing-contrib/java-grizzly-http-server) | [`grizzly:http-server`][grizzly-http-server] | 2.3.35 | LATEST |
-| [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.7.0 | LATEST |
+| [GRPC](https://github.com/opentracing-contrib/java-grpc) | [`grpc`][grpc] | 1.7.1 | LATEST |
 | [Hazelcast](https://github.com/opentracing-contrib/opentracing-hazelcast) | [`hazelcast`][hazelcast] | 3.12 | 3.12.6 |
 | [Java Concurrent API \[`java.util.concurrent`\]](https://github.com/opentracing-contrib/java-concurrent) | [`concurrent`][concurrent] | 1.5 | 11 |
 | [Java JDBC API \[`java.sql`\]][java-jdbc]<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | 3.1<br>&nbsp; | 4.3<br>&nbsp; |
@@ -846,5 +846,5 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [specialagent-pom]: https://github.com/opentracing-contrib/java-specialagent/blob/master/pom.xml
 [circleci]: https://circleci.com/gh/opentracing-contrib/java-specialagent/tree/master
 
-[main-release]: https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.0/opentracing-specialagent-1.7.0.jar
-[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.1-SNAPSHOT
+[main-release]: https://repo1.maven.org/maven2/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.1/opentracing-specialagent-1.7.1.jar
+[main-snapshot]: https://oss.sonatype.org/content/repositories/snapshots/io/opentracing/contrib/specialagent/opentracing-specialagent/1.7.2-SNAPSHOT

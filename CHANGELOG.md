@@ -1,5 +1,17 @@
 # Changes by Version
 
+## v1.7.1 (2020-04-19)
+* Fix `Span.KIND` for `apache:httpclient` rule (#550) 👈 Thank you @zeitlinger
+* Install Memcached for integration testing in Circle CI (#545)
+* Fix incorrect `http.status_code` being set in `servlet` rule (#533)
+* Merge all lettuce rules into one (#544 #546)
+* Split CXF rules into server and client parts (#532) 👈 Thank you @jianshaow
+* Fix classpath property for custom integration rules (#537)
+* Fix class loader isolation issue in `IsoClassLoader` (#540)
+* Turn on Mule integration test for jdk8 (#534) 👈 Thank you @jam01
+* Fix `StackOverflowError` in `jdbc` rule (#541)
+* Upgrade JDBC Integration to v0.2.10
+
 ## v1.7.0 (2020-04-03)
 * Improve rule loading performance (#492 #524)
 * Switch to OpenTelemetry's terminology {#522)

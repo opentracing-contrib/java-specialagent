@@ -262,7 +262,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
-     <version>1.7.0</version> <!-- 1.7.1-SNAPSHOT -->
+     <version>1.7.1</version> <!-- 1.7.2-SNAPSHOT -->
      <executions>
        <execution>
          <id>fingerprint</id>
@@ -307,7 +307,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
-     <version>1.7.0</version> <!-- 1.7.1-SNAPSHOT -->
+     <version>1.7.1</version> <!-- 1.7.2-SNAPSHOT -->
      ...
      <configuration>
        <name>${sa.rule.name}</name>
@@ -365,7 +365,7 @@ The POM of each <ins>Integration Rule</ins> must describe at least one `pass` co
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
-     <version>1.7.0</version> <!-- 1.7.1-SNAPSHOT -->
+     <version>1.7.1</version> <!-- 1.7.2-SNAPSHOT -->
      <executions>
        ...
        <execution>
