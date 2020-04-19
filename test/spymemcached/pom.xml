@@ -100,6 +100,7 @@
       <activation>
         <os>
           <family>unix</family>
+          <name>linux</name>
         </os>
         <file>
           <missing>.pom-packaging-marker</missing>
