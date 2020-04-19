@@ -2,17 +2,17 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
-#### NOTE: As of v1.7.1, SpecialAgent is starting its transition to the [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java) ecosystem...
+#### NOTE: As of v1.7.0, SpecialAgent is starting its transition to the [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java) ecosystem...
 
 <sub>:warning: **SpecialAgent's <ins>terminology</ins> has changed... :warning:**</sub>
-| <samp>[,1.7.1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.1,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
+| <samp>[,1.7.0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
 |:-|:-:|:-|
 | <ins>Instrumentation Plugin</ins> | :arrow_right: | <ins>[Integration](#63-integration)</ins> |
 | <ins>Instrumentation Rule</ins> | :arrow_right: | <ins>[Integration Rule](#64-integration-rule)</ins> |
 | <ins>Tracer Plugin</ins> | :arrow_right: | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
 
 <sub>:warning: **SpecialAgent's <ins>config property keys</ins> have changed... :warning:**</sub>
-| <samp>[,1.7.1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.1,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
+| <samp>[,1.7.0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
 |:-|:-:|:-|
 | `-Dsa.tracer` | :arrow_right: | [`-Dsa.exporter`](#36-including-custom-integration-rules) |
 | `-Dsa.tracer.plugin.` | :arrow_right: | [`-Dsa.exporter.`](#343-disabling-agentrules-of-an-integration-rule) |
