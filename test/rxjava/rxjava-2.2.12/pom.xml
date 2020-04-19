@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.rxjava</groupId>
     <artifactId>rxjava</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2-SNAPSHOT</version>
   </parent>
   <artifactId>rxjava-2.2.12</artifactId>
   <name>SpecialAgent Test for RxJava 2.2.12</name>

@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2-SNAPSHOT</version>
   </parent>
   <artifactId>dubbo-2.7</artifactId>
   <name>SpecialAgent Rule for Dubbo 2.7</name>
