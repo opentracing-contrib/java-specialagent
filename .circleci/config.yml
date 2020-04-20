@@ -78,6 +78,8 @@ jobs:
           command: |
             cd << parameters.jdk >>
             mv .m2 ~
+            mvn -version || sudo bash -c "wget https://downloads.apache.org/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz && tar -zxf apache-maven-3.5.4-bin.tar.gz -C /usr/local/ && ln -s /usr/local/apache-maven-3.5.4/bin/mvn /usr/bin/mvn"
+            ls /usr/lib/x86_64-linux-gnu/libatomic.so.1 || sudo bash -c "apt-get -y update && apt-get -y install libatomic1"
             export MAVEN_OPTS="-Xms64M -Xmx1600M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
             circleci tests glob "test/*/pom.xml" | sed 's/\/pom.xml//' | awk '{print "mvn -e -B -P test -pl " $1 " -amd integration-test"}' | circleci tests split > /tmp/tests-to-run
             bash -c "$(cat /tmp/tests-to-run)"
@@ -94,6 +96,8 @@ jobs:
                [ "$CIRCLE_PULL_REQUEST" = "" ]; then
               cd << parameters.jdk >>
               mv .m2 ~
+              mvn -version || sudo bash -c "wget https://downloads.apache.org/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz && tar -zxf apache-maven-3.5.4-bin.tar.gz -C /usr/local/ && ln -s /usr/local/apache-maven-3.5.4/bin/mvn /usr/bin/mvn"
+              ls /usr/lib/x86_64-linux-gnu/libatomic.so.1 || sudo bash -c "apt-get -y update && apt-get -y install libatomic1"
               eval "echo $SECRET | base64 -d | bzip2 -dc | gpg --import --no-tty --batch --yes" &> /dev/null
               export GPG_TTY=$(tty)
               export MAVEN_OPTS="-Xms64M -Xmx1600M -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
