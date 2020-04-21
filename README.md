@@ -2,23 +2,6 @@
 
 > Automatically instruments 3rd-party libraries in Java applications
 
-#### NOTE: As of v1.7.0, SpecialAgent is starting its transition to the [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java) ecosystem...
-
-<sub>:warning: **SpecialAgent's <ins>terminology</ins> has changed... :warning:**</sub>
-| <samp>[,1.7.0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
-|:-|:-:|:-|
-| <ins>Instrumentation Plugin</ins> | :arrow_right: | <ins>[Integration](#63-integration)</ins> |
-| <ins>Instrumentation Rule</ins> | :arrow_right: | <ins>[Integration Rule](#64-integration-rule)</ins> |
-| <ins>Tracer Plugin</ins> | :arrow_right: | <ins>[Trace Exporter](#62-trace-exporter)</ins> |
-
-<sub>:warning: **SpecialAgent's <ins>config property keys</ins> have changed... :warning:**</sub>
-| <samp>[,1.7.0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> | | <samp>[1.7.0,]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp> |
-|:-|:-:|:-|
-| `-Dsa.tracer` | :arrow_right: | [`-Dsa.exporter`](#36-including-custom-integration-rules) |
-| `-Dsa.tracer.plugin.` | :arrow_right: | [`-Dsa.exporter.`](#343-disabling-agentrules-of-an-integration-rule) |
-| `-Dsa.instrumentation.plugin.` | :arrow_right: | [`-Dsa.integration.`](#322-integration) |
-| `-Dsa.instrumentation.include` | :arrow_right: | [`-Dsa.classpath`](#36-including-custom-integration-rules) |
-
 [![Build Status](https://img.shields.io/circleci/build/gh/opentracing-contrib/java-specialagent/master)][circleci]
 [![Coverage Status](https://coveralls.io/repos/github/opentracing-contrib/java-specialagent/badge.svg?branch=master)](https://coveralls.io/github/opentracing-contrib/java-specialagent?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/io.opentracing.contrib.specialagent/opentracing-specialagent.svg)](https://www.javadoc.io/doc/io.opentracing.contrib.specialagent/opentracing-specialagent)
