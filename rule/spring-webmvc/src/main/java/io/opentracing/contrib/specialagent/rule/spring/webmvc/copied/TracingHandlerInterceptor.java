@@ -11,23 +11,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.opentracing.contrib.specialagent.rule.spring.webmvc4.copied;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+package io.opentracing.contrib.specialagent.rule.spring.webmvc.copied;
 
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
@@ -112,7 +110,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     return true;
   }
 
-  @Override
+
+  /**
+   * method is available in spring-webmvc 4+
+   */
   public void afterConcurrentHandlingStarted (
       HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler) {
 

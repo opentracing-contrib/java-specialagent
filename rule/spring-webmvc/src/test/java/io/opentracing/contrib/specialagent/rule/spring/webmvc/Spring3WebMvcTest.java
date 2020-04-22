@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.spring.webmvc4;
+package io.opentracing.contrib.specialagent.rule.spring.webmvc;
 
 import static org.awaitility.Awaitility.*;
 import static org.hamcrest.core.IsEqual.*;
@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,37 +36,37 @@ import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockTracer;
 
 @RunWith(AgentRunner.class)
-public class SpringWebMvcTest {
-  private static Server jettyServer;
+public class Spring3WebMvcTest {
+  private static Server server;
   private static String url;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    jettyServer = new Server(0);
+    server = new Server(0);
 
-    final WebAppContext webApp = new WebAppContext();
-    webApp.setServer(jettyServer);
-    webApp.setContextPath("/");
-    webApp.setWar("src/test/webapp");
+    final WebAppContext webAppContext = new WebAppContext();
+    webAppContext.setServer(server);
+    webAppContext.setContextPath("/");
+    webAppContext.setWar("src/test/webapp");
 
-    jettyServer.setHandler(webApp);
-    jettyServer.start();
+    server.setHandler(webAppContext);
+    server.start();
 
     // jetty starts on random port
-    final int serverPort = jettyServer.getConnectors()[0].getLocalPort();
-    url = "http://localhost:" + serverPort + "/sync";
+    final int port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+    url = "http://localhost:" + port;
   }
 
   @AfterClass
   public static void afterClass() throws Exception {
-    jettyServer.stop();
-    jettyServer.join();
+    server.stop();
+    server.join();
   }
 
   @Test
   public void test(final MockTracer tracer) {
     final ResponseEntity<String> responseEntity = new RestTemplate().getForEntity(url, String.class);
-    assertEquals("sync", responseEntity.getBody());
+    assertEquals("test", responseEntity.getBody());
 
     await().atMost(15, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
 
