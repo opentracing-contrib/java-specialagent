@@ -765,7 +765,7 @@ public class SpecialAgent {
    * the {@code classLoader} matched a rule {@code ClassLoader} that contains
    * OpenTracing integration classes intended to be loaded into
    * {@code classLoader}. This method is called by the
-   * {@link ClassLoaderAgentRule}. This method returns {@code null} if it cannot
+   * {@link ClassLoaderAgent}. This method returns {@code null} if it cannot
    * locate the bytecode for the requested {@code Class} in the inheritance
    * chain of parent class loaders starting with the provided {@link ClassLoader
    * classLoader}, or if it has already been called for {@code classLoader} and
@@ -814,7 +814,7 @@ public class SpecialAgent {
    * {@code classLoader} matched a rule {@code ClassLoader} that contains
    * OpenTracing integration classes intended to be loaded into
    * {@code classLoader}. This method is called by the
-   * {@link ClassLoaderAgentRule}. This method returns {@code null} if it cannot
+   * {@link ClassLoaderAgent}. This method returns {@code null} if it cannot
    * locate the bytecode for the requested {@code Class} in the inheritance
    * chain of parent class loaders starting with the provided {@link ClassLoader
    * classLoader}, or if it has already been called for {@code classLoader} and
@@ -867,7 +867,7 @@ public class SpecialAgent {
    * name of {@code name}, if the {@code classLoader} matched a rule
    * {@code ClassLoader} that contains OpenTracing integration classes intended
    * to be loaded into {@code classLoader}. This method is called by the
-   * {@link ClassLoaderAgentRule}. This method returns {@code null} if it cannot
+   * {@link ClassLoaderAgent}. This method returns {@code null} if it cannot
    * locate the bytecode for the requested {@code Class} in the inheritance
    * chain of parent class loaders starting with the provided {@link ClassLoader
    * classLoader}, or if it has already been called for {@code classLoader} and

@@ -17,7 +17,7 @@ package io.opentracing.contrib.specialagent;
 
 /**
  * When run from an {@code AgentRunner}, {@link AgentRule}s that are loaded
- * earlier than {@link ClassLoaderAgentRule} result in inconvenient class
+ * earlier than {@link ClassLoaderAgent} result in inconvenient class
  * loading circumstances that end up creating multiple static instances of
  * {@link Logger}. To avoid this, the {@link DefaultAgentRule} provides a local
  * logging stub.
@@ -45,7 +45,7 @@ public abstract class DefaultAgentRule extends AgentRule {
     }
     else {
       if (logger == null)
-        logger = Logger.getLogger(ClassLoaderAgentRule.class);
+        logger = Logger.getLogger(ClassLoaderAgent.class);
 
       if (level == DefaultLevel.SEVERE)
         logger.log(Level.SEVERE, message, thrown);

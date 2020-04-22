@@ -192,13 +192,13 @@ public class AgentRunner extends BlockJUnit4ClassRunner {
             return BootProxyClassLoader.INSTANCE.loadClass(name, resolve);
 
           // Rule classes must be unresolvable by this class loader, so they
-          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          // can be loaded by {@link ClassLoaderAgent.FindClass#exit}.
           if (ruleClasses.contains(resourceName))
             return null;
 
           // Test classes must be resolvable by the classpath {@link URL URL[]} of
           // this {@code URLClassLoader}.
-          // can be loaded by {@link ClassLoaderAgentRule.FindClass#exit}.
+          // can be loaded by {@link ClassLoaderAgent.FindClass#exit}.
           if (testAppClasses.contains(resourceName))
             return appClassLoader.loadClass(name);
 

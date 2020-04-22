@@ -42,7 +42,7 @@ import net.bytebuddy.utility.JavaModule;
  *
  * @author Seva Safris
  */
-public class ClassLoaderAgentRule {
+public class ClassLoaderAgent {
   public static final ClassFileLocator locatorProxy = BootLoaderAgent.cachedLocator;
 
   public static AgentBuilder premain(final AgentBuilder builder) {

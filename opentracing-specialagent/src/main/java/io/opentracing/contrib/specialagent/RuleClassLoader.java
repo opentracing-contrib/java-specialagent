@@ -42,7 +42,7 @@ class RuleClassLoader extends URLClassLoader {
   /**
    * Callback that is used to load a class by the specified resource path into
    * the provided {@code ClassLoader}. The {@code ClassNotFoundException}
-   * invokes {@link ClassLoaderAgentRule.LoadClass#exit}.
+   * invokes {@link ClassLoaderAgent.LoadClass#exit}.
    */
   private static final BiConsumer<String,ClassLoader> loadClass = new BiConsumer<String,ClassLoader>() {
     @Override

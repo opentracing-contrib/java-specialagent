@@ -33,7 +33,6 @@ import java.util.jar.JarFile;
 
 import io.opentracing.contrib.specialagent.DefaultAgentRule.DefaultLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.agent.builder.AgentBuilder.Identified.Narrowable;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.AgentBuilder.Transformer;
@@ -57,12 +56,32 @@ public class BootLoaderAgent {
         // BootLoaderAgent @Advice classes
         FindBootstrapResource.class, FindBootstrapResources.class, AppendToBootstrap.class,
         // ClassLoaderAgent @Advice classes (only necessary for ClassLoaderAgentTest)
-        ClassLoaderAgentRule.DefineClass.class, ClassLoaderAgentRule.LoadClass.class, ClassLoaderAgentRule.FindResource.class, ClassLoaderAgentRule.FindResources.class,
+        ClassLoaderAgent.DefineClass.class, ClassLoaderAgent.LoadClass.class, ClassLoaderAgent.FindResource.class, ClassLoaderAgent.FindResources.class,
         // SpecialAgentAgent @Advice classes (only necessary for ClassLoaderAgentTest)
         SpecialAgentAgent.FindClass.class, SpecialAgentAgent.FindResource.class, SpecialAgentAgent.FindResources.class);
     }
     catch (final IOException e) {
       throw new ExceptionInInitializerError(e);
+    }
+  }
+
+  private static boolean hasClassMethod(final String className, final String methodName, final Class<?> ... parameterTypes) {
+    try {
+      final Class<?> cls = Class.forName(className);
+      return hasMethod(cls, methodName, parameterTypes);
+    }
+    catch (final ClassNotFoundException e) {
+      return false;
+    }
+  }
+
+  private static boolean hasMethod(final Class<?> cls, final String methodName, final Class<?> ... parameterTypes) {
+    try {
+      cls.getDeclaredMethod(methodName, parameterTypes);
+      return true;
+    }
+    catch (final NoSuchMethodException e) {
+      return false;
     }
   }
 
@@ -75,51 +94,51 @@ public class BootLoaderAgent {
         if (jarFile != null)
           BootLoaderAgent.jarFiles.add(jarFile);
 
-    final AgentBuilder builder = new AgentBuilder.Default()
-      .ignore(none())
+    AgentBuilder builder = new AgentBuilder.Default()
+      .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
       .disableClassFormatChanges()
       .with(RedefinitionStrategy.RETRANSFORMATION)
       .with(InitializationStrategy.NoOp.INSTANCE)
       .with(TypeStrategy.Default.REDEFINE);
 
-    final Narrowable j8 = builder.type(isSubTypeOf(ClassLoader.class));
-    j8.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(1).and(takesArgument(0, String.class)))))));
-      }})
-    .installOn(inst);
+    builder = builder.type(isSubTypeOf(Instrumentation.class))
+      .transform(new Transformer() {
+        @Override
+        public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+          return builder.visit(Advice.to(AppendToBootstrap.class, cachedLocator).on(named("appendToBootstrapClassLoaderSearch").and(takesArguments(1).and(takesArgument(0, JarFile.class)))));
+        }});
 
-    j8.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(1).and(takesArgument(0, String.class)))))));
-      }})
-    .installOn(inst);
+    // jdk1.[78]
+    if (hasMethod(ClassLoader.class, "getBootstrapResource", String.class)) {
+      builder = builder.type(isSubTypeOf(ClassLoader.class))
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(isStatic().and(named("getBootstrapResource").and(returns(URL.class).and(takesArguments(1).and(takesArgument(0, String.class)))))));
+          }})
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(isStatic().and(named("getBootstrapResources").and(returns(Enumeration.class).and(takesArguments(1).and(takesArgument(0, String.class)))))));
+          }});
+    }
 
-    final Narrowable j9 = builder.type(hasSuperType(named("jdk.internal.loader.BuiltinClassLoader")));
-    j9.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(named("findResource").and(returns(URL.class).and(takesArguments(1).and(takesArgument(0, String.class))))));
-      }})
-    .installOn(inst);
+    // jdk9+
+    if (hasClassMethod("jdk.internal.loader.BuiltinClassLoader", "findResource", String.class)) {
+      builder = builder.type(hasSuperType(named("jdk.internal.loader.BuiltinClassLoader")))
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(FindBootstrapResource.class, cachedLocator).on(named("findResource").and(returns(URL.class).and(takesArguments(1).and(takesArgument(0, String.class))))));
+          }})
+        .transform(new Transformer() {
+          @Override
+          public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+            return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(1).and(takesArgument(0, String.class))))));
+          }});
+    }
 
-    j9.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(FindBootstrapResources.class, cachedLocator).on(named("findResources").and(returns(Enumeration.class).and(takesArguments(1).and(takesArgument(0, String.class))))));
-      }})
-    .installOn(inst);
-
-    final Narrowable instrumentation = builder.type(isSubTypeOf(Instrumentation.class));
-    instrumentation.transform(new Transformer() {
-      @Override
-      public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-        return builder.visit(Advice.to(AppendToBootstrap.class, cachedLocator).on(named("appendToBootstrapClassLoaderSearch").and(takesArguments(1).and(takesArgument(0, JarFile.class)))));
-      }})
-    .installOn(inst);
-
+    builder.installOn(inst);
     loaded = true;
   }
 
