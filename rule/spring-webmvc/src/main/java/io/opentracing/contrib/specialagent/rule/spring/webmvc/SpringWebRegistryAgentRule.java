@@ -28,14 +28,14 @@ import net.bytebuddy.utility.JavaModule;
 
 public class SpringWebRegistryAgentRule extends AgentRule {
   @Override
-  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
-    return new AgentBuilder[] {builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(named("org.springframework.web.servlet.HandlerExecutionChain"))
       .transform(new Transformer() {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(advice(typeDescription).to(SpringWebRegistryAgentRule.class).on(named("getInterceptors")));
-        }})};
+        }});
   }
 
   @Advice.OnMethodExit

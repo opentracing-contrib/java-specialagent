@@ -28,8 +28,8 @@ import net.bytebuddy.utility.JavaModule;
 
 public class LettuceAgentRule extends AgentRule {
   @Override
-  public AgentBuilder[] buildAgentUnchained(final AgentBuilder builder) {
-    return new AgentBuilder[] {builder
+  public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
+    return builder
       .type(not(isInterface()).and(named("io.lettuce.core.RedisClient")))
       .transform(new Transformer() {
         @Override
@@ -52,8 +52,7 @@ public class LettuceAgentRule extends AgentRule {
         @Override
         public Builder<?> transform(final Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
           return builder.visit(advice(typeDescription).to(ReactiveCommandsFlux.class).on(nameStartsWith("create").and(nameEndsWith("Flux")).and(takesArgument(0, named("java.util.function.Supplier"))).and(returns(named("reactor.core.publisher.Flux")))));
-        }})
-    };
+        }});
   }
 
   public static class Connect {

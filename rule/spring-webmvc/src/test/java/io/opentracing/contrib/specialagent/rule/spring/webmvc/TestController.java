@@ -15,11 +15,12 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.webmvc;
 
-import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import io.opentracing.contrib.specialagent.TestUtil;
 
 @Controller
 public class TestController {
@@ -27,7 +28,6 @@ public class TestController {
   @ResponseBody
   public String test() {
     TestUtil.checkActiveSpan();
-
     return "test";
   }
 }
