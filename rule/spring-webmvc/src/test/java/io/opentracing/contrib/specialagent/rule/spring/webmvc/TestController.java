@@ -15,6 +15,7 @@
 
 package io.opentracing.contrib.specialagent.rule.spring.webmvc;
 
+import io.opentracing.contrib.specialagent.TestUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,6 +26,8 @@ public class TestController {
   @RequestMapping(value = "/", method = RequestMethod.GET)
   @ResponseBody
   public String test() {
+    TestUtil.checkActiveSpan();
+
     return "test";
   }
 }

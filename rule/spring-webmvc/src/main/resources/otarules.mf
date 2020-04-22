@@ -13,3 +13,4 @@
 # limitations under the License.
 
 io.opentracing.contrib.specialagent.rule.spring.webmvc.SpringWebMvcAgentRule
+io.opentracing.contrib.specialagent.rule.spring.webmvc.SpringWebRegistryAgentRule

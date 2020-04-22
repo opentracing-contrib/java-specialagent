@@ -445,7 +445,7 @@ The value of `${INTEGRATION_NAME_PATTERN}` represents the name of the <ins>[Inte
 1. `dubbo:2.?`<br>Matches all <ins>Dubbo</ins> rules, including `dubbo:2.6`, and `dubbo:2.7`.
 1. `spring:web:*`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
 1. `spring:web*`<br>Matches all <ins>Spring Web</ins> and <ins>Spring WebMVC</ins> rules, including `spring:web:3`, `spring:web:5`, `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
-1. `spring:webmvc`<br>Matches all <ins>Spring WebMVC</ins> rules, including `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
+1. `spring:web`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
 
 If the _version part_ of the `${INTEGRATION_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
 
@@ -610,9 +610,7 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | | [`spring:web:4.0`][spring-web-4.0] | 4.0.0.RELEASE | 4.0.9.RELEASE |
 | | [`spring:web:4.x`][spring-web-4] | 4.1.0.RELEASE | 4.3.25.RELEASE |
 | | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | LATEST |
-| [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc:3`][spring-webmvc-3] | 3.0.2.RELEASE | 3.2.18.RELEASE |
-| | [`spring:webmvc:4`][spring-webmvc-4] | 4.0.0.RELEASE | 4.3.25.RELEASE |
-| | [`spring:webmvc:5`][spring-webmvc-5] | 5.0.0.RELEASE | LATEST |
+| [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc`][spring-webmvc] | 3.0.2.RELEASE | LATEST |
 | [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | LATEST |
 | [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.13.0 |
 | [Zuul](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-zuul-starter) | [`zuul`][zuul] | 1.0.0 | 2.1.1 |
@@ -807,9 +805,7 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [spring-web-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-4
 [spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-5
 [spring-webflux]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webflux
-[spring-webmvc-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc-3
-[spring-webmvc-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc-4
-[spring-webmvc-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc-5
+[spring-webmvc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc
 [spring-websocket]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-websocket
 [spymemcached]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spymemcached
 [thread]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/thread

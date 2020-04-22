@@ -26,7 +26,8 @@
   <artifactId>spring-webmvc</artifactId>
   <name>SpecialAgent Rule for Spring Web MVC</name>
   <properties>
-    <version.spring>3.0.2.RELEASE</version.spring>
+    <min.version>3.0.2.RELEASE</min.version>
+    <passCompatibility>org.springframework:spring-webmvc:[${min.version},)</passCompatibility>
     <version.jetty>9.3.15.v20161220</version.jetty>
     <sa.rule.name>spring:webmvc</sa.rule.name>
   </properties>
@@ -34,9 +35,9 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${version.spring}</version>
+      <version>${min.version}</version>
       <optional>true</optional>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
@@ -65,6 +66,19 @@
       <version>${version.jetty}</version>
       <optional>true</optional>
       <scope>test</scope>
+    </dependency>
+
+    <!--
+      Putting this dependency in the end, because version 2.3 is not high enough for Jetty being
+      used for tests. This Dependency is only provided here for the sake of creating a
+      fingerprint.bin. This is the lowest version that is supported by java-web-servlet-filter.
+     -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.3</version>
+      <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

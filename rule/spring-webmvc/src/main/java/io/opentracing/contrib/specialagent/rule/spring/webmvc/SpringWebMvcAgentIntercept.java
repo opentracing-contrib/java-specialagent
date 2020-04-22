@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-package io.opentracing.contrib.specialagent.rule.spring.webmvc3;
+package io.opentracing.contrib.specialagent.rule.spring.webmvc;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import io.opentracing.contrib.specialagent.rule.spring.webmvc3.copied.TracingHandlerInterceptor;
+import io.opentracing.contrib.specialagent.rule.spring.webmvc.copied.TracingHandlerInterceptor;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringWebMvcAgentIntercept {
