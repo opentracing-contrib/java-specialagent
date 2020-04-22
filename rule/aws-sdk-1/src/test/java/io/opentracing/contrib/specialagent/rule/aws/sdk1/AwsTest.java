@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync;
@@ -63,7 +63,7 @@ public class AwsTest {
       createTable(dbClient, "table-1");
     }
     catch (final Exception e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+      logger.log(Level.WARNING, e.getMessage());
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -82,7 +82,7 @@ public class AwsTest {
       assertEquals("asyncRequest", result.getTableDescription().getTableName());
     }
     catch (final Exception e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
+      logger.log(Level.WARNING, e.getMessage());
     }
 
     final List<MockSpan> spans = tracer.finishedSpans();
@@ -91,7 +91,7 @@ public class AwsTest {
   }
 
   private static AmazonDynamoDB buildClient() {
-    final AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-west-2");
+    final EndpointConfiguration endpointConfiguration = new EndpointConfiguration("http://localhost:8000", "us-west-2");
     final BasicAWSCredentials awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id");
     return AmazonDynamoDBClientBuilder
       .standard()
@@ -102,7 +102,7 @@ public class AwsTest {
   }
 
   private static AmazonDynamoDBAsync buildAsyncClient() {
-    final AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-west-2");
+    final EndpointConfiguration endpointConfiguration = new EndpointConfiguration("http://localhost:8000", "us-west-2");
     final BasicAWSCredentials awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id");
     return AmazonDynamoDBAsyncClientBuilder
       .standard()

@@ -35,6 +35,8 @@ import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
 import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
 
 import io.opentracing.contrib.specialagent.AgentRunner;
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -53,6 +55,7 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
 @RunWith(AgentRunner.class)
 public class Aws2Test {
+  private static final Logger logger = Logger.getLogger(Aws2Test.class);
   private static DynamoDBProxyServer server;
 
   @BeforeClass
@@ -79,7 +82,8 @@ public class Aws2Test {
     try {
       createTable(dbClient, "table-1");
     }
-    catch (final Exception ignore) {
+    catch (final Exception e) {
+      logger.log(Level.WARNING, e.getMessage());
     }
 
     await().atMost(60, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
@@ -98,7 +102,8 @@ public class Aws2Test {
       // If a local instance of dynamodb is NOT present, an exception is thrown.
       assertEquals("asyncRequest", result.tableDescription().tableName());
     }
-    catch (final Exception ignore) {
+    catch (final Exception e) {
+      logger.log(Level.WARNING, e.getMessage());
     }
 
     await().atMost(60, TimeUnit.SECONDS).until(TestUtil.reportedSpansSize(tracer), equalTo(1));
@@ -113,7 +118,8 @@ public class Aws2Test {
       .endpointOverride(URI.create("http://localhost:8000"))
       .region(Region.US_WEST_2)
       .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-      .overrideConfiguration(ClientOverrideConfiguration.builder().apiCallTimeout(Duration.ofSeconds(1)).build())
+      .overrideConfiguration(ClientOverrideConfiguration.builder()
+        .apiCallTimeout(Duration.ofSeconds(1)).build())
       .build();
   }
 
