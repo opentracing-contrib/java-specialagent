@@ -21,10 +21,10 @@ import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
 
 public class SpringWebITest {
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     final RestTemplate restTemplate = new RestTemplate();
     restTemplate.getForObject("http://www.google.com", String.class);
 
-    TestUtil.checkSpan(new ComponentSpanCount("java-spring-rest-template", 1));
+    TestUtil.checkSpan(new ComponentSpanCount("http-url-connection", 1));
   }
 }

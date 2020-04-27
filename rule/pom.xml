@@ -71,10 +71,6 @@
         <module>mule-4-core</module>
         <module>mule-4-http-service</module>
         <module>mule-4-module-artifact</module>
-        <module>spring-web-3</module>
-        <module>spring-web-4.0</module>
-        <module>spring-web-4</module>
-        <module>spring-web-5</module>
         <module>spring-webflux</module>
         <module>redisson</module>
         <module>hazelcast</module>
