@@ -443,14 +443,14 @@ sa.integration.${INTEGRATION_NAME_PATTERN}.enable
 The value of `${INTEGRATION_NAME_PATTERN}` represents the name of the <ins>[Integration Rule](#64-integration-rule)</ins>, as specified in <ins>[Integrations](#41-integrations)</ins> ("Integration Rule" column). The `${INTEGRATION_NAME_PATTERN}` allows for the use of `*` and `?` characters to match multiple rules simultaneously. For instance:
 
 1. `dubbo:2.?`<br>Matches all <ins>Dubbo</ins> rules, including `dubbo:2.6`, and `dubbo:2.7`.
-1. `spring:web:*`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
-1. `spring:web*`<br>Matches all <ins>Spring Web</ins> and <ins>Spring WebMVC</ins> rules, including `spring:web:3`, `spring:web:5`, `spring:webmvc`, `spring:webmvc:3`, `spring:webmvc:4`, and `spring:webmvc:5`.
-1. `spring:web`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
+1. `cassandra:driver:*`<br>Matches all <ins>Cassandra Driver</ins> rules, including `cassandra:driver:3`, and `cassandra:driver:4`.
+1. `spring:web*`<br>Matches all <ins>Spring WebMVC</ins>, <ins>Spring WebFlux</ins> and <ins>Spring WebSocket</ins> rules, including `spring:webmvc`, `spring:webflux`, and `spring:websocket`.
+1. `cassandra:driver`<br>Matches all <ins>Cassandra Driver</ins> rules, including `cassandra:driver:3` and `cassandra:driver:4`.
 
 If the _version part_ of the `${INTEGRATION_NAME_PATTERN}` does not end with a `*` or `?` character, a `*` will be appended automatically. Therefore:
 
 1. `dubbo:2`<br>Matches all <ins>Dubbo</ins> v2 rules, including `dubbo:2.6`, and `dubbo:2.7`.
-1. `spring:web`<br>Matches all <ins>Spring Web</ins> rules, including `spring:web:3` and `spring:web:5`.
+1. `cassandra:driver`<br>Matches all <ins>Cassandra Driver</ins> rules, `cassandra:driver:3`, and `cassandra:driver:4`.
 1. `spring`<br>Matches all <ins>Spring</ins> rules.
 1. `spring:w`<br>Does not match any rules.
 
@@ -606,10 +606,6 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | LATEST |
 | [Spring Boot WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 2.1.0.RELEASE | LATEST |
 | [Spring \[`@Async` and `@Scheduled`\]](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-core) | [`spring:scheduling`][spring-scheduling] | 5.0.0.RELEASE | LATEST |
-| [Spring Web](https://github.com/opentracing-contrib/java-spring-web) | [`spring:web:3`][spring-web-3] | 3.0.3.RELEASE | 3.2.18.RELEASE |
-| | [`spring:web:4.0`][spring-web-4.0] | 4.0.0.RELEASE | 4.0.9.RELEASE |
-| | [`spring:web:4.x`][spring-web-4] | 4.1.0.RELEASE | 4.3.25.RELEASE |
-| | [`spring:web:5`][spring-web-5] | 5.0.0.RELEASE | LATEST |
 | [Spring Web MVC](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webmvc`][spring-webmvc] | 3.0.2.RELEASE | LATEST |
 | [Spymemcached](https://github.com/opentracing-contrib/java-memcached-client/tree/master/opentracing-spymemcached) | [`spymemcached`][spymemcached] | 2.11.0 | LATEST |
 | [Thrift](https://github.com/opentracing-contrib/java-thrift) | [`thrift`][thrift] | 0.10.0 | 0.13.0 |
@@ -640,6 +636,7 @@ The following libraries are instrumented by other <ins>[Integration Rules](#64-i
 | SparkJava | [`javax.servlet`][servlet] | 2.2 | LATEST |
 | Spring Cloud | \*<br>&nbsp; | \*<br>&nbsp; | \*<br>&nbsp; |
 | Spring Data<br>&nbsp; | [`jdbc`<br><sup>(configurable)</sup>][jdbc] | \*<br>&nbsp; | \*<br>&nbsp; |
+| Spring Web | [`httpurlconnection`][httpurlconnection] | \*<br>&nbsp; | \*<br>&nbsp; |
 | Twilio | [`apache:httpclient`][apache-httpclient] | 0.0.1 | LATEST |
 
 ## 5 Objectives
@@ -800,10 +797,6 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [spring-messaging]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-messaging
 [spring-rabbitmq]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-rabbitmq
 [spring-scheduling]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-scheduling
-[spring-web-3]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-3
-[spring-web-4.0]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-4.0
-[spring-web-4]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-4
-[spring-web-5]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-web-5
 [spring-webflux]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webflux
 [spring-webmvc]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-webmvc
 [spring-websocket]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/spring-websocket

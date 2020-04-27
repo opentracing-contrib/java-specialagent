@@ -290,34 +290,6 @@
         </dependency>
         <dependency>
           <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>spring-web-3</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>spring-web-4.0</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>spring-web-4</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
-          <artifactId>spring-web-5</artifactId>
-          <version>${project.version}</version>
-          <optional>true</optional>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.opentracing.contrib.specialagent.rule</groupId>
           <artifactId>spring-webflux</artifactId>
           <version>${project.version}</version>
           <optional>true</optional>
