@@ -35,7 +35,6 @@ import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
-
   private static final List<ServletFilterSpanDecorator> spanDecorators = Configuration.spanDecorators;
 
   public static void init(final Object thiz, final Object servletConfig) {

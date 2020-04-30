@@ -15,8 +15,6 @@
 package io.opentracing.contrib.web.servlet.filter;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +38,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.rule.servlet.ServletApiV3;
 import io.opentracing.contrib.specialagent.rule.servlet.ServletFilterAgentIntercept;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingFilterUtil;
 import io.opentracing.noop.NoopSpan;
@@ -158,6 +157,8 @@ public class TracingFilter implements Filter {
         }
     }
 
+    public static volatile Boolean isApiV3;
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
             throws IOException, ServletException {
@@ -181,10 +182,19 @@ public class TracingFilter implements Filter {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             final Span span = TracingFilterUtil.buildSpan(httpRequest, tracer, spanDecorators);
-            final Boolean[] isAsyncStarted = {Boolean.FALSE};
+            boolean isAsyncStarted = false;
             try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
-                if (!ClassUtil.invoke(isAsyncStarted, httpRequest, ClassUtil.getMethod(httpRequest.getClass(), "isAsyncStarted")) || !isAsyncStarted[0]) {
+                if (isApiV3 == null || isApiV3) {
+                  try {
+                    isAsyncStarted = ServletApiV3.isAsyncStarted(httpRequest);
+                  }
+                  catch (final Throwable e) {
+                    isApiV3 = false;
+                  }
+                }
+
+                if (!isAsyncStarted) {
                     TracingFilterUtil.onResponse(httpRequest, httpResponse, span, spanDecorators);
                 }
             // catch all exceptions (e.g. RuntimeException, ServletException...)
@@ -192,16 +202,9 @@ public class TracingFilter implements Filter {
                 TracingFilterUtil.onError(httpRequest, httpResponse, ex, span, spanDecorators);
                 throw ex;
             } finally {
-                if (isAsyncStarted[0]) {
+                if (isAsyncStarted) {
                   // what if async is already finished? This would not be called
-                  try {
-                    final Object asyncContext = ClassUtil.getMethod(httpRequest.getClass(), "getAsyncContext").invoke(httpRequest);
-                    final Method addListener = ClassUtil.getMethod(asyncContext.getClass(), "addListener", Class.forName("javax.servlet.AsyncListener"));
-                    addListener.invoke(asyncContext, new TracingAsyncListener(span, spanDecorators));
-                  }
-                  catch (final ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
-                    throw new IllegalStateException(e);
-                  }
+                  ServletApiV3.addListenerToAsyncContext(httpRequest, span, spanDecorators);
                 } else {
                     // If not async, then need to explicitly finish the span associated with the scope.
                     // This is necessary, as we don't know whether this request is being handled

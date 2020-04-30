@@ -16,8 +16,6 @@
 package io.opentracing.contrib.specialagent.rule.servlet;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.WeakHashMap;
 
 import javax.servlet.Filter;
@@ -27,12 +25,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.contrib.specialagent.AgentRuleUtil;
 import io.opentracing.contrib.specialagent.EarlyReturnException;
 import io.opentracing.contrib.specialagent.Level;
 import io.opentracing.contrib.specialagent.rule.servlet.ext.TracingProxyFilter;
-import io.opentracing.contrib.web.servlet.filter.ClassUtil;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
@@ -94,25 +92,11 @@ public class FilterAgentIntercept extends ServletFilterAgentIntercept {
     servletResponseToStatus.put((ServletResponse)response, status);
   }
 
-  public static int getSatusCode(final ServletResponse response) {
+  public static int getSatusCode(final HttpServletResponse response) {
     final Integer statusCode = servletResponseToStatus.remove(response);
     if (logger.isLoggable(Level.FINER))
       logger.finer("<> FilterAgentIntercept.getSatusCode(" + AgentRuleUtil.getSimpleNameId(response) + "): " + statusCode);
 
-    if (statusCode != null)
-      return statusCode;
-
-    final Method getStatusMethod = ClassUtil.getMethod(response.getClass(), "getStatus");
-    try {
-      return getStatusMethod == null ? null : (Integer)getStatusMethod.invoke(response);
-    }
-    catch (final IllegalAccessException e) {
-      logger.log(Level.WARNING, e.getMessage(), e);
-    }
-    catch (final InvocationTargetException e) {
-      logger.log(Level.WARNING, e.getCause().getMessage(), e.getCause());
-    }
-
-    return 200;
+    return statusCode != null ? statusCode : ServletApiV3.getStatus(response);
   }
 }
