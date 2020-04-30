@@ -216,20 +216,6 @@ workflows:
           requires:
             - install-jdk11
       - test:
-          name: copapp-jdk8
-          test: "copapp"
-          jdk: "8"
-          image: "jdk8:0.1.1"
-          requires:
-            - install-jdk8
-      - test:
-          name: copapp-jdk11
-          test: "copapp"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
-      - test:
           name: couchbase-client-jdk8
           test: "couchbase-client"
           jdk: "8"
@@ -1032,8 +1018,6 @@ workflows:
             - cassandra-driver-jdk8
             - concurrent-jdk11
             - concurrent-jdk8
-            - copapp-jdk11
-            - copapp-jdk8
             - couchbase-client-jdk11
             - couchbase-client-jdk8
             - cxf-jdk11
