@@ -15,20 +15,20 @@
 
 package io.opentracing.contrib.specialagent.test.sparkjava;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import io.opentracing.contrib.specialagent.TestUtil;
 import io.opentracing.contrib.specialagent.TestUtil.ComponentSpanCount;
+import java.util.concurrent.CountDownLatch;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 import spark.Spark;
 
 public class SparkJavaITest {
-  public static void main(final String[] args) throws IOException {
-    final int port = 8085;
+  public static void main(final String[] args) throws Exception {
+    final int port = TestUtil.nextFreePort();
     Spark.port(port);
     Spark.get("/", new Route() {
       @Override
@@ -39,6 +39,7 @@ public class SparkJavaITest {
     });
 
     Spark.awaitInitialization();
+    final CountDownLatch latch = TestUtil.initExpectedSpanLatch(2);
     try {
       final URL url = new URL("http://localhost:" + port);
       final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -49,7 +50,7 @@ public class SparkJavaITest {
         throw new AssertionError("ERROR: response: " + responseCode);
     }
     finally {
-      TestUtil.checkSpan(true, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
+      TestUtil.checkSpan(true, latch, new ComponentSpanCount("java-web-servlet", 1), new ComponentSpanCount("http-url-connection", 1));
       Spark.stop();
     }
   }
