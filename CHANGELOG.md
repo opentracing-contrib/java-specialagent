@@ -1,5 +1,14 @@
 # Changes by Version
 
+## v1.7.2 (2020-05-03)
+* Make CI/CD stable, and reduce time for releases and PR checks (#538 #539)
+* Prefer compiled invocation rather than via reflection in `servlet` rule (#547)
+* Fix to `sparkjava` integration test failing (#560 #561)
+* Fix to `ZuulITest` failure with span not error (#558 #559)
+* Remove "unchained" agent rule `spring-web-*` in favor of `HttpUrlConnection` (improved startup performance) (#556 #557)
+* Merge all "unchained" `spring-webmvc-*` rules into one "chained" `spring-webmvc` (improved startup performance) (#553 #554)
+* [Chain rules in `BootLoaderAgent`](https://github.com/opentracing-contrib/java-specialagent/commit/040bbe07bd85310681442756e369f9c437bd06b9) (improved startup performance)
+
 ## v1.7.1 (2020-04-19)
 * Fix `Span.KIND` for `apache:httpclient` rule (#550) 👈 Thank you @zeitlinger
 * Install Memcached for integration testing in Circle CI (#545)

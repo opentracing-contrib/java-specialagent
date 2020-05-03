@@ -15,8 +15,8 @@
 <samp>&nbsp;&nbsp;</samp>4 [`AgentRule` Usage](#4-agentrule-usage)<br>
 <samp>&nbsp;&nbsp;</samp>5 [`AgentRunner` Usage](#5-agentrunner-usage)<br>
 <samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>5.1 [Configuring `AgentRunner`](#51-configuring-agentrunner)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6 [Packaging](#6-packaging)<br>
-<samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [Including the <ins>Integration Rule</ins> in the <ins>SpecialAgent</ins>](#61-including-the-integration-rule-in-the-specialagent)<br>
+<samp>&nbsp;&nbsp;</samp>6 [Packaging](#6-packaging)<br>
+<samp>&nbsp;&nbsp;&nbsp;&nbsp;</samp>6.1 [Including the <ins>Integration Rule</ins> in the <ins>SpecialAgent</ins>](#61-including-the-integration-rule-in-the-specialagent)<br>
 <samp>&nbsp;&nbsp;</samp>7 [Compatibility Testing](#7-compatibility-testing)<br>
 <samp>&nbsp;&nbsp;</samp>8 [Integration Testing](#8-integration-testing)<br>
 <samp>&nbsp;&nbsp;</samp>9 [Debugging](#9-debugging)<br>
@@ -262,7 +262,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
-     <version>1.7.1</version> <!-- 1.7.2-SNAPSHOT -->
+     <version>1.7.2</version> <!-- 1.7.3-SNAPSHOT -->
      <executions>
        <execution>
          <id>fingerprint</id>
@@ -307,7 +307,7 @@ The <ins>SpecialAgent</ins> has specific requirements for packaging of <ins>Inte
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
-     <version>1.7.1</version> <!-- 1.7.2-SNAPSHOT -->
+     <version>1.7.2</version> <!-- 1.7.3-SNAPSHOT -->
      ...
      <configuration>
        <name>${sa.rule.name}</name>
@@ -365,7 +365,7 @@ The POM of each <ins>Integration Rule</ins> must describe at least one `pass` co
    <plugin>
      <groupId>io.opentracing.contrib.specialagent</groupId>
      <artifactId>specialagent-maven-plugin</artifactId>
-     <version>1.7.1</version> <!-- 1.7.2-SNAPSHOT -->
+     <version>1.7.2</version> <!-- 1.7.3-SNAPSHOT -->
      <executions>
        ...
        <execution>

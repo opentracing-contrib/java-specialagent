@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.jms</groupId>
     <artifactId>jms</artifactId>
-    <version>1.7.2-SNAPSHOT</version>
+    <version>1.7.2</version>
   </parent>
   <artifactId>jms-1</artifactId>
   <name>SpecialAgent Test for JMS API 1</name>
