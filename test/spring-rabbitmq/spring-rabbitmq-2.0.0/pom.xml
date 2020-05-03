@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-rabbitmq</groupId>
     <artifactId>spring-rabbitmq</artifactId>
-    <version>1.7.2</version>
+    <version>1.7.3-SNAPSHOT</version>
   </parent>
   <artifactId>spring-rabbitmq-2.0.0</artifactId>
   <name>SpecialAgent Test for Spring RabbitMQ 2.0.0</name>
