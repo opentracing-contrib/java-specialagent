@@ -1004,129 +1004,129 @@ workflows:
           jdk: "8"
           image: "jdk8:0.1.1"
           requires:
-            - akka-actor-jdk11
             - akka-actor-jdk8
-            - akka-http-jdk11
+            - akka-actor-jdk11
             - akka-http-jdk8
-            - apache-httpclient-jdk11
+            - akka-http-jdk11
             - apache-httpclient-jdk8
-            - asynchttpclient-jdk11
+            - apache-httpclient-jdk11
             - asynchttpclient-jdk8
-            - aws-sdk-jdk11
+            - asynchttpclient-jdk11
             - aws-sdk-jdk8
-            - cassandra-driver-jdk11
+            - aws-sdk-jdk11
             - cassandra-driver-jdk8
-            - concurrent-jdk11
+            - cassandra-driver-jdk11
             - concurrent-jdk8
-            - couchbase-client-jdk11
+            - concurrent-jdk11
             - couchbase-client-jdk8
-            - cxf-jdk11
+            - couchbase-client-jdk11
             - cxf-jdk8
-            - dubbo-jdk11
+            - cxf-jdk11
             - dubbo-jdk8
-            - dynamic-jdk11
+            - dubbo-jdk11
             - dynamic-jdk8
-            - elasticsearch-client-jdk11
+            - dynamic-jdk11
             - elasticsearch-client-jdk8
-            - feign-jdk11
+            - elasticsearch-client-jdk11
             - feign-jdk8
-            - google-http-client-jdk11
+            - feign-jdk11
             - google-http-client-jdk8
-            - grizzly-http-client-jdk11
+            - google-http-client-jdk11
             - grizzly-http-client-jdk8
-            - grizzly-http-server-jdk11
+            - grizzly-http-client-jdk11
             - grizzly-http-server-jdk8
-            - grpc-jdk11
+            - grizzly-http-server-jdk11
             - grpc-jdk8
-            - hazelcast-jdk11
+            - grpc-jdk11
             - hazelcast-jdk8
-            - httpurlconnection-jdk11
+            - hazelcast-jdk11
             - httpurlconnection-jdk8
-            - hystrix-jdk11
+            - httpurlconnection-jdk11
             - hystrix-jdk8
-            - jaxrs-jdk11
+            - hystrix-jdk11
             - jaxrs-jdk8
-            - jdbc-jdk11
+            - jaxrs-jdk11
             - jdbc-jdk8
-            - jdbi-jdk11
+            - jdbc-jdk11
             - jdbi-jdk8
-            - jedis-jdk11
+            - jdbi-jdk11
             - jedis-jdk8
-            - jms-jdk11
+            - jedis-jdk11
             - jms-jdk8
-            - kafka-client-jdk11
+            - jms-jdk11
             - kafka-client-jdk8
-            - kafka-streams-jdk11
+            - kafka-client-jdk11
             - kafka-streams-jdk8
-            - lettuce-jdk11
+            - kafka-streams-jdk11
             - lettuce-jdk8
-            - mongo-driver-async-jdk11
+            - lettuce-jdk11
             - mongo-driver-async-jdk8
-            - mongo-driver-jdk11
+            - mongo-driver-async-jdk11
             - mongo-driver-jdk8
-            - mongo-driver-reactive-jdk11
+            - mongo-driver-jdk11
             - mongo-driver-reactive-jdk8
-            - mule-jdk11
+            - mongo-driver-reactive-jdk11
             - mule-jdk8
-            - neo4j-driver-jdk11
+            - mule-jdk11
             - neo4j-driver-jdk8
-            - netty-jdk11
+            - neo4j-driver-jdk11
             - netty-jdk8
-            - okhttp-jdk11
+            - netty-jdk11
             - okhttp-jdk8
-            - play-jdk11
+            - okhttp-jdk11
             - play-jdk8
-            - play-ws-jdk11
+            - play-jdk11
             - play-ws-jdk8
-            - pulsar-client-jdk11
+            - play-ws-jdk11
             - pulsar-client-jdk8
-            - pulsar-functions-jdk11
+            - pulsar-client-jdk11
             - pulsar-functions-jdk8
-            - rabbitmq-client-jdk11
+            - pulsar-functions-jdk11
             - rabbitmq-client-jdk8
-            - ratpack-jdk11
+            - rabbitmq-client-jdk11
             - ratpack-jdk8
-            - reactor-jdk11
+            - ratpack-jdk11
             - reactor-jdk8
-            - redisson-jdk11
+            - reactor-jdk11
             - redisson-jdk8
-            - rewrite-jdk11
+            - redisson-jdk11
             - rewrite-jdk8
-            - rxjava-jdk11
+            - rewrite-jdk11
             - rxjava-jdk8
-            - servlet-jetty-jdk11
+            - rxjava-jdk11
             - servlet-jetty-jdk8
-            - servlet-tomcat-jdk11
+            - servlet-jetty-jdk11
             - servlet-tomcat-jdk8
-            - sparkjava-jdk11
+            - servlet-tomcat-jdk11
             - sparkjava-jdk8
-            - spring-boot-jdk11
+            - sparkjava-jdk11
             - spring-boot-jdk8
-            - spring-data-jdk11
+            - spring-boot-jdk11
             - spring-data-jdk8
-            - spring-jms-jdk11
+            - spring-data-jdk11
             - spring-jms-jdk8
-            - spring-kafka-jdk11
+            - spring-jms-jdk11
             - spring-kafka-jdk8
-            - spring-messaging-jdk11
+            - spring-kafka-jdk11
             - spring-messaging-jdk8
-            - spring-rabbitmq-jdk11
+            - spring-messaging-jdk11
             - spring-rabbitmq-jdk8
-            - spring-scheduling-jdk11
+            - spring-rabbitmq-jdk11
             - spring-scheduling-jdk8
-            - spring-web-jdk11
+            - spring-scheduling-jdk11
             - spring-web-jdk8
-            - spring-webflux-jdk11
+            - spring-web-jdk11
             - spring-webflux-jdk8
-            - spring-webmvc-jdk11
+            - spring-webflux-jdk11
             - spring-webmvc-jdk8
-            - spring-websocket-jdk11
+            - spring-webmvc-jdk11
             - spring-websocket-jdk8
-            - spymemcached-jdk11
+            - spring-websocket-jdk11
             - spymemcached-jdk8
-            - thrift-jdk11
+            - spymemcached-jdk11
             - thrift-jdk8
-            - twilio-jdk11
+            - thrift-jdk11
             - twilio-jdk8
-            - zuul-jdk11
+            - twilio-jdk11
             - zuul-jdk8
+            - zuul-jdk11
