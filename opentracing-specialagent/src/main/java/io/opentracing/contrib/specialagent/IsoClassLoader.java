@@ -21,14 +21,20 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class IsoClassLoader extends URLClassLoader {
   private static final Logger logger = Logger.getLogger(IsoClassLoader.class);
+  private static BiConsumer<String,HashSet<String>> classNameConsumer = new BiConsumer<String,HashSet<String>>() {
+    @Override
+    public void accept(final String name, final HashSet<String> arg) {
+      if (BootProxyClassLoader.INSTANCE.getResource(name) == null)
+        arg.add(name);
+    }
+  };
 
   private static class IsoParentClassLoader extends ClassLoader {
-    private final AtomicReference<Set<String>> isoNames = new AtomicReference<>();
+    private final AtomicReference<HashSet<String>> isoNames = new AtomicReference<>();
     private final URL[] isoClassPaths;
 
     private IsoParentClassLoader(final URL[] isoClassPaths, final ClassLoader parent) {
@@ -38,7 +44,7 @@ public class IsoClassLoader extends URLClassLoader {
         logger.finest("new IsoParentClassLoader(" + AssembleUtil.toIndentedString(isoClassPaths) + ")");
     }
 
-    private Set<String> getNames() {
+    private HashSet<String> getNames() {
       if (isoNames.get() != null)
         return isoNames.get();
 
@@ -46,17 +52,9 @@ public class IsoClassLoader extends URLClassLoader {
         if (isoNames.get() != null)
           return isoNames.get();
 
-        final Set<String> names = new HashSet<>();
+        final HashSet<String> names = new HashSet<>();
         try {
-          AssembleUtil.<Void>forEachClass(isoClassPaths, null, new BiConsumer<String,Void>() {
-            @Override
-            public void accept(final String name, final Void arg) {
-              // FIXME: This is a hack workaround for https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java/issues/17
-              if (BootProxyClassLoader.INSTANCE.getResource(name) == null)
-                names.add(name);
-            }
-          });
-
+          AssembleUtil.<HashSet<String>>forEachClass(isoClassPaths, names, classNameConsumer);
           isoNames.set(names);
           return names;
         }
