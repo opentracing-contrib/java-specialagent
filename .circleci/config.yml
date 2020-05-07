@@ -35,9 +35,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
-            - specialagent-{{ checksum "pom.xml" }}-{{ .Branch }}
-            - specialagent-{{ checksum "pom.xml" }}
+            - specialagent-{{ .Environment.CACHE_VERSION }}-{{ checksum "pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+            - specialagent-{{ .Environment.CACHE_VERSION }}-{{ checksum "pom.xml" }}-{{ .Branch }}
+            - specialagent-{{ .Environment.CACHE_VERSION }}-{{ checksum "pom.xml" }}
       - run:
           name: Installing
           no_output_timeout: 20m
@@ -63,7 +63,7 @@ jobs:
             mvn -e -B -Dassemble install
             mv ~/.m2 .
       - save_cache:
-          key: specialagent-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
+          key: specialagent-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.jdk >>/pom.xml" }}-{{ .Branch }}-{{ .Revision }}
           paths: << parameters.jdk >>/.m2
       - persist_to_workspace:
           root: .
