@@ -86,7 +86,7 @@ public class BootLoaderAgent {
     if (loaded)
       return;
 
-    BootLoaderAgent.jarFiles = jarFiles;
+    BootLoaderAgent.jarFiles = jarFiles == null || jarFiles.length == 0 ? null : jarFiles;
 
     AgentBuilder builder = new AgentBuilder.Default()
       .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
@@ -148,7 +148,7 @@ public class BootLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (returned != null || jarFiles.length == 0)
+      if (returned != null || jarFiles == null)
         return;
 
       final Set<String> visited;
@@ -187,7 +187,7 @@ public class BootLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      if (jarFiles.length == 0)
+      if (jarFiles == null)
         return;
 
       final Set<String> visited = mutex.get();
@@ -227,10 +227,16 @@ public class BootLoaderAgent {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) JarFile arg) {
       try {
-        final JarFile[] temp = new JarFile[jarFiles.length + 1];
-        System.arraycopy(jarFiles, 0, temp, 0, jarFiles.length);
-        temp[jarFiles.length] = arg;
-        jarFiles = temp;
+        if (jarFiles == null) {
+          jarFiles = new JarFile[] {arg};
+        }
+        else {
+          final int len = jarFiles.length;
+          final JarFile[] temp = new JarFile[len + 1];
+          System.arraycopy(jarFiles, 0, temp, 0, len);
+          temp[len] = arg;
+          jarFiles = temp;
+        }
       }
       catch (final Throwable t) {
         log("<><><><> BootLoaderAgent.AppendToBootstrap#exit", t, DefaultLevel.SEVERE);
