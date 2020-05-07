@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -457,6 +458,23 @@ public final class SpecialAgentUtil {
     }
 
     return events;
+  }
+
+  public static <T>Enumeration<T> enumeration(final T[] a) {
+    return new Enumeration<T>() {
+      private int i = -1;
+      private final int len = a.length - 1;
+
+      @Override
+      public boolean hasMoreElements() {
+        return i < len;
+      }
+
+      @Override
+      public T nextElement() {
+        return a[++i];
+      }
+    };
   }
 
   private SpecialAgentUtil() {

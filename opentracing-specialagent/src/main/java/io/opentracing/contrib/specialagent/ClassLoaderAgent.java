@@ -94,27 +94,18 @@ public class ClassLoaderAgent {
       try {
         final Class<?> bootstrapClass = BootProxyClassLoader.INSTANCE.loadClassOrNull(name, false);
         if (bootstrapClass != null) {
-          log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, DefaultLevel.FINEST);
+//          log(">>>>>>>> BootLoader#loadClassOrNull(\"" + name + "\"): " + bootstrapClass, null, DefaultLevel.FINEST);
 
           returned = bootstrapClass;
           thrown = null;
           return;
         }
 
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-//          final Class<?> isoClass = SpecialAgent.isoClassLoader.loadClassOrNull(name);
-//          if (isoClass != null) {
-//            returned = isoClass;
-//            thrown = null;
-//            return;
-//          }
-//        }
-
         final byte[] bytecode = SpecialAgent.findClass(thiz, name);
         if (bytecode == null)
           return;
 
-        log("<<<<<<<< defineClass(\"" + name + "\")", null, DefaultLevel.FINEST);
+//        log("<<<<<<<< defineClass(\"" + name + "\")", null, DefaultLevel.FINEST);
 
         if (defineClass == null)
           defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
@@ -145,18 +136,8 @@ public class ClassLoaderAgent {
 
       try {
         final URL resource = SpecialAgent.findResource(thiz, name);
-        if (resource != null) {
+        if (resource != null)
           returned = resource;
-          return;
-        }
-
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-//          final URL isoResource = SpecialAgent.isoClassLoader.getResource(name);
-//          if (isoResource != null) {
-//            returned = isoResource;
-//            return;
-//          }
-//        }
       }
       catch (final Throwable t) {
         log("<><><><> ClassLoaderAgent.FindResource#exit", t, DefaultLevel.SEVERE);
@@ -183,12 +164,6 @@ public class ClassLoaderAgent {
         final Enumeration<URL> resources = SpecialAgent.findResources(thiz, name);
         if (resources != null)
           returned = returned == null ? resources : new CompoundEnumeration<>(returned, resources);
-
-//        if (SpecialAgent.isoClassLoader != null && name.startsWith("io.opentracing.")) {
-//          final Enumeration<URL> isoResources = SpecialAgent.isoClassLoader.getResources(name);
-//          if (isoResources != null)
-//            returned = returned == null ? isoResources : new CompoundEnumeration<>(returned, isoResources);
-//        }
       }
       catch (final Throwable t) {
         log("<><><><> ClassLoaderAgent.FindResources#exit", t, DefaultLevel.SEVERE);

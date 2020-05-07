@@ -157,7 +157,7 @@ public class SpecialAgent {
     // dereference bytecode of classes appended via `Instrumentation`. By default,
     // such classes become part of the bootstrap class loader, but access to
     // the resources for the bytecode of these classes is not provided.
-    BootLoaderAgent.premain(inst);
+    BootLoaderAgent.premain(inst, null);
 
     // Third, load the `AgentRule` class, in order to load
     // `AgentRule.isThreadInstrumentable`, so that the lineage of threads can

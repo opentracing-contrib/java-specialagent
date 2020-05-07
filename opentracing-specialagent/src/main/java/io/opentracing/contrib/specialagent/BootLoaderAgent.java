@@ -22,11 +22,8 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -47,7 +44,7 @@ import net.bytebuddy.utility.JavaModule;
 public class BootLoaderAgent {
 //  public static final Logger logger = Logger.getLogger(BootLoaderAgent.class);
   public static final CachedClassFileLocator cachedLocator;
-  public static final List<JarFile> jarFiles = new ArrayList<>();
+  public static JarFile[] jarFiles;
   private static boolean loaded = false;
 
   static {
@@ -85,14 +82,11 @@ public class BootLoaderAgent {
     }
   }
 
-  public static void premain(final Instrumentation inst, final JarFile ... jarFiles) {
+  public static void premain(final Instrumentation inst, final JarFile[] jarFiles) {
     if (loaded)
       return;
 
-    if (jarFiles != null)
-      for (final JarFile jarFile : jarFiles)
-        if (jarFile != null)
-          BootLoaderAgent.jarFiles.add(jarFile);
+    BootLoaderAgent.jarFiles = jarFiles;
 
     AgentBuilder builder = new AgentBuilder.Default()
       .ignore(nameStartsWith("net.bytebuddy.").or(nameStartsWith("sun.reflect.")).or(isSynthetic()), any(), any())
@@ -154,7 +148,7 @@ public class BootLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) URL returned) {
-      if (returned != null || jarFiles.size() == 0)
+      if (returned != null || jarFiles.length == 0)
         return;
 
       final Set<String> visited;
@@ -176,10 +170,8 @@ public class BootLoaderAgent {
           }
         }
 
-        if (resource != null) {
+        if (resource != null)
           returned = resource;
-          return;
-        }
       }
       catch (final Throwable t) {
         log("<><><><> BootLoaderAgent.FindBootstrapResource#exit", t, DefaultLevel.SEVERE);
@@ -195,7 +187,7 @@ public class BootLoaderAgent {
 
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) String name, @Advice.Return(readOnly=false, typing=Typing.DYNAMIC) Enumeration<URL> returned) {
-      if (jarFiles.size() == 0)
+      if (jarFiles.length == 0)
         return;
 
       final Set<String> visited = mutex.get();
@@ -203,22 +195,9 @@ public class BootLoaderAgent {
         return;
 
       try {
-        final List<URL> resources = new ArrayList<>();
-        for (final JarFile jarFile : jarFiles) {
-          final JarEntry entry = jarFile.getJarEntry(name);
-          if (entry == null)
-            continue;
-
-          try {
-            resources.add(new URL("jar:file:" + jarFile.getName() + "!/" + name));
-          }
-          catch (final MalformedURLException e) {
-            throw new UnsupportedOperationException(e);
-          }
-        }
-
-        if (resources.size() != 0) {
-          final Enumeration<URL> enumeration = Collections.enumeration(resources);
+        final URL[] resources = findResources(name, jarFiles, 0, 0);
+        if (resources != null) {
+          final Enumeration<URL> enumeration = SpecialAgentUtil.enumeration(resources);
           returned = returned == null ? enumeration : new CompoundEnumeration<>(returned, enumeration);
         }
       }
@@ -229,13 +208,29 @@ public class BootLoaderAgent {
         visited.remove(name);
       }
     }
+
+    public static URL[] findResources(final String name, final JarFile[] jarFiles, int index, int depth) throws MalformedURLException {
+      if (index == jarFiles.length)
+        return depth == 0 ? null : new URL[depth];
+
+      final JarEntry entry = jarFiles[index].getJarEntry(name);
+      if (entry == null)
+        return findResources(name, jarFiles, index + 1, depth);
+
+      final URL[] resources = findResources(name, jarFiles, index + 1, depth + 1);
+      resources[depth] = new URL("jar:file:" + jarFiles[index].getName() + "!/" + name);
+      return resources;
+    }
   }
 
   public static class AppendToBootstrap {
     @Advice.OnMethodExit
     public static void exit(final @Advice.Argument(0) JarFile arg) {
       try {
-        jarFiles.add(arg);
+        final JarFile[] temp = new JarFile[jarFiles.length + 1];
+        System.arraycopy(jarFiles, 0, temp, 0, jarFiles.length);
+        temp[jarFiles.length] = arg;
+        jarFiles = temp;
       }
       catch (final Throwable t) {
         log("<><><><> BootLoaderAgent.AppendToBootstrap#exit", t, DefaultLevel.SEVERE);
