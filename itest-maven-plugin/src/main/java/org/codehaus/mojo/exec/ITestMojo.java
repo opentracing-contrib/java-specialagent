@@ -30,6 +30,7 @@ import java.util.Vector;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -39,10 +40,20 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import io.opentracing.contrib.specialagent.AssembleUtil;
 import io.opentracing.contrib.specialagent.BiConsumer;
+import io.opentracing.contrib.specialagent.MavenUtil;
 
 @Mojo(name = "itest", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.TEST, threadSafe = true)
 @Execute(goal = "itest")
 public final class ITestMojo extends ExecMojo {
+  @Parameter(defaultValue = "${mojoExecution}", required = true, readonly = true)
+  private MojoExecution execution;
+
+  @Parameter(property = "maven.test.skip")
+  private boolean mavenTestSkip = false;
+
+  @Parameter(property="skipTests")
+  private boolean skipTests = false;
+
   @Parameter(required = true)
   private List<String> mainClasses;
 
@@ -131,8 +142,24 @@ public final class ITestMojo extends ExecMojo {
 
   @Override
   public void execute() throws MojoExecutionException {
-    if (isSkip())
+    if (MavenUtil.shouldSkip(execution, mavenTestSkip || skipTests || isSkip())) {
+      final StringBuilder builder = new StringBuilder("Tests are skipped (");
+      if (mavenTestSkip)
+        builder.append("maven.test.skip=true; ");
+
+      if (skipTests)
+        builder.append("skipTests=true; ");
+
+      if (isSkip())
+        builder.append("exec.skip=true; ");
+
+      builder.setLength(builder.length() - 2);
+      builder.append(")");
+
+      getLog().info(builder.toString());
       return;
+    }
+
 
     setExecutable("java");
     classpathScope = "test";
@@ -205,6 +232,7 @@ public final class ITestMojo extends ExecMojo {
     boolean executed = false;
     for (final Object main : mains) {
       if (main instanceof List) {
+        @SuppressWarnings("unchecked")
         final List<String> list = (List<String>)main;
         for (int i = 1; i < list.size(); ++i) {
           mainClass = list.get(i);
