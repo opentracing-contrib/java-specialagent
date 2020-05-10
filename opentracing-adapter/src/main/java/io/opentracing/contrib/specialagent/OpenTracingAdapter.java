@@ -25,7 +25,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -201,17 +200,8 @@ public class OpenTracingAdapter extends Adapter {
 
         // FIXME: This looks like a hack...
         final String tracerResolverUrl = isoClassLoader.getResource("io/opentracing/contrib/tracerresolver/TracerResolver.class").toString();
-        Adapter.tracerClassLoader = new URLClassLoader(new URL[] {tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!')))}, null);
+        Adapter.tracerClassLoader = new TracerClassLoader(null, tracerUrl, new URL(tracerResolverUrl.substring(4, tracerResolverUrl.indexOf('!'))));
         Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
-
-        // If the desired tracer is in its own JAR file, or if this is not
-        // running in an AgentRunner test (because in this case the tracer
-        // is in a JAR also, which is inside the SpecialAgent JAR), then
-        // isolate the tracer JAR in its own class loader.
-        if (file.exists() || !isAgentRunner()) {
-          Adapter.tracerClassLoader = new TracerClassLoader(Adapter.tracerClassLoader, tracerUrl);
-          Thread.currentThread().setContextClassLoader(Adapter.tracerClassLoader);
-        }
 
         final Class<?> tracerResolverClass = Class.forName("io.opentracing.contrib.tracerresolver.TracerResolver", true, Adapter.tracerClassLoader);
         final Method resolveTracerMethod = tracerResolverClass.getMethod("resolveTracer");
