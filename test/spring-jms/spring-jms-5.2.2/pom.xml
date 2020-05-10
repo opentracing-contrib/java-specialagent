@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-jms</groupId>
     <artifactId>spring-jms</artifactId>
-    <version>1.7.3-SNAPSHOT</version>
+    <version>1.7.3</version>
   </parent>
   <artifactId>spring-jms-5.2.2</artifactId>
   <name>SpecialAgent Test for Spring JMS 5.2.2</name>

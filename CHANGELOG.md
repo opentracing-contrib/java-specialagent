@@ -1,5 +1,11 @@
 # Changes by Version
 
+## v1.7.3 (2020-05-10)
+* Improved runtime performance in `BootLoaderAgent` (#552)
+* Resolution to "self tracing" issue experienced with Jaeger (#531 #548)
+* Support `-DskipTests` in `itest-maven-mojo` (#568)
+* Upgrade LightStep Tracer Bundle to v0.20.1 (#566)
+
 ## v1.7.2 (2020-05-03)
 * Make CI/CD stable, and reduce time for releases and PR checks (#538 #539)
 * Prefer compiled invocation rather than via reflection in `servlet` rule (#547)
