@@ -37,8 +37,8 @@ public class AkkaAgentIntercept {
   static final String COMPONENT_NAME = "java-akka";
 
   public static Object aroundReceiveStart(final Object thiz, final Object message) {
-    if (!(message instanceof TracedMessage) && LocalSpanContext.get() != null) {
-      LocalSpanContext.get().increment();
+    if (!(message instanceof TracedMessage) && LocalSpanContext.get(COMPONENT_NAME) != null) {
+      LocalSpanContext.get(COMPONENT_NAME).increment();
       return message;
     }
 
@@ -61,13 +61,13 @@ public class AkkaAgentIntercept {
     final Span span = spanBuilder.start();
     final Scope scope = tracer.activateSpan(span);
 
-    LocalSpanContext.set(span, scope);
+    LocalSpanContext.set(COMPONENT_NAME, span, scope);
 
     return tracedMessage != null ? tracedMessage.getMessage() : message;
   }
 
   public static void aroundReceiveEnd(final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null || context.decrementAndGet() != 0)
       return;
 
@@ -114,7 +114,7 @@ public class AkkaAgentIntercept {
     tracer.inject(span.context(), Format.Builtin.TEXT_MAP_INJECT, headers::put);
 
     final Scope scope = tracer.activateSpan(span);
-    LocalSpanContext.set(span, scope);
+    LocalSpanContext.set(COMPONENT_NAME, span, scope);
 
     return new TracedMessage<>(message, headers);
   }
@@ -123,7 +123,7 @@ public class AkkaAgentIntercept {
     if (sender instanceof PromiseActorRef || arg0 instanceof PromiseActorRef || !(message instanceof TracedMessage))
       return;
 
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null)
       return;
 

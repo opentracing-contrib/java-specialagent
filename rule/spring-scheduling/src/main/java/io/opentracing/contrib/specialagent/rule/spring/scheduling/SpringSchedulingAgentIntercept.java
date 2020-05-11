@@ -28,22 +28,24 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringSchedulingAgentIntercept {
+  static final String COMPONENT_NAME = "spring-scheduled";
+
   public static void enter(final Object thiz) {
     final ScheduledMethodRunnable runnable = (ScheduledMethodRunnable)thiz;
     final Tracer tracer = GlobalTracer.get();
     final Span span = tracer
       .buildSpan(runnable.getMethod().getName())
-      .withTag(Tags.COMPONENT.getKey(), "spring-scheduled")
+      .withTag(Tags.COMPONENT.getKey(), COMPONENT_NAME)
       .withTag("class", runnable.getClass().getSimpleName())
       .withTag("method", runnable.getMethod().getName())
       .start();
 
     final Scope scope = tracer.activateSpan(span);
-    LocalSpanContext.set(span, scope);
+    LocalSpanContext.set(COMPONENT_NAME, span, scope);
   }
 
   public static void exit(final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null)
       return;
 

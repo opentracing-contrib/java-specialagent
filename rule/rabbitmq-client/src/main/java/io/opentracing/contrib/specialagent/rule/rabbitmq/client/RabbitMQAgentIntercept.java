@@ -25,6 +25,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.rabbitmq.SpanDecorator;
 import io.opentracing.contrib.rabbitmq.TracingConsumer;
 import io.opentracing.contrib.rabbitmq.TracingUtils;
 import io.opentracing.contrib.specialagent.LocalSpanContext;
@@ -41,7 +42,7 @@ public class RabbitMQAgentIntercept {
   }
 
   public static void finish(final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(SpanDecorator.COMPONENT_NAME);
     if (context == null)
       return;
 
@@ -57,7 +58,7 @@ public class RabbitMQAgentIntercept {
     final Span span = TracingUtils.buildSpan((String)exchange, (String)routingKey, properties, tracer);
 
     final Scope scope = tracer.activateSpan(span);
-    LocalSpanContext.set(span, scope);
+    LocalSpanContext.set(SpanDecorator.COMPONENT_NAME, span, scope);
 
     return inject(properties, span, tracer);
   }

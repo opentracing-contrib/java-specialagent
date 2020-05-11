@@ -36,6 +36,7 @@ import io.opentracing.util.GlobalTracer;
 
 public class ServletAgentIntercept extends ServletFilterAgentIntercept {
   private static final List<ServletFilterSpanDecorator> spanDecorators = Configuration.spanDecorators;
+  static final String COMPONENT_NAME = "java-web-servlet";
 
   public static void init(final Object thiz, final Object servletConfig) {
     filterOrServletToServletContext.put(thiz, ((ServletConfig)servletConfig).getServletContext());
@@ -73,7 +74,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
       if (request.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) != null)
         return;
 
-      if (LocalSpanContext.get() != null)
+      if (LocalSpanContext.get(COMPONENT_NAME) != null)
         return;
 
       if (!Configuration.isTraced(request))
@@ -81,7 +82,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
       final Tracer tracer = GlobalTracer.get();
       final Span span = TracingFilterUtil.buildSpan(request, tracer, spanDecorators);
-      LocalSpanContext.set(span, tracer.activateSpan(span));
+      LocalSpanContext.set(COMPONENT_NAME, span, tracer.activateSpan(span));
       if (logger.isLoggable(Level.FINER))
         logger.finer("<< ServletAgentIntercept#service(" + AgentRuleUtil.getSimpleNameId(req) + "," + AgentRuleUtil.getSimpleNameId(res) + "," + AgentRuleUtil.getSimpleNameId(context) + ")");
     }
@@ -92,7 +93,7 @@ public class ServletAgentIntercept extends ServletFilterAgentIntercept {
 
   public static void serviceExit(final Object request, final Object response, final Throwable thrown) {
     try {
-      final LocalSpanContext context = LocalSpanContext.get();
+      final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
       if (context == null)
         return;
 
