@@ -77,12 +77,10 @@ public class PlayAgentIntercept {
     ((Future<Result>)returned).onComplete(new Function1<Try<Result>,Object>() {
       @Override
       public Object apply(final Try<Result> response) {
-        if (response.isFailure()) {
+        if (response.isFailure())
           OpenTracingApiUtil.setErrorTag(span, response.failed().get());
-        }
-        else {
+        else
           span.setTag(Tags.HTTP_STATUS, response.get().header().status());
-        }
 
         span.finish();
         return null;

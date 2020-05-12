@@ -15,18 +15,20 @@
 
 package io.opentracing.contrib.specialagent;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+
 /**
- * Thread local map holder for Span, Scope and counter to control stack of calls.
- * Map is used to avoid suppressing of creation of new span when active span of another component exists.
- * Key of the map is component name.
+ * Thread local map holder for Span, Scope and counter to control stack of
+ * calls. Map is used to avoid suppressing of creation of new span when active
+ * span of another component exists. Key of the map is component name.
  */
 public class LocalSpanContext {
-  private static final ThreadLocal<Map<String, LocalSpanContext>> instance = new ThreadLocal<>();
+  private static final ThreadLocal<Map<String,LocalSpanContext>> instance = new ThreadLocal<>();
+
   private final String name;
   private final Span span;
   private final Scope scope;
@@ -39,15 +41,14 @@ public class LocalSpanContext {
   }
 
   public static LocalSpanContext get(final String name) {
-    final Map<String, LocalSpanContext> map = instance.get();
-    if (map != null)
-      return map.get(name);
-    return null;
+    final Map<String,LocalSpanContext> map = instance.get();
+    return map == null ? null : map.get(name);
   }
 
   public static void set(final String name, final Span span, final Scope scope) {
     if (instance.get() == null)
-      instance.set(new HashMap<String, LocalSpanContext>());
+      instance.set(new HashMap<String,LocalSpanContext>());
+
     instance.get().put(name, new LocalSpanContext(name, span, scope));
   }
 
@@ -70,12 +71,13 @@ public class LocalSpanContext {
   }
 
   public void closeScope() {
-    final Map<String, LocalSpanContext> map = instance.get();
+    final Map<String,LocalSpanContext> map = instance.get();
     if (map != null) {
       map.remove(name);
       if (map.isEmpty())
         instance.remove();
     }
+
     if (scope != null)
       scope.close();
   }
