@@ -56,11 +56,11 @@ public class LettuceAgentIntercept {
       .withTag(Tags.DB_TYPE.getKey(), DB_TYPE)
       .start();
 
-    LocalSpanContext.set(span, tracer.activateSpan(span));
+    LocalSpanContext.set(COMPONENT_NAME, span, tracer.activateSpan(span));
   }
 
   public static void dispatchEnd(final Object command, final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null || context.decrementAndGet() != 0)
       return;
 
@@ -138,11 +138,11 @@ public class LettuceAgentIntercept {
       .withTag("db.redis.dbIndex", redisURI.getDatabase())
       .start();
 
-    LocalSpanContext.set(span, tracer.activateSpan(span));
+    LocalSpanContext.set(COMPONENT_NAME, span, tracer.activateSpan(span));
   }
 
   public static void connectEnd(final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null || context.decrementAndGet() != 0)
       return;
 

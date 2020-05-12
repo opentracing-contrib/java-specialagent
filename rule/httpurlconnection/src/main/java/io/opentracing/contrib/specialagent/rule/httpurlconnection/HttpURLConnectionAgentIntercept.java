@@ -33,8 +33,8 @@ public class HttpURLConnectionAgentIntercept {
   static final String COMPONENT_NAME = "http-url-connection";
 
   public static void enter(final Object thiz, final boolean connected) {
-    if (LocalSpanContext.get() != null) {
-      LocalSpanContext.get().increment();
+    if (LocalSpanContext.get(COMPONENT_NAME) != null) {
+      LocalSpanContext.get(COMPONENT_NAME).increment();
       return;
     }
 
@@ -58,11 +58,11 @@ public class HttpURLConnectionAgentIntercept {
     final Scope scope = tracer.activateSpan(span);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, new HttpURLConnectionInjectAdapter(connection));
 
-    LocalSpanContext.set(span, scope);
+    LocalSpanContext.set(COMPONENT_NAME, span, scope);
   }
 
   public static void exit(final Throwable thrown, int responseCode) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null)
       return;
 

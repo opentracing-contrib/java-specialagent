@@ -29,16 +29,18 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringKafkaAgentIntercept {
+  static final String COMPONENT_NAME = "spring-kafka";
+
   public static void onMessageEnter(final Object record) {
-    if (LocalSpanContext.get() != null) {
-      LocalSpanContext.get().increment();
+    if (LocalSpanContext.get(COMPONENT_NAME) != null) {
+      LocalSpanContext.get(COMPONENT_NAME).increment();
       return;
     }
 
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder builder = tracer
       .buildSpan("onMessage")
-      .withTag(Tags.COMPONENT, "spring-kafka")
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
       .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
 
     if (record instanceof ConsumerRecord) {
@@ -49,11 +51,11 @@ public class SpringKafkaAgentIntercept {
     }
 
     final Span span = builder.start();
-    LocalSpanContext.set(span, tracer.activateSpan(span));
+    LocalSpanContext.set(COMPONENT_NAME, span, tracer.activateSpan(span));
   }
 
   public static void onMessageExit(final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context != null && context.decrementAndGet() == 0) {
       if (thrown != null)
         OpenTracingApiUtil.setErrorTag(context.getSpan(), thrown);

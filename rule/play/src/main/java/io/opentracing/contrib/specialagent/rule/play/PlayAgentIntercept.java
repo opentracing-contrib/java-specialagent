@@ -35,8 +35,8 @@ public class PlayAgentIntercept {
   static final String COMPONENT_NAME = "play";
 
   public static void applyStart(final Object arg0) {
-    if (LocalSpanContext.get() != null) {
-      LocalSpanContext.get().increment();
+    if (LocalSpanContext.get(COMPONENT_NAME) != null) {
+      LocalSpanContext.get(COMPONENT_NAME).increment();
       return;
     }
 
@@ -53,12 +53,12 @@ public class PlayAgentIntercept {
       spanBuilder.asChildOf(parent);
 
     final Span span = spanBuilder.start();
-    LocalSpanContext.set(span, tracer.activateSpan(span));
+    LocalSpanContext.set(COMPONENT_NAME, span, tracer.activateSpan(span));
   }
 
   @SuppressWarnings("unchecked")
   public static void applyEnd(final Object thiz, final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null)
       return;
 

@@ -38,16 +38,18 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
 public class SpringRabbitMQAgentIntercept {
+  static final String COMPONENT_NAME = "spring-rabbitmq";
+
   public static void onMessageEnter(final Object msg) {
-    if (LocalSpanContext.get() != null) {
-      LocalSpanContext.get().increment();
+    if (LocalSpanContext.get(COMPONENT_NAME) != null) {
+      LocalSpanContext.get(COMPONENT_NAME).increment();
       return;
     }
 
     final Tracer tracer = GlobalTracer.get();
     final SpanBuilder builder = tracer
       .buildSpan("onMessage")
-      .withTag(Tags.COMPONENT, "spring-rabbitmq")
+      .withTag(Tags.COMPONENT, COMPONENT_NAME)
       .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER);
 
     final Message message = (Message)msg;
@@ -59,11 +61,11 @@ public class SpringRabbitMQAgentIntercept {
     }
 
     final Span span = builder.start();
-    LocalSpanContext.set(span, tracer.activateSpan(span));
+    LocalSpanContext.set(COMPONENT_NAME, span, tracer.activateSpan(span));
   }
 
   public static void onMessageExit(final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null || context.decrementAndGet() != 0)
       return;
 
@@ -84,11 +86,11 @@ public class SpringRabbitMQAgentIntercept {
     final Tracer tracer = GlobalTracer.get();
     final Span span = TracingUtils.buildChildSpan(properties, null, tracer);
     final Scope scope = tracer.activateSpan(span);
-    LocalSpanContext.set(span, scope);
+    LocalSpanContext.set(COMPONENT_NAME, span, scope);
   }
 
   public static void handleDeliveryEnd(final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME);
     if (context == null)
       return;
 

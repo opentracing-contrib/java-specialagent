@@ -34,8 +34,8 @@ public class AkkaAgentIntercept {
   static final String COMPONENT_NAME_SERVER = "akka-http-server";
 
   public static Object requestStart(final Object arg0) {
-    if (LocalSpanContext.get() != null) {
-      LocalSpanContext.get().increment();
+    if (LocalSpanContext.get(COMPONENT_NAME_CLIENT) != null) {
+      LocalSpanContext.get(COMPONENT_NAME_CLIENT).increment();
       return arg0;
     }
 
@@ -54,14 +54,14 @@ public class AkkaAgentIntercept {
     final HttpHeadersInjectAdapter injectAdapter = new HttpHeadersInjectAdapter(request);
     tracer.inject(span.context(), Builtin.HTTP_HEADERS, injectAdapter);
 
-    LocalSpanContext.set(span, tracer.activateSpan(span));
+    LocalSpanContext.set(COMPONENT_NAME_CLIENT, span, tracer.activateSpan(span));
 
     return injectAdapter.getHttpRequest();
   }
 
   @SuppressWarnings("unchecked")
   public static Object requestEnd(final Object returned, final Throwable thrown) {
-    final LocalSpanContext context = LocalSpanContext.get();
+    final LocalSpanContext context = LocalSpanContext.get(COMPONENT_NAME_CLIENT);
     if (context == null || context.decrementAndGet() != 0)
       return returned;
 
