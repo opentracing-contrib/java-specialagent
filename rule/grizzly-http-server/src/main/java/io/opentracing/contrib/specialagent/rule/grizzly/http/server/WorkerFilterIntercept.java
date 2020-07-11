@@ -17,7 +17,7 @@ import org.glassfish.grizzly.http.HttpResponsePacket;
 
 public class WorkerFilterIntercept {
     public static Scope onHandleReadEnter(
-            final FilterChainContext ctx) {
+            final Object ctx) {
         Span span = SpanAssociations.get().retrieveSpan(ctx);
         if (span != null) {
             return GlobalTracer.get().scopeManager().activate(span);

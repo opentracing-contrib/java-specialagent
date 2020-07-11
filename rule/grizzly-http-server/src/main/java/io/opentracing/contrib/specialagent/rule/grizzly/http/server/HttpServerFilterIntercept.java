@@ -1,6 +1,5 @@
 package io.opentracing.contrib.specialagent.rule.grizzly.http.server;
 
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -11,19 +10,20 @@ import io.opentracing.util.GlobalTracer;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.http.HttpContent;
-import org.glassfish.grizzly.http.HttpHeader;
 import org.glassfish.grizzly.http.HttpRequestPacket;
 import org.glassfish.grizzly.http.HttpResponsePacket;
 
 public class HttpServerFilterIntercept {
     public static void onHandleReadExit(
-            final FilterChainContext ctx,
-            NextAction toReturn) {
+            final Object ctxObj,
+            Object toReturn) {
 
+        FilterChainContext ctx = (FilterChainContext) ctxObj;
+
+        // If not continuing to process
         // See: org.glassfish.grizzly.filterchain.InvokeAction.TYPE
         // If we have have already started a span for this request
-        // If we're not reading a request, ie. an http client
-        if (toReturn.type() != 0 || !(ctx.getMessage() instanceof HttpContent) || SpanAssociations.get().hasSpanFor(ctx)) {
+        if (!(ctx.getMessage() instanceof HttpContent) || ((NextAction) toReturn).type() != 0 || SpanAssociations.get().hasSpanFor(ctx)) {
             return;
         }
 
@@ -40,8 +40,6 @@ public class HttpServerFilterIntercept {
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                 .start();
 
-//        Scope scope = tracer.scopeManager().activate(span);
-
         Tags.COMPONENT.set(span, "java-grizzly-http-server");
         Tags.HTTP_METHOD.set(span, request.getMethod().getMethodString());
         Tags.HTTP_URL.set(span, request.getRequestURI());
@@ -52,27 +50,24 @@ public class HttpServerFilterIntercept {
     }
 
     public static void onPrepareResponse(
-            final FilterChainContext ctx,
-            final HttpResponsePacket response) {
+            final Object ctx,
+            final Object response) {
         Span toTag = SpanAssociations.get().retrieveSpan(ctx);
         if (toTag != null) {
-            Tags.HTTP_STATUS.set(toTag, response.getStatus());
+            Tags.HTTP_STATUS.set(toTag, ((HttpResponsePacket) response).getStatus());
         }
     }
 
     public static class ScopeCompletionListener implements FilterChainContext.CompletionListener {
         private final Span span;
-//        private final Scope scope;
 
         public ScopeCompletionListener(Span span) {
             this.span = span;
-//            this.scope = scope;
         }
 
         @Override
         public void onComplete(FilterChainContext context) {
             span.finish();
-//            scope.close();
             SpanAssociations.get().dispose(context);
         }
     }

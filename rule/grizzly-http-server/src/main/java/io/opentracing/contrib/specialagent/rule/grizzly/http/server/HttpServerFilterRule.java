@@ -6,11 +6,9 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import net.bytebuddy.matcher.StringMatcher;
 import net.bytebuddy.utility.JavaModule;
-import org.glassfish.grizzly.filterchain.FilterChainContext;
-import org.glassfish.grizzly.filterchain.NextAction;
-import org.glassfish.grizzly.http.HttpResponsePacket;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -63,8 +61,8 @@ public class HttpServerFilterRule extends AgentRule {
         public static void onExit(
                 final @ClassName String className,
                 final @Advice.Origin String origin,
-                @Advice.Argument(0) final FilterChainContext ctx,
-                @Advice.Return NextAction toReturn) {
+                @Advice.Argument(0) final Object ctx,
+                @Advice.Return Object toReturn) {
             if (isAllowed(className, origin))
                 HttpServerFilterIntercept.onHandleReadExit(ctx, toReturn);
         }
@@ -76,7 +74,7 @@ public class HttpServerFilterRule extends AgentRule {
                 final @ClassName String className,
                 final @Advice.Origin String origin,
                 final @Advice.This Object thiz,
-                @Advice.Argument(0) final FilterChainContext ctx,
+                @Advice.Argument(value = 0, typing = Assigner.Typing.DYNAMIC) final Object ctx,
                 @Advice.Local("scope") Scope scope) {
 
             // manually filtering HttpServerFilter
@@ -104,8 +102,8 @@ public class HttpServerFilterRule extends AgentRule {
         public static void onExit(
                 final @ClassName String className,
                 final @Advice.Origin String origin,
-                @Advice.Argument(0) final FilterChainContext ctx,
-                @Advice.Argument(2) final HttpResponsePacket response) {
+                @Advice.Argument(value = 0, typing = Assigner.Typing.DYNAMIC) final Object ctx,
+                @Advice.Argument(value = 2, typing = Assigner.Typing.DYNAMIC) final Object response) {
             if (isAllowed(className, origin))
                 HttpServerFilterIntercept.onPrepareResponse(ctx, response);
         }
