@@ -3,6 +3,7 @@ package io.opentracing.contrib.specialagent.rule.grizzly.http.server;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.grizzly.http.server.GrizzlyServerSpanDecorator;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
@@ -37,15 +38,10 @@ public class HttpServerFilterIntercept {
         final Span span = tracer.buildSpan("HTTP::" + request.getMethod().getMethodString())
                 .ignoreActiveSpan()
                 .asChildOf(extractedContext)
-                .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                 .start();
 
-        Tags.COMPONENT.set(span, "java-grizzly-http-server");
-        Tags.HTTP_METHOD.set(span, request.getMethod().getMethodString());
-        Tags.HTTP_URL.set(span, request.getRequestURI());
-
-        ctx.addCompletionListener(new ScopeCompletionListener(span));
-
+        GrizzlyServerSpanDecorator.STANDARD_TAGS.onRequest(request, span);
+        ctx.addCompletionListener(new SpanCompletionListener(span));
         SpanAssociations.get().associateSpan(ctx, span);
     }
 
@@ -54,14 +50,14 @@ public class HttpServerFilterIntercept {
             final Object response) {
         Span toTag = SpanAssociations.get().retrieveSpan(ctx);
         if (toTag != null) {
-            Tags.HTTP_STATUS.set(toTag, ((HttpResponsePacket) response).getStatus());
+            GrizzlyServerSpanDecorator.STANDARD_TAGS.onResponse((HttpResponsePacket) response, toTag);
         }
     }
 
-    public static class ScopeCompletionListener implements FilterChainContext.CompletionListener {
+    public static class SpanCompletionListener implements FilterChainContext.CompletionListener {
         private final Span span;
 
-        public ScopeCompletionListener(Span span) {
+        public SpanCompletionListener(Span span) {
             this.span = span;
         }
 
