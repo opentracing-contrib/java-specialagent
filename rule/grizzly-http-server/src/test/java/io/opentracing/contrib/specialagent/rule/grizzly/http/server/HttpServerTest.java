@@ -15,11 +15,10 @@
 
 package io.opentracing.contrib.specialagent.rule.grizzly.http.server;
 
-import static org.glassfish.grizzly.http.server.NetworkListener.*;
+import static org.glassfish.grizzly.http.server.NetworkListener.DEFAULT_NETWORK_HOST;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -32,9 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.ning.http.client.AsyncHttpClient;
-
-import io.opentracing.contrib.grizzly.http.server.AbstractHttpTest;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -43,7 +39,9 @@ import io.opentracing.mock.MockTracer;
  * @author Jose Montoya
  */
 @RunWith(AgentRunner.class)
-public class HttpServerTest extends AbstractHttpTest {
+public class HttpServerTest {
+  protected static final int PORT = 18906;
+  protected static final String LOCALHOST = "localhost";
   private HttpServer httpServer;
 
   @Before
@@ -73,10 +71,8 @@ public class HttpServerTest extends AbstractHttpTest {
       }
     });
 
-    try (final AsyncHttpClient client = new AsyncHttpClient()) {
-      final com.ning.http.client.Response response = client.prepareGet(new URL("http", LOCALHOST, PORT, "/").toString()).execute().get();
-      assertEquals(201, response.getStatusCode());
-    }
+    final org.apache.http.client.fluent.Response response = org.apache.http.client.fluent.Request.Get("http://" + LOCALHOST + ":" + PORT + "/").addHeader("beep", "boop").execute();
+    assertEquals(201, response.returnResponse().getStatusLine().getStatusCode());
 
     final List<MockSpan> spans = tracer.finishedSpans();
     assertEquals(1, spans.size());

@@ -6,30 +6,27 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.matcher.StringMatcher;
 import net.bytebuddy.utility.JavaModule;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
-import org.glassfish.grizzly.http.HttpHeader;
 import org.glassfish.grizzly.http.HttpResponsePacket;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class HttpServerFilterRule extends AgentRule {
     @Override
-    public AgentBuilder buildAgentChainedGlobal2(final AgentBuilder builder) {
+    public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
         return builder
-                // TODO: 7/10/20 - Figure out how to match only to HttpServerFilter but still advice HttpCodecFilter's handleRead
-                .type(named("org.glassfish.grizzly.http.HttpCodecFilter"))
+                .type(named("org.glassfish.grizzly.http.HttpServerFilter"))
                 .transform(new AgentBuilder.Transformer() {
                     @Override
                     public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
                         return builder.visit(advice(typeDescription).to(HandleReadAdvice.class).on(named("handleRead")
                                 .and(takesArgument(0, named("org.glassfish.grizzly.filterchain.FilterChainContext")))
-                                .and(takesArgument(1, named("org.glassfish.grizzly.http.HttpHeader")))
                                 .and(isPublic())));
                     }
                 })
-                .type(named("org.glassfish.grizzly.http.HttpServerFilter"))
                 .transform(new AgentBuilder.Transformer() {
                     @Override
                     public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
@@ -39,7 +36,67 @@ public class HttpServerFilterRule extends AgentRule {
                                 .and(takesArgument(2, named("org.glassfish.grizzly.http.HttpResponsePacket")))
                                 .and(takesArgument(3, named("org.glassfish.grizzly.http.HttpContent")))
                                 .and(isPrivate())));
-                }});
+                    }
+                })
+
+                .type(hasSuperType(named("org.glassfish.grizzly.filterchain.BaseFilter"))
+                        // common grizzly filters
+                        .and(not(named("org.glassfish.grizzly.filterchain.TransportFilter")))
+                        .and(not(named("org.glassfish.grizzly.nio.transport.TCPNIOTransportFilter")))
+                        // TODO: 7/11/20 Figure out why HttpServerFilter still matches
+                        .and(not(named("org.glassfish.grizzly.http.HttpServerFilter")))
+                        .and(not(named("org.glassfish.grizzly.utils.IdleTimeoutFilter")))
+                        .and(not(named("org.glassfish.grizzly.http.server.FileCacheFilter")))
+                )
+                .transform(new AgentBuilder.Transformer() {
+                    @Override
+                    public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
+                        return builder.visit(advice(typeDescription).to(WorkerHandleReadAdvice.class).on(named("handleRead")
+                                .and(takesArgument(0, named("org.glassfish.grizzly.filterchain.FilterChainContext")))
+                                .and(isPublic())));
+                    }
+                });
+    }
+
+    public static class HandleReadAdvice {
+        @Advice.OnMethodExit
+        public static void onExit(
+                final @ClassName String className,
+                final @Advice.Origin String origin,
+                @Advice.Argument(0) final FilterChainContext ctx,
+                @Advice.Return NextAction toReturn) {
+            if (isAllowed(className, origin))
+                HttpServerFilterIntercept.onHandleReadExit(ctx, toReturn);
+        }
+    }
+
+    public static class WorkerHandleReadAdvice {
+        @Advice.OnMethodEnter
+        public static void onEnter(
+                final @ClassName String className,
+                final @Advice.Origin String origin,
+                final @Advice.This Object thiz,
+                @Advice.Argument(0) final FilterChainContext ctx,
+                @Advice.Local("scope") Scope scope) {
+
+            // manually filtering HttpServerFilter
+            if (new StringMatcher("org.glassfish.grizzly.http.HttpServerFilter",
+                    StringMatcher.Mode.EQUALS_FULLY).matches(thiz.getClass().getName())) {
+                return;
+            }
+
+            if (isAllowed(className, origin))
+                scope = WorkerFilterIntercept.onHandleReadEnter(ctx);
+        }
+
+        @Advice.OnMethodExit
+        public static void onExit(
+                final @ClassName String className,
+                final @Advice.Origin String origin,
+                @Advice.Local("scope") Scope scope) {
+            if (isAllowed(className, origin))
+                WorkerFilterIntercept.onHandleReadExit(scope);
+        }
     }
 
     public static class PrepareResponseAdvice {
@@ -52,29 +109,6 @@ public class HttpServerFilterRule extends AgentRule {
             if (isAllowed(className, origin))
                 HttpServerFilterIntercept.onPrepareResponse(ctx, response);
         }
-    }
 
-    public static class HandleReadAdvice {
-        @Advice.OnMethodEnter
-        public static void onEnter(
-                final @ClassName String className,
-                final @Advice.Origin String origin,
-                @Advice.Argument(0) final FilterChainContext ctx,
-                @Advice.Argument(1) final HttpHeader httpHeader,
-                @Advice.Local("scope") Scope scope) {
-            if (isAllowed(className, origin))
-                scope = HttpServerFilterIntercept.onHandleReadEnter(ctx, httpHeader);
-        }
-
-        @Advice.OnMethodExit
-        public static void onExit(
-                final @ClassName String className,
-                final @Advice.Origin String origin,
-                @Advice.Argument(0) final FilterChainContext ctx,
-                @Advice.Return NextAction toReturn,
-                @Advice.Local("scope") Scope scope) {
-            if (isAllowed(className, origin))
-                HttpServerFilterIntercept.onHandleReadExit(ctx, toReturn, scope);
-        }
     }
 }

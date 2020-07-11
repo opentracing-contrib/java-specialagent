@@ -16,12 +16,15 @@
 package io.opentracing.contrib.specialagent.rule.grizzly.http.server;
 
 import io.opentracing.Span;
-import org.glassfish.grizzly.filterchain.FilterChainContext;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+/**
+ * This class provides span context capabilities. Based on
+ * https://github.com/opentracing-contrib/java-agent/blob/release-0.5.0/opentracing-agent/src/main/java/io/opentracing/contrib/agent/OpenTracingHelper.java
+ */
 public class SpanAssociations {
 
     private static final SpanAssociations INSTANCE = new SpanAssociations();
@@ -44,7 +47,7 @@ public class SpanAssociations {
      * @param span The span
      */
     public void associateSpan(Object obj, Span span) {
-        spanAssociations.putIfAbsent(obj, span);
+        spanAssociations.put(obj, span);
     }
 
     /**

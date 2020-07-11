@@ -44,13 +44,8 @@
                   <dependencies>
                     <dependency>
                       <groupId>org.glassfish.grizzly</groupId>
-                      <artifactId>grizzly-framework</artifactId>
-                      <version>org.glassfish.grizzly:grizzly-framework:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.glassfish.grizzly</groupId>
                       <artifactId>grizzly-http</artifactId>
-                      <version>org.glassfish.grizzly:grizzly-framework:[${min.version},]</version>
+                      <version>org.glassfish.grizzly:grizzly-http:[${min.version},]</version>
                     </dependency>
                   </dependencies>
                 </pass>
@@ -59,54 +54,27 @@
           </execution>
         </executions>
       </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-                <source>8</source>
-                <target>8</target>
-            </configuration>
-        </plugin>
     </plugins>
   </build>
   <dependencies>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
-      <artifactId>grizzly-framework</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <!-- https://github.com/opentracing-contrib/java-grizzly-http-server -->
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-grizzly-http-server</artifactId>
-      <version>${version.opentracing.grizzly}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-grizzly-http-server</artifactId>
-      <version>${version.opentracing.grizzly}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.grizzly</groupId>
-      <artifactId>grizzly-http-server</artifactId>
       <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
-      <artifactId>grizzly-http-client</artifactId>
-      <version>1.15</version>
+      <artifactId>grizzly-http-server</artifactId>
+      <version>${min.version}</version>
+      <optional>true</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>fluent-hc</artifactId>
+      <version>4.5.2</version>
       <optional>true</optional>
       <scope>test</scope>
     </dependency>
