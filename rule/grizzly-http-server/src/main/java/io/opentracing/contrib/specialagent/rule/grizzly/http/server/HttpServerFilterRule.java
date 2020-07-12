@@ -1,5 +1,7 @@
 package io.opentracing.contrib.specialagent.rule.grizzly.http.server;
 
+import io.opentracing.contrib.specialagent.Level;
+import io.opentracing.contrib.specialagent.Logger;
 import io.opentracing.Scope;
 import io.opentracing.contrib.specialagent.AgentRule;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -7,12 +9,15 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
-import net.bytebuddy.matcher.StringMatcher;
 import net.bytebuddy.utility.JavaModule;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class HttpServerFilterRule extends AgentRule {
+    public static final Logger logger = Logger.getLogger(HttpServerFilterRule.class);
+    private static final String FILTER_CHAIN_CONTEXT = "org.glassfish.grizzly.filterchain.FilterChainContext";
+    private static final String HANDLE_READ = "handleRead";
+
     @Override
     public AgentBuilder buildAgentChainedGlobal1(final AgentBuilder builder) {
         return builder
@@ -20,38 +25,35 @@ public class HttpServerFilterRule extends AgentRule {
                 .transform(new AgentBuilder.Transformer() {
                     @Override
                     public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-                        return builder.visit(advice(typeDescription).to(HandleReadAdvice.class).on(named("handleRead")
-                                .and(takesArgument(0, named("org.glassfish.grizzly.filterchain.FilterChainContext")))
-                                .and(isPublic())));
+                        return builder.visit(advice(typeDescription).to(HandleReadAdvice.class).on(named(HANDLE_READ)
+                                .and(takesArgument(0, named(FILTER_CHAIN_CONTEXT)))));
                     }
                 })
                 .transform(new AgentBuilder.Transformer() {
                     @Override
                     public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
                         return builder.visit(advice(typeDescription).to(PrepareResponseAdvice.class).on(named("prepareResponse")
-                                .and(takesArgument(0, named("org.glassfish.grizzly.filterchain.FilterChainContext")))
-                                .and(takesArgument(1, named("org.glassfish.grizzly.http.HttpRequestPacket")))
-                                .and(takesArgument(2, named("org.glassfish.grizzly.http.HttpResponsePacket")))
-                                .and(takesArgument(3, named("org.glassfish.grizzly.http.HttpContent")))
-                                .and(isPrivate())));
+                                .and(takesArgument(0, named(FILTER_CHAIN_CONTEXT)))
+                                .and(takesArgument(2, named("org.glassfish.grizzly.http.HttpResponsePacket")))));
                     }
                 })
 
-                .type(hasSuperType(named("org.glassfish.grizzly.filterchain.BaseFilter"))
-                        // common grizzly filters
-                        .and(not(named("org.glassfish.grizzly.filterchain.TransportFilter")))
-                        .and(not(named("org.glassfish.grizzly.nio.transport.TCPNIOTransportFilter")))
-                        // TODO: 7/11/20 Figure out why HttpServerFilter still matches
-                        .and(not(named("org.glassfish.grizzly.http.HttpServerFilter")))
-                        .and(not(named("org.glassfish.grizzly.utils.IdleTimeoutFilter")))
-                        .and(not(named("org.glassfish.grizzly.http.server.FileCacheFilter")))
-                )
+                .type(hasSuperClass(named("org.glassfish.grizzly.filterchain.BaseFilter"))
+                        // common http server filters
+                        .and(not(named("org.glassfish.grizzly.filterchain.TransportFilter")
+                                .or(named("org.glassfish.grizzly.nio.transport.TCPNIOTransportFilter"))
+                                .or(named("org.glassfish.grizzly.http.HttpServerFilter"))
+                                .or(named("org.glassfish.grizzly.http.HttpCodecFilter"))
+                                .or(named("org.glassfish.grizzly.utils.IdleTimeoutFilter"))
+                                // common http client filters
+                                .or(named("com.ning.http.client.providers.grizzly.AsyncHttpClientFilter"))
+                                .or(named("org.glassfish.grizzly.websockets.WebSocketClientFilter"))
+                                .or(hasSuperClass(named("org.glassfish.grizzly.http.HttpClientFilter"))))))
                 .transform(new AgentBuilder.Transformer() {
                     @Override
                     public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder, final TypeDescription typeDescription, final ClassLoader classLoader, final JavaModule module) {
-                        return builder.visit(advice(typeDescription).to(WorkerHandleReadAdvice.class).on(named("handleRead")
-                                .and(takesArgument(0, named("org.glassfish.grizzly.filterchain.FilterChainContext")))
-                                .and(isPublic())));
+                        return builder.visit(advice(typeDescription).to(WorkerHandleReadAdvice.class).on(named(HANDLE_READ)
+                                .and(takesArgument(0, named(FILTER_CHAIN_CONTEXT)))));
                     }
                 });
     }
@@ -77,11 +79,8 @@ public class HttpServerFilterRule extends AgentRule {
                 @Advice.Argument(value = 0, typing = Assigner.Typing.DYNAMIC) final Object ctx,
                 @Advice.Local("scope") Scope scope) {
 
-            // manually filtering HttpServerFilter
-            if (new StringMatcher("org.glassfish.grizzly.http.HttpServerFilter",
-                    StringMatcher.Mode.EQUALS_FULLY).matches(thiz.getClass().getName())) {
+            if (hackShouldFilter(thiz))
                 return;
-            }
 
             if (isAllowed(className, origin))
                 scope = WorkerFilterIntercept.onHandleReadEnter(ctx);
@@ -91,7 +90,12 @@ public class HttpServerFilterRule extends AgentRule {
         public static void onExit(
                 final @ClassName String className,
                 final @Advice.Origin String origin,
+                final @Advice.This Object thiz,
                 @Advice.Local("scope") Scope scope) {
+
+            if (hackShouldFilter(thiz))
+                return;
+
             if (isAllowed(className, origin))
                 WorkerFilterIntercept.onHandleReadExit(scope);
         }
@@ -104,9 +108,17 @@ public class HttpServerFilterRule extends AgentRule {
                 final @Advice.Origin String origin,
                 @Advice.Argument(value = 0, typing = Assigner.Typing.DYNAMIC) final Object ctx,
                 @Advice.Argument(value = 2, typing = Assigner.Typing.DYNAMIC) final Object response) {
+
             if (isAllowed(className, origin))
                 HttpServerFilterIntercept.onPrepareResponse(ctx, response);
         }
 
+    }
+
+    public static boolean hackShouldFilter(Object thiz) {
+        // TODO: 7/11/20 figure out why these are not filtered at TypeDescription
+        logger.log(Level.FINER, "Checking predicate for potential worker filter " + thiz.getClass().getName());
+        return "com.ning.http.client.providers.grizzly.AsyncHttpClientFilter".equals(thiz.getClass().getName()) ||
+                "org.glassfish.grizzly.websockets.WebSocketClientFilter".equals(thiz.getClass().getName());
     }
 }

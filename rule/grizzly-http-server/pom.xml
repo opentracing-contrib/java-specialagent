@@ -28,7 +28,7 @@
   <properties>
     <sa.rule.name>grizzly:http-server</sa.rule.name>
     <min.version>2.3.35</min.version>
-    <version.opentracing.grizzly>0.1.4-SNAPSHOT</version.opentracing.grizzly>
+    <version.opentracing.grizzly>0.2.0</version.opentracing.grizzly>
   </properties>
   <build>
     <plugins>
@@ -86,9 +86,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>fluent-hc</artifactId>
-      <version>4.5.2</version>
+      <groupId>org.glassfish.grizzly</groupId>
+      <artifactId>grizzly-http-client</artifactId>
+      <version>1.15</version>
       <optional>true</optional>
       <scope>test</scope>
     </dependency>
