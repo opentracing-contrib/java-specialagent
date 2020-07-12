@@ -69,7 +69,6 @@
         <module>apache-httpclient</module>
         <module>lettuce</module>
         <module>mule-4-core</module>
-        <module>mule-4-http-service</module>
         <module>mule-4-module-artifact</module>
         <module>spring-webflux</module>
         <module>redisson</module>

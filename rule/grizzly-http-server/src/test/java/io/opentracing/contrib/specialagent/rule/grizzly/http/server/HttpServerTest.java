@@ -15,13 +15,15 @@
 
 package io.opentracing.contrib.specialagent.rule.grizzly.http.server;
 
-import static org.glassfish.grizzly.http.server.NetworkListener.*;
+import static org.glassfish.grizzly.http.server.NetworkListener.DEFAULT_NETWORK_HOST;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import com.ning.http.client.AsyncHttpClient;
+import io.opentracing.contrib.grizzly.http.server.AbstractHttpTest;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -32,9 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.ning.http.client.AsyncHttpClient;
-
-import io.opentracing.contrib.grizzly.http.server.AbstractHttpTest;
 import io.opentracing.contrib.specialagent.AgentRunner;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -72,7 +71,7 @@ public class HttpServerTest extends AbstractHttpTest {
         response.setStatus(201);
       }
     });
-
+    
     try (final AsyncHttpClient client = new AsyncHttpClient()) {
       final com.ning.http.client.Response response = client.prepareGet(new URL("http", LOCALHOST, PORT, "/").toString()).execute().get();
       assertEquals(201, response.getStatusCode());

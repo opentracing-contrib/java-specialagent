@@ -28,7 +28,7 @@
   <properties>
     <sa.rule.name>grizzly:http-server</sa.rule.name>
     <min.version>2.3.35</min.version>
-    <version.opentracing.grizzly>0.1.3</version.opentracing.grizzly>
+    <version.opentracing.grizzly>0.2.0</version.opentracing.grizzly>
   </properties>
   <build>
     <plugins>
@@ -44,13 +44,8 @@
                   <dependencies>
                     <dependency>
                       <groupId>org.glassfish.grizzly</groupId>
-                      <artifactId>grizzly-framework</artifactId>
-                      <version>org.glassfish.grizzly:grizzly-framework:[${min.version},]</version>
-                    </dependency>
-                    <dependency>
-                      <groupId>org.glassfish.grizzly</groupId>
                       <artifactId>grizzly-http</artifactId>
-                      <version>org.glassfish.grizzly:grizzly-framework:[${min.version},]</version>
+                      <version>org.glassfish.grizzly:grizzly-http:[${min.version},]</version>
                     </dependency>
                   </dependencies>
                 </pass>
@@ -75,13 +70,6 @@
       <version>${version.opentracing.grizzly}</version>
       <type>test-jar</type>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.grizzly</groupId>
-      <artifactId>grizzly-framework</artifactId>
-      <version>${min.version}</version>
-      <optional>true</optional>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
