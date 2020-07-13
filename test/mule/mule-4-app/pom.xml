@@ -29,6 +29,33 @@
   <properties>
     <exec.skip>true</exec.skip>
   </properties>
+  <profiles>
+    <profile>
+      <id>jdk11-compat</id>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
+      <!-- This could be a bug with Mule 4 class loading mechanism behaving differently between
+      JDK 1.8 and 11, or an oversight on mule-4-artifact-module instrumentation. To be determined... -->
+      <dependencies>
+        <dependency>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-api</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-noop</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing</groupId>
+          <artifactId>opentracing-util</artifactId>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
   <build>
     <plugins>
       <plugin>
