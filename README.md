@@ -583,7 +583,6 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | [Lettuce Client](https://github.com/opentracing-contrib/java-redis-client/tree/master/opentracing-redis-lettuce) | [`lettuce`][lettuce] | 5.0.0.RELEASE | LATEST |
 | [MongoDB Driver](https://github.com/opentracing-contrib/java-mongo-driver) | [`mongo:driver`][mongo-driver] | 3.9.0 | LATEST |
 | Mule 4 Artifact Module | [`mule:artifact-module:4`][mule-4-module-artifact] | 4.2.2 | LATEST |
-| Mule 4 Http Service | [`mule:http-service:4`][mule-4-http-service] | 1.4.7 | LATEST |
 | Mule 4 Core | [`mule:core:4`][mule-4-core] | 4.2.2 | LATEST |
 | [Neo4j Driver](https://github.com/opentracing-contrib/java-neo4j-driver) | [`neo4j:driver`][neo4j-driver] | 4.0.0 | LATEST |
 | Netty | [`netty`][netty] | 4.1.0 | 4.1.46.Final |
@@ -599,7 +598,7 @@ For the development of <ins>[Integration Rules](#64-integration-rule)</ins>, ple
 | | [`rxjava:3`][rxjava-3] | 3.0.0 | LATEST |
 | [Spring JMS](https://github.com/opentracing-contrib/java-jms/tree/master/opentracing-jms-spring) | [`spring:jms`][spring-jms] | 5.0.0.RELEASE | LATEST |
 | [Spring Kafka](https://github.com/opentracing-contrib/java-kafka-client/tree/master/opentracing-kafka-spring) | [`spring:kafka`][spring-kafka] | 2.2.0.RELEASE | LATEST |
-| [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.0.RELEASE | LATEST |
+| [Spring Messaging](https://github.com/opentracing-contrib/java-spring-messaging) | [`spring:messaging`][spring-messaging] | 5.1.0.RELEASE | 5.3.0.RELEASE |
 | [Spring RabbitMQ](https://github.com/opentracing-contrib/java-spring-rabbitmq) | [`spring:rabbitmq`][spring-rabbitmq] | 2.0.0.RELEASE | LATEST |
 | [Spring WebFlux](https://github.com/opentracing-contrib/java-spring-web) | [`spring:webflux`][spring-webflux] | 5.1.0.RELEASE | LATEST |
 | [Spring Boot WebSocket STOMP](https://github.com/opentracing-contrib/java-spring-cloud/tree/master/instrument-starters/opentracing-spring-cloud-websocket-starter) | [`spring:websocket`][spring-websocket] | 2.1.0.RELEASE | LATEST |
@@ -774,7 +773,6 @@ This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICE
 [lettuce]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/lettuce
 [mongo-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mongo-driver
 [mule-4-core]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-core
-[mule-4-http-service]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-http-service
 [mule-4-module-artifact]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/mule-4-module-artifact
 [neo4j-driver]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/neo4j-driver
 [netty]: https://github.com/opentracing-contrib/java-specialagent/tree/master/rule/netty
