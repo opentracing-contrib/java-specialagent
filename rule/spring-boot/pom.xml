@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.rule</groupId>
     <artifactId>rule</artifactId>
-    <version>1.7.4-SNAPSHOT</version>
+    <version>1.7.4</version>
   </parent>
   <artifactId>spring-boot</artifactId>
   <name>SpecialAgent Rule for Spring Boot</name>
