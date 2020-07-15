@@ -27,16 +27,16 @@
         <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
       </properties>
       <repositories>
-        <repository>
-          <id>bintray-lightstep-maven</id>
-          <url>https://dl.bintray.com/lightstep/maven/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
+<!--        <repository>-->
+<!--          <id>bintray-lightstep-maven</id>-->
+<!--          <url>https://dl.bintray.com/lightstep/maven/</url>-->
+<!--          <releases>-->
+<!--            <enabled>true</enabled>-->
+<!--          </releases>-->
+<!--          <snapshots>-->
+<!--            <enabled>true</enabled>-->
+<!--          </snapshots>-->
+<!--        </repository>-->
         <repository>
           <id>snapshots-repo</id>
           <url>http://oss.sonatype.org/content/repositories/snapshots</url>
