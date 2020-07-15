@@ -113,10 +113,10 @@ workflows:
           name: install-jdk8
           jdk: "8"
           image: "jdk8:0.1.1"
-      - install:
-          name: install-jdk11
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
+#      - install:
+#          name: install-jdk11
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
       - test:
           name: akka-actor-jdk8
           test: "akka-actor"
@@ -124,13 +124,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: akka-actor-jdk11
-          test: "akka-actor"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: akka-actor-jdk11
+#          test: "akka-actor"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: akka-http-jdk8
           test: "akka-http"
@@ -138,13 +138,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: akka-http-jdk11
-          test: "akka-http"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: akka-http-jdk11
+#          test: "akka-http"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: apache-httpclient-jdk8
           test: "apache-httpclient"
@@ -152,13 +152,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: apache-httpclient-jdk11
-          test: "apache-httpclient"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: apache-httpclient-jdk11
+#          test: "apache-httpclient"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: asynchttpclient-jdk8
           test: "asynchttpclient"
@@ -166,13 +166,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: asynchttpclient-jdk11
-          test: "asynchttpclient"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: asynchttpclient-jdk11
+#          test: "asynchttpclient"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: aws-sdk-jdk8
           test: "aws-sdk"
@@ -180,13 +180,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: aws-sdk-jdk11
-          test: "aws-sdk"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: aws-sdk-jdk11
+#          test: "aws-sdk"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: cassandra-driver-jdk8
           test: "cassandra-driver"
@@ -194,13 +194,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: cassandra-driver-jdk11
-          test: "cassandra-driver"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: cassandra-driver-jdk11
+#          test: "cassandra-driver"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: concurrent-jdk8
           test: "concurrent"
@@ -208,13 +208,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: concurrent-jdk11
-          test: "concurrent"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: concurrent-jdk11
+#          test: "concurrent"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: couchbase-client-jdk8
           test: "couchbase-client"
@@ -222,13 +222,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: couchbase-client-jdk11
-          test: "couchbase-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: couchbase-client-jdk11
+#          test: "couchbase-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: cxf-jdk8
           test: "cxf"
@@ -236,13 +236,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: cxf-jdk11
-          test: "cxf"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: cxf-jdk11
+#          test: "cxf"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: dubbo-jdk8
           test: "dubbo"
@@ -250,13 +250,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: dubbo-jdk11
-          test: "dubbo"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: dubbo-jdk11
+#          test: "dubbo"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: dynamic-jdk8
           test: "dynamic"
@@ -264,13 +264,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: dynamic-jdk11
-          test: "dynamic"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: dynamic-jdk11
+#          test: "dynamic"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: elasticsearch-client-jdk8
           test: "elasticsearch-client"
@@ -278,13 +278,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: elasticsearch-client-jdk11
-          test: "elasticsearch-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: elasticsearch-client-jdk11
+#          test: "elasticsearch-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: feign-jdk8
           test: "feign"
@@ -292,13 +292,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: feign-jdk11
-          test: "feign"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: feign-jdk11
+#          test: "feign"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: google-http-client-jdk8
           test: "google-http-client"
@@ -306,13 +306,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: google-http-client-jdk11
-          test: "google-http-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: google-http-client-jdk11
+#          test: "google-http-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: grizzly-http-client-jdk8
           test: "grizzly-http-client"
@@ -320,13 +320,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: grizzly-http-client-jdk11
-          test: "grizzly-http-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: grizzly-http-client-jdk11
+#          test: "grizzly-http-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: grizzly-http-server-jdk8
           test: "grizzly-http-server"
@@ -334,13 +334,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: grizzly-http-server-jdk11
-          test: "grizzly-http-server"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: grizzly-http-server-jdk11
+#          test: "grizzly-http-server"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: grpc-jdk8
           test: "grpc"
@@ -348,13 +348,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: grpc-jdk11
-          test: "grpc"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: grpc-jdk11
+#          test: "grpc"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: hazelcast-jdk8
           test: "hazelcast"
@@ -362,13 +362,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: hazelcast-jdk11
-          test: "hazelcast"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: hazelcast-jdk11
+#          test: "hazelcast"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: httpurlconnection-jdk8
           test: "httpurlconnection"
@@ -376,13 +376,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: httpurlconnection-jdk11
-          test: "httpurlconnection"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: httpurlconnection-jdk11
+#          test: "httpurlconnection"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: hystrix-jdk8
           test: "hystrix"
@@ -390,13 +390,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: hystrix-jdk11
-          test: "hystrix"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: hystrix-jdk11
+#          test: "hystrix"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: jaxrs-jdk8
           test: "jaxrs"
@@ -404,13 +404,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: jaxrs-jdk11
-          test: "jaxrs"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: jaxrs-jdk11
+#          test: "jaxrs"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: jdbc-jdk8
           test: "jdbc"
@@ -418,13 +418,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: jdbc-jdk11
-          test: "jdbc"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: jdbc-jdk11
+#          test: "jdbc"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: jdbi-jdk8
           test: "jdbi"
@@ -432,13 +432,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: jdbi-jdk11
-          test: "jdbi"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: jdbi-jdk11
+#          test: "jdbi"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: jedis-jdk8
           test: "jedis"
@@ -446,13 +446,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: jedis-jdk11
-          test: "jedis"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: jedis-jdk11
+#          test: "jedis"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: jms-jdk8
           test: "jms"
@@ -460,13 +460,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: jms-jdk11
-          test: "jms"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: jms-jdk11
+#          test: "jms"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: kafka-client-jdk8
           test: "kafka-client"
@@ -474,13 +474,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: kafka-client-jdk11
-          test: "kafka-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: kafka-client-jdk11
+#          test: "kafka-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: kafka-streams-jdk8
           test: "kafka-streams"
@@ -488,13 +488,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: kafka-streams-jdk11
-          test: "kafka-streams"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: kafka-streams-jdk11
+#          test: "kafka-streams"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: lettuce-jdk8
           test: "lettuce"
@@ -502,13 +502,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: lettuce-jdk11
-          test: "lettuce"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: lettuce-jdk11
+#          test: "lettuce"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: mongo-driver-async-jdk8
           test: "mongo-driver-async"
@@ -516,13 +516,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: mongo-driver-async-jdk11
-          test: "mongo-driver-async"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: mongo-driver-async-jdk11
+#          test: "mongo-driver-async"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: mongo-driver-reactive-jdk8
           test: "mongo-driver-reactive"
@@ -530,13 +530,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: mongo-driver-reactive-jdk11
-          test: "mongo-driver-reactive"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: mongo-driver-reactive-jdk11
+#          test: "mongo-driver-reactive"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: mongo-driver-jdk8
           test: "mongo-driver"
@@ -544,13 +544,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: mongo-driver-jdk11
-          test: "mongo-driver"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: mongo-driver-jdk11
+#          test: "mongo-driver"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: mule-jdk8
           test: "mule"
@@ -558,13 +558,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: mule-jdk11
-          test: "mule"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: mule-jdk11
+#          test: "mule"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: neo4j-driver-jdk8
           test: "neo4j-driver"
@@ -572,13 +572,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: neo4j-driver-jdk11
-          test: "neo4j-driver"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: neo4j-driver-jdk11
+#          test: "neo4j-driver"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: netty-jdk8
           test: "netty"
@@ -586,13 +586,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: netty-jdk11
-          test: "netty"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: netty-jdk11
+#          test: "netty"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: okhttp-jdk8
           test: "okhttp"
@@ -600,13 +600,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: okhttp-jdk11
-          test: "okhttp"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: okhttp-jdk11
+#          test: "okhttp"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: play-ws-jdk8
           test: "play-ws"
@@ -614,13 +614,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: play-ws-jdk11
-          test: "play-ws"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: play-ws-jdk11
+#          test: "play-ws"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: play-jdk8
           test: "play"
@@ -628,13 +628,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: play-jdk11
-          test: "play"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: play-jdk11
+#          test: "play"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: pulsar-client-jdk8
           test: "pulsar-client"
@@ -642,13 +642,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: pulsar-client-jdk11
-          test: "pulsar-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: pulsar-client-jdk11
+#          test: "pulsar-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: pulsar-functions-jdk8
           test: "pulsar-functions"
@@ -656,13 +656,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: pulsar-functions-jdk11
-          test: "pulsar-functions"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: pulsar-functions-jdk11
+#          test: "pulsar-functions"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: rabbitmq-client-jdk8
           test: "rabbitmq-client"
@@ -670,13 +670,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: rabbitmq-client-jdk11
-          test: "rabbitmq-client"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: rabbitmq-client-jdk11
+#          test: "rabbitmq-client"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: ratpack-jdk8
           test: "ratpack"
@@ -684,13 +684,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: ratpack-jdk11
-          test: "ratpack"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: ratpack-jdk11
+#          test: "ratpack"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: reactor-jdk8
           test: "reactor"
@@ -698,13 +698,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: reactor-jdk11
-          test: "reactor"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: reactor-jdk11
+#          test: "reactor"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: redisson-jdk8
           test: "redisson"
@@ -712,13 +712,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: redisson-jdk11
-          test: "redisson"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: redisson-jdk11
+#          test: "redisson"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: rewrite-jdk8
           test: "rewrite"
@@ -726,13 +726,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: rewrite-jdk11
-          test: "rewrite"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: rewrite-jdk11
+#          test: "rewrite"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: rxjava-jdk8
           test: "rxjava"
@@ -740,13 +740,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: rxjava-jdk11
-          test: "rxjava"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: rxjava-jdk11
+#          test: "rxjava"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: servlet-jetty-jdk8
           test: "servlet-jetty"
@@ -754,13 +754,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: servlet-jetty-jdk11
-          test: "servlet-jetty"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: servlet-jetty-jdk11
+#          test: "servlet-jetty"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: servlet-tomcat-jdk8
           test: "servlet-tomcat"
@@ -768,13 +768,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: servlet-tomcat-jdk11
-          test: "servlet-tomcat"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: servlet-tomcat-jdk11
+#          test: "servlet-tomcat"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: sparkjava-jdk8
           test: "sparkjava"
@@ -782,13 +782,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: sparkjava-jdk11
-          test: "sparkjava"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: sparkjava-jdk11
+#          test: "sparkjava"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-boot-jdk8
           test: "spring-boot"
@@ -796,13 +796,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-boot-jdk11
-          test: "spring-boot"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-boot-jdk11
+#          test: "spring-boot"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-data-jdk8
           test: "spring-data"
@@ -810,13 +810,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-data-jdk11
-          test: "spring-data"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-data-jdk11
+#          test: "spring-data"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-jms-jdk8
           test: "spring-jms"
@@ -824,13 +824,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-jms-jdk11
-          test: "spring-jms"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-jms-jdk11
+#          test: "spring-jms"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-kafka-jdk8
           test: "spring-kafka"
@@ -838,13 +838,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-kafka-jdk11
-          test: "spring-kafka"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-kafka-jdk11
+#          test: "spring-kafka"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-messaging-jdk8
           test: "spring-messaging"
@@ -852,13 +852,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-messaging-jdk11
-          test: "spring-messaging"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-messaging-jdk11
+#          test: "spring-messaging"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-rabbitmq-jdk8
           test: "spring-rabbitmq"
@@ -866,13 +866,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-rabbitmq-jdk11
-          test: "spring-rabbitmq"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-rabbitmq-jdk11
+#          test: "spring-rabbitmq"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-scheduling-jdk8
           test: "spring-scheduling"
@@ -880,13 +880,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-scheduling-jdk11
-          test: "spring-scheduling"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-scheduling-jdk11
+#          test: "spring-scheduling"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-web-jdk8
           test: "spring-web"
@@ -894,13 +894,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-web-jdk11
-          test: "spring-web"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-web-jdk11
+#          test: "spring-web"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-webflux-jdk8
           test: "spring-webflux"
@@ -908,13 +908,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-webflux-jdk11
-          test: "spring-webflux"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-webflux-jdk11
+#          test: "spring-webflux"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-webmvc-jdk8
           test: "spring-webmvc"
@@ -922,13 +922,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-webmvc-jdk11
-          test: "spring-webmvc"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-webmvc-jdk11
+#          test: "spring-webmvc"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spring-websocket-jdk8
           test: "spring-websocket"
@@ -936,13 +936,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spring-websocket-jdk11
-          test: "spring-websocket"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spring-websocket-jdk11
+#          test: "spring-websocket"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: spymemcached-jdk8
           test: "spymemcached"
@@ -950,13 +950,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: spymemcached-jdk11
-          test: "spymemcached"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: spymemcached-jdk11
+#          test: "spymemcached"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: thrift-jdk8
           test: "thrift"
@@ -964,13 +964,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: thrift-jdk11
-          test: "thrift"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: thrift-jdk11
+#          test: "thrift"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: twilio-jdk8
           test: "twilio"
@@ -978,13 +978,13 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: twilio-jdk11
-          test: "twilio"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: twilio-jdk11
+#          test: "twilio"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - test:
           name: zuul-jdk8
           test: "zuul"
@@ -992,141 +992,141 @@ workflows:
           image: "jdk8:0.1.1"
           requires:
             - install-jdk8
-      - test:
-          name: zuul-jdk11
-          test: "zuul"
-          jdk: "11"
-          image: "openjdk:11-jdk-stretch"
-          requires:
-            - install-jdk11
+#      - test:
+#          name: zuul-jdk11
+#          test: "zuul"
+#          jdk: "11"
+#          image: "openjdk:11-jdk-stretch"
+#          requires:
+#            - install-jdk11
       - deploy:
           name: deploy
           jdk: "8"
           image: "jdk8:0.1.1"
           requires:
             - akka-actor-jdk8
-            - akka-actor-jdk11
+#            - akka-actor-jdk11
             - akka-http-jdk8
-            - akka-http-jdk11
+#            - akka-http-jdk11
             - apache-httpclient-jdk8
-            - apache-httpclient-jdk11
+#            - apache-httpclient-jdk11
             - asynchttpclient-jdk8
-            - asynchttpclient-jdk11
+#            - asynchttpclient-jdk11
             - aws-sdk-jdk8
-            - aws-sdk-jdk11
+#            - aws-sdk-jdk11
             - cassandra-driver-jdk8
-            - cassandra-driver-jdk11
+#            - cassandra-driver-jdk11
             - concurrent-jdk8
-            - concurrent-jdk11
+#            - concurrent-jdk11
             - couchbase-client-jdk8
-            - couchbase-client-jdk11
+#            - couchbase-client-jdk11
             - cxf-jdk8
-            - cxf-jdk11
+#            - cxf-jdk11
             - dubbo-jdk8
-            - dubbo-jdk11
+#            - dubbo-jdk11
             - dynamic-jdk8
-            - dynamic-jdk11
+#            - dynamic-jdk11
             - elasticsearch-client-jdk8
-            - elasticsearch-client-jdk11
+#            - elasticsearch-client-jdk11
             - feign-jdk8
-            - feign-jdk11
+#            - feign-jdk11
             - google-http-client-jdk8
-            - google-http-client-jdk11
+#            - google-http-client-jdk11
             - grizzly-http-client-jdk8
-            - grizzly-http-client-jdk11
+#            - grizzly-http-client-jdk11
             - grizzly-http-server-jdk8
-            - grizzly-http-server-jdk11
+#            - grizzly-http-server-jdk11
             - grpc-jdk8
-            - grpc-jdk11
+#            - grpc-jdk11
             - hazelcast-jdk8
-            - hazelcast-jdk11
+#            - hazelcast-jdk11
             - httpurlconnection-jdk8
-            - httpurlconnection-jdk11
+#            - httpurlconnection-jdk11
             - hystrix-jdk8
-            - hystrix-jdk11
+#            - hystrix-jdk11
             - jaxrs-jdk8
-            - jaxrs-jdk11
+#            - jaxrs-jdk11
             - jdbc-jdk8
-            - jdbc-jdk11
+#            - jdbc-jdk11
             - jdbi-jdk8
-            - jdbi-jdk11
+#            - jdbi-jdk11
             - jedis-jdk8
-            - jedis-jdk11
+#            - jedis-jdk11
             - jms-jdk8
-            - jms-jdk11
+#            - jms-jdk11
             - kafka-client-jdk8
-            - kafka-client-jdk11
+#            - kafka-client-jdk11
             - kafka-streams-jdk8
-            - kafka-streams-jdk11
+#            - kafka-streams-jdk11
             - lettuce-jdk8
-            - lettuce-jdk11
+#            - lettuce-jdk11
             - mongo-driver-async-jdk8
-            - mongo-driver-async-jdk11
+#            - mongo-driver-async-jdk11
             - mongo-driver-jdk8
-            - mongo-driver-jdk11
+#            - mongo-driver-jdk11
             - mongo-driver-reactive-jdk8
-            - mongo-driver-reactive-jdk11
+#            - mongo-driver-reactive-jdk11
             - mule-jdk8
-            - mule-jdk11
+#            - mule-jdk11
             - neo4j-driver-jdk8
-            - neo4j-driver-jdk11
+#            - neo4j-driver-jdk11
             - netty-jdk8
-            - netty-jdk11
+#            - netty-jdk11
             - okhttp-jdk8
-            - okhttp-jdk11
+#            - okhttp-jdk11
             - play-jdk8
-            - play-jdk11
+#            - play-jdk11
             - play-ws-jdk8
-            - play-ws-jdk11
+#            - play-ws-jdk11
             - pulsar-client-jdk8
-            - pulsar-client-jdk11
+#            - pulsar-client-jdk11
             - pulsar-functions-jdk8
-            - pulsar-functions-jdk11
+#            - pulsar-functions-jdk11
             - rabbitmq-client-jdk8
-            - rabbitmq-client-jdk11
+#            - rabbitmq-client-jdk11
             - ratpack-jdk8
-            - ratpack-jdk11
+#            - ratpack-jdk11
             - reactor-jdk8
-            - reactor-jdk11
+#            - reactor-jdk11
             - redisson-jdk8
-            - redisson-jdk11
+#            - redisson-jdk11
             - rewrite-jdk8
-            - rewrite-jdk11
+#            - rewrite-jdk11
             - rxjava-jdk8
-            - rxjava-jdk11
+#            - rxjava-jdk11
             - servlet-jetty-jdk8
-            - servlet-jetty-jdk11
+#            - servlet-jetty-jdk11
             - servlet-tomcat-jdk8
-            - servlet-tomcat-jdk11
+#            - servlet-tomcat-jdk11
             - sparkjava-jdk8
-            - sparkjava-jdk11
+#            - sparkjava-jdk11
             - spring-boot-jdk8
-            - spring-boot-jdk11
+#            - spring-boot-jdk11
             - spring-data-jdk8
-            - spring-data-jdk11
+#            - spring-data-jdk11
             - spring-jms-jdk8
-            - spring-jms-jdk11
+#            - spring-jms-jdk11
             - spring-kafka-jdk8
-            - spring-kafka-jdk11
+#            - spring-kafka-jdk11
             - spring-messaging-jdk8
-            - spring-messaging-jdk11
+#            - spring-messaging-jdk11
             - spring-rabbitmq-jdk8
-            - spring-rabbitmq-jdk11
+#            - spring-rabbitmq-jdk11
             - spring-scheduling-jdk8
-            - spring-scheduling-jdk11
+#            - spring-scheduling-jdk11
             - spring-web-jdk8
-            - spring-web-jdk11
+#            - spring-web-jdk11
             - spring-webflux-jdk8
-            - spring-webflux-jdk11
+#            - spring-webflux-jdk11
             - spring-webmvc-jdk8
-            - spring-webmvc-jdk11
+#            - spring-webmvc-jdk11
             - spring-websocket-jdk8
-            - spring-websocket-jdk11
+#            - spring-websocket-jdk11
             - spymemcached-jdk8
-            - spymemcached-jdk11
+#            - spymemcached-jdk11
             - thrift-jdk8
-            - thrift-jdk11
+#            - thrift-jdk11
             - twilio-jdk8
-            - twilio-jdk11
+#            - twilio-jdk11
             - zuul-jdk8
-            - zuul-jdk11
+#            - zuul-jdk11
