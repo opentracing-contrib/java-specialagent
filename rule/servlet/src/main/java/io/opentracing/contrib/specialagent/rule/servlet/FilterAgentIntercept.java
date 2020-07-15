@@ -16,6 +16,8 @@
 package io.opentracing.contrib.specialagent.rule.servlet;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.servlet.Filter;
@@ -35,7 +37,7 @@ import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.util.GlobalTracer;
 
 public class FilterAgentIntercept extends ServletFilterAgentIntercept {
-  public static final WeakHashMap<ServletResponse,Integer> servletResponseToStatus = new WeakHashMap<>();
+  public static final Map<ServletResponse,Integer> servletResponseToStatus = Collections.synchronizedMap(new WeakHashMap<ServletResponse, Integer>());
 
   public static void init(final Object thiz, final Object filterConfig) {
     if (filterConfig != null)
