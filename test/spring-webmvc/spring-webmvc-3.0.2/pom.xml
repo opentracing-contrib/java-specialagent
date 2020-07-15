@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.spring-webmvc</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>1.7.4</version>
+    <version>1.7.5-SNAPSHOT</version>
   </parent>
   <artifactId>spring-webmvc-3.0.2</artifactId>
   <name>SpecialAgent Test for Spring Web MVC 3.0.2</name>
