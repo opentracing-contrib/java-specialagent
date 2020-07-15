@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.opentracing.contrib.specialagent.test.redisson</groupId>
     <artifactId>redisson</artifactId>
-    <version>1.7.4-SNAPSHOT</version>
+    <version>1.7.4</version>
   </parent>
   <artifactId>redisson-3.11.0</artifactId>
   <name>SpecialAgent Test for Redisson 3.11.0</name>

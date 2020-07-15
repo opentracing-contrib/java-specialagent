@@ -1,5 +1,12 @@
 # Changes by Version
 
+## v1.7.4 (2020-07-15)
+* Grizzly Http Server refactor (#581)
+* Fixes Spring messaging version incompatibility (#580)
+* Update Lightstep Tracer Bundle to 0.30.0 (#579)
+* Unprotected WeakHashMap in servlet rule leads to 100% CPU intermittently (#578)
+* Avoid suppressing of creation of new span when active span of another component exists (#571)
+
 ## v1.7.3 (2020-05-10)
 * Improved runtime performance in `BootLoaderAgent` (#552)
 * Resolution to "self tracing" issue experienced with Jaeger (#531 #548)
