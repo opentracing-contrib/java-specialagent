@@ -616,7 +616,7 @@ Intrinsically, the <ins>SpecialAgent</ins> includes support for the following <i
 |:-|:-|
 | [Jaeger Trace Exporter](https://github.com/opentracing-contrib/java-opentracing-jaeger-bundle)<br/><sup>[(configuration reference)](https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/README.md#configuration-via-environment)</sup> | `jaeger`<br/>&nbsp; |
 | [LightStep Trace Exporter](https://github.com/lightstep/lightstep-tracer-java/tree/master/lightstep-tracer-jre-bundle)<br/><sup>[(configuration reference)](https://docs.lightstep.com/docs/create-projects-for-your-environments)</sup> | `lightstep`<br/>&nbsp; |
-| [Wavefront Trace Exporter](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)<br/><sup>[(configuration reference)](https://github.com/wavefrontHQ/wavefront-jersey-sdk-java#quickstart)</sup> | `wavefront`<br/>&nbsp; |
+| [Wavefront Trace Exporter](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java)<br/><sup>[(configuration reference)](https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java#setup-steps)</sup> | `wavefront`<br/>&nbsp; |
 | [OpenTelemetry Bridge Trace Exporter](https://github.com/opentracing-contrib/java-opentelemetry-bridge)<br/><sup><ins>(configuration reference)</ins></sup> | `otel`<br/>&nbsp; |
 | [`MockTracer`](https://github.com/opentracing/opentracing-java/blob/master/opentracing-mock/)| `mock` |
 
