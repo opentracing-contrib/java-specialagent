@@ -24,7 +24,7 @@
     <version>1.7.5-SNAPSHOT</version>
   </parent>
   <artifactId>quartz</artifactId>
-  <name>SpecialAgent Rule for quartz</name>
+  <name>SpecialAgent Rule for Quartz</name>
   <properties>
     <sa.rule.name>quartz</sa.rule.name>
     <min.version>2.0.0</min.version>
@@ -37,6 +37,12 @@
       <version>${min.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
