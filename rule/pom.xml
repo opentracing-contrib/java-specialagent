@@ -97,6 +97,7 @@
         <module>pulsar-functions</module>
         <module>dynamic</module>
         <module>cxf</module>
+        <module>quartz</module>
       </modules>
       <build>
         <resources>
