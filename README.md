@@ -1,5 +1,8 @@
 # Java Agent for OpenTracing
 
+_NOTE: It is deprecated now.
+Please migrate to [OpenTelemetry Instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)._
+
 > Automatically instruments 3rd-party libraries in Java applications
 
 [![Build Status](https://img.shields.io/circleci/build/gh/opentracing-contrib/java-specialagent/master)][circleci]
