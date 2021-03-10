@@ -34,7 +34,10 @@ public class ConfigurationTest {
   }
 
   private static void testDecorators(final String spanDecoratorsArgs, final Class<?> ... expecteds) {
-    final List<ApacheClientSpanDecorator> decorators = Configuration.parseSpanDecorators(spanDecoratorsArgs);
+    System.clearProperty("sa.integration.apache:httpclient.spanDecorators");
+    if(spanDecoratorsArgs != null)
+      System.setProperty("sa.integration.apache:httpclient.spanDecorators", spanDecoratorsArgs);
+    final List<ApacheClientSpanDecorator> decorators = Configuration.parseSpanDecorators();
     assertEquals(expecteds.length, decorators.size());
     final List<Class<?>> list = Arrays.asList(expecteds);
     for (final ApacheClientSpanDecorator decorator : decorators)

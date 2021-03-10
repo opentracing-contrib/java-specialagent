@@ -201,6 +201,8 @@ public class SpecialAgent {
     final HashMap<String,Boolean> integrationRuleNameToEnable = new HashMap<>();
     final HashMap<String,Boolean> traceExporterNameToEnable = new HashMap<>();
     final File[] classPaths = SpecialAgentUtil.parseConfiguration(properties, verbosePluginNames, integrationRuleNameToEnable, traceExporterNameToEnable);
+    final Map<String, String[]> integrationClasspaths = SpecialAgentUtil.parseIntegrationConfiguration(properties);
+    InstrumentIntegration.init(integrationClasspaths);
 
     final boolean allIntegrationsEnabled = !integrationRuleNameToEnable.containsKey("*") || integrationRuleNameToEnable.remove("*");
     if (logger.isLoggable(Level.FINER))
